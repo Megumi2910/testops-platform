@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: testops
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/testops}
+    username: ${DB_USERNAME:testops}
+    password: ${DB_PASSWORD:change-me-local}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  port: ${SERVER_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+  health:
+    diskspace:
+      enabled: true
+
+testops:
+  execution:
+    worker-count: ${EXECUTION_WORKER_COUNT:1}
+    queue-capacity: ${EXECUTION_QUEUE_CAPACITY:20}
+    claim-interval: ${EXECUTION_CLAIM_INTERVAL:PT2S}
+    heartbeat-interval: ${EXECUTION_HEARTBEAT_INTERVAL:PT15S}
+    stale-after: ${EXECUTION_STALE_AFTER:PT2M}
+    max-duration: ${EXECUTION_MAX_DURATION:PT15M}
+    default-step-timeout: ${EXECUTION_DEFAULT_STEP_TIMEOUT:PT15S}
+    browser: ${PLAYWRIGHT_BROWSER:chromium}
+  artifact:
+    directory: ${ARTIFACT_DIRECTORY:./artifacts}
+  target:
+    allowed-origins: ${TARGET_ALLOWED_ORIGINS:}

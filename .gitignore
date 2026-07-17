@@ -1,0 +1,32 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Java / Maven
+backend/target/
+**/target/
+*.class
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+*.tsbuildinfo
+
+# Runtime artifacts (keep the directory marker)
+artifacts/*
+!artifacts/.gitkeep
+
+# IDE and OS files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Logs and local caches
+*.log
+.cache/

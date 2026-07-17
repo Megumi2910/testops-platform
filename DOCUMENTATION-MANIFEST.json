@@ -1,0 +1,30 @@
+{
+  "classification": "Full product/application implementation specification",
+  "source_status": "Milestone 1 scaffold exists; future source-dependent facts remain marked TODO: verify",
+  "documents": [
+    {
+      "path": "README.md",
+      "role": "Project entry point"
+    },
+    {
+      "path": "docs/01-technical-specification.md",
+      "role": "Product, architecture, domain, UI, and quality model"
+    },
+    {
+      "path": "docs/02-authentication-and-security.md",
+      "role": "JWT, Google OIDC, refresh tokens, authorization, and secrets"
+    },
+    {
+      "path": "docs/03-data-model-api-and-workflows.md",
+      "role": "Schema, constraints, routes, state, normal/failure workflows"
+    },
+    {
+      "path": "docs/04-operations-scaling-and-maintenance.md",
+      "role": "Runtime, scaling, monitoring, incidents, backups, and upgrades"
+    },
+    {
+      "path": "docs/05-risks-roadmap-and-decisions.md",
+      "role": "Risk register, roadmap, ADR-style decisions, and change safety"
+    }
+  ]
+}
