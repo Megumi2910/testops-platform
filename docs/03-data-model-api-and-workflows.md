@@ -124,6 +124,26 @@ Indexes:
 - family;
 - expiry for cleanup.
 
+### `email_verification_challenges`
+
+```text
+id UUID PK
+user_id UUID FK
+purpose VARCHAR NOT NULL
+otp_hash VARCHAR NOT NULL
+issued_at TIMESTAMPTZ NOT NULL
+expires_at TIMESTAMPTZ NOT NULL
+consumed_at TIMESTAMPTZ NULL
+invalidated_at TIMESTAMPTZ NULL
+failed_attempts INTEGER NOT NULL
+max_attempts INTEGER NOT NULL
+delivery_status VARCHAR NOT NULL
+resend_available_at TIMESTAMPTZ NOT NULL
+created_at TIMESTAMPTZ NOT NULL
+```
+
+Only one active registration challenge may exist per user. OTP values are never stored in plaintext.
+
 ### `projects`
 
 ```text
@@ -373,15 +393,16 @@ Use Flyway as the schema authority:
 
 ```text
 V001__create_users_and_roles.sql
-V002__create_oauth_accounts.sql
-V003__create_refresh_tokens.sql
-V004__create_projects_and_members.sql
-V005__create_project_variables.sql
-V006__create_test_suites.sql
-V007__create_test_cases_and_steps.sql
-V008__create_executions_and_results.sql
-V009__create_execution_artifacts.sql
-V010__create_auth_audit_events.sql
+V002__create_email_verification_challenges.sql
+V003__create_oauth_accounts.sql
+V004__create_refresh_tokens.sql
+V005__create_auth_audit_events.sql
+V006__create_projects_and_members.sql
+V007__create_project_variables.sql
+V008__create_test_suites.sql
+V009__create_test_cases_and_steps.sql
+V010__create_executions_and_results.sql
+V011__create_execution_artifacts.sql
 ```
 
 Rules:
@@ -439,11 +460,16 @@ Exact mappings remain `TODO: verify`.
 
 | Method | Route | Purpose |
 |---|---|---|
+| `GET` | `/auth/providers` | Report enabled identity providers to the frontend. |
 | `POST` | `/auth/register` | Create password account. |
+| `POST` | `/auth/email/verify` | Verify registration OTP and issue session. |
+| `POST` | `/auth/email/resend` | Resend a registration OTP. |
 | `POST` | `/auth/login` | Authenticate email/password. |
 | `POST` | `/auth/refresh` | Rotate refresh token and issue access JWT. |
 | `POST` | `/auth/logout` | Revoke and clear session. |
 | `GET` | `/auth/me` | Current local user. |
+| `POST` | `/auth/oauth/exchange` | Exchange a one-time Google callback code for a local session. |
+| `POST` | `/auth/sessions/revoke-all` | Revoke all current-user sessions. |
 | `GET` | `/oauth2/authorization/google` | Start Google login. |
 | `GET` | `/login/oauth2/code/google` | Google callback. |
 | `GET` | `/users/me/sessions` | Active refresh sessions. |

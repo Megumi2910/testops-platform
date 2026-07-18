@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 1 scaffold exists; future source-dependent facts remain marked TODO: verify",
+  "source_status": "Milestone 1 runtime and Milestone 2 authentication/email OTP foundation are implemented; source-dependent facts are reconciled after each implementation slice",
   "documents": [
     {
       "path": "README.md",

@@ -13,9 +13,21 @@ spring:
     enabled: true
   jackson:
     default-property-inclusion: non_null
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${MAIL_SMTP_AUTH:true}
+      mail.smtp.starttls.enable: ${MAIL_STARTTLS:true}
+      mail.smtp.connectiontimeout: ${MAIL_CONNECTION_TIMEOUT_MS:5000}
+      mail.smtp.timeout: ${MAIL_READ_TIMEOUT_MS:5000}
+      mail.smtp.writetimeout: ${MAIL_WRITE_TIMEOUT_MS:5000}
 
 server:
   port: ${SERVER_PORT:8080}
+  forward-headers-strategy: framework
 
 management:
   endpoints:
@@ -28,8 +40,65 @@ management:
   health:
     diskspace:
       enabled: true
+    mail:
+      enabled: false
 
 testops:
+  auth:
+    enabled: ${AUTH_ENABLED:false}
+    registration-enabled: ${AUTH_REGISTRATION_ENABLED:false}
+    jwt:
+      private-key-path: ${JWT_PRIVATE_KEY_PATH:/run/secrets/testops/jwt-private.pem}
+      public-key-path: ${JWT_PUBLIC_KEY_PATH:/run/secrets/testops/jwt-public.pem}
+      issuer: ${JWT_ISSUER:http://localhost:3000}
+      audience: ${JWT_AUDIENCE:testops-api}
+      key-id: ${JWT_KEY_ID:local-m2}
+      access-ttl: ${JWT_ACCESS_TTL:PT10M}
+      clock-skew: ${JWT_CLOCK_SKEW:PT30S}
+    cookie:
+      name: ${REFRESH_COOKIE_NAME:testops_refresh}
+      secure: ${REFRESH_COOKIE_SECURE:false}
+      same-site: ${REFRESH_COOKIE_SAME_SITE:Lax}
+      path: ${REFRESH_COOKIE_PATH:/api/v1/auth}
+      max-age: ${REFRESH_TOKEN_TTL:P14D}
+    email:
+      enabled: ${EMAIL_DELIVERY_ENABLED:false}
+      otp-pepper-path: ${EMAIL_OTP_PEPPER_PATH:/run/secrets/testops/email-otp-pepper}
+      otp-lifetime: ${EMAIL_OTP_LIFETIME:PT10M}
+      resend-delay: ${EMAIL_OTP_RESEND_DELAY:PT1M}
+      max-attempts: ${EMAIL_OTP_MAX_ATTEMPTS:5}
+      max-sends-per-hour: ${EMAIL_OTP_MAX_SENDS_PER_HOUR:5}
+      mail:
+        host: ${MAIL_HOST:}
+        port: ${MAIL_PORT:587}
+        username: ${MAIL_USERNAME:}
+        password: ${MAIL_PASSWORD:}
+        from-address: ${MAIL_FROM_ADDRESS:}
+        from-name: ${MAIL_FROM_NAME:TestOps Platform}
+        smtp-auth: ${MAIL_SMTP_AUTH:true}
+        start-tls: ${MAIL_STARTTLS:true}
+        connection-timeout: ${MAIL_CONNECTION_TIMEOUT:PT5S}
+        read-timeout: ${MAIL_READ_TIMEOUT:PT5S}
+        write-timeout: ${MAIL_WRITE_TIMEOUT:PT5S}
+    google:
+      enabled: ${GOOGLE_AUTH_ENABLED:false}
+      client-id: ${GOOGLE_CLIENT_ID:}
+      client-secret: ${GOOGLE_CLIENT_SECRET:}
+      redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:3000/login/oauth2/code/google}
+    bootstrap:
+      email: ${BOOTSTRAP_ADMIN_EMAIL:}
+      display-name: ${BOOTSTRAP_ADMIN_DISPLAY_NAME:}
+      password: ${BOOTSTRAP_ADMIN_PASSWORD:}
+    limits:
+      login-failures: ${AUTH_LOGIN_FAILURE_LIMIT:5}
+      login-window: ${AUTH_LOGIN_FAILURE_WINDOW:PT15M}
+      login-ip-attempts: ${AUTH_LOGIN_IP_LIMIT:30}
+      registration-attempts: ${AUTH_REGISTRATION_IP_LIMIT:5}
+      registration-window: ${AUTH_REGISTRATION_IP_WINDOW:PT1H}
+      refresh-attempts: ${AUTH_REFRESH_LIMIT:30}
+      refresh-window: ${AUTH_REFRESH_WINDOW:PT1M}
+      link-attempts: ${AUTH_LINK_LIMIT:5}
+      link-window: ${AUTH_LINK_WINDOW:PT15M}
   execution:
     worker-count: ${EXECUTION_WORKER_COUNT:1}
     queue-capacity: ${EXECUTION_QUEUE_CAPACITY:20}

@@ -1,6 +1,8 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { useAuth } from '../features/auth/AuthContext'
 
 export function AppShell() {
+  const { user } = useAuth()
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -11,6 +13,9 @@ export function AppShell() {
           <nav aria-label="Primary navigation">
             <NavLink className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')} to="/">
               Readiness
+            </NavLink>
+            <NavLink className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')} to={user ? '/' : '/login'}>
+              {user ? user.displayName : 'Sign in'}
             </NavLink>
           </nav>
         </div>

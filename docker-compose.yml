@@ -2,10 +2,8 @@ services:
   postgres:
     image: postgres:18.4-alpine3.24
     restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-testops}
-      POSTGRES_USER: ${POSTGRES_USER:-testops}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-local}
+    env_file:
+      - ./db/.env
     ports:
       - "5432:5432"
     volumes:
@@ -23,25 +21,13 @@ services:
     restart: unless-stopped
     init: true
     shm_size: 1gb
-    environment:
-      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-testops}
-      DB_USERNAME: ${POSTGRES_USER:-testops}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-change-me-local}
-      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:3000}
-      PLAYWRIGHT_BROWSER: ${PLAYWRIGHT_BROWSER:-chromium}
-      ARTIFACT_DIRECTORY: /app/artifacts
-      EXECUTION_WORKER_COUNT: ${EXECUTION_WORKER_COUNT:-1}
-      EXECUTION_QUEUE_CAPACITY: ${EXECUTION_QUEUE_CAPACITY:-20}
-      EXECUTION_CLAIM_INTERVAL: ${EXECUTION_CLAIM_INTERVAL:-PT2S}
-      EXECUTION_HEARTBEAT_INTERVAL: ${EXECUTION_HEARTBEAT_INTERVAL:-PT15S}
-      EXECUTION_STALE_AFTER: ${EXECUTION_STALE_AFTER:-PT2M}
-      EXECUTION_MAX_DURATION: ${EXECUTION_MAX_DURATION:-PT15M}
-      EXECUTION_DEFAULT_STEP_TIMEOUT: ${EXECUTION_DEFAULT_STEP_TIMEOUT:-PT15S}
-      TARGET_ALLOWED_ORIGINS: ${TARGET_ALLOWED_ORIGINS:-}
-    ports:
-      - "8080:8080"
+    env_file:
+      - ./backend/.env
     volumes:
       - artifacts_data:/app/artifacts
+      - ./backend/.secrets:/run/secrets/testops:ro
+    ports:
+      - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -56,6 +42,8 @@ services:
     build:
       context: ./frontend
     restart: unless-stopped
+    env_file:
+      - ./frontend/.env
     ports:
       - "3000:8080"
     depends_on:

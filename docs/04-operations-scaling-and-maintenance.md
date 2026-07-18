@@ -42,10 +42,12 @@ DB_PASSWORD=change-me
 ### Authentication
 
 ```dotenv
+AUTH_ENABLED=false
+AUTH_REGISTRATION_ENABLED=false
 JWT_ISSUER=https://testops.example.com
 JWT_AUDIENCE=testops-api
-JWT_PRIVATE_KEY_PATH=/run/secrets/jwt-private.pem
-JWT_PUBLIC_KEY_PATH=/run/secrets/jwt-public.pem
+JWT_PRIVATE_KEY_PATH=/run/secrets/testops/jwt-private.pem
+JWT_PUBLIC_KEY_PATH=/run/secrets/testops/jwt-public.pem
 JWT_ACCESS_TTL=PT10M
 REFRESH_TOKEN_TTL=P14D
 REFRESH_COOKIE_SECURE=true
@@ -55,6 +57,33 @@ GOOGLE_REDIRECT_URI=https://testops.example.com/login/oauth2/code/google
 OAUTH_SUCCESS_REDIRECT=https://testops.example.com/oauth2/callback
 OAUTH_FAILURE_REDIRECT=https://testops.example.com/login?oauth_error=true
 ```
+
+### Email verification
+
+```dotenv
+EMAIL_DELIVERY_ENABLED=false
+EMAIL_OTP_PEPPER_PATH=/run/secrets/testops/email-otp-pepper
+EMAIL_OTP_LIFETIME=PT10M
+EMAIL_OTP_RESEND_DELAY=PT1M
+EMAIL_OTP_MAX_ATTEMPTS=5
+EMAIL_OTP_MAX_SENDS_PER_HOUR=5
+MAIL_HOST=smtp.example.com
+MAIL_PORT=587
+MAIL_USERNAME=
+MAIL_PASSWORD=
+MAIL_FROM_ADDRESS=
+MAIL_FROM_NAME=TestOps Platform
+MAIL_SMTP_AUTH=true
+MAIL_STARTTLS=true
+MAIL_CONNECTION_TIMEOUT=PT5S
+MAIL_READ_TIMEOUT=PT5S
+MAIL_WRITE_TIMEOUT=PT5S
+MAIL_CONNECTION_TIMEOUT_MS=5000
+MAIL_READ_TIMEOUT_MS=5000
+MAIL_WRITE_TIMEOUT_MS=5000
+```
+
+Registration remains unavailable until email delivery is enabled and valid SMTP credentials are supplied. SMTP failure is not an API readiness failure; the unverified account can use the rate-limited resend flow.
 
 ### Execution
 
@@ -469,7 +498,7 @@ Pull-request pipeline:
 6. Docker image build;
 7. optional local deterministic Playwright smoke suite.
 
-Do not make normal PR CI depend on the live external commerce site.
+Do not make normal PR CI depend on Google, SMTP, or the live external commerce site. Use fake mail and mocked OIDC providers for deterministic tests.
 
 Release pipeline may:
 

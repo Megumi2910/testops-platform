@@ -1,8 +1,8 @@
 # TestOps Platform — Managed Browser Testing for an Existing E-commerce Application
 
-> **Documentation status:** Milestone 1 scaffold implemented; later product capabilities remain implementation specifications.
+> **Documentation status:** Milestone 1 runtime and the Milestone 2 authentication/email-OTP foundation are implemented; documentation is kept in sync with the source.
 >
-> The repository now contains the Milestone 1 runtime scaffold. Authentication, business routes, production migrations, execution workers, and live target details remain intentionally deferred and are marked as future work in the deep documentation.
+> The repository contains the Milestone 1 runtime and the Milestone 2 identity foundation. Business routes, project authorization, execution workers, dashboards, and live target details remain intentionally deferred and are marked as future work in the deep documentation.
 
 TestOps Platform is an internal web application for defining, executing, and reviewing automated browser tests against an existing e-commerce website. It gives administrators, test managers, developers, and testers one place to manage projects, test suites, reusable test cases, Playwright executions, failure evidence, and quality trends.
 
@@ -21,11 +21,11 @@ The current implementation milestone provides:
 - deterministic Playwright launch verification;
 - Docker Compose services for `postgres`, `backend`, and `frontend`.
 
-Authentication, test-definition management, execution orchestration, and reporting are planned milestones rather than completed features.
+Milestone 2 adds password registration with mandatory email OTP verification, TestOps JWT sessions, rotating refresh cookies, self-session revocation, and Google OIDC. Test-definition management, project authorization, execution orchestration, and reporting remain planned milestones.
 
 The intended first release covers:
 
-- account registration and login using email and password;
+- account registration and login using email and password (verified by sending OTP);
 - Google sign-in through OAuth 2.0 and OpenID Connect;
 - short-lived application JWT access tokens;
 - rotating refresh tokens stored in secure `HttpOnly` cookies;
@@ -88,12 +88,13 @@ The browser client owns interaction state and displays server state. The Spring 
 
 ### Email and password
 
-1. The user submits an email address and password.
-2. Spring Security validates the account and adaptive password hash.
-3. The backend issues a short-lived TestOps access JWT.
-4. The backend creates a rotating opaque refresh token and sets it as a secure `HttpOnly` cookie.
-5. The frontend stores the access token in memory and sends it in the `Authorization` header.
-6. On reload, the frontend calls the refresh endpoint to obtain a new access token.
+1. The user submits an email address, display name, and password.
+2. The backend creates an unverified account and sends a six-digit, ten-minute OTP through configured SMTP.
+3. The user submits the OTP; only then does the backend issue a session.
+4. Spring Security validates the verified account and BCrypt password hash on later login.
+5. The backend issues a short-lived TestOps access JWT and rotating opaque refresh cookie.
+6. The frontend stores the short-lived access token in session storage and sends it in the `Authorization` header.
+7. On reload, the frontend calls the refresh endpoint to obtain a new access token.
 
 ### Google
 
@@ -144,15 +145,15 @@ The Milestone 1 foundation pins the following versions in its manifests, lockfil
 |---|---|
 | Frontend | React 19, TypeScript 5.9, Vite 8, React Router 7, TanStack Query 5 |
 | Backend | Java 21, Spring Boot 4.1.0, Spring Web MVC, Spring Data JPA |
-| Authentication | Planned: JWT resource-server validation, OAuth 2.0 Client, Google OpenID Connect |
-| Database | PostgreSQL 17.10, Flyway |
+| Authentication | Implemented behind `AUTH_ENABLED`: password registration with mandatory email OTP, JWT resource-server validation, rotating refresh sessions, self-session revocation, and optional Google OpenID Connect |
+| Database | PostgreSQL 18.4, Flyway |
 | Browser automation | Playwright for Java 1.60.0, Chromium initially |
 | Testing | JUnit 5, Spring Boot Test, Testcontainers 1.21.3, Vitest 4, React Testing Library |
 | Packaging | Docker Compose, Node 24.17.0 build image, Nginx 1.30.3 runtime image |
 | CI/CD | GitHub Actions |
 | API documentation | Planned: OpenAPI / Swagger after the first business API exists |
 
-Authentication, business APIs, and OpenAPI remain outside this milestone.
+Business APIs, execution workers, dashboards, and OpenAPI remain outside this milestone.
 
 ## Why this shape
 
@@ -211,7 +212,9 @@ There is no `test-target/` application in this repository. The existing e-commer
 The intended development entry point is:
 
 ```bash
-cp .env.example .env
+cp db/.env.example db/.env
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
 docker compose up --build
 ```
 
@@ -223,13 +226,15 @@ Expected local surfaces:
 | Backend API | `http://localhost:8080` |
 | Health | `http://localhost:8080/actuator/health` |
 
-The Compose services are implemented in `docker-compose.yml`; future route and profile details remain `TODO: verify` until those milestones are delivered.
+The Compose services are implemented in `docker-compose.yml`. PostgreSQL is the persistence service; the backend waits for its health check, and the frontend waits for the backend health check. Authentication is disabled by default. To enable it, mount RSA PEM files and a 32-byte-or-longer OTP pepper in `backend/.secrets/` using the paths documented in `backend/.env.example`, then provide SMTP and (optionally) Google values without committing them.
 
 ## Environment groups
 
 - PostgreSQL connection and credentials;
 - JWT issuer, audience, signing keys, and token lifetimes;
 - refresh-cookie security settings;
+- SMTP host, sender, and app-password configuration for email OTP delivery;
+- OTP pepper and verification limits;
 - Google client ID, secret, callback URI, and frontend redirect destinations;
 - Playwright worker count, queue capacity, browser, timeouts, and artifact policy;
 - allowed frontend origin;
@@ -263,4 +268,4 @@ Before describing future product capabilities as implemented, inspect and reconc
 - real UI screenshots and deployment URLs;
 - target e-commerce routes, selectors, test data, and cleanup behavior.
 
-Unknown implementation facts should remain marked `TODO: verify`, not converted into confident claims.
+Unknown implementation facts should remain marked `TODO: verify`, not converted into confident claims. Every implementation slice must update all related documentation before it is considered complete.

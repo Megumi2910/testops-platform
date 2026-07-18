@@ -51,7 +51,7 @@ Prefer asymmetric signing:
 - `kid` supports planned key rotation;
 - previous public keys remain available until old access tokens expire.
 
-`TODO: verify` signing algorithm, key format, and key-loading method in source.
+The current implementation uses RS256 with PEM-encoded RSA keys mounted at the backend secret boundary. Rotation and multi-key `kid` rollout remain future hardening work.
 
 ### Refresh token
 
@@ -95,9 +95,10 @@ Normal path:
 3. reject an existing active account;
 4. hash the password with an adaptive `PasswordEncoder`;
 5. create the local user and default role;
-6. optionally require email verification;
-7. create an audit event;
-8. issue tokens only if the account is allowed to sign in.
+6. create a six-digit email-verification challenge;
+7. send the OTP through configured SMTP;
+8. create an audit event;
+9. issue no tokens until the OTP is verified.
 
 Failure path:
 
@@ -105,7 +106,11 @@ Failure path:
 - duplicate email returns `409 Conflict`;
 - password never appears in logs;
 - token creation occurs only after user persistence succeeds;
-- verification-required accounts do not silently receive full access.
+- verification-required accounts do not receive access or refresh tokens.
+
+### Email OTP verification
+
+Password registration creates an active but unverified account. The backend sends a six-digit OTP that expires after ten minutes. The code is HMAC-hashed with a dedicated server pepper, never stored or logged in plaintext, and limited to five attempts. Resends wait 60 seconds and are capped at five sends per account/IP per hour. Successful verification marks the account verified and creates the normal TestOps session. Google accounts with a verified Google email do not require a second OTP.
 
 ### Login
 

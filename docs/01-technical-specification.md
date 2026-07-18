@@ -519,7 +519,7 @@ Detailed behavior is defined in [Authentication and security](02-authentication-
 - registration;
 - Google sign-in;
 - OAuth callback/error state;
-- optional email verification;
+- mandatory email verification for password registration (six-digit OTP);
 - optional password reset.
 
 ### Authenticated

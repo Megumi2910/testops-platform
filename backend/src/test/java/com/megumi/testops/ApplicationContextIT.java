@@ -21,7 +21,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 class ApplicationContextIT {
 
     @Container
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:17.10-alpine3.23");
+    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:18.4-alpine3.24");
 
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {

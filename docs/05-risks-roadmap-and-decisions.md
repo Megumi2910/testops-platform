@@ -149,12 +149,12 @@ Evidence:
 - browser opens the approved target;
 - no secret in Git.
 
-### Milestone 2 — Authentication
+### Milestone 2 — Authentication (implemented foundation)
 
-Deliver:
+Delivered in the current foundation slice:
 
 - user/role schema;
-- registration/login;
+- registration/login with mandatory email OTP verification;
 - JWT validation;
 - rotating refresh token;
 - logout/session revocation;
@@ -165,8 +165,9 @@ Deliver:
 Evidence:
 
 - both login methods resolve equivalent local roles;
-- refresh concurrency and replay tests;
-- invalid JWTs rejected;
+- unverified password users cannot receive a session;
+- OTP expiry, retry, resend, and delivery-failure behavior is tested;
+- refresh replay and invalid-JWT hardening remain verification follow-ups once Docker Desktop is available;
 - tokens absent from URLs and persistent JS storage.
 
 ### Milestone 3 — Test management
