@@ -4,7 +4,6 @@ import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Base64;
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -19,14 +18,17 @@ import jakarta.transaction.Transactional;
 public class RefreshTokenService {
 
     private final RefreshTokenRepository repository;
+    private final AuditService audit;
     private final AuthProperties.Cookie properties;
     private final Clock clock;
     private final SecureRandom random = new SecureRandom();
 
-    public RefreshTokenService(RefreshTokenRepository repository, AuthProperties.Cookie properties, Clock clock) {
+    public RefreshTokenService(RefreshTokenRepository repository, AuthProperties.Cookie properties, Clock clock,
+            AuditService audit) {
         this.repository = repository;
         this.properties = properties;
         this.clock = clock;
+        this.audit = audit;
     }
 
     @Transactional
@@ -39,14 +41,18 @@ public class RefreshTokenService {
         return new IssuedRefreshToken(raw, entity.getFamilyId(), entity.getExpiresAt());
     }
 
-    @Transactional
+    @Transactional(dontRollbackOn = AuthException.class)
     public Rotation rotate(String raw, String userAgent, String ip) {
-        RefreshTokenEntity current = repository.findByTokenHash(TokenHash.sha256(raw))
+        if (raw == null || raw.isBlank()) {
+            throw invalid();
+        }
+        RefreshTokenEntity current = repository.findByTokenHashForUpdate(TokenHash.sha256(raw))
                 .orElseThrow(() -> new AuthException(HttpStatus.UNAUTHORIZED, "refresh_invalid", "Refresh session is invalid"));
         Instant now = Instant.now(clock);
         if (!current.isUsable(now)) {
+            audit.record(current.getUser(), "REFRESH_REPLAY", false, ip, userAgent, null);
             revokeFamily(current.getFamilyId(), "reuse_or_expired");
-            throw new AuthException(HttpStatus.UNAUTHORIZED, "refresh_invalid", "Refresh session is invalid");
+            throw invalid();
         }
         current.markUsed(now);
         String replacementRaw = randomToken();
@@ -61,26 +67,28 @@ public class RefreshTokenService {
     @Transactional
     public void revoke(String raw, String reason) {
         if (raw == null || raw.isBlank()) return;
-        repository.findByTokenHash(TokenHash.sha256(raw)).ifPresent(token -> token.revoke(Instant.now(clock), reason));
+        repository.findByTokenHashForUpdate(TokenHash.sha256(raw))
+                .ifPresent(token -> token.revoke(Instant.now(clock), reason));
     }
 
     @Transactional
     public void revokeFamily(UUID familyId, String reason) {
-        Instant now = Instant.now(clock);
-        List<RefreshTokenEntity> tokens = repository.findByFamilyIdAndRevokedAtIsNull(familyId);
-        tokens.forEach(token -> token.revoke(now, reason));
+        repository.revokeFamily(familyId, Instant.now(clock), reason);
     }
 
     @Transactional
     public void revokeAll(UserEntity user, String reason) {
-        Instant now = Instant.now(clock);
-        repository.findByUserIdAndRevokedAtIsNull(user.getId()).forEach(token -> token.revoke(now, reason));
+        repository.revokeAllForUser(user.getId(), Instant.now(clock), reason);
     }
 
     private String randomToken() {
         byte[] bytes = new byte[48];
         random.nextBytes(bytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    private static AuthException invalid() {
+        return new AuthException(HttpStatus.UNAUTHORIZED, "refresh_invalid", "Refresh session is invalid");
     }
 
     public record IssuedRefreshToken(String value, UUID familyId, Instant expiresAt) { }

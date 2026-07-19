@@ -25,22 +25,30 @@ public class TokenVersionFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication instanceof JwtAuthenticationToken jwtAuthentication) {
+            UUID userId;
+            Object tokenVersionValue;
             try {
-                UUID userId = UUID.fromString(jwtAuthentication.getToken().getSubject());
-                Number tokenVersionClaim = jwtAuthentication.getToken().getClaim("token_version");
-                if (tokenVersionClaim == null) throw new IllegalArgumentException("token version claim missing");
-                int tokenVersion = tokenVersionClaim.intValue();
-                if (users.findById(userId).map(user -> user.getTokenVersion() == tokenVersion && "ACTIVE".equals(user.getStatus())).orElse(false)) {
-                    filterChain.doFilter(request, response);
-                    return;
-                }
-            } catch (RuntimeException ignored) {
-                // Fall through to a generic unauthorized response without exposing token details.
+                userId = UUID.fromString(jwtAuthentication.getToken().getSubject());
+                tokenVersionValue = jwtAuthentication.getToken().getClaims().get("token_version");
+            } catch (IllegalArgumentException | NullPointerException exception) {
+                reject(response);
+                return;
             }
-            SecurityContextHolder.clearContext();
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Session is no longer valid");
+            if (tokenVersionValue instanceof Number tokenVersionClaim && users.findById(userId)
+                    .map(user -> user.getTokenVersion() == tokenVersionClaim.intValue()
+                            && "ACTIVE".equals(user.getStatus()))
+                    .orElse(false)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+            reject(response);
             return;
         }
         filterChain.doFilter(request, response);
+    }
+
+    private static void reject(HttpServletResponse response) throws IOException {
+        SecurityContextHolder.clearContext();
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Session is no longer valid");
     }
 }

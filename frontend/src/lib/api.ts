@@ -8,8 +8,44 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiFetch<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
-  const accessToken = sessionStorage.getItem('testops.accessToken')
+type AuthResponseLike = { accessToken: string }
+
+let accessToken: string | null = null
+let refreshPromise: Promise<unknown> | null = null
+
+export function setAccessToken(token: string) {
+  accessToken = token
+}
+
+export function clearAccessToken() {
+  accessToken = null
+}
+
+async function refreshInMemory(): Promise<unknown> {
+  if (!refreshPromise) {
+    refreshPromise = fetch('/api/v1/auth/refresh', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    }).then(async (response) => {
+      if (!response.ok) throw new ApiError(response.status, 'Session refresh failed')
+      const session = (await response.json()) as AuthResponseLike
+      setAccessToken(session.accessToken)
+      return session
+    }).finally(() => {
+      refreshPromise = null
+    })
+  }
+  return refreshPromise
+}
+
+function canRefresh(input: RequestInfo | URL) {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.pathname : input.url
+  return !url.includes('/auth/login') && !url.includes('/auth/register') && !url.includes('/auth/email/')
+    && !url.includes('/auth/refresh') && !url.includes('/auth/logout')
+}
+
+async function request<T>(input: RequestInfo | URL, init: RequestInit | undefined, allowRetry: boolean): Promise<T> {
   const response = await fetch(input, {
     ...init,
     credentials: 'include',
@@ -21,11 +57,20 @@ export async function apiFetch<T>(input: RequestInfo | URL, init?: RequestInit):
     },
   })
 
+  if (response.status === 401 && allowRetry && canRefresh(input)) {
+    try {
+      await refreshInMemory()
+      return request<T>(input, init, false)
+    } catch {
+      clearAccessToken()
+    }
+  }
+
   if (!response.ok) {
     let message = `Request failed with status ${response.status}`
     try {
-      const problem = (await response.json()) as { message?: string }
-      message = problem.message ?? message
+      const problem = (await response.json()) as { message?: string; detail?: string }
+      message = problem.message ?? problem.detail ?? message
     } catch {
       // Keep the status-based fallback for empty and non-JSON responses.
     }
@@ -36,6 +81,10 @@ export async function apiFetch<T>(input: RequestInfo | URL, init?: RequestInit):
   return (await response.json()) as T
 }
 
-export function clearAccessToken() {
-  sessionStorage.removeItem('testops.accessToken')
+export async function apiFetch<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
+  return request<T>(input, init, true)
+}
+
+export async function refreshAccessToken<T extends AuthResponseLike>() {
+  return refreshInMemory() as Promise<T>
 }

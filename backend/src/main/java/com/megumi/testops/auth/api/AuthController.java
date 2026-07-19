@@ -3,11 +3,11 @@ package com.megumi.testops.auth.api;
 import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -20,7 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.megumi.testops.auth.config.AuthProperties;
 import com.megumi.testops.auth.service.AuthException;
 import com.megumi.testops.auth.service.AuthService;
-import com.megumi.testops.auth.service.OAuthLoginCodeStore;
+import com.megumi.testops.auth.service.OriginGuard;
+import com.megumi.testops.auth.service.RefreshCookieFactory;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -28,13 +29,15 @@ public class AuthController {
 
     private final ObjectProvider<AuthService> authService;
     private final AuthProperties properties;
-    private final ObjectProvider<OAuthLoginCodeStore> oauthCodes;
+    private final OriginGuard originGuard;
+    private final RefreshCookieFactory refreshCookies;
 
     public AuthController(ObjectProvider<AuthService> authService, AuthProperties properties,
-            ObjectProvider<OAuthLoginCodeStore> oauthCodes) {
+            OriginGuard originGuard, RefreshCookieFactory refreshCookies) {
         this.authService = authService;
         this.properties = properties;
-        this.oauthCodes = oauthCodes;
+        this.originGuard = originGuard;
+        this.refreshCookies = refreshCookies;
     }
 
     @GetMapping("/providers")
@@ -68,27 +71,24 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refresh(HttpServletRequest servletRequest) {
+    public ResponseEntity<AuthResponse> refresh(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
+        originGuard.requireSameOrigin(servletRequest);
         String raw = readRefreshCookie(servletRequest);
-        AuthService.SessionResult session = service().refresh(raw, servletRequest.getHeader("User-Agent"), clientIp(servletRequest));
-        return withRefreshCookie(session);
-    }
-
-    @PostMapping("/oauth/exchange")
-    public ResponseEntity<AuthResponse> exchangeOAuth(@Valid @RequestBody OAuthExchangeRequest request) {
-        OAuthLoginCodeStore store = oauthCodes.getIfAvailable();
-        if (store == null) throw new AuthException(org.springframework.http.HttpStatus.NOT_FOUND,
-                "google_disabled", "Google sign-in is not enabled");
-        AuthService.SessionResult session = store.take(request.code());
-        if (session == null) throw new AuthException(org.springframework.http.HttpStatus.UNAUTHORIZED,
-                "oauth_code_invalid", "OAuth sign-in code is invalid or expired");
-        return withRefreshCookie(session);
+        try {
+            AuthService.SessionResult session = service().refresh(raw, servletRequest.getHeader("User-Agent"), clientIp(servletRequest));
+            return withRefreshCookie(session);
+        } catch (AuthException exception) {
+            servletResponse.addHeader(HttpHeaders.SET_COOKIE, refreshCookies.clear().toString());
+            throw exception;
+        }
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest servletRequest) {
+        originGuard.requireSameOrigin(servletRequest);
         if (authService.getIfAvailable() != null) service().logout(readRefreshCookie(servletRequest));
-        return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, clearRefreshCookie().toString()).build();
+        return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, refreshCookies.clear().toString())
+                .header(HttpHeaders.CACHE_CONTROL, "no-store").build();
     }
 
     @GetMapping("/me")
@@ -103,7 +103,9 @@ public class AuthController {
         if (jwt == null) throw new AuthException(org.springframework.http.HttpStatus.UNAUTHORIZED,
                 "authentication_required", "Authentication is required");
         service().revokeAllSessions(UUID.fromString(jwt.getSubject()), servletRequest.getHeader("User-Agent"), clientIp(servletRequest));
-        return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, clearRefreshCookie().toString()).build();
+        return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, refreshCookies.clear().toString())
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .build();
     }
 
     private AuthService service() {
@@ -114,19 +116,10 @@ public class AuthController {
     }
 
     private ResponseEntity<AuthResponse> withRefreshCookie(AuthService.SessionResult session) {
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, refreshCookie(session).toString()).body(session.response());
-    }
-
-    private ResponseCookie refreshCookie(AuthService.SessionResult session) {
-        return ResponseCookie.from(properties.cookie().name(), session.refreshToken())
-                .httpOnly(true).secure(properties.cookie().secure()).sameSite(properties.cookie().sameSite())
-                .path(properties.cookie().path()).maxAge(properties.cookie().maxAge()).build();
-    }
-
-    private ResponseCookie clearRefreshCookie() {
-        return ResponseCookie.from(properties.cookie().name(), "")
-                .httpOnly(true).secure(properties.cookie().secure()).sameSite(properties.cookie().sameSite())
-                .path(properties.cookie().path()).maxAge(0).build();
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, refreshCookies.create(session.refreshToken()).toString())
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .header(HttpHeaders.PRAGMA, "no-cache")
+                .body(session.response());
     }
 
     private String readRefreshCookie(HttpServletRequest request) {
@@ -138,7 +131,6 @@ public class AuthController {
     }
 
     private static String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        return forwarded == null || forwarded.isBlank() ? request.getRemoteAddr() : forwarded.split(",")[0].trim();
+        return request.getRemoteAddr();
     }
 }

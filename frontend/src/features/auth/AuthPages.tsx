@@ -87,14 +87,13 @@ export function VerifyEmailPage() {
 
 export function OAuthCallbackPage() {
   const [searchParams] = useSearchParams()
-  const { providers } = useAuth()
   const navigate = useNavigate()
   const [error, setError] = useState('Completing Google sign-in…')
   useEffect(() => {
-    const code = searchParams.get('code')
-    if (!code || !providers?.googleEnabled) { setError('Google sign-in is unavailable.'); return }
-    void authApi.exchangeOAuth(code).then(() => navigate('/')).catch((caught) => setError(caught instanceof Error ? caught.message : 'Google sign-in failed'))
-  }, [navigate, providers?.googleEnabled, searchParams])
+    const oauthError = searchParams.get('oauth_error')
+    if (oauthError) { setError('Google sign-in could not be completed.'); return }
+    void authApi.refresh().then(() => navigate('/')).catch(() => setError('Google sign-in could not be completed.'))
+  }, [navigate, searchParams])
   return <AuthCard title="Signing you in" subtitle={error} />
 }
 

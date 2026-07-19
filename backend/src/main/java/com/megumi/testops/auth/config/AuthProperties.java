@@ -15,6 +15,7 @@ public record AuthProperties(
         Cookie cookie,
         Email email,
         Google google,
+        String frontendOrigin,
         Bootstrap bootstrap,
         Limits limits) {
 
@@ -25,6 +26,7 @@ public record AuthProperties(
         Objects.requireNonNull(google, "google properties are required");
         Objects.requireNonNull(bootstrap, "bootstrap properties are required");
         Objects.requireNonNull(limits, "limit properties are required");
+        requireOrigin(frontendOrigin, "frontend origin");
         if (enabled) {
             requireText(jwt.issuer(), "jwt issuer");
             requireText(jwt.audience(), "jwt audience");
@@ -37,21 +39,49 @@ public record AuthProperties(
             requireText(cookie.name(), "refresh cookie name");
             requireText(cookie.path(), "refresh cookie path");
             requirePositive(cookie.maxAge(), "refresh cookie max age");
+            if (!cookie.name().matches("[A-Za-z0-9._-]+")) {
+                throw new IllegalArgumentException("refresh cookie name contains invalid characters");
+            }
+            if (!cookie.path().startsWith("/") || cookie.path().contains("?") || cookie.path().contains("#")) {
+                throw new IllegalArgumentException("refresh cookie path must be an absolute path");
+            }
+            if (!("lax".equalsIgnoreCase(cookie.sameSite()) || "strict".equalsIgnoreCase(cookie.sameSite())
+                    || "none".equalsIgnoreCase(cookie.sameSite()))) {
+                throw new IllegalArgumentException("refresh cookie SameSite must be Lax, Strict, or None");
+            }
+            if ("none".equalsIgnoreCase(cookie.sameSite()) && !cookie.secure()) {
+                throw new IllegalArgumentException("SameSite=None cookies must be secure");
+            }
             requirePositive(email.otpLifetime(), "email otp lifetime");
             requirePositive(email.resendDelay(), "email resend delay");
             if (email.otpPepperPath() == null) {
                 throw new IllegalArgumentException("email OTP pepper path is required when auth is enabled");
             }
-            if (registrationEnabled && !email.enabled()) {
-                throw new IllegalArgumentException("email delivery must be enabled when registration is enabled");
-            }
+        }
+        if (registrationEnabled && !enabled) {
+            throw new IllegalArgumentException("authentication must be enabled when registration is enabled");
+        }
+        if (registrationEnabled && !email.enabled()) {
+            throw new IllegalArgumentException("email delivery must be enabled when registration is enabled");
+        }
+        if (bootstrap.enabled() && !enabled) {
+            throw new IllegalArgumentException("authentication must be enabled when bootstrap is enabled");
+        }
+        if (google.enabled() && !enabled) {
+            throw new IllegalArgumentException("authentication must be enabled when Google sign-in is enabled");
         }
         if (google.enabled()) {
             requireText(google.clientId(), "google client id");
             requireText(google.clientSecret(), "google client secret");
             requireText(google.redirectUri(), "google redirect uri");
-            URI redirect = URI.create(google.redirectUri());
-            if (redirect.getHost() == null || redirect.getPath() == null) {
+            URI redirect;
+            try {
+                redirect = URI.create(google.redirectUri());
+            } catch (IllegalArgumentException exception) {
+                throw new IllegalArgumentException("google redirect uri must be an absolute URI", exception);
+            }
+            if (!redirect.isAbsolute() || redirect.getHost() == null || redirect.getPath() == null
+                    || !originOf(redirect).equals(originOf(URI.create(frontendOrigin)))) {
                 throw new IllegalArgumentException("google redirect uri must be an absolute URI");
             }
         }
@@ -69,6 +99,26 @@ public record AuthProperties(
         if (value == null || value.isZero() || value.isNegative()) {
             throw new IllegalArgumentException(name + " must be positive");
         }
+    }
+
+    private static void requireOrigin(String value, String name) {
+        requireText(value, name);
+        URI origin;
+        try {
+            origin = URI.create(value);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException(name + " must be an HTTP(S) origin", exception);
+        }
+        if (!origin.isAbsolute() || !("http".equalsIgnoreCase(origin.getScheme())
+                || "https".equalsIgnoreCase(origin.getScheme())) || origin.getHost() == null
+                || origin.getUserInfo() != null || origin.getPath() != null && !origin.getPath().isEmpty()
+                && !"/".equals(origin.getPath()) || origin.getQuery() != null || origin.getFragment() != null) {
+            throw new IllegalArgumentException(name + " must be an HTTP(S) origin without path, query, or fragment");
+        }
+    }
+
+    private static String originOf(URI uri) {
+        return uri.getScheme().toLowerCase(java.util.Locale.ROOT) + "://" + uri.getRawAuthority().toLowerCase(java.util.Locale.ROOT);
     }
 
     public record Jwt(
@@ -91,10 +141,10 @@ public record AuthProperties(
             Duration resendDelay,
             int maxAttempts,
             int maxSendsPerHour,
-            Mail mail) {
+            String fromAddress,
+            String fromName) {
 
         public Email {
-            Objects.requireNonNull(mail, "mail properties are required");
             if (maxAttempts != 5) {
                 throw new IllegalArgumentException("email OTP max attempts must be 5");
             }
@@ -104,30 +154,16 @@ public record AuthProperties(
         }
     }
 
-    public record Mail(
-            String host,
-            int port,
-            String username,
-            String password,
-            String fromAddress,
-            String fromName,
-            boolean smtpAuth,
-            boolean startTls,
-            Duration connectionTimeout,
-            Duration readTimeout,
-            Duration writeTimeout) {
-    }
-
     public record Google(boolean enabled, String clientId, String clientSecret, String redirectUri) {
     }
 
-    public record Bootstrap(String email, String displayName, String password) {
+    public record Bootstrap(boolean enabled, String email, String displayName, Path passwordPath) {
 
         private void validate() {
-            boolean any = email != null || displayName != null || password != null;
-            boolean all = email != null && displayName != null && password != null;
-            if (any && !all) {
-                throw new IllegalArgumentException("bootstrap admin settings must be supplied together");
+            boolean complete = email != null && !email.isBlank() && displayName != null && !displayName.isBlank()
+                    && passwordPath != null && !passwordPath.toString().isBlank();
+            if (enabled && !complete) {
+                throw new IllegalArgumentException("bootstrap admin settings are required when bootstrap is enabled");
             }
         }
     }
@@ -140,18 +176,18 @@ public record AuthProperties(
             Duration registrationWindow,
             int refreshAttempts,
             Duration refreshWindow,
-            int linkAttempts,
-            Duration linkWindow) {
+            int otpResendIpAttempts,
+            Duration otpResendIpWindow) {
 
         private void validate() {
             if (loginFailures < 1 || loginIpAttempts < 1 || registrationAttempts < 1
-                    || refreshAttempts < 1 || linkAttempts < 1) {
+                    || refreshAttempts < 1 || otpResendIpAttempts < 1) {
                 throw new IllegalArgumentException("authentication limits must be positive");
             }
             requirePositive(loginWindow, "login window");
             requirePositive(registrationWindow, "registration window");
             requirePositive(refreshWindow, "refresh window");
-            requirePositive(linkWindow, "link window");
+            requirePositive(otpResendIpWindow, "OTP resend IP window");
         }
     }
 }

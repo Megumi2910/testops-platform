@@ -397,12 +397,16 @@ V002__create_email_verification_challenges.sql
 V003__create_oauth_accounts.sql
 V004__create_refresh_tokens.sql
 V005__create_auth_audit_events.sql
-V006__create_projects_and_members.sql
-V007__create_project_variables.sql
-V008__create_test_suites.sql
-V009__create_test_cases_and_steps.sql
-V010__create_executions_and_results.sql
-V011__create_execution_artifacts.sql
+V006__harden_authentication_indexes.sql
+
+Milestone 2 currently applies `V001` through `V006`: `V001`–`V005` create the authentication tables and `V006` adds the source-IP/issued-at index used by the OTP resend safeguards. Test-management migrations are reserved for Milestone 3 and must begin at `V007`; the names below are planning placeholders, not files currently present in the repository.
+
+V007__create_projects_and_members.sql
+V008__create_project_variables.sql
+V009__create_test_suites.sql
+V010__create_test_cases_and_steps.sql
+V011__create_executions_and_results.sql
+V012__create_execution_artifacts.sql
 ```
 
 Rules:
@@ -468,11 +472,10 @@ Exact mappings remain `TODO: verify`.
 | `POST` | `/auth/refresh` | Rotate refresh token and issue access JWT. |
 | `POST` | `/auth/logout` | Revoke and clear session. |
 | `GET` | `/auth/me` | Current local user. |
-| `POST` | `/auth/oauth/exchange` | Exchange a one-time Google callback code for a local session. |
 | `POST` | `/auth/sessions/revoke-all` | Revoke all current-user sessions. |
 | `GET` | `/oauth2/authorization/google` | Start Google login. |
 | `GET` | `/login/oauth2/code/google` | Google callback. |
-| `GET` | `/users/me/sessions` | Active refresh sessions. |
+| `GET` | `/users/me/sessions` | Active refresh sessions (planned). |
 | `DELETE` | `/users/me/sessions/{id}` | Revoke a session. |
 
 ### Administration

@@ -39,6 +39,7 @@ public class AuthService {
     private final EmailDeliveryService emailDelivery;
     private final JwtTokenService jwtTokens;
     private final RefreshTokenService refreshTokens;
+    private final AuthRateLimiter rateLimiter;
     private final AuditService audit;
     private final AuthProperties properties;
     private final Clock clock;
@@ -48,7 +49,8 @@ public class AuthService {
             EmailVerificationChallengeRepository challenges, OAuthAccountRepository oauthAccounts,
             PasswordEncoder passwordEncoder,
             OtpHasher otpHasher, EmailDeliveryService emailDelivery, JwtTokenService jwtTokens,
-            RefreshTokenService refreshTokens, AuditService audit, AuthProperties properties, Clock clock) {
+            RefreshTokenService refreshTokens, AuditService audit, AuthRateLimiter rateLimiter,
+            AuthProperties properties, Clock clock) {
         this.users = users;
         this.roles = roles;
         this.challenges = challenges;
@@ -59,6 +61,7 @@ public class AuthService {
         this.jwtTokens = jwtTokens;
         this.refreshTokens = refreshTokens;
         this.audit = audit;
+        this.rateLimiter = rateLimiter;
         this.properties = properties;
         this.clock = clock;
     }
@@ -69,6 +72,8 @@ public class AuthService {
             throw new AuthException(HttpStatus.NOT_FOUND, "registration_disabled", "Registration is not enabled");
         }
         String email = normalizeEmail(request.email());
+        rateLimiter.check("registration-ip", ip, properties.limits().registrationAttempts(),
+                properties.limits().registrationWindow());
         if (users.existsByEmail(email)) {
             throw new AuthException(HttpStatus.CONFLICT, "email_unavailable", "Unable to create an account with this email");
         }
@@ -79,7 +84,7 @@ public class AuthService {
                 "ACTIVE", false, now);
         user.addRole(member);
         users.save(user);
-        issueAndSendChallenge(user, ip, now, true);
+        issueAndSendChallenge(user, ip, now);
         audit.record(user, "REGISTRATION_REQUESTED", true, ip, null, null);
     }
 
@@ -105,8 +110,10 @@ public class AuthService {
         return issueSession(user, userAgent, ip);
     }
 
-    @Transactional
+    @Transactional(dontRollbackOn = AuthException.class)
     public void resendVerification(String email, String ip) {
+        rateLimiter.check("otp-resend-ip", ip, properties.limits().otpResendIpAttempts(),
+                properties.limits().otpResendIpWindow());
         UserEntity user = userByEmail(email);
         if (user.isEmailVerified()) return;
         Instant now = Instant.now(clock);
@@ -121,13 +128,16 @@ public class AuthService {
             throw new AuthException(HttpStatus.TOO_MANY_REQUESTS, "verification_resend_cooldown", "Please wait before requesting another code");
         }
         if (previous != null) previous.invalidate(now, "RESENT");
-        issueAndSendChallenge(user, ip, now, false);
+        issueAndSendChallenge(user, ip, now);
         audit.record(user, "EMAIL_VERIFICATION_RESENT", true, ip, null, null);
     }
 
     @Transactional
     public SessionResult login(LoginRequest request, String userAgent, String ip) {
-        UserEntity user = users.findByEmail(normalizeEmail(request.email())).orElse(null);
+        String email = normalizeEmail(request.email());
+        rateLimiter.check("login-email", email, properties.limits().loginFailures(), properties.limits().loginWindow());
+        rateLimiter.check("login-ip", ip, properties.limits().loginIpAttempts(), properties.limits().loginWindow());
+        UserEntity user = users.findByEmail(email).orElse(null);
         if (user == null || user.getPasswordHash() == null || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             if (user != null) audit.record(user, "LOGIN_FAILED", false, ip, userAgent, null);
             throw new AuthException(HttpStatus.UNAUTHORIZED, "login_invalid", "Email or password is incorrect");
@@ -174,8 +184,9 @@ public class AuthService {
         return issueSession(user, userAgent, ip);
     }
 
-    @Transactional
+    @Transactional(dontRollbackOn = AuthException.class)
     public SessionResult refresh(String rawRefreshToken, String userAgent, String ip) {
+        rateLimiter.check("refresh-ip", ip, properties.limits().refreshAttempts(), properties.limits().refreshWindow());
         RefreshTokenService.Rotation rotation = refreshTokens.rotate(rawRefreshToken, userAgent, ip);
         JwtTokenService.TokenIssue access = jwtTokens.issue(rotation.user());
         return new SessionResult(new AuthResponse(access.token(), access.expiresInSeconds(), toSummary(rotation.user())),
@@ -209,7 +220,7 @@ public class AuthService {
                 refresh.value(), refresh.expiresAt());
     }
 
-    private void issueAndSendChallenge(UserEntity user, String ip, Instant now, boolean initial) {
+    private void issueAndSendChallenge(UserEntity user, String ip, Instant now) {
         String otp = String.format(Locale.ROOT, "%06d", random.nextInt(1_000_000));
         EmailVerificationChallengeEntity challenge = new EmailVerificationChallengeEntity(user,
                 otpHasher.hash(user.getEmail(), otp), now, now.plus(properties.email().otpLifetime()),

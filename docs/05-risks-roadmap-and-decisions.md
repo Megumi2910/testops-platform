@@ -4,7 +4,7 @@
 
 This document records the project’s deliberate limitations and the conditions that would justify changing the architecture. It avoids vague “future scalability” claims: every item names a failure mode, current response, tradeoff, and revisit condition.
 
-Status remains implementation-specification until verified against source.
+Milestones 1 and 2 are reconciled against the current source and verification results; Milestone 3 remains an implementation specification until it is built and tested.
 
 ## 2. Risk register
 
@@ -149,7 +149,7 @@ Evidence:
 - browser opens the approved target;
 - no secret in Git.
 
-### Milestone 2 — Authentication (implemented foundation)
+### Milestone 2 — Authentication (implemented and stabilized)
 
 Delivered in the current foundation slice:
 
@@ -162,13 +162,24 @@ Delivered in the current foundation slice:
 - account-link policy;
 - frontend auth bootstrap.
 
+Stabilization delivered:
+
+- one-source SMTP configuration with UTF-8 mail and sanitized delivery failures;
+- startup validation for authentication, mail, Google, cookie, origin, limits, and bootstrap settings;
+- memory-only frontend access tokens with deduplicated refresh and one retry;
+- refresh row locking, family replay revocation, replay audit, origin checks, cache headers, and bounded rate limits;
+- JWT `jti`, audience validation, strict role mapping, and token-version failure propagation;
+- optional file-based first-admin bootstrap and additive `V006` authentication index;
+- persistent PgAdmin volume and health check without a fixed container name;
+- focused configuration, rate-limit, origin, and cookie tests plus synchronized documentation.
+
 Evidence:
 
-- both login methods resolve equivalent local roles;
-- unverified password users cannot receive a session;
-- OTP expiry, retry, resend, and delivery-failure behavior is tested;
-- refresh replay and invalid-JWT hardening remain verification follow-ups once Docker Desktop is available;
-- tokens absent from URLs and persistent JS storage.
+- backend unit tests cover configuration invariants, bounded rate limits, same-origin refresh/logout, and cookie attributes;
+- frontend lint, typecheck, test, and build gates remain deterministic;
+- deterministic Playwright and Compose configuration checks do not contact the live e-commerce site;
+- the PostgreSQL Testcontainers context test remains required and should run on Docker Desktop/Linux CI when the local Windows named-pipe limitation is absent;
+- tokens are absent from URLs and persistent browser storage.
 
 ### Milestone 3 — Test management
 

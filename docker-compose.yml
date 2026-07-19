@@ -57,16 +57,23 @@ services:
 
   pgadmin4:
     image: dpage/pgadmin4:9.16
-    container_name: pgadmin4
     restart: unless-stopped
     ports:
       - "5050:80"
     env_file:
       - ./pgadmin4/.env
+    volumes:
+      - pgadmin4_data:/var/lib/pgadmin
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider --quiet http://127.0.0.1/misc/ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
 volumes:
   postgres18_data:
   artifacts_data:
+  pgadmin4_data:

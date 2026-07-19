@@ -31,9 +31,9 @@ public class JwtTokenService {
                 .issuer(properties.issuer())
                 .audience(java.util.List.of(properties.audience()))
                 .subject(user.getId().toString())
+                .id(java.util.UUID.randomUUID().toString())
                 .issuedAt(issuedAt)
                 .expiresAt(expiresAt)
-                .claim("email", user.getEmail())
                 .claim("roles", user.getRoles().stream().map(role -> role.getCode()).collect(Collectors.toSet()))
                 .claim("token_version", user.getTokenVersion())
                 .build();

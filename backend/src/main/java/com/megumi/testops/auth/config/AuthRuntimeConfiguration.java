@@ -12,16 +12,23 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.time.Clock;
+import java.util.List;
 import java.util.Base64;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.mail.autoconfigure.MailProperties;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
@@ -32,6 +39,8 @@ import com.megumi.testops.auth.repository.RoleRepository;
 import com.megumi.testops.auth.repository.UserRepository;
 import com.megumi.testops.auth.service.AuditService;
 import com.megumi.testops.auth.service.AuthService;
+import com.megumi.testops.auth.service.AuthRateLimiter;
+import com.megumi.testops.auth.service.BootstrapAdminService;
 import com.megumi.testops.auth.service.EmailDeliveryService;
 import com.megumi.testops.auth.service.JwtTokenService;
 import com.megumi.testops.auth.service.OtpHasher;
@@ -68,7 +77,16 @@ public class AuthRuntimeConfiguration {
     @Bean
     JwtDecoder jwtDecoder(RSAKey key, AuthProperties properties) throws com.nimbusds.jose.JOSEException {
         NimbusJwtDecoder decoder = NimbusJwtDecoder.withPublicKey(key.toRSAPublicKey()).build();
-        decoder.setJwtValidator(org.springframework.security.oauth2.jwt.JwtValidators.createDefaultWithIssuer(properties.jwt().issuer()));
+        OAuth2TokenValidator<org.springframework.security.oauth2.jwt.Jwt> audience = token -> {
+            Object claim = token.getClaim("aud");
+            if (claim instanceof List<?> values && values.stream().anyMatch(properties.jwt().audience()::equals)) {
+                return OAuth2TokenValidatorResult.success();
+            }
+            return OAuth2TokenValidatorResult.failure(new OAuth2Error("invalid_token", "Invalid audience", null));
+        };
+        decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
+                org.springframework.security.oauth2.jwt.JwtValidators.createDefaultWithIssuer(properties.jwt().issuer()),
+                audience));
         return decoder;
     }
 
@@ -76,8 +94,9 @@ public class AuthRuntimeConfiguration {
     OtpHasher otpHasher(AuthProperties properties) { return new OtpHasher(properties.email().otpPepperPath()); }
 
     @Bean
-    EmailDeliveryService emailDeliveryService(JavaMailSender sender, AuthProperties properties) {
-        return new EmailDeliveryService(sender, properties.email());
+    EmailDeliveryService emailDeliveryService(JavaMailSender sender, MailProperties mailProperties,
+            AuthProperties properties) {
+        return new EmailDeliveryService(sender, mailProperties, properties.email());
     }
 
     @Bean
@@ -89,8 +108,30 @@ public class AuthRuntimeConfiguration {
     }
 
     @Bean
-    RefreshTokenService refreshTokenService(RefreshTokenRepository repository, AuthProperties properties, Clock clock) {
-        return new RefreshTokenService(repository, properties.cookie(), clock);
+    RefreshTokenService refreshTokenService(RefreshTokenRepository repository, AuthProperties properties, Clock clock,
+            AuditService audit) {
+        return new RefreshTokenService(repository, properties.cookie(), clock, audit);
+    }
+
+    @Bean
+    AuthRateLimiter authRateLimiter(AuthProperties properties) {
+        return new AuthRateLimiter(properties.limits());
+    }
+
+    @Bean
+    AuthConfigurationValidator authConfigurationValidator(AuthProperties properties, MailProperties mailProperties) {
+        return new AuthConfigurationValidator(properties, mailProperties);
+    }
+
+    @Bean
+    BootstrapAdminService bootstrapAdminService(UserRepository users, RoleRepository roles,
+            PasswordEncoder passwordEncoder, AuthProperties properties, Clock clock) {
+        return new BootstrapAdminService(users, roles, passwordEncoder, properties.bootstrap(), clock);
+    }
+
+    @Bean
+    ApplicationRunner bootstrapAdminRunner(BootstrapAdminService bootstrap) {
+        return args -> bootstrap.initialize();
     }
 
     @Bean
@@ -98,9 +139,9 @@ public class AuthRuntimeConfiguration {
             com.megumi.testops.auth.repository.OAuthAccountRepository oauthAccounts,
             PasswordEncoder passwordEncoder, OtpHasher otpHasher, EmailDeliveryService emailDelivery,
             JwtTokenService jwtTokens, RefreshTokenService refreshTokens, AuditService audit,
-            AuthProperties properties, Clock clock) {
+            AuthRateLimiter rateLimiter, AuthProperties properties, Clock clock) {
         return new AuthService(users, roles, challenges, oauthAccounts, passwordEncoder, otpHasher, emailDelivery,
-                jwtTokens, refreshTokens, audit, properties, clock);
+                jwtTokens, refreshTokens, audit, rateLimiter, properties, clock);
     }
 
     private static PrivateKey readPrivateKey(java.nio.file.Path path) throws IOException, GeneralSecurityException {

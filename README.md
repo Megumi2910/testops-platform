@@ -1,8 +1,8 @@
 # TestOps Platform — Managed Browser Testing for an Existing E-commerce Application
 
-> **Documentation status:** Milestone 1 runtime and the Milestone 2 authentication/email-OTP foundation are implemented; documentation is kept in sync with the source.
+> **Documentation status:** Milestone 1 runtime and the Milestone 2 authentication/email-OTP foundation plus stabilization are implemented; documentation is kept in sync with the source.
 >
-> The repository contains the Milestone 1 runtime and the Milestone 2 identity foundation. Business routes, project authorization, execution workers, dashboards, and live target details remain intentionally deferred and are marked as future work in the deep documentation.
+> The repository contains the Milestone 1 runtime and the Milestone 2 identity foundation plus stabilization. Business routes, project authorization, execution workers, dashboards, and live target details remain intentionally deferred and are marked as future work in the deep documentation.
 
 TestOps Platform is an internal web application for defining, executing, and reviewing automated browser tests against an existing e-commerce website. It gives administrators, test managers, developers, and testers one place to manage projects, test suites, reusable test cases, Playwright executions, failure evidence, and quality trends.
 
@@ -93,8 +93,8 @@ The browser client owns interaction state and displays server state. The Spring 
 3. The user submits the OTP; only then does the backend issue a session.
 4. Spring Security validates the verified account and BCrypt password hash on later login.
 5. The backend issues a short-lived TestOps access JWT and rotating opaque refresh cookie.
-6. The frontend stores the short-lived access token in session storage and sends it in the `Authorization` header.
-7. On reload, the frontend calls the refresh endpoint to obtain a new access token.
+6. The frontend keeps the short-lived access token in module memory only and sends it in the `Authorization` header.
+7. On reload, the frontend calls the refresh endpoint to obtain a new access token; concurrent refreshes are deduplicated.
 
 ### Google
 
@@ -227,7 +227,7 @@ Expected local surfaces:
 | Backend API | `http://localhost:8080` |
 | Health | `http://localhost:8080/actuator/health` |
 
-The Compose services are implemented in `docker-compose.yml`. PostgreSQL is the persistence service; the backend waits for its health check, and the frontend waits for the backend health check. PgAdmin is available at `http://localhost:5050` for local database inspection. Authentication is disabled by default. To enable it, mount RSA PEM files and a 32-byte-or-longer OTP pepper in `backend/.secrets/` using the paths documented in `backend/.env.example`, then provide SMTP and (optionally) Google values without committing them.
+The Compose services are implemented in `docker-compose.yml`. PostgreSQL is the persistence service; the backend waits for its health check, and the frontend waits for the backend health check. PgAdmin is available at `http://localhost:5050` for local database inspection and persists its state in the `pgadmin4_data` volume. Authentication is disabled by default. To enable it, mount RSA PEM files, a 32-byte-or-longer OTP pepper, and (if bootstrap is enabled) a password file in `backend/.secrets/` using the paths documented in `backend/.env.example`, then provide SMTP and (optionally) Google values without committing them. The optional project-variable encryption key uses `PROJECT_VARIABLE_KEY_PATH` and is reserved for the later test-management milestone.
 
 ## Environment groups
 
@@ -236,7 +236,7 @@ The Compose services are implemented in `docker-compose.yml`. PostgreSQL is the 
 - refresh-cookie security settings;
 - SMTP host, sender, and app-password configuration for email OTP delivery;
 - OTP pepper and verification limits;
-- Google client ID, secret, callback URI, and frontend redirect destinations;
+- Google client ID and secret; the callback path is derived from the exact frontend origin;
 - Playwright worker count, queue capacity, browser, timeouts, and artifact policy;
 - allowed frontend origin;
 - artifact directory or object-storage configuration;

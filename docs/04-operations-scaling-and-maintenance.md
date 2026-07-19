@@ -10,7 +10,7 @@ The system should degrade by capability, not collapse as one unit.
 - Artifact storage may fail without erasing the original assertion result.
 - One worker may die without leaving an execution permanently running.
 
-This document defines the intended operating contract. Milestone 1 verifies the local service names, ports, health checks, and scripts below; production deployment settings remain `TODO: verify`.
+This document defines the intended operating contract. Milestones 1 and 2 verify the local service names, ports, health checks, authentication configuration, and scripts below; production deployment settings remain `TODO: verify`.
 
 ## 2. Runtime services
 
@@ -24,7 +24,7 @@ This document defines the intended operating contract. Milestone 1 verifies the 
 | Google | New Google login. | No |
 | E-commerce target | Test execution. | No |
 
-Milestone 1 local Compose uses `docker-compose.yml` with `postgres` (`5432`), `backend` (`8080`), `frontend` (`3000`), and the optional local PgAdmin surface (`5050`). PostgreSQL must be healthy before the backend starts, and the frontend waits for the backend health check. Named `postgres18_data` and `artifacts_data` volumes preserve local state across restarts.
+Local Compose uses `docker-compose.yml` with `postgres` (`5432`), `backend` (`8080`), `frontend` (`3000`), and the optional local PgAdmin surface (`5050`). PostgreSQL must be healthy before the backend starts, and the frontend waits for the backend health check. Named `postgres18_data`, `artifacts_data`, and `pgadmin4_data` volumes preserve local state across restarts. PgAdmin has its own health check and does not use a fixed container name, so multiple Compose projects can coexist.
 
 ## 3. Environment configuration
 
@@ -51,12 +51,12 @@ JWT_PUBLIC_KEY_PATH=/run/secrets/testops/jwt-public.pem
 JWT_ACCESS_TTL=PT10M
 REFRESH_TOKEN_TTL=P14D
 REFRESH_COOKIE_SECURE=true
+FRONTEND_ORIGIN=https://testops.example.com
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
-GOOGLE_REDIRECT_URI=https://testops.example.com/login/oauth2/code/google
-OAUTH_SUCCESS_REDIRECT=https://testops.example.com/oauth2/callback
-OAUTH_FAILURE_REDIRECT=https://testops.example.com/login?oauth_error=true
 ```
+
+The Google callback is derived as `${FRONTEND_ORIGIN}/login/oauth2/code/google`; keep the frontend origin exact and do not configure a second callback or success/failure redirect variable.
 
 ### Email verification
 
@@ -75,15 +75,15 @@ MAIL_FROM_ADDRESS=
 MAIL_FROM_NAME=TestOps Platform
 MAIL_SMTP_AUTH=true
 MAIL_STARTTLS=true
-MAIL_CONNECTION_TIMEOUT=PT5S
-MAIL_READ_TIMEOUT=PT5S
-MAIL_WRITE_TIMEOUT=PT5S
+MAIL_STARTTLS_REQUIRED=false
 MAIL_CONNECTION_TIMEOUT_MS=5000
 MAIL_READ_TIMEOUT_MS=5000
 MAIL_WRITE_TIMEOUT_MS=5000
 ```
 
 Registration remains unavailable until email delivery is enabled and valid SMTP credentials are supplied. SMTP failure is not an API readiness failure; the unverified account can use the rate-limited resend flow.
+
+When first-account bootstrap is explicitly enabled, provide `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_DISPLAY_NAME`, and `BOOTSTRAP_ADMIN_PASSWORD_PATH`. The password is read from that mounted file and is never placed in environment output or logs. `PROJECT_VARIABLE_KEY_PATH` is reserved for the later encrypted project-variable feature.
 
 ### Execution
 
@@ -106,7 +106,6 @@ FRONTEND_ORIGIN=https://testops.example.com
 TARGET_ALLOWED_ORIGINS=https://staging-shop.example.com
 SHOP_TEST_EMAIL=
 SHOP_TEST_PASSWORD=
-PROJECT_SECRET_KEY=
 ```
 
 Never commit real values.
@@ -502,6 +501,8 @@ Pull-request pipeline:
 7. optional local deterministic Playwright smoke suite.
 
 Do not make normal PR CI depend on Google, SMTP, or the live external commerce site. Use fake mail and mocked OIDC providers for deterministic tests.
+
+On Windows, Testcontainers may fail before the Spring context starts when Docker Desktop exposes a named pipe that the current Testcontainers client cannot negotiate. Treat that as an environment prerequisite, not as a reason to skip the integration test: rerun with Docker Desktop/Linux CI available. The deterministic unit, frontend, Compose-configuration, and local Playwright checks remain useful without that integration runtime.
 
 Release pipeline may:
 

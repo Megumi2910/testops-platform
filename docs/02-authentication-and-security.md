@@ -82,7 +82,7 @@ Database:
 - refresh token: backend-controlled cookie;
 - user profile: query cache, never an authorization authority.
 
-Avoid `localStorage` and `sessionStorage` for refresh tokens.
+The current React client keeps the access token in module memory only; it does not use `localStorage` or `sessionStorage` for credentials. A reload obtains a fresh access token through the `HttpOnly` refresh cookie.
 
 ## 3. Password account flow
 
@@ -201,12 +201,12 @@ sequenceDiagram
     G->>B: Authorization-code callback
     B->>G: Exchange code and validate OIDC response
     B->>B: Resolve or create local user
-    B-->>U: Set refresh cookie and redirect
+    B-->>U: Set refresh cookie and redirect to the frontend callback route
     F->>B: POST /api/v1/auth/refresh
     B-->>F: Local TestOps access JWT
 ```
 
-Tokens are not placed in the redirect URL.
+Tokens are not placed in the redirect URL. The backend sets the normal refresh cookie and redirects to `/auth/oauth/callback`; the frontend completes the flow with its normal refresh request. There is no browser-facing one-time OAuth code exchange endpoint.
 
 ### Identity resolution
 
@@ -262,7 +262,7 @@ refresh_tokens
 
 ### Atomic rotation
 
-Within one short transaction:
+Within one short transaction, with a row lock on the presented token:
 
 1. hash the presented token;
 2. lock or atomically update the matching record;
@@ -278,7 +278,7 @@ Two concurrent refresh requests must not both succeed.
 
 ### Replay detection
 
-When an already-used token is presented:
+When an already-used or expired token is presented:
 
 - revoke the entire active family;
 - return `401`;
@@ -453,7 +453,7 @@ Audit:
 
 Do not audit secrets or token values.
 
-Apply rate limits to:
+Milestone 2 applies bounded, single-instance Caffeine limits to login (email and IP), registration IP, refresh IP, and OTP resend (account and IP). Apply durable or distributed limits in a later deployment when multiple API instances require shared enforcement. Continue to apply rate limits to:
 
 - login;
 - registration;
@@ -522,6 +522,9 @@ Never overwrite the only working key without overlap.
 ## 17. Configuration checklist
 
 ```text
+AUTH_ENABLED
+AUTH_REGISTRATION_ENABLED
+FRONTEND_ORIGIN
 JWT_ISSUER
 JWT_AUDIENCE
 JWT_PRIVATE_KEY_PATH
@@ -529,14 +532,26 @@ JWT_PUBLIC_KEY_PATH
 JWT_ACCESS_TTL
 REFRESH_TOKEN_TTL
 REFRESH_COOKIE_SECURE
-FRONTEND_ORIGIN
+GOOGLE_AUTH_ENABLED
 GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET
-GOOGLE_REDIRECT_URI
-OAUTH_SUCCESS_REDIRECT
-OAUTH_FAILURE_REDIRECT
+EMAIL_DELIVERY_ENABLED
+EMAIL_OTP_PEPPER_PATH
+MAIL_HOST
+MAIL_PORT
+MAIL_USERNAME
+MAIL_PASSWORD
+MAIL_FROM_ADDRESS
+MAIL_FROM_NAME
+MAIL_STARTTLS_REQUIRED
+BOOTSTRAP_ADMIN_ENABLED
+BOOTSTRAP_ADMIN_EMAIL
+BOOTSTRAP_ADMIN_DISPLAY_NAME
+BOOTSTRAP_ADMIN_PASSWORD_PATH
+AUTH_OTP_RESEND_IP_LIMIT
+AUTH_OTP_RESEND_IP_WINDOW
+PROJECT_VARIABLE_KEY_PATH
 TARGET_ALLOWED_ORIGINS
-PROJECT_SECRET_KEY
 ```
 
-Exact names remain `TODO: verify`.
+There is no independent Google callback setting: the backend derives `/login/oauth2/code/google` from the exact `FRONTEND_ORIGIN`. The bootstrap password and project-variable key are file paths, not inline secret values. The complete non-secret template is `backend/.env.example`.

@@ -13,17 +13,17 @@ import com.megumi.testops.auth.config.AuthProperties;
 class AuthPropertiesTest {
 
     private static AuthProperties valid(boolean enabled) {
-        return new AuthProperties(enabled, true,
+        return new AuthProperties(enabled, enabled,
                 new AuthProperties.Jwt(Path.of("private.pem"), Path.of("public.pem"), "issuer", "audience", "kid",
                         Duration.ofMinutes(10), Duration.ofSeconds(30)),
                 new AuthProperties.Cookie("refresh", false, "Lax", "/api/v1/auth", Duration.ofDays(14)),
                 new AuthProperties.Email(false, Path.of("pepper"), Duration.ofMinutes(10), Duration.ofMinutes(1), 5, 5,
-                        new AuthProperties.Mail("", 587, "", "", "", "TestOps", true, true,
-                                Duration.ofSeconds(5), Duration.ofSeconds(5), Duration.ofSeconds(5))),
+                        "", "TestOps"),
                 new AuthProperties.Google(false, "", "", "http://localhost:3000/login/oauth2/code/google"),
-                new AuthProperties.Bootstrap(null, null, null),
+                "http://localhost:3000",
+                new AuthProperties.Bootstrap(false, null, null, Path.of("bootstrap-password")),
                 new AuthProperties.Limits(5, Duration.ofMinutes(15), 30, 5, Duration.ofHours(1), 30,
-                        Duration.ofMinutes(1), 5, Duration.ofMinutes(15)));
+                        Duration.ofMinutes(1), 5, Duration.ofHours(1)));
     }
 
     @Test
@@ -39,8 +39,48 @@ class AuthPropertiesTest {
     @Test
     void rejectsNonFiveOtpAttempts() {
         assertThrows(IllegalArgumentException.class, () -> new AuthProperties.Email(false, Path.of("pepper"),
-                Duration.ofMinutes(10), Duration.ofMinutes(1), 4, 5,
-                new AuthProperties.Mail("", 587, "", "", "", "TestOps", true, true,
-                        Duration.ofSeconds(5), Duration.ofSeconds(5), Duration.ofSeconds(5))));
+                Duration.ofMinutes(10), Duration.ofMinutes(1), 4, 5, "", "TestOps"));
+    }
+
+    @Test
+    void rejectsRegistrationWhenAuthenticationIsDisabled() {
+        assertThrows(IllegalArgumentException.class, () -> new AuthProperties(false, true,
+                new AuthProperties.Jwt(Path.of("private.pem"), Path.of("public.pem"), "issuer", "audience", "kid",
+                        Duration.ofMinutes(10), Duration.ofSeconds(30)),
+                new AuthProperties.Cookie("refresh", false, "Lax", "/api/v1/auth", Duration.ofDays(14)),
+                new AuthProperties.Email(false, Path.of("pepper"), Duration.ofMinutes(10), Duration.ofMinutes(1), 5, 5,
+                        "", "TestOps"),
+                new AuthProperties.Google(false, "", "", "http://localhost:3000/login/oauth2/code/google"),
+                "http://localhost:3000", new AuthProperties.Bootstrap(false, null, null, Path.of("password")),
+                new AuthProperties.Limits(5, Duration.ofMinutes(15), 30, 5, Duration.ofHours(1), 30,
+                        Duration.ofMinutes(1), 5, Duration.ofHours(1))));
+    }
+
+    @Test
+    void rejectsGoogleRedirectOutsideFrontendOrigin() {
+        assertThrows(IllegalArgumentException.class, () -> new AuthProperties(true, false,
+                new AuthProperties.Jwt(Path.of("private.pem"), Path.of("public.pem"), "issuer", "audience", "kid",
+                        Duration.ofMinutes(10), Duration.ofSeconds(30)),
+                new AuthProperties.Cookie("refresh", false, "Lax", "/api/v1/auth", Duration.ofDays(14)),
+                new AuthProperties.Email(false, Path.of("pepper"), Duration.ofMinutes(10), Duration.ofMinutes(1), 5, 5,
+                        "", "TestOps"),
+                new AuthProperties.Google(true, "client", "secret", "https://evil.example/callback"),
+                "http://localhost:3000", new AuthProperties.Bootstrap(false, null, null, Path.of("password")),
+                new AuthProperties.Limits(5, Duration.ofMinutes(15), 30, 5, Duration.ofHours(1), 30,
+                Duration.ofMinutes(1), 5, Duration.ofHours(1))));
+    }
+
+    @Test
+    void rejectsGoogleWhenAuthenticationIsDisabled() {
+        assertThrows(IllegalArgumentException.class, () -> new AuthProperties(false, false,
+                new AuthProperties.Jwt(Path.of("private.pem"), Path.of("public.pem"), "issuer", "audience", "kid",
+                        Duration.ofMinutes(10), Duration.ofSeconds(30)),
+                new AuthProperties.Cookie("refresh", false, "Lax", "/api/v1/auth", Duration.ofDays(14)),
+                new AuthProperties.Email(false, Path.of("pepper"), Duration.ofMinutes(10), Duration.ofMinutes(1), 5, 5,
+                        "", "TestOps"),
+                new AuthProperties.Google(true, "client", "secret", "http://localhost:3000/login/oauth2/code/google"),
+                "http://localhost:3000", new AuthProperties.Bootstrap(false, null, null, Path.of("password")),
+                new AuthProperties.Limits(5, Duration.ofMinutes(15), 30, 5, Duration.ofHours(1), 30,
+                        Duration.ofMinutes(1), 5, Duration.ofHours(1))));
     }
 }
