@@ -24,7 +24,7 @@ This document defines the intended operating contract. Milestone 1 verifies the 
 | Google | New Google login. | No |
 | E-commerce target | Test execution. | No |
 
-Milestone 1 local Compose uses `docker-compose.yml` with `postgres` (`5432`), `backend` (`8080`), and `frontend` (`3000`). PostgreSQL must be healthy before the backend starts, and the frontend waits for the backend health check. Named `postgres_data` and `artifacts_data` volumes preserve local state across restarts.
+Milestone 1 local Compose uses `docker-compose.yml` with `postgres` (`5432`), `backend` (`8080`), `frontend` (`3000`), and the optional local PgAdmin surface (`5050`). PostgreSQL must be healthy before the backend starts, and the frontend waits for the backend health check. Named `postgres18_data` and `artifacts_data` volumes preserve local state across restarts.
 
 ## 3. Environment configuration
 
@@ -116,7 +116,10 @@ Never commit real values.
 Intended full runtime:
 
 ```bash
-cp .env.example .env
+cp postgres_db/.env.example postgres_db/.env
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+cp pgadmin4/.env.example pgadmin4/.env
 docker compose up --build
 ```
 
@@ -137,7 +140,7 @@ npm ci
 npm run dev
 ```
 
-The cross-platform verification entry points are `scripts/verify.ps1` and `scripts/verify.sh`. They run backend tests, frontend quality gates when npm is available, Compose validation, and both image builds. The `local` profile is limited to database connection overrides; future feature profiles remain `TODO: verify`.
+The cross-platform verification entry points are `scripts/verify.ps1` and `scripts/verify.sh`. They run backend tests, frontend quality gates when npm is available, Compose validation, and both image builds. CI creates ignored runtime env files from the tracked examples before validating Compose, so a clean checkout does not depend on developer secrets. The `local` profile is limited to database connection overrides; future feature profiles remain `TODO: verify`.
 
 ## 5. Container design
 

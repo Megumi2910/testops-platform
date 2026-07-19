@@ -212,9 +212,10 @@ There is no `test-target/` application in this repository. The existing e-commer
 The intended development entry point is:
 
 ```bash
-cp db/.env.example db/.env
+cp postgres_db/.env.example postgres_db/.env
 cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
+cp pgadmin4/.env.example pgadmin4/.env
 docker compose up --build
 ```
 
@@ -226,7 +227,7 @@ Expected local surfaces:
 | Backend API | `http://localhost:8080` |
 | Health | `http://localhost:8080/actuator/health` |
 
-The Compose services are implemented in `docker-compose.yml`. PostgreSQL is the persistence service; the backend waits for its health check, and the frontend waits for the backend health check. Authentication is disabled by default. To enable it, mount RSA PEM files and a 32-byte-or-longer OTP pepper in `backend/.secrets/` using the paths documented in `backend/.env.example`, then provide SMTP and (optionally) Google values without committing them.
+The Compose services are implemented in `docker-compose.yml`. PostgreSQL is the persistence service; the backend waits for its health check, and the frontend waits for the backend health check. PgAdmin is available at `http://localhost:5050` for local database inspection. Authentication is disabled by default. To enable it, mount RSA PEM files and a 32-byte-or-longer OTP pepper in `backend/.secrets/` using the paths documented in `backend/.env.example`, then provide SMTP and (optionally) Google values without committing them.
 
 ## Environment groups
 

@@ -43,5 +43,11 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
-      - run: docker compose -f docker-compose.yml config
+      - name: Prepare Compose environment
+        run: |
+          cp postgres_db/.env.example postgres_db/.env
+          cp backend/.env.example backend/.env
+          cp frontend/.env.example frontend/.env
+          cp pgadmin4/.env.example pgadmin4/.env
+      - run: docker compose -f docker-compose.yml config --quiet
       - run: docker compose -f docker-compose.yml build
