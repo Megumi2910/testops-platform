@@ -14,6 +14,9 @@ export function AppShell() {
             <NavLink className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')} to="/">
               Readiness
             </NavLink>
+            {user && <NavLink className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')} to="/projects">
+              Projects
+            </NavLink>}
             <NavLink className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')} to={user ? '/' : '/login'}>
               {user ? user.displayName : 'Sign in'}
             </NavLink>
