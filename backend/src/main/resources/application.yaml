@@ -30,6 +30,10 @@ server:
   port: ${SERVER_PORT:8080}
   forward-headers-strategy: framework
 
+springdoc:
+  api-docs:
+    enabled: ${OPENAPI_ENABLED:false}
+
 management:
   endpoints:
     web:
@@ -105,3 +109,9 @@ testops:
     directory: ${ARTIFACT_DIRECTORY:./artifacts}
   target:
     allowed-origins: ${TARGET_ALLOWED_ORIGINS:}
+  project:
+    secret-variables-enabled: ${PROJECT_SECRET_VARIABLES_ENABLED:false}
+    variable-key-path: ${PROJECT_VARIABLE_KEY_PATH:}
+    variable-key-version: ${PROJECT_VARIABLE_KEY_VERSION:1}
+  openapi:
+    enabled: ${OPENAPI_ENABLED:false}

@@ -1,0 +1,63 @@
+package com.megumi.testops.project.service;
+
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.megumi.testops.auth.domain.UserEntity;
+import com.megumi.testops.project.api.ProjectDtos;
+import com.megumi.testops.project.domain.ProjectEntity;
+import com.megumi.testops.project.domain.TestCaseEntity;
+import com.megumi.testops.project.domain.TestStepEntity;
+import com.megumi.testops.project.domain.TestSuiteEntity;
+import com.megumi.testops.project.repository.TestCaseRepository;
+import com.megumi.testops.project.repository.TestStepRepository;
+import com.megumi.testops.project.repository.TestSuiteRepository;
+import com.megumi.testops.shared.api.ApiException;
+
+@Service
+public class DefinitionService {
+    private static final Set<String> ACTIONS = Set.of("NAVIGATE", "CLICK", "FILL", "SELECT", "CHECK", "UNCHECK", "ASSERT_TEXT", "ASSERT_VISIBLE", "WAIT");
+    private static final Set<String> LOCATOR_ACTIONS = Set.of("CLICK", "FILL", "SELECT", "CHECK", "UNCHECK", "ASSERT_TEXT", "ASSERT_VISIBLE");
+    private final TestSuiteRepository suites; private final TestCaseRepository cases; private final TestStepRepository steps; private final ProjectAccessService access;
+    public DefinitionService(TestSuiteRepository suites, TestCaseRepository cases, TestStepRepository steps, ProjectAccessService access) { this.suites = suites; this.cases = cases; this.steps = steps; this.access = access; }
+
+    @Transactional(readOnly = true)
+    public List<ProjectDtos.SuiteResponse> suites(Jwt jwt, UUID projectId) { UserEntity user = access.user(jwt); ProjectEntity project = access.project(projectId); if (!access.globalAdmin(jwt)) access.membership(project, user); return suites.findByProjectIdAndStatusNotOrderByNameAsc(projectId, "ARCHIVED").stream().map(s -> new ProjectDtos.SuiteResponse(s.getId(), projectId, s.getName(), s.getDescription(), s.getStatus(), s.getVersion())).toList(); }
+    @Transactional
+    public ProjectDtos.SuiteResponse createSuite(Jwt jwt, UUID projectId, ProjectDtos.SuiteRequest request) { UserEntity user = access.user(jwt); ProjectEntity project = access.project(projectId); access.requireProjectRole(project, user, jwt, Set.of("OWNER", "ADMIN", "EDITOR")); ensureActive(project); String name = request.name().trim(); if (suites.existsByProjectIdAndNameIgnoreCase(projectId, name)) throw error(HttpStatus.CONFLICT, "suite_name_taken", "Suite name is already in use"); TestSuiteEntity suite = suites.save(new TestSuiteEntity(project, name, trim(request.description()), user, Instant.now())); return suiteResponse(suite); }
+    @Transactional
+    public ProjectDtos.SuiteResponse updateSuite(Jwt jwt, UUID projectId, UUID suiteId, ProjectDtos.SuiteRequest request) { UserEntity user = access.user(jwt); ProjectEntity project = access.project(projectId); access.requireProjectRole(project, user, jwt, Set.of("OWNER", "ADMIN", "EDITOR")); ensureActive(project); TestSuiteEntity suite = suite(projectId, suiteId); requireVersion(suite.getVersion(), request.projectVersion()); String name = request.name().trim(); if (!name.equalsIgnoreCase(suite.getName()) && suites.existsByProjectIdAndNameIgnoreCase(projectId, name)) throw error(HttpStatus.CONFLICT, "suite_name_taken", "Suite name is already in use"); suite.update(name, trim(request.description()), Instant.now()); return suiteResponse(suite); }
+    @Transactional
+    public void archiveSuite(Jwt jwt, UUID projectId, UUID suiteId) { UserEntity user = access.user(jwt); ProjectEntity project = access.project(projectId); access.requireProjectRole(project, user, jwt, Set.of("OWNER", "ADMIN")); ensureActive(project); TestSuiteEntity suite = suite(projectId, suiteId); suite.archive(Instant.now()); }
+    @Transactional(readOnly = true)
+    public List<ProjectDtos.CaseResponse> cases(Jwt jwt, UUID projectId, UUID suiteId) { UserEntity user = access.user(jwt); ProjectEntity project = access.project(projectId); if (!access.globalAdmin(jwt)) access.membership(project, user); TestSuiteEntity suite = suite(projectId, suiteId); return cases.findBySuiteIdAndStatusNotOrderByNameAsc(suite.getId(), "ARCHIVED").stream().map(this::caseResponse).toList(); }
+    @Transactional(readOnly = true)
+    public ProjectDtos.CaseResponse getCase(Jwt jwt, UUID projectId, UUID suiteId, UUID caseId) { UserEntity user = access.user(jwt); ProjectEntity project = access.project(projectId); if (!access.globalAdmin(jwt)) access.membership(project, user); TestCaseEntity testCase = testCase(suiteId, caseId); return caseResponse(testCase); }
+    @Transactional
+    public ProjectDtos.CaseResponse createCase(Jwt jwt, UUID projectId, UUID suiteId, ProjectDtos.CaseRequest request) { UserEntity user = access.user(jwt); ProjectEntity project = access.project(projectId); access.requireProjectRole(project, user, jwt, Set.of("OWNER", "ADMIN", "EDITOR")); ensureActive(project); TestSuiteEntity suite = suite(projectId, suiteId); String name = request.name().trim(); if (cases.existsBySuiteIdAndNameIgnoreCase(suiteId, name)) throw error(HttpStatus.CONFLICT, "case_name_taken", "Case name is already in use"); validateCase(request); TestCaseEntity entity = cases.save(new TestCaseEntity(suite, name, trim(request.description()), status(request.status()), priority(request.priority()), trim(request.tags()), request.retryCount() == null ? 0 : request.retryCount(), request.dataIsolation() == null || request.dataIsolation(), user, Instant.now())); replaceSteps(entity, request.steps()); return caseResponse(entity); }
+    @Transactional
+    public ProjectDtos.CaseResponse updateCase(Jwt jwt, UUID projectId, UUID suiteId, UUID caseId, ProjectDtos.CaseRequest request) { UserEntity user = access.user(jwt); ProjectEntity project = access.project(projectId); access.requireProjectRole(project, user, jwt, Set.of("OWNER", "ADMIN", "EDITOR")); ensureActive(project); TestCaseEntity entity = testCase(suiteId, caseId); requireVersion(entity.getVersion(), request.projectVersion()); validateCase(request); String name = request.name().trim(); if (!name.equalsIgnoreCase(entity.getName()) && cases.existsBySuiteIdAndNameIgnoreCase(suiteId, name)) throw error(HttpStatus.CONFLICT, "case_name_taken", "Case name is already in use"); entity.update(name, trim(request.description()), status(request.status()), priority(request.priority()), trim(request.tags()), request.retryCount() == null ? 0 : request.retryCount(), request.dataIsolation() == null || request.dataIsolation(), Instant.now()); replaceSteps(entity, request.steps()); return caseResponse(entity); }
+
+    private void replaceSteps(TestCaseEntity entity, List<ProjectDtos.StepRequest> input) { steps.deleteByTestCaseId(entity.getId()); if (input == null) return; List<ProjectDtos.StepRequest> ordered = input.stream().sorted(Comparator.comparingInt(ProjectDtos.StepRequest::position)).toList(); java.util.Set<Integer> positions = new java.util.HashSet<>(); for (int i = 0; i < ordered.size(); i++) { ProjectDtos.StepRequest step = ordered.get(i); if (!positions.add(step.position()) || step.position() != i) throw error(HttpStatus.BAD_REQUEST, "invalid_step_order", "Steps must have unique contiguous positions"); validateStep(step); steps.save(new TestStepEntity(entity, step.position(), step.action().trim().toUpperCase(Locale.ROOT), trim(step.locatorType()), trim(step.locatorValue()), step.inputValue(), step.timeoutMs(), Instant.now())); } }
+    private static void validateStep(ProjectDtos.StepRequest step) { String action = step.action().trim().toUpperCase(Locale.ROOT); if (!ACTIONS.contains(action)) throw error(HttpStatus.BAD_REQUEST, "invalid_step_action", "Unsupported test step action"); if (LOCATOR_ACTIONS.contains(action) && (step.locatorType() == null || step.locatorType().isBlank() || step.locatorValue() == null || step.locatorValue().isBlank())) throw error(HttpStatus.BAD_REQUEST, "locator_required", "This action requires a locator"); if ("NAVIGATE".equals(action) && (step.inputValue() == null || step.inputValue().isBlank())) throw error(HttpStatus.BAD_REQUEST, "url_required", "Navigate requires a URL"); }
+    private static void validateCase(ProjectDtos.CaseRequest r) { if (r.retryCount() != null && (r.retryCount() < 0 || r.retryCount() > 5)) throw error(HttpStatus.BAD_REQUEST, "invalid_retry_count", "Retry count must be between 0 and 5"); }
+    private TestSuiteEntity suite(UUID projectId, UUID id) { return suites.findByIdAndProjectId(id, projectId).orElseThrow(() -> error(HttpStatus.NOT_FOUND, "suite_not_found", "Suite was not found")); }
+    private TestCaseEntity testCase(UUID suiteId, UUID id) { return cases.findByIdAndSuiteId(id, suiteId).orElseThrow(() -> error(HttpStatus.NOT_FOUND, "case_not_found", "Case was not found")); }
+    private ProjectDtos.SuiteResponse suiteResponse(TestSuiteEntity s) { return new ProjectDtos.SuiteResponse(s.getId(), s.getProject().getId(), s.getName(), s.getDescription(), s.getStatus(), s.getVersion()); }
+    private ProjectDtos.CaseResponse caseResponse(TestCaseEntity c) { return new ProjectDtos.CaseResponse(c.getId(), c.getSuite().getId(), c.getName(), c.getDescription(), c.getStatus(), c.getPriority(), c.getTags(), c.getRetryCount(), c.isDataIsolation(), c.getVersion(), steps.findByTestCaseIdOrderByPositionAsc(c.getId()).stream().map(s -> new ProjectDtos.StepResponse(s.getId(), s.getPosition(), s.getAction(), s.getLocatorType(), s.getLocatorValue(), s.getInputValue(), s.getTimeoutMs())).toList()); }
+    private static String status(String value) { String v = value == null ? "DRAFT" : value.trim().toUpperCase(Locale.ROOT); if (!Set.of("DRAFT", "READY", "ARCHIVED").contains(v)) throw error(HttpStatus.BAD_REQUEST, "invalid_case_status", "Status must be DRAFT, READY, or ARCHIVED"); return v; }
+    private static String priority(String value) { String v = value == null ? "MEDIUM" : value.trim().toUpperCase(Locale.ROOT); if (!Set.of("LOW", "MEDIUM", "HIGH", "CRITICAL").contains(v)) throw error(HttpStatus.BAD_REQUEST, "invalid_case_priority", "Priority is invalid"); return v; }
+    private static void requireVersion(long current, Long expected) { if (expected != null && current != expected) throw error(HttpStatus.CONFLICT, "stale_version", "The resource changed; reload and try again"); }
+    private static void ensureActive(ProjectEntity p) { if ("ARCHIVED".equals(p.getStatus())) throw error(HttpStatus.CONFLICT, "project_archived", "Archived projects are read-only"); }
+    private static String trim(String v) { return v == null ? null : v.trim(); }
+    private static ApiException error(HttpStatus status, String code, String message) { return new ApiException(status, code, message); }
+}
