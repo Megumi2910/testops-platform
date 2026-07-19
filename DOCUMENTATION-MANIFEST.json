@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 1 runtime and Milestone 2 authentication/email OTP foundation plus stabilization are implemented; Milestone 3 test management remains planned; source-dependent facts are reconciled after each implementation slice",
+  "source_status": "Milestones 1 and 2 plus the Milestone 3 project and test-definition management foundation are implemented; execution and reporting remain planned; source-dependent facts are reconciled after each implementation slice",
   "documents": [
     {
       "path": "README.md",

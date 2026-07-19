@@ -1,8 +1,8 @@
 # TestOps Platform — Managed Browser Testing for an Existing E-commerce Application
 
-> **Documentation status:** Milestone 1 runtime and the Milestone 2 authentication/email-OTP foundation plus stabilization are implemented; documentation is kept in sync with the source.
+> **Documentation status:** Milestones 1 and 2 plus the Milestone 3 test-management foundation are implemented; documentation is kept in sync with the source.
 >
-> The repository contains the Milestone 1 runtime and the Milestone 2 identity foundation plus stabilization. Business routes, project authorization, execution workers, dashboards, and live target details remain intentionally deferred and are marked as future work in the deep documentation.
+> The repository contains the Milestone 1 runtime, the Milestone 2 identity foundation plus stabilization, and the Milestone 3 project/test-definition management foundation. Browser execution workers, result history, dashboards, and live target probing remain intentionally deferred and are marked as future work in the deep documentation.
 
 TestOps Platform is an internal web application for defining, executing, and reviewing automated browser tests against an existing e-commerce website. It gives administrators, test managers, developers, and testers one place to manage projects, test suites, reusable test cases, Playwright executions, failure evidence, and quality trends.
 
@@ -21,7 +21,9 @@ The current implementation milestone provides:
 - deterministic Playwright launch verification;
 - Docker Compose services for `postgres`, `backend`, and `frontend`.
 
-Milestone 2 adds password registration with mandatory email OTP verification, TestOps JWT sessions, rotating refresh cookies, self-session revocation, and Google OIDC. Test-definition management, project authorization, execution orchestration, and reporting remain planned milestones.
+Milestone 3 adds authenticated project management, project membership, allowlisted target origins, masked/encrypted project variables, suites, cases, and ordered test steps. Secret variables remain disabled by default and require `PROJECT_SECRET_VARIABLES_ENABLED=true` plus a 32-byte key at `PROJECT_VARIABLE_KEY_PATH`.
+
+Milestone 2 adds password registration with mandatory email OTP verification, TestOps JWT sessions, rotating refresh cookies, self-session revocation, and Google OIDC. Milestone 3 adds the management APIs and shell UI described above; execution orchestration and reporting remain planned milestones.
 
 The intended first release covers:
 
@@ -151,9 +153,9 @@ The Milestone 1 foundation pins the following versions in its manifests, lockfil
 | Testing | JUnit 5, Spring Boot Test, Testcontainers 1.21.3, Vitest 4, React Testing Library |
 | Packaging | Docker Compose, Node 24.17.0 build image, Nginx 1.30.3 runtime image |
 | CI/CD | GitHub Actions |
-| API documentation | Planned: OpenAPI / Swagger after the first business API exists |
+| API documentation | OpenAPI API metadata is opt-in with `OPENAPI_ENABLED`; Swagger UI is not bundled |
 
-Business APIs, execution workers, dashboards, and OpenAPI remain outside this milestone.
+Execution workers, dashboards, and result APIs remain outside Milestone 3.
 
 ## Why this shape
 
@@ -227,7 +229,7 @@ Expected local surfaces:
 | Backend API | `http://localhost:8080` |
 | Health | `http://localhost:8080/actuator/health` |
 
-The Compose services are implemented in `docker-compose.yml`. PostgreSQL is the persistence service; the backend waits for its health check, and the frontend waits for the backend health check. PgAdmin is available at `http://localhost:5050` for local database inspection and persists its state in the `pgadmin4_data` volume. Authentication is disabled by default. To enable it, mount RSA PEM files, a 32-byte-or-longer OTP pepper, and (if bootstrap is enabled) a password file in `backend/.secrets/` using the paths documented in `backend/.env.example`, then provide SMTP and (optionally) Google values without committing them. The optional project-variable encryption key uses `PROJECT_VARIABLE_KEY_PATH` and is reserved for the later test-management milestone.
+The Compose services are implemented in `docker-compose.yml`. PostgreSQL is the persistence service; the backend waits for its health check, and the frontend waits for the backend health check. PgAdmin is available at `http://localhost:5050` for local database inspection and persists its state in the `pgadmin4_data` volume. Authentication is disabled by default. To enable it, mount RSA PEM files, a 32-byte-or-longer OTP pepper, and (if bootstrap is enabled) a password file in `backend/.secrets/` using the paths documented in `backend/.env.example`, then provide SMTP and (optionally) Google values without committing them. Project APIs require authentication when enabled. Secret variables additionally require `PROJECT_SECRET_VARIABLES_ENABLED=true` and a 32-byte key at `PROJECT_VARIABLE_KEY_PATH`.
 
 ## Environment groups
 

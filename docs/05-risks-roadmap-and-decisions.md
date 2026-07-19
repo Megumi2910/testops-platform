@@ -4,7 +4,7 @@
 
 This document records the project’s deliberate limitations and the conditions that would justify changing the architecture. It avoids vague “future scalability” claims: every item names a failure mode, current response, tradeoff, and revisit condition.
 
-Milestones 1 and 2 are reconciled against the current source and verification results; Milestone 3 remains an implementation specification until it is built and tested.
+Milestones 1, 2, and the Milestone 3 management foundation are reconciled against the current source and verification results. Execution, reporting, and live-target probing remain future work.
 
 ## 2. Risk register
 
@@ -132,7 +132,7 @@ Milestones 1 and 2 are reconciled against the current source and verification re
 
 ### Milestone 1 — Scaffold and runtime
 
-Deliver:
+Implemented on `codex/milestone-3-test-management`:
 
 - repository structure;
 - React and Spring Boot builds;
@@ -194,12 +194,18 @@ Deliver:
 - validation;
 - archive behavior.
 
+The implemented API uses `/api/v1/projects`, project-member routes with email-based adds, `/variables`, `/suites`, and aggregate `/cases` routes. Target validation is static and allowlist-based in this milestone; DNS/IP revalidation immediately before browser navigation is deferred to Milestone 4. Secret variables require an explicit feature flag and mounted AES-256-GCM key.
+
 Evidence:
 
 - CRUD integration tests;
 - permission tests;
 - invalid URL/action rejected;
 - secret values masked.
+
+- backend compile and 19 unit tests pass;
+- frontend lint, typecheck, Vitest, and production build pass;
+- Flyway migrations V007 through V010 are present and `ddl-auto=validate` remains enabled.
 
 ### Milestone 4 — Execution
 

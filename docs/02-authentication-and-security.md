@@ -420,6 +420,8 @@ Preferred order:
 2. encrypted project variables;
 3. plaintext database values — rejected.
 
+Milestone 3 implements AES-256-GCM project-variable storage behind the explicit `PROJECT_SECRET_VARIABLES_ENABLED` flag. The key is loaded from `PROJECT_VARIABLE_KEY_PATH`; secret values are never serialized in API responses, audit metadata, logs, or definition snapshots. Static target validation is allowlist-based in this milestone. DNS/IP revalidation immediately before browser navigation is a Milestone 4 requirement.
+
 Step definitions reference placeholders:
 
 ```text

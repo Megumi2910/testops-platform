@@ -10,7 +10,7 @@ The system should degrade by capability, not collapse as one unit.
 - Artifact storage may fail without erasing the original assertion result.
 - One worker may die without leaving an execution permanently running.
 
-This document defines the intended operating contract. Milestones 1 and 2 verify the local service names, ports, health checks, authentication configuration, and scripts below; production deployment settings remain `TODO: verify`.
+This document defines the intended operating contract. Milestones 1 and 2 plus the Milestone 3 management foundation verify the local service names, ports, health checks, authentication configuration, project-variable feature flag, and scripts below; production deployment settings remain `TODO: verify`.
 
 ## 2. Runtime services
 
