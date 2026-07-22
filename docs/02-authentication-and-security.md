@@ -420,6 +420,8 @@ Preferred order:
 2. encrypted project variables;
 3. plaintext database values — rejected.
 
+Milestone 3 implements AES-256-GCM project-variable storage behind the explicit `PROJECT_SECRET_VARIABLES_ENABLED` flag. The key is loaded from `PROJECT_VARIABLE_KEY_PATH`; secret values are never serialized in API responses, audit metadata, logs, or definition snapshots. Static target validation is allowlist-based in this milestone. DNS/IP revalidation immediately before browser navigation is a Milestone 4 requirement.
+
 Step definitions reference placeholders:
 
 ```text
@@ -555,3 +557,4 @@ TARGET_ALLOWED_ORIGINS
 ```
 
 There is no independent Google callback setting: the backend derives `/login/oauth2/code/google` from the exact `FRONTEND_ORIGIN`. The bootstrap password and project-variable key are file paths, not inline secret values. The complete non-secret template is `backend/.env.example`.
+> Milestone 5 note: the legacy global role join model has been replaced by a singular `users.platform_role` (`ADMIN` or `MEMBER`) plus project-scoped memberships. Passwords live in `local_credentials`; Google and password login methods may coexist on one account. See [Milestone 5 identity and authorization](06-milestone-5-identity-and-authorization.md).

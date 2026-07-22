@@ -12,6 +12,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import com.megumi.testops.auth.service.AuthService;
 import com.megumi.testops.auth.service.AuthException;
 import com.megumi.testops.auth.service.RefreshCookieFactory;
+import java.util.UUID;
 
 @Configuration
 @ConditionalOnProperty(prefix = "testops.auth.google", name = "enabled", havingValue = "true")
@@ -37,8 +38,16 @@ public class OAuthLoginConfiguration {
                 }
                 String name = (String) principal.getAttributes().getOrDefault("name", email);
                 String picture = (String) principal.getAttributes().get("picture");
-                AuthService.SessionResult session = authService.oauthLogin("GOOGLE", subject, email, name, picture,
-                        request.getHeader("User-Agent"), request.getRemoteAddr());
+                Object linkUser = request.getSession(false) == null ? null : request.getSession(false).getAttribute("TESTOPS_GOOGLE_LINK_USER");
+                AuthService.SessionResult session;
+                if (linkUser != null) {
+                    session = authService.linkGoogle(UUID.fromString(String.valueOf(linkUser)), subject, email, name, picture,
+                            request.getHeader("User-Agent"), request.getRemoteAddr());
+                    request.getSession(false).removeAttribute("TESTOPS_GOOGLE_LINK_USER");
+                } else {
+                    session = authService.oauthLogin("GOOGLE", subject, email, name, picture,
+                            request.getHeader("User-Agent"), request.getRemoteAddr());
+                }
                 response.addHeader("Set-Cookie", refreshCookies.create(session.refreshToken()).toString());
                 response.sendRedirect(origin + "/auth/oauth/callback");
             } catch (com.megumi.testops.auth.service.AuthException exception) {

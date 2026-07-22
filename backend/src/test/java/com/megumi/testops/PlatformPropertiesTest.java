@@ -21,7 +21,7 @@ class PlatformPropertiesTest {
                 Duration.ofMinutes(2),
                 Duration.ofMinutes(15),
                 Duration.ofSeconds(15),
-                "chromium");
+                "chromium", true);
     }
 
     @Test
@@ -36,7 +36,7 @@ class PlatformPropertiesTest {
     void rejectsUnsupportedBrowser() {
         assertThrows(IllegalArgumentException.class, () -> new PlatformProperties.Execution(
                 1, 20, Duration.ofSeconds(2), Duration.ofSeconds(15), Duration.ofMinutes(2),
-                Duration.ofMinutes(15), Duration.ofSeconds(15), "firefox"));
+                Duration.ofMinutes(15), Duration.ofSeconds(15), "firefox", true));
     }
 
     @Test
@@ -60,13 +60,13 @@ class PlatformPropertiesTest {
     void rejectsNonPositiveDuration() {
         assertThrows(IllegalArgumentException.class, () -> new PlatformProperties.Execution(
                 1, 20, Duration.ZERO, Duration.ofSeconds(15), Duration.ofMinutes(2),
-                Duration.ofMinutes(15), Duration.ofSeconds(15), "chromium"));
+                Duration.ofMinutes(15), Duration.ofSeconds(15), "chromium", true));
     }
 
     @Test
     void rejectsNonPositiveQueueSettings() {
         assertThrows(IllegalArgumentException.class, () -> new PlatformProperties.Execution(
                 0, 20, Duration.ofSeconds(2), Duration.ofSeconds(15), Duration.ofMinutes(2),
-                Duration.ofMinutes(15), Duration.ofSeconds(15), "chromium"));
+                Duration.ofMinutes(15), Duration.ofSeconds(15), "chromium", true));
     }
 }

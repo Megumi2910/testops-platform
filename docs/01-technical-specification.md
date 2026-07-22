@@ -16,7 +16,7 @@ The design therefore centers on five boundaries:
 
 ## 2. Status and evidence boundary
 
-This document is an implementation specification derived from the project outline and the agreed scaffold:
+This document is an implementation specification reconciled with the current repository. Milestones 1 and 2 are implemented, and Milestone 3 now includes the project/test-definition management foundation:
 
 - React management frontend;
 - Spring Boot modular monolith;
@@ -30,7 +30,7 @@ This document is an implementation specification derived from the project outlin
 - GitHub Actions;
 - an existing e-commerce website as the system under test.
 
-The project source was not attached. Exact names, versions, package paths, scripts, routes, migrations, indexes, and runtime behavior remain `TODO: verify`.
+Implemented Milestone 3 boundaries are project CRUD, email-based membership, static target allowlisting, feature-flagged AES-256-GCM variables, suites, cases, and aggregate ordered steps. Milestone 4 adds canonical executable steps, asynchronous queueing, an in-process Chromium worker, result snapshots, screenshots, cancellation, and DNS/IP checks immediately before navigation. Dashboards, scheduled runs, distributed workers, and full artifact retention remain deferred. Exact production deployment settings remain `TODO: verify`.
 
 ## 3. Users and responsibilities
 

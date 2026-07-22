@@ -30,6 +30,10 @@ server:
   port: ${SERVER_PORT:8080}
   forward-headers-strategy: framework
 
+springdoc:
+  api-docs:
+    enabled: ${OPENAPI_ENABLED:false}
+
 management:
   endpoints:
     web:
@@ -93,6 +97,7 @@ testops:
       otp-resend-ip-attempts: ${AUTH_OTP_RESEND_IP_LIMIT:5}
       otp-resend-ip-window: ${AUTH_OTP_RESEND_IP_WINDOW:PT1H}
   execution:
+    worker-enabled: ${EXECUTION_WORKER_ENABLED:true}
     worker-count: ${EXECUTION_WORKER_COUNT:1}
     queue-capacity: ${EXECUTION_QUEUE_CAPACITY:20}
     claim-interval: ${EXECUTION_CLAIM_INTERVAL:PT2S}
@@ -105,3 +110,9 @@ testops:
     directory: ${ARTIFACT_DIRECTORY:./artifacts}
   target:
     allowed-origins: ${TARGET_ALLOWED_ORIGINS:}
+  project:
+    secret-variables-enabled: ${PROJECT_SECRET_VARIABLES_ENABLED:false}
+    variable-key-path: ${PROJECT_VARIABLE_KEY_PATH:}
+    variable-key-version: ${PROJECT_VARIABLE_KEY_VERSION:1}
+  openapi:
+    enabled: ${OPENAPI_ENABLED:false}

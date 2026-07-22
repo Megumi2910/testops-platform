@@ -1,10 +1,30 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 1 runtime and Milestone 2 authentication/email OTP foundation plus stabilization are implemented; Milestone 3 test management remains planned; source-dependent facts are reconciled after each implementation slice",
+  "source_status": "Milestones 1 through 5 are implemented as the current foundation; dashboards, scheduling, notifications, distributed workers, and full retention remain planned; source-dependent facts are reconciled after each implementation slice",
   "documents": [
+    {
+      "path": "docs/00-project-implementation-handbook.md",
+      "role": "Idea, repository map, architecture, vocabulary, and source-reading guide"
+    },
     {
       "path": "README.md",
       "role": "Project entry point"
+    },
+    {
+      "path": "docs/07-backend-code-walkthrough.md",
+      "role": "Java/Spring source walkthrough and backend execution flow"
+    },
+    {
+      "path": "docs/08-frontend-code-walkthrough.md",
+      "role": "React/TypeScript source walkthrough and frontend state flow"
+    },
+    {
+      "path": "docs/09-database-and-runtime-walkthrough.md",
+      "role": "Flyway, PostgreSQL, Docker Compose, configuration, scripts, and CI"
+    },
+    {
+      "path": "docs/10-executable-step-language.md",
+      "role": "Test-case and browser-step syntax, validation, interpretation, and safety"
     },
     {
       "path": "docs/01-technical-specification.md",
@@ -25,6 +45,10 @@
     {
       "path": "docs/05-risks-roadmap-and-decisions.md",
       "role": "Risk register, roadmap, ADR-style decisions, and change safety"
+    },
+    {
+      "path": "docs/06-milestone-5-identity-and-authorization.md",
+      "role": "Unified accounts, platform/project roles, permissions, admin operations, and migration notes"
     }
   ]
 }

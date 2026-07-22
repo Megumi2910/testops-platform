@@ -72,8 +72,13 @@ public class EmailVerificationChallengeEntity {
 
     public EmailVerificationChallengeEntity(UserEntity user, String otpHash, Instant issuedAt,
             Instant expiresAt, Instant resendAvailableAt, String sourceIp) {
+        this(user, "REGISTRATION", otpHash, issuedAt, expiresAt, resendAvailableAt, sourceIp);
+    }
+
+    public EmailVerificationChallengeEntity(UserEntity user, String purpose, String otpHash, Instant issuedAt,
+            Instant expiresAt, Instant resendAvailableAt, String sourceIp) {
         this.user = user;
-        this.purpose = "REGISTRATION";
+        this.purpose = purpose;
         this.otpHash = otpHash;
         this.issuedAt = issuedAt;
         this.expiresAt = expiresAt;

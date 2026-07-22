@@ -2,7 +2,6 @@ package com.megumi.testops.auth.service;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.util.stream.Collectors;
 
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -34,7 +33,7 @@ public class JwtTokenService {
                 .id(java.util.UUID.randomUUID().toString())
                 .issuedAt(issuedAt)
                 .expiresAt(expiresAt)
-                .claim("roles", user.getRoles().stream().map(role -> role.getCode()).collect(Collectors.toSet()))
+                .claim("roles", java.util.Set.of(user.getPlatformRole().name()))
                 .claim("token_version", user.getTokenVersion())
                 .build();
         String token = encoder.encode(JwtEncoderParameters.from(

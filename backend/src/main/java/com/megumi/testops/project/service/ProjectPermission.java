@@ -1,0 +1,17 @@
+package com.megumi.testops.project.service;
+
+public enum ProjectPermission {
+    PROJECT_VIEW,
+    PROJECT_UPDATE,
+    PROJECT_ARCHIVE,
+    MEMBER_MANAGE,
+    VARIABLE_VIEW,
+    VARIABLE_MANAGE,
+    DEFINITION_VIEW,
+    DEFINITION_MANAGE,
+    EXECUTION_START,
+    EXECUTION_CANCEL_OWN,
+    EXECUTION_CANCEL_ANY,
+    EXECUTION_VIEW,
+    ARTIFACT_VIEW
+}

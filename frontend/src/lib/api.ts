@@ -77,12 +77,19 @@ async function request<T>(input: RequestInfo | URL, init: RequestInit | undefine
     throw new ApiError(response.status, message)
   }
 
-  if (response.status === 204) return undefined as T
+  if (response.status === 204 || response.status === 202) return undefined as T
   return (await response.json()) as T
 }
 
 export async function apiFetch<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   return request<T>(input, init, true)
+}
+
+export async function apiBlobFetch(input: RequestInfo | URL): Promise<Blob> {
+  const response = await fetch(input, { credentials: 'include', headers: { Accept: 'application/octet-stream', ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) } })
+  if (response.status === 401) { await refreshInMemory(); return apiBlobFetch(input) }
+  if (!response.ok) throw new ApiError(response.status, 'Artifact download failed')
+  return response.blob()
 }
 
 export async function refreshAccessToken<T extends AuthResponseLike>() {
