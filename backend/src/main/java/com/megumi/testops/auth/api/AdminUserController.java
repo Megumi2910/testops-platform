@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import jakarta.validation.Valid;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -20,6 +21,7 @@ import com.megumi.testops.auth.service.AuthService;
 @RestController
 @RequestMapping("/api/v1/admin/users")
 @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+@ConditionalOnBean(AuthService.class)
 public class AdminUserController {
     private final AdminUserService users;
     private final AuthService auth;

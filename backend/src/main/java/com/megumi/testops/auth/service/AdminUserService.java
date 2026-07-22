@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,7 @@ import com.megumi.testops.auth.repository.UserRepository;
 import com.megumi.testops.shared.api.ApiException;
 
 @Service
+@ConditionalOnBean(AuthService.class)
 public class AdminUserService {
     private final UserRepository users;
     private final AuthService auth;
