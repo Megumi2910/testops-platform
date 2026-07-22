@@ -4,8 +4,11 @@ export type UserSummary = {
   id: string
   email: string
   displayName: string
+  avatarUrl?: string
   emailVerified: boolean
-  roles: string[]
+  status: string
+  platformRole: 'ADMIN' | 'MEMBER'
+  loginMethods: string[]
 }
 
 export type AuthResponse = {
@@ -41,5 +44,10 @@ export const authApi = {
   me: () => apiFetch<UserSummary>('/api/v1/auth/me'),
   logout: () => apiFetch<void>('/api/v1/auth/logout', { method: 'POST' }),
   revokeAll: () => apiFetch<void>('/api/v1/auth/sessions/revoke-all', { method: 'POST' }),
+  passwordChallenge: () => apiFetch<{ message: string }>('/api/v1/auth/me/password/challenge', { method: 'POST' }),
+  passwordConfirm: (payload: { otp: string; password: string }) => apiFetch<void>('/api/v1/auth/me/password/confirm', { method: 'POST', body: JSON.stringify(payload) }),
+  changePassword: (payload: { currentPassword: string; newPassword: string }) => apiFetch<void>('/api/v1/auth/me/password', { method: 'PUT', body: JSON.stringify(payload) }),
+  unlinkGoogle: (currentPassword: string) => apiFetch<void>('/api/v1/auth/me/login-methods/google/unlink', { method: 'POST', body: JSON.stringify({ currentPassword }) }),
+  linkGoogle: async () => { const response = await apiFetch<{ authorizationUrl: string }>('/api/v1/auth/me/login-methods/google/link-intent', { method: 'POST' }); window.location.assign(response.authorizationUrl) },
   clearAccessToken,
 }

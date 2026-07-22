@@ -4,6 +4,8 @@ import { AppShell } from '../components/AppShell'
 import { HomePage, NotFoundPage } from './pages'
 import { LoginPage, OAuthCallbackPage, RegisterPage, VerifyEmailPage } from '../features/auth/AuthPages'
 import { CasePage, MembersPage, NewCasePage, NewProjectPage, ProjectLayout, ProjectOverviewPage, ProjectsPage, ProtectedRoute, SuitePage, SuitesPage, VariablesPage } from '../features/projects/ProjectPages'
+import { ExecutionDetailPage, ExecutionsPage } from '../features/executions/ExecutionPages'
+import { AccountPage, AdminUsersPage } from '../features/auth/AccountPages'
 
 export const router = createBrowserRouter([
   {
@@ -16,6 +18,8 @@ export const router = createBrowserRouter([
       { path: 'verify-email', element: <VerifyEmailPage /> },
       { path: 'auth/oauth/callback', element: <OAuthCallbackPage /> },
       { element: <ProtectedRoute />, children: [
+        { path: 'account', element: <AccountPage /> },
+        { path: 'admin/users', element: <AdminUsersPage /> },
         { path: 'projects', element: <ProjectsPage /> },
         { path: 'projects/new', element: <NewProjectPage /> },
         { path: 'projects/:projectId', element: <ProjectLayout />, children: [
@@ -26,6 +30,8 @@ export const router = createBrowserRouter([
           { path: 'suites/:suiteId/cases/:caseId', element: <CasePage /> },
           { path: 'variables', element: <ProjectOverviewPage />, children: [{ index: true, element: <VariablesPage /> }] },
           { path: 'members', element: <ProjectOverviewPage />, children: [{ index: true, element: <MembersPage /> }] },
+          { path: 'executions', element: <ExecutionsPage /> },
+          { path: 'executions/:executionId', element: <ExecutionDetailPage /> },
         ] },
       ] },
       { path: '*', element: <NotFoundPage /> },

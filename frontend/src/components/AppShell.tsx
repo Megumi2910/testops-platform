@@ -17,8 +17,9 @@ export function AppShell() {
             {user && <NavLink className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')} to="/projects">
               Projects
             </NavLink>}
+            {user?.platformRole === 'ADMIN' && <NavLink className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')} to="/admin/users">Admin</NavLink>}
             <NavLink className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')} to={user ? '/' : '/login'}>
-              {user ? user.displayName : 'Sign in'}
+              {user ? <>{user.displayName} · Account</> : 'Sign in'}
             </NavLink>
           </nav>
         </div>

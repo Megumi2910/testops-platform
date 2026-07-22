@@ -1,11 +1,12 @@
 import { apiFetch } from '../../lib/api'
 
 export type PageResponse<T> = { content: T[]; page: number; size: number; totalElements: number; totalPages: number }
-export type Project = { id: string; name: string; description?: string; targetOrigin: string; status: 'ACTIVE' | 'ARCHIVED'; version: number; createdAt: string; updatedAt: string }
-export type Member = { userId: string; email: string; displayName: string; role: string; version: number }
+export type ProjectPermission = 'PROJECT_VIEW' | 'PROJECT_UPDATE' | 'PROJECT_ARCHIVE' | 'MEMBER_MANAGE' | 'VARIABLE_VIEW' | 'VARIABLE_MANAGE' | 'DEFINITION_VIEW' | 'DEFINITION_MANAGE' | 'EXECUTION_START' | 'EXECUTION_CANCEL_OWN' | 'EXECUTION_CANCEL_ANY' | 'EXECUTION_VIEW' | 'ARTIFACT_VIEW'
+export type Project = { id: string; name: string; description?: string; targetOrigin: string; status: 'ACTIVE' | 'ARCHIVED'; version: number; createdAt: string; updatedAt: string; currentUserProjectRole?: string; permissions: ProjectPermission[] }
+export type Member = { userId: string; email: string; displayName: string; role: string; version: number; assignedBy?: string }
 export type Variable = { key: string; secret: boolean; value?: string; version: number }
 export type Suite = { id: string; projectId: string; name: string; description?: string; status: string; version: number }
-export type Step = { id?: string; position: number; action: string; locatorType?: string; locatorValue?: string; inputValue?: string; timeoutMs?: number }
+export type Step = { id?: string; position: number; action: string; locatorType?: string; locatorValue?: string; locatorRole?: string; inputValue?: string; expectedValue?: string; timeoutMs?: number }
 export type TestCase = { id: string; suiteId: string; name: string; description?: string; status: string; priority: string; tags?: string; retryCount: number; dataIsolation: boolean; version: number; steps: Step[] }
 
 export const projectKeys = {
@@ -16,7 +17,16 @@ export const projectKeys = {
   variables: (id: string) => ['projects', id, 'variables'] as const,
   suites: (id: string) => ['projects', id, 'suites'] as const,
   cases: (projectId: string, suiteId: string) => ['projects', projectId, 'suites', suiteId, 'cases'] as const,
+  executions: (id: string) => ['projects', id, 'executions'] as const,
+  execution: (id: string, executionId: string) => ['projects', id, 'executions', executionId] as const,
 }
+
+export type ExecutionArtifact = { id: string; caseResultId?: string; type: string; contentType: string; byteSize: number; sha256: string; secretSuppressed: boolean; createdAt: string }
+export type StepResult = { position: number; action: string; status: string; durationMs?: number; errorMessage?: string }
+export type CaseResult = { id: string; caseId: string; caseName: string; status: string; attemptCount: number; startedAt?: string; finishedAt?: string; errorMessage?: string; steps: StepResult[] }
+export type Execution = { id: string; projectId: string; suiteId?: string; status: string; totalCases: number; completedCases: number; passedCases: number; failedCases: number; errorCases: number; cancelledCases: number; createdAt: string; startedAt?: string; finishedAt?: string; errorMessage?: string; cases: CaseResult[]; artifacts: ExecutionArtifact[] }
+
+function idempotencyKey() { return crypto.randomUUID() }
 
 export const projectsApi = {
   list: (search = '') => apiFetch<PageResponse<Project>>(`/api/v1/projects?size=50${search ? `&q=${encodeURIComponent(search)}` : ''}`),
@@ -38,4 +48,9 @@ export const projectsApi = {
   getCase: (projectId: string, suiteId: string, caseId: string) => apiFetch<TestCase>(`/api/v1/projects/${projectId}/suites/${suiteId}/cases/${caseId}`),
   createCase: (projectId: string, suiteId: string, input: Record<string, unknown>) => apiFetch<TestCase>(`/api/v1/projects/${projectId}/suites/${suiteId}/cases`, { method: 'POST', body: JSON.stringify(input) }),
   updateCase: (projectId: string, suiteId: string, caseId: string, input: Record<string, unknown>) => apiFetch<TestCase>(`/api/v1/projects/${projectId}/suites/${suiteId}/cases/${caseId}`, { method: 'PUT', body: JSON.stringify(input) }),
+  queueSuite: (projectId: string, suiteId: string) => apiFetch<void>(`/api/v1/projects/${projectId}/suites/${suiteId}/executions`, { method: 'POST', headers: { 'Idempotency-Key': idempotencyKey() } }),
+  queueCase: (projectId: string, suiteId: string, caseId: string) => apiFetch<void>(`/api/v1/projects/${projectId}/suites/${suiteId}/cases/${caseId}/executions`, { method: 'POST', headers: { 'Idempotency-Key': idempotencyKey() } }),
+  executions: (projectId: string) => apiFetch<Execution[]>(`/api/v1/projects/${projectId}/executions`),
+  execution: (projectId: string, executionId: string) => apiFetch<Execution>(`/api/v1/projects/${projectId}/executions/${executionId}`),
+  cancelExecution: (projectId: string, executionId: string) => apiFetch<void>(`/api/v1/projects/${projectId}/executions/${executionId}/cancel`, { method: 'POST' }),
 }

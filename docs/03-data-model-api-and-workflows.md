@@ -398,14 +398,14 @@ V004__create_refresh_tokens.sql
 V005__create_auth_audit_events.sql
 V006__harden_authentication_indexes.sql
 
-Milestone 2 applies `V001` through `V006`: `V001`–`V005` create the authentication tables and `V006` adds the source-IP/issued-at index used by the OTP resend safeguards. Milestone 3 applies `V007` through `V010` for projects, variables, suites, cases, and ordered steps. Execution migrations remain reserved for Milestone 4.
+Milestone 2 applies `V001` through `V006`: `V001`–`V005` create the authentication tables and `V006` adds the source-IP/issued-at index used by the OTP resend safeguards. Milestone 3 applies `V007` through `V010` for projects, variables, suites, cases, and ordered steps. Milestone 4 applies `V011` and `V012` for queue/results/artifact persistence.
 
 V007__create_projects_and_members.sql
 V008__create_project_variables.sql
 V009__create_test_suites.sql
 V010__create_test_cases_and_steps.sql
-V011__create_executions_and_results.sql
-V012__create_execution_artifacts.sql
+V011__create_execution_queue_and_results.sql
+V012__create_execution_artifacts_and_variable_snapshots.sql
 ```
 
 Rules:
@@ -457,7 +457,7 @@ General response rules:
 
 ## 8. Proposed route surface
 
-The authentication mappings below are implemented. The Milestone 3 mappings are implemented as listed; execution and dashboard mappings remain planned.
+The authentication and Milestone 3 mappings below are implemented. Milestone 4 execution routes are implemented as the first usable execution surface; dashboard and reporting mappings remain planned.
 
 ### Authentication
 
@@ -522,13 +522,13 @@ The authentication mappings below are implemented. The Milestone 3 mappings are 
 
 | Method | Route | Purpose |
 |---|---|---|
-| `POST` | `/test-suites/{id}/executions` | Queue suite. |
-| `POST` | `/test-cases/{id}/executions` | Optional single-case run. |
-| `GET` | `/executions` | Filtered history. |
-| `GET` | `/executions/{id}` | Progress and summary. |
-| `GET` | `/executions/{id}/results` | Per-case results. |
-| `POST` | `/executions/{id}/cancel` | Request cancellation. |
-| `GET` | `/artifacts/{id}` | Authorized artifact download/view. |
+| `POST` | `/api/v1/projects/{projectId}/suites/{suiteId}/executions` | Queue all READY cases in a suite; requires UUID `Idempotency-Key`, returns `202` plus `Location`. |
+| `POST` | `/api/v1/projects/{projectId}/suites/{suiteId}/cases/{caseId}/executions` | Queue one READY case; requires UUID `Idempotency-Key`. |
+| `GET` | `/api/v1/projects/{projectId}/executions` | Project execution history. |
+| `GET` | `/api/v1/projects/{projectId}/executions/{executionId}` | Progress, summary, case results, and artifact metadata. |
+| `GET` | `/api/v1/projects/{projectId}/executions/{executionId}/results` | Per-case results. |
+| `POST` | `/api/v1/projects/{projectId}/executions/{executionId}/cancel` | Request cancellation; requester/owner/admin policy applies. |
+| `GET` | `/api/v1/projects/{projectId}/executions/{executionId}/artifacts/{artifactId}` | Authorized artifact download. |
 
 ### Dashboard
 
@@ -803,3 +803,4 @@ Resolved secret values are excluded.
 - cancellation and completion race resolves to one terminal state.
 
 These invariants require database constraints and transactional service methods, not only Java `if` statements.
+> Milestone 5 note: project memberships now use `PROJECT_MANAGER`, `TEST_MANAGER`, `TESTER`, and `VIEWER`, and project responses include effective permissions. Legacy `OWNER`, `EDITOR`, and global `TEST_MANAGER` values are migration inputs only.

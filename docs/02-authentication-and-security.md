@@ -557,3 +557,4 @@ TARGET_ALLOWED_ORIGINS
 ```
 
 There is no independent Google callback setting: the backend derives `/login/oauth2/code/google` from the exact `FRONTEND_ORIGIN`. The bootstrap password and project-variable key are file paths, not inline secret values. The complete non-secret template is `backend/.env.example`.
+> Milestone 5 note: the legacy global role join model has been replaced by a singular `users.platform_role` (`ADMIN` or `MEMBER`) plus project-scoped memberships. Passwords live in `local_credentials`; Google and password login methods may coexist on one account. See [Milestone 5 identity and authorization](06-milestone-5-identity-and-authorization.md).

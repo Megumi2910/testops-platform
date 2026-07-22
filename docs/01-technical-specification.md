@@ -30,7 +30,7 @@ This document is an implementation specification reconciled with the current rep
 - GitHub Actions;
 - an existing e-commerce website as the system under test.
 
-Implemented Milestone 3 boundaries are project CRUD, email-based membership, static target allowlisting, feature-flagged AES-256-GCM variables, suites, cases, and aggregate ordered steps. Execution workers, result snapshots, dashboards, and DNS/IP checks immediately before navigation remain deferred. Exact production deployment settings remain `TODO: verify`.
+Implemented Milestone 3 boundaries are project CRUD, email-based membership, static target allowlisting, feature-flagged AES-256-GCM variables, suites, cases, and aggregate ordered steps. Milestone 4 adds canonical executable steps, asynchronous queueing, an in-process Chromium worker, result snapshots, screenshots, cancellation, and DNS/IP checks immediately before navigation. Dashboards, scheduled runs, distributed workers, and full artifact retention remain deferred. Exact production deployment settings remain `TODO: verify`.
 
 ## 3. Users and responsibilities
 

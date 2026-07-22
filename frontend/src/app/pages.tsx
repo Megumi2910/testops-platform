@@ -7,12 +7,12 @@ export function HomePage() {
   return (
     <section className="page-stack">
       <div>
-        <p className="eyebrow">Milestone 2</p>
-        <h1>TestOps Platform</h1>
-        <p className="lede">Identity and email verification are ready for the browser-testing platform.</p>
+        <p className="eyebrow">Milestone 4</p>
+        <h1>Browser checks that you can run.</h1>
+        <p className="lede">Create a project, define accessible test steps, and inspect every execution from one workspace.</p>
       </div>
       <SystemHealthPanel />
-      {!loading && (user ? <section className="card account-card"><p className="eyebrow">Signed in</p><h2>{user.displayName}</h2><p>{user.email}</p><button type="button" className="secondary" onClick={() => void logout()}>Sign out</button></section> : <section className="card account-card"><p>Authentication is available when enabled by the deployment.</p><div className="inline-actions"><Link className="button" to="/login">Sign in</Link><Link className="button secondary" to="/register">Create account</Link></div></section>)}
+      {!loading && (user ? <section className="card account-card"><p className="eyebrow">Signed in</p><h2>{user.displayName}</h2><p>{user.email}</p><div className="inline-actions"><Link className="button" to="/projects">Open projects</Link><button type="button" className="secondary" onClick={() => void logout()}>Sign out</button></div></section> : <section className="card account-card"><p>Sign in to create projects and run browser checks.</p><div className="inline-actions"><Link className="button" to="/login">Sign in</Link><Link className="button secondary" to="/register">Create account</Link></div></section>)}
     </section>
   )
 }

@@ -4,7 +4,7 @@
 
 This document records the project’s deliberate limitations and the conditions that would justify changing the architecture. It avoids vague “future scalability” claims: every item names a failure mode, current response, tradeoff, and revisit condition.
 
-Milestones 1, 2, and the Milestone 3 management foundation are reconciled against the current source and verification results. Execution, reporting, and live-target probing remain future work.
+Milestones 1 through 3 and the Milestone 4 execution foundation are reconciled against the current source and verification results. Reporting, scheduling, distributed workers, and full retention remain future work.
 
 ## 2. Risk register
 
@@ -194,7 +194,7 @@ Deliver:
 - validation;
 - archive behavior.
 
-The implemented API uses `/api/v1/projects`, project-member routes with email-based adds, `/variables`, `/suites`, and aggregate `/cases` routes. Target validation is static and allowlist-based in this milestone; DNS/IP revalidation immediately before browser navigation is deferred to Milestone 4. Secret variables require an explicit feature flag and mounted AES-256-GCM key.
+The implemented API uses `/api/v1/projects`, project-member routes with email-based adds, `/variables`, `/suites`, and aggregate `/cases` routes. Target validation is static and allowlist-based in Milestone 3; Milestone 4 adds runtime DNS/IP revalidation immediately before browser navigation. Secret variables require an explicit feature flag and mounted AES-256-GCM key.
 
 Evidence:
 
@@ -203,11 +203,11 @@ Evidence:
 - invalid URL/action rejected;
 - secret values masked.
 
-- backend compile and 19 unit tests pass;
+- backend compile and 26 unit tests pass;
 - frontend lint, typecheck, Vitest, and production build pass;
 - Flyway migrations V007 through V010 are present and `ddl-auto=validate` remains enabled.
 
-### Milestone 4 — Execution
+### Milestone 4 — Execution (implemented foundation)
 
 Deliver:
 
@@ -218,16 +218,15 @@ Deliver:
 - incremental results;
 - screenshots/traces;
 - cancellation;
-- heartbeat/recovery;
-- polling UI.
+- cancellation and bounded in-process worker;
+- guarded navigation and screenshot artifacts;
+- polling execution history UI.
 
-Evidence:
+Evidence and remaining hardening:
 
-- login/search/cart safe suite;
-- `FAILED` versus `ERROR`;
-- no duplicate claim;
-- browser cleanup;
-- old result remains accurate after edit.
+- queue/case API contracts, idempotency, role checks, migrations, and deterministic local UI are implemented;
+- stale-worker recovery, infrastructure-only retry, trace persistence for non-secret cases, guarded navigation, and artifact download are implemented;
+- target-specific login/search/cart suites, broader live-target probing, and secret-variable snapshot hardening remain opt-in follow-up work.
 
 ### Milestone 5 — Reporting and operations
 

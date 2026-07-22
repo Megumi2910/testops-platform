@@ -10,7 +10,7 @@ The system should degrade by capability, not collapse as one unit.
 - Artifact storage may fail without erasing the original assertion result.
 - One worker may die without leaving an execution permanently running.
 
-This document defines the intended operating contract. Milestones 1 and 2 plus the Milestone 3 management foundation verify the local service names, ports, health checks, authentication configuration, project-variable feature flag, and scripts below; production deployment settings remain `TODO: verify`.
+This document defines the intended operating contract. Milestones 1 and 2 plus the Milestone 3 management foundation and Milestone 4 execution foundation verify the local service names, ports, health checks, authentication configuration, project-variable feature flag, queue/worker behavior, and scripts below; production deployment settings remain `TODO: verify`.
 
 ## 2. Runtime services
 
@@ -88,6 +88,7 @@ When first-account bootstrap is explicitly enabled, provide `BOOTSTRAP_ADMIN_EMA
 ### Execution
 
 ```dotenv
+EXECUTION_WORKER_ENABLED=true
 EXECUTION_WORKER_COUNT=1
 EXECUTION_QUEUE_CAPACITY=20
 EXECUTION_CLAIM_INTERVAL=PT2S
@@ -139,7 +140,7 @@ npm ci
 npm run dev
 ```
 
-The cross-platform verification entry points are `scripts/verify.ps1` and `scripts/verify.sh`. They run backend tests, frontend quality gates when npm is available, Compose validation, and both image builds. CI creates ignored runtime env files from the tracked examples before validating Compose, so a clean checkout does not depend on developer secrets. The `local` profile is limited to database connection overrides; future feature profiles remain `TODO: verify`.
+The cross-platform verification entry points are `scripts/verify.ps1` and `scripts/verify.sh`. They run backend tests, frontend quality gates when npm is available, Compose validation, and both image builds. Use `scripts/setup-local.ps1` or `scripts/setup-local.sh` to generate ignored auth/crypto files and enable the local bootstrap workflow; the scripts never reset volumes or contact the target. The non-interactive variants `scripts/setup-local.ps1 -Force -GenerateBootstrapPassword -EnableEmailDelivery -EnableGoogle` and `scripts/setup-local.sh --force --generate-bootstrap-password --enable-email-delivery --enable-google` preserve existing scoped environment files, merge the selected provider flags, generate PKCS#8/X.509 JWT material, and store the generated bootstrap password under `backend/.secrets/`. Registration is enabled only together with email delivery so startup validation cannot accept an unusable registration configuration. CI creates ignored runtime env files from the tracked examples before validating Compose, so a clean checkout does not depend on developer secrets. The `local` profile is limited to database connection overrides; future feature profiles remain `TODO: verify`.
 
 ## 5. Container design
 

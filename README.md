@@ -1,8 +1,8 @@
 # TestOps Platform — Managed Browser Testing for an Existing E-commerce Application
 
-> **Documentation status:** Milestones 1 and 2 plus the Milestone 3 test-management foundation are implemented; documentation is kept in sync with the source.
+> **Documentation status:** Milestones 1–5 are implemented as the current foundation; documentation is kept in sync with the source. Reporting, scheduling, notifications, and distributed execution remain planned.
 >
-> The repository contains the Milestone 1 runtime, the Milestone 2 identity foundation plus stabilization, and the Milestone 3 project/test-definition management foundation. Browser execution workers, result history, dashboards, and live target probing remain intentionally deferred and are marked as future work in the deep documentation.
+> The repository contains the Milestone 1 runtime, the Milestone 2 identity foundation plus stabilization, the Milestone 3 project/test-definition management foundation, and the Milestone 4 queue/runner/web execution workflow. Dashboards, scheduled runs, distributed workers, full artifact retention, and live target probing remain intentionally deferred and are marked as future work in the deep documentation.
 
 TestOps Platform is an internal web application for defining, executing, and reviewing automated browser tests against an existing e-commerce website. It gives administrators, test managers, developers, and testers one place to manage projects, test suites, reusable test cases, Playwright executions, failure evidence, and quality trends.
 
@@ -20,10 +20,14 @@ The current implementation milestone provides:
 - a summary Actuator health endpoint;
 - deterministic Playwright launch verification;
 - Docker Compose services for `postgres`, `backend`, and `frontend`.
+- canonical action/locator step editing with aggregate validation;
+- asynchronous execution queue, in-process Chromium worker, result history, cancellation, and guarded screenshot/trace artifacts;
+- project execution history and detail routes with polling.
+- unified password/Google accounts, platform/project roles, effective project permissions, account security controls, administrator user management, and safe platform options discovery.
 
 Milestone 3 adds authenticated project management, project membership, allowlisted target origins, masked/encrypted project variables, suites, cases, and ordered test steps. Secret variables remain disabled by default and require `PROJECT_SECRET_VARIABLES_ENABLED=true` plus a 32-byte key at `PROJECT_VARIABLE_KEY_PATH`.
 
-Milestone 2 adds password registration with mandatory email OTP verification, TestOps JWT sessions, rotating refresh cookies, self-session revocation, and Google OIDC. Milestone 3 adds the management APIs and shell UI described above; execution orchestration and reporting remain planned milestones.
+Milestone 2 adds password registration with mandatory email OTP verification, TestOps JWT sessions, rotating refresh cookies, self-session revocation, and Google OIDC. Milestone 3 adds the management APIs and shell UI described above. Milestone 4 adds canonical executable steps, asynchronous suite/case execution, in-process Chromium workers, execution history, cancellation, screenshots, and the execution web workspace.
 
 The intended first release covers:
 
@@ -155,7 +159,7 @@ The Milestone 1 foundation pins the following versions in its manifests, lockfil
 | CI/CD | GitHub Actions |
 | API documentation | OpenAPI API metadata is opt-in with `OPENAPI_ENABLED`; Swagger UI is not bundled |
 
-Execution workers, dashboards, and result APIs remain outside Milestone 3.
+Milestone 4 runs a bounded in-process worker, persists case/step results, exposes execution history/cancellation, and provides the first usable execution workspace. Scheduled runs, dashboards/trends, distributed workers, and full artifact retention remain future work.
 
 ## Why this shape
 
@@ -221,6 +225,8 @@ cp pgadmin4/.env.example pgadmin4/.env
 docker compose up --build
 ```
 
+For an authenticated local workflow, run `scripts/setup-local.ps1` (PowerShell) or `scripts/setup-local.sh` (POSIX shell) first. The scripts generate ignored RSA/crypto files and prompt for a local bootstrap-admin password; they do not reset database volumes or contact the target site. For a non-interactive local setup with password registration and Google enabled, use `scripts/setup-local.ps1 -Force -GenerateBootstrapPassword -EnableEmailDelivery -EnableGoogle` or `scripts/setup-local.sh --force --generate-bootstrap-password --enable-email-delivery --enable-google`. This preserves existing scoped `.env` files, merges the selected auth flags, and stores the generated bootstrap password only in `backend/.secrets/bootstrap-admin-password`.
+
 Expected local surfaces:
 
 | Surface | Intended URL |
@@ -249,11 +255,17 @@ Never commit `.env`, JWT private keys, Google client secrets, access or refresh 
 
 ## Documentation map
 
-1. [Technical specification](docs/01-technical-specification.md) — product boundary, architecture, domain model, UI, and design rationale.
-2. [Authentication and security](docs/02-authentication-and-security.md) — JWT, refresh rotation, Google OIDC, authorization, secrets, and abuse controls.
-3. [Data, API, and workflows](docs/03-data-model-api-and-workflows.md) — relational model, constraints, routes, state transitions, normal paths, and failure paths.
-4. [Operations, scaling, and maintenance](docs/04-operations-scaling-and-maintenance.md) — local runtime, deployment, workers, queue ownership, observability, incidents, backups, and upgrade policy.
-5. [Risks, roadmap, and decisions](docs/05-risks-roadmap-and-decisions.md) — explicit limitations, delivery sequence, alternatives, tradeoffs, and change-safety notes.
+1. [Implementation handbook](docs/00-project-implementation-handbook.md) — start here for the idea, repository map, architecture, vocabulary, and a source-reading path.
+2. [Backend code walkthrough](docs/07-backend-code-walkthrough.md) — Java/Spring syntax, configuration, authentication, project services, execution, Playwright, and tests.
+3. [Frontend code walkthrough](docs/08-frontend-code-walkthrough.md) — React/TypeScript syntax, routing, auth bootstrap, API client, forms, queries, and polling.
+4. [Database and runtime walkthrough](docs/09-database-and-runtime-walkthrough.md) — Flyway schema, PostgreSQL relationships, Compose, environment files, scripts, and CI.
+5. [Executable step language](docs/10-executable-step-language.md) — case/step JSON shape, supported actions, locators, variables, URL safety, retries, and results.
+6. [Technical specification](docs/01-technical-specification.md) — product boundary, architecture, domain model, UI, and design rationale.
+7. [Authentication and security](docs/02-authentication-and-security.md) — JWT, refresh rotation, Google OIDC, authorization, secrets, and abuse controls.
+8. [Data, API, and workflows](docs/03-data-model-api-and-workflows.md) — relational model, constraints, routes, state transitions, normal paths, and failure paths.
+9. [Operations, scaling, and maintenance](docs/04-operations-scaling-and-maintenance.md) — local runtime, deployment, workers, queue ownership, observability, incidents, backups, and upgrade policy.
+10. [Risks, roadmap, and decisions](docs/05-risks-roadmap-and-decisions.md) — explicit limitations, delivery sequence, alternatives, tradeoffs, and change-safety notes.
+11. [Identity and authorization milestone](docs/06-milestone-5-identity-and-authorization.md) — unified accounts, platform/project roles, permissions, admin operations, and migration notes.
 
 ## Verification boundary
 

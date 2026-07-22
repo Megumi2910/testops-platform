@@ -1,0 +1,26 @@
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { authApi } from './api'
+import { apiFetch, ApiError } from '../../lib/api'
+import { useAuth } from './AuthContext'
+
+type AdminUser = { id: string; email: string; displayName: string; status: string; platformRole: string; emailVerified: boolean; createdAt: string; lastLoginAt?: string }
+
+export function AccountPage() {
+  const { user } = useAuth()
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [otp, setOtp] = useState('')
+  const [setupPassword, setSetupPassword] = useState('')
+  if (!user) return null
+  const run = async (operation: () => Promise<unknown>, success: string) => { setError(''); setMessage(''); try { await operation(); setMessage(success) } catch (cause) { setError(cause instanceof ApiError ? cause.message : 'Unable to update account') } }
+  return <section className="page-stack"><div><p className="eyebrow">Account</p><h1>Security and login methods</h1><p className="lede">One TestOps account can use a password, Google, or both.</p></div><div className="card"><h2>{user.displayName}</h2><p>{user.email}</p><p><strong>Platform role:</strong> {user.platformRole}</p><p><strong>Status:</strong> {user.status}</p><p><strong>Login methods:</strong> {user.loginMethods.join(', ') || 'None'}</p>{message && <p className="form-help">{message}</p>}{error && <p className="form-error">{error}</p>}<div className="inline-actions">{!user.loginMethods.includes('GOOGLE') && <button onClick={() => void run(() => authApi.linkGoogle(), 'Redirecting to Google…')}>Link Google</button>}{user.loginMethods.includes('GOOGLE') && user.loginMethods.includes('PASSWORD') && <button className="secondary" onClick={() => void run(() => authApi.unlinkGoogle(currentPassword), 'Google login unlinked')}>Unlink Google</button>}</div></div>{user.loginMethods.includes('PASSWORD') ? <div className="card"><h2>Change password</h2><form className="form-stack" onSubmit={event => { event.preventDefault(); void run(() => authApi.changePassword({ currentPassword, newPassword }), 'Password changed; other sessions were revoked') }}><input type="password" placeholder="Current password" value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} /><input type="password" placeholder="New password (12+ characters)" value={newPassword} onChange={event => setNewPassword(event.target.value)} /><button type="submit">Change password</button></form></div> : <div className="card"><h2>Add a password login</h2><p className="form-help">We will send a one-time code to your verified email.</p><div className="inline-actions"><button onClick={() => void run(() => authApi.passwordChallenge(), 'Check your email for the code')}>Send code</button><input aria-label="Password setup code" placeholder="OTP" value={otp} onChange={event => setOtp(event.target.value)} /><input type="password" aria-label="New password" placeholder="New password" value={setupPassword} onChange={event => setSetupPassword(event.target.value)} /><button onClick={() => void run(() => authApi.passwordConfirm({ otp, password: setupPassword }), 'Password login added')}>Confirm</button></div></div>}</section>
+}
+
+export function AdminUsersPage() {
+  const [query, setQuery] = useState('')
+  const users = useQuery({ queryKey: ['admin-users', query], queryFn: () => apiFetch<AdminUser[]>(`/api/v1/admin/users${query ? `?query=${encodeURIComponent(query)}` : ''}`) })
+  return <section className="page-stack"><div><p className="eyebrow">Administration</p><h1>Users</h1><p className="lede">Manage platform roles and account status. Project roles remain scoped to each project.</p></div><label className="search-field">Search users<input value={query} onChange={event => setQuery(event.target.value)} placeholder="Email or display name" /></label><div className="card"><ul className="resource-list">{users.data?.map(user => <li key={user.id}><span><strong>{user.displayName}</strong><span className="muted"> · {user.email}</span></span><span className="inline-actions"><select value={user.platformRole} onChange={event => void apiFetch(`/api/v1/admin/users/${user.id}/platform-role`, { method: 'PATCH', body: JSON.stringify({ platformRole: event.target.value }) }).then(() => users.refetch())}><option>MEMBER</option><option>ADMIN</option></select><select value={user.status} onChange={event => void apiFetch(`/api/v1/admin/users/${user.id}/status`, { method: 'PATCH', body: JSON.stringify({ status: event.target.value }) }).then(() => users.refetch())}><option>ACTIVE</option><option>LOCKED</option><option>DISABLED</option></select></span></li>)}</ul>{users.isPending && <p>Loading users…</p>}{users.isError && <p className="form-error">Unable to load users.</p>}</div></section>
+}
