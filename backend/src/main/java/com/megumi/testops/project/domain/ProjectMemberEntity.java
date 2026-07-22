@@ -21,6 +21,7 @@ public class ProjectMemberEntity {
     @Id private UUID id;
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "project_id", nullable = false) private ProjectEntity project;
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "user_id", nullable = false) private UserEntity user;
+    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "assigned_by") private UserEntity assignedBy;
     @Column(nullable = false, length = 20) private String role;
     @Version @Column(nullable = false) private long version;
     @Column(name = "created_at", nullable = false) private Instant createdAt;
@@ -29,10 +30,12 @@ public class ProjectMemberEntity {
     public ProjectMemberEntity(ProjectEntity project, UserEntity user, String role, Instant now) {
         this.id = UUID.randomUUID(); this.project = project; this.user = user; this.role = role; this.createdAt = now; this.updatedAt = now;
     }
+    public void assignBy(UserEntity actor) { this.assignedBy = actor; }
     public void changeRole(String role, Instant now) { this.role = role; this.updatedAt = now; }
     public UUID getId() { return id; }
     public ProjectEntity getProject() { return project; }
     public UserEntity getUser() { return user; }
     public String getRole() { return role; }
     public long getVersion() { return version; }
+    public UserEntity getAssignedBy() { return assignedBy; }
 }

@@ -13,7 +13,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 
 public final class TestOpsJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
-    private static final Set<String> ALLOWED_ROLES = Set.of("ADMIN", "TEST_MANAGER", "MEMBER");
+    private static final Set<String> ALLOWED_ROLES = Set.of("ADMIN", "MEMBER");
 
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {

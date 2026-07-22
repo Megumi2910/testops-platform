@@ -97,6 +97,7 @@ testops:
       otp-resend-ip-attempts: ${AUTH_OTP_RESEND_IP_LIMIT:5}
       otp-resend-ip-window: ${AUTH_OTP_RESEND_IP_WINDOW:PT1H}
   execution:
+    worker-enabled: ${EXECUTION_WORKER_ENABLED:true}
     worker-count: ${EXECUTION_WORKER_COUNT:1}
     queue-capacity: ${EXECUTION_QUEUE_CAPACITY:20}
     claim-interval: ${EXECUTION_CLAIM_INTERVAL:PT2S}

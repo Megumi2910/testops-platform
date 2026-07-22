@@ -7,26 +7,27 @@ import java.time.Instant;
 import java.util.Locale;
 
 import com.megumi.testops.auth.config.AuthProperties;
-import com.megumi.testops.auth.domain.RoleEntity;
+import com.megumi.testops.auth.domain.PlatformRole;
+import com.megumi.testops.auth.domain.LocalCredentialEntity;
 import com.megumi.testops.auth.domain.UserEntity;
-import com.megumi.testops.auth.repository.RoleRepository;
+import com.megumi.testops.auth.repository.LocalCredentialRepository;
 import com.megumi.testops.auth.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
 
-public final class BootstrapAdminService {
+public class BootstrapAdminService {
 
     private final UserRepository users;
-    private final RoleRepository roles;
+    private final LocalCredentialRepository credentials;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     private final AuthProperties.Bootstrap properties;
     private final Clock clock;
 
-    public BootstrapAdminService(UserRepository users, RoleRepository roles,
+    public BootstrapAdminService(UserRepository users, LocalCredentialRepository credentials,
             org.springframework.security.crypto.password.PasswordEncoder passwordEncoder,
             AuthProperties.Bootstrap properties, Clock clock) {
         this.users = users;
-        this.roles = roles;
+        this.credentials = credentials;
         this.passwordEncoder = passwordEncoder;
         this.properties = properties;
         this.clock = clock;
@@ -44,11 +45,9 @@ public final class BootstrapAdminService {
         }
         if (password.length() < 12) throw new IllegalStateException("Bootstrap admin password is invalid");
 
-        RoleEntity adminRole = roles.findByCode("ADMIN")
-                .orElseThrow(() -> new IllegalStateException("ADMIN role is missing"));
         UserEntity existing = users.findByEmail(email).orElse(null);
         if (existing != null) {
-            if (!existing.getRoles().contains(adminRole)) {
+            if (existing.getPlatformRole() != PlatformRole.ADMIN) {
                 throw new IllegalStateException("Bootstrap admin email belongs to a non-admin account");
             }
             return;
@@ -57,9 +56,10 @@ public final class BootstrapAdminService {
             throw new IllegalStateException("Bootstrap admin cannot create an account after users already exist");
         }
         Instant now = Instant.now(clock);
-        UserEntity user = new UserEntity(email, passwordEncoder.encode(password), properties.displayName().trim(),
+        UserEntity user = new UserEntity(email, properties.displayName().trim(),
                 "ACTIVE", true, now);
-        user.addRole(adminRole);
+        user.setPlatformRole(PlatformRole.ADMIN);
         users.save(user);
+        credentials.save(new LocalCredentialEntity(user, passwordEncoder.encode(password), now));
     }
 }

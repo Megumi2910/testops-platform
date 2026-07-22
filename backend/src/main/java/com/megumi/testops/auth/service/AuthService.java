@@ -4,9 +4,9 @@ import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Locale;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,12 +18,12 @@ import com.megumi.testops.auth.api.UserSummaryResponse;
 import com.megumi.testops.auth.api.VerifyEmailRequest;
 import com.megumi.testops.auth.config.AuthProperties;
 import com.megumi.testops.auth.domain.EmailVerificationChallengeEntity;
-import com.megumi.testops.auth.domain.RoleEntity;
 import com.megumi.testops.auth.domain.OAuthAccountEntity;
+import com.megumi.testops.auth.domain.LocalCredentialEntity;
 import com.megumi.testops.auth.domain.UserEntity;
 import com.megumi.testops.auth.repository.EmailVerificationChallengeRepository;
 import com.megumi.testops.auth.repository.OAuthAccountRepository;
-import com.megumi.testops.auth.repository.RoleRepository;
+import com.megumi.testops.auth.repository.LocalCredentialRepository;
 import com.megumi.testops.auth.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
@@ -31,7 +31,7 @@ import jakarta.transaction.Transactional;
 public class AuthService {
 
     private final UserRepository users;
-    private final RoleRepository roles;
+    private final LocalCredentialRepository credentials;
     private final EmailVerificationChallengeRepository challenges;
     private final OAuthAccountRepository oauthAccounts;
     private final PasswordEncoder passwordEncoder;
@@ -45,14 +45,14 @@ public class AuthService {
     private final Clock clock;
     private final SecureRandom random = new SecureRandom();
 
-    public AuthService(UserRepository users, RoleRepository roles,
+    public AuthService(UserRepository users, LocalCredentialRepository credentials,
             EmailVerificationChallengeRepository challenges, OAuthAccountRepository oauthAccounts,
             PasswordEncoder passwordEncoder,
             OtpHasher otpHasher, EmailDeliveryService emailDelivery, JwtTokenService jwtTokens,
             RefreshTokenService refreshTokens, AuditService audit, AuthRateLimiter rateLimiter,
             AuthProperties properties, Clock clock) {
         this.users = users;
-        this.roles = roles;
+        this.credentials = credentials;
         this.challenges = challenges;
         this.oauthAccounts = oauthAccounts;
         this.passwordEncoder = passwordEncoder;
@@ -77,13 +77,11 @@ public class AuthService {
         if (users.existsByEmail(email)) {
             throw new AuthException(HttpStatus.CONFLICT, "email_unavailable", "Unable to create an account with this email");
         }
-        RoleEntity member = roles.findByCode("MEMBER")
-                .orElseThrow(() -> new IllegalStateException("MEMBER role is missing"));
         Instant now = Instant.now(clock);
-        UserEntity user = new UserEntity(email, passwordEncoder.encode(request.password()), request.displayName().trim(),
+        UserEntity user = new UserEntity(email, request.displayName().trim(),
                 "ACTIVE", false, now);
-        user.addRole(member);
         users.save(user);
+        credentials.save(new LocalCredentialEntity(user, passwordEncoder.encode(request.password()), now));
         issueAndSendChallenge(user, ip, now);
         audit.record(user, "REGISTRATION_REQUESTED", true, ip, null, null);
     }
@@ -138,7 +136,8 @@ public class AuthService {
         rateLimiter.check("login-email", email, properties.limits().loginFailures(), properties.limits().loginWindow());
         rateLimiter.check("login-ip", ip, properties.limits().loginIpAttempts(), properties.limits().loginWindow());
         UserEntity user = users.findByEmail(email).orElse(null);
-        if (user == null || user.getPasswordHash() == null || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+        LocalCredentialEntity credential = user == null ? null : credentials.findByUserId(user.getId()).orElse(null);
+        if (user == null || credential == null || !passwordEncoder.matches(request.password(), credential.getPasswordHash())) {
             if (user != null) audit.record(user, "LOGIN_FAILED", false, ip, userAgent, null);
             throw new AuthException(HttpStatus.UNAUTHORIZED, "login_invalid", "Email or password is incorrect");
         }
@@ -168,11 +167,8 @@ public class AuthService {
                 throw new AuthException(HttpStatus.CONFLICT, "account_link_required",
                         "This email already has a password account; sign in with your password before linking Google");
             }
-            RoleEntity member = roles.findByCode("MEMBER")
-                    .orElseThrow(() -> new IllegalStateException("MEMBER role is missing"));
-            user = new UserEntity(normalizedEmail, null, displayName == null || displayName.isBlank() ? normalizedEmail : displayName,
+            user = new UserEntity(normalizedEmail, displayName == null || displayName.isBlank() ? normalizedEmail : displayName,
                     "ACTIVE", true, now);
-            user.addRole(member);
             user = users.save(user);
             oauthAccounts.save(new OAuthAccountEntity(user, provider, subject, normalizedEmail, now));
         }
@@ -181,6 +177,18 @@ public class AuthService {
         }
         user.markLogin(now);
         audit.record(user, "GOOGLE_LOGIN_SUCCEEDED", true, ip, userAgent, null);
+        return issueSession(user, userAgent, ip);
+    }
+
+    @Transactional
+    public SessionResult linkGoogle(UUID userId, String subject, String email, String displayName, String avatarUrl,
+            String userAgent, String ip) {
+        UserEntity user = userById(userId);
+        String normalizedEmail = normalizeEmail(email);
+        if (!user.isEmailVerified() || !user.getEmail().equals(normalizedEmail)) throw new AuthException(HttpStatus.CONFLICT, "email_mismatch", "The Google account email must match the verified account email");
+        if (oauthAccounts.findByProviderAndProviderSubject("GOOGLE", subject).isPresent()) throw new AuthException(HttpStatus.CONFLICT, "google_account_linked", "This Google account is already linked");
+        oauthAccounts.save(new OAuthAccountEntity(user, "GOOGLE", subject, normalizedEmail, Instant.now(clock)));
+        user.incrementTokenVersion(Instant.now(clock));
         return issueSession(user, userAgent, ip);
     }
 
@@ -213,6 +221,42 @@ public class AuthService {
                 .orElseThrow(() -> new AuthException(HttpStatus.UNAUTHORIZED, "user_not_found", "User was not found")));
     }
 
+    @Transactional
+    public void changePassword(UUID userId, String currentPassword, String newPassword) {
+        UserEntity user = userById(userId);
+        LocalCredentialEntity credential = credentials.findByUserId(userId).orElseThrow(() -> new AuthException(HttpStatus.CONFLICT, "password_not_configured", "This account does not have a password login"));
+        if (!passwordEncoder.matches(currentPassword, credential.getPasswordHash())) throw new AuthException(HttpStatus.UNAUTHORIZED, "password_invalid", "Current password is incorrect");
+        credential.changePassword(passwordEncoder.encode(newPassword), Instant.now(clock));
+        user.incrementTokenVersion(Instant.now(clock));
+        refreshTokens.revokeAll(user, "PASSWORD_CHANGED");
+    }
+
+    @Transactional
+    public void beginPasswordSetup(UUID userId, String ip) {
+        UserEntity user = userById(userId);
+        if (credentials.existsByUserId(userId)) throw new AuthException(HttpStatus.CONFLICT, "password_already_configured", "This account already has a password login");
+        Instant now = Instant.now(clock);
+        issueAndSendChallenge(user, "ADD_PASSWORD", ip, now);
+    }
+
+    @Transactional
+    public void confirmPasswordSetup(UUID userId, String otp, String password) {
+        UserEntity user = userById(userId);
+        EmailVerificationChallengeEntity challenge = challenges.findTopByUserIdAndPurposeAndConsumedAtIsNullAndInvalidatedAtIsNullOrderByIssuedAtDesc(userId, "ADD_PASSWORD").orElseThrow(() -> new AuthException(HttpStatus.BAD_REQUEST, "verification_unavailable", "Verification code is invalid or expired"));
+        Instant now = Instant.now(clock);
+        if (!challenge.isActive(now) || !otpHasher.matches(user.getEmail(), otp, challenge.getOtpHash())) throw new AuthException(HttpStatus.BAD_REQUEST, "verification_invalid", "Verification code is invalid or expired");
+        challenge.consume(now); credentials.save(new LocalCredentialEntity(user, passwordEncoder.encode(password), now));
+    }
+
+    @Transactional
+    public void unlinkGoogle(UUID userId, String currentPassword) {
+        UserEntity user = userById(userId);
+        LocalCredentialEntity credential = credentials.findByUserId(userId).orElseThrow(() -> new AuthException(HttpStatus.CONFLICT, "password_required", "Set a password before unlinking Google"));
+        if (!passwordEncoder.matches(currentPassword, credential.getPasswordHash())) throw new AuthException(HttpStatus.UNAUTHORIZED, "password_invalid", "Current password is incorrect");
+        oauthAccounts.findByUserIdAndProvider(userId, "GOOGLE").ifPresent(oauthAccounts::delete);
+        user.incrementTokenVersion(Instant.now(clock)); refreshTokens.revokeAll(user, "GOOGLE_UNLINKED");
+    }
+
     private SessionResult issueSession(UserEntity user, String userAgent, String ip) {
         JwtTokenService.TokenIssue access = jwtTokens.issue(user);
         RefreshTokenService.IssuedRefreshToken refresh = refreshTokens.issue(user, userAgent, ip);
@@ -220,9 +264,11 @@ public class AuthService {
                 refresh.value(), refresh.expiresAt());
     }
 
-    private void issueAndSendChallenge(UserEntity user, String ip, Instant now) {
+    private void issueAndSendChallenge(UserEntity user, String ip, Instant now) { issueAndSendChallenge(user, "REGISTRATION", ip, now); }
+
+    private void issueAndSendChallenge(UserEntity user, String purpose, String ip, Instant now) {
         String otp = String.format(Locale.ROOT, "%06d", random.nextInt(1_000_000));
-        EmailVerificationChallengeEntity challenge = new EmailVerificationChallengeEntity(user,
+        EmailVerificationChallengeEntity challenge = new EmailVerificationChallengeEntity(user, purpose,
                 otpHasher.hash(user.getEmail(), otp), now, now.plus(properties.email().otpLifetime()),
                 now.plus(properties.email().resendDelay()), ip);
         challenges.save(challenge);
@@ -240,11 +286,16 @@ public class AuthService {
                 .orElseThrow(() -> new AuthException(HttpStatus.BAD_REQUEST, "verification_unavailable", "Verification code is invalid or expired"));
     }
 
+    private UserEntity userById(UUID id) { return users.findById(id).orElseThrow(() -> new AuthException(HttpStatus.UNAUTHORIZED, "user_not_found", "User was not found")); }
+
     private static String normalizeEmail(String email) { return email.trim().toLowerCase(Locale.ROOT); }
 
-    private static UserSummaryResponse toSummary(UserEntity user) {
-        Set<String> roleCodes = user.getRoles().stream().map(RoleEntity::getCode).collect(Collectors.toUnmodifiableSet());
-        return new UserSummaryResponse(user.getId(), user.getEmail(), user.getDisplayName(), user.isEmailVerified(), roleCodes);
+    private UserSummaryResponse toSummary(UserEntity user) {
+        HashSet<String> methods = new HashSet<>();
+        if (credentials.existsByUserId(user.getId())) methods.add("PASSWORD");
+        if (oauthAccounts.existsByUserIdAndProvider(user.getId(), "GOOGLE")) methods.add("GOOGLE");
+        return new UserSummaryResponse(user.getId(), user.getEmail(), user.getDisplayName(), user.getAvatarUrl(),
+                user.isEmailVerified(), user.getStatus(), user.getPlatformRole().name(), Set.copyOf(methods));
     }
 
     public record SessionResult(AuthResponse response, String refreshToken, Instant refreshExpiresAt) { }

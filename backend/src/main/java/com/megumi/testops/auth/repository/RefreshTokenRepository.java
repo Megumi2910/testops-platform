@@ -2,6 +2,7 @@ package com.megumi.testops.auth.repository;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -13,6 +14,8 @@ import jakarta.persistence.LockModeType;
 import com.megumi.testops.auth.domain.RefreshTokenEntity;
 
 public interface RefreshTokenRepository extends JpaRepository<RefreshTokenEntity, UUID> {
+
+    List<RefreshTokenEntity> findByUserIdAndRevokedAtIsNullAndExpiresAtAfterOrderByIssuedAtDesc(UUID userId, java.time.Instant now);
 
     Optional<RefreshTokenEntity> findByTokenHash(String tokenHash);
 

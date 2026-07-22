@@ -35,7 +35,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import com.megumi.testops.auth.repository.AuthAuditEventRepository;
 import com.megumi.testops.auth.repository.EmailVerificationChallengeRepository;
 import com.megumi.testops.auth.repository.RefreshTokenRepository;
-import com.megumi.testops.auth.repository.RoleRepository;
+import com.megumi.testops.auth.repository.LocalCredentialRepository;
 import com.megumi.testops.auth.repository.UserRepository;
 import com.megumi.testops.auth.service.AuditService;
 import com.megumi.testops.auth.service.AuthService;
@@ -124,9 +124,9 @@ public class AuthRuntimeConfiguration {
     }
 
     @Bean
-    BootstrapAdminService bootstrapAdminService(UserRepository users, RoleRepository roles,
+    BootstrapAdminService bootstrapAdminService(UserRepository users, LocalCredentialRepository credentials,
             PasswordEncoder passwordEncoder, AuthProperties properties, Clock clock) {
-        return new BootstrapAdminService(users, roles, passwordEncoder, properties.bootstrap(), clock);
+        return new BootstrapAdminService(users, credentials, passwordEncoder, properties.bootstrap(), clock);
     }
 
     @Bean
@@ -135,12 +135,12 @@ public class AuthRuntimeConfiguration {
     }
 
     @Bean
-    AuthService authService(UserRepository users, RoleRepository roles, EmailVerificationChallengeRepository challenges,
+    AuthService authService(UserRepository users, LocalCredentialRepository credentials, EmailVerificationChallengeRepository challenges,
             com.megumi.testops.auth.repository.OAuthAccountRepository oauthAccounts,
             PasswordEncoder passwordEncoder, OtpHasher otpHasher, EmailDeliveryService emailDelivery,
             JwtTokenService jwtTokens, RefreshTokenService refreshTokens, AuditService audit,
             AuthRateLimiter rateLimiter, AuthProperties properties, Clock clock) {
-        return new AuthService(users, roles, challenges, oauthAccounts, passwordEncoder, otpHasher, emailDelivery,
+        return new AuthService(users, credentials, challenges, oauthAccounts, passwordEncoder, otpHasher, emailDelivery,
                 jwtTokens, refreshTokens, audit, rateLimiter, properties, clock);
     }
 

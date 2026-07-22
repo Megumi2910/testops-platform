@@ -15,7 +15,7 @@ import com.megumi.testops.shared.api.ApiException;
 
 class ProjectTargetPolicyTest {
     private final PlatformProperties properties = new PlatformProperties(
-            new PlatformProperties.Execution(1, 10, Duration.ofSeconds(1), Duration.ofSeconds(5), Duration.ofMinutes(1), Duration.ofMinutes(5), Duration.ofSeconds(10), "chromium"),
+            new PlatformProperties.Execution(1, 10, Duration.ofSeconds(1), Duration.ofSeconds(5), Duration.ofMinutes(1), Duration.ofMinutes(5), Duration.ofSeconds(10), "chromium", true),
             new PlatformProperties.Artifact(Path.of("artifacts")), new PlatformProperties.Target(List.of("https://shop.example.test", "http://localhost:8080")));
 
     @Test void acceptsConfiguredOriginAndNormalizesTrailingSlash() { assertEquals("https://shop.example.test", new ProjectTargetPolicy(properties).validate("https://SHOP.example.test/")); }

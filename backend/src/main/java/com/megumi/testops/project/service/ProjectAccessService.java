@@ -36,7 +36,10 @@ public class ProjectAccessService {
         return members.findByProjectIdAndUserId(project.getId(), user.getId()).orElseThrow(() -> error(HttpStatus.FORBIDDEN, "project_access_denied", "You do not have access to this project"));
     }
     public boolean globalAdmin(Jwt jwt) { return jwt != null && hasRole(jwt, "ADMIN"); }
-    public boolean globalManager(Jwt jwt) { return jwt != null && (hasRole(jwt, "ADMIN") || hasRole(jwt, "TEST_MANAGER")); }
+    public boolean globalManager(Jwt jwt) { return globalAdmin(jwt); }
+    public boolean canView(ProjectEntity project, UserEntity user, Jwt jwt) {
+        return globalAdmin(jwt) || members.findByProjectIdAndUserId(project.getId(), user.getId()).isPresent();
+    }
     public void requireProjectRole(ProjectEntity project, UserEntity user, Jwt jwt, Set<String> roles) {
         if (globalAdmin(jwt)) return;
         if (!roles.contains(membership(project, user).getRole())) throw error(HttpStatus.FORBIDDEN, "project_role_required", "Your project role does not allow this operation");

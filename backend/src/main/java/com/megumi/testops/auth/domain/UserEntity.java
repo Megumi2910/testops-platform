@@ -1,19 +1,15 @@
 package com.megumi.testops.auth.domain;
 
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
@@ -28,9 +24,6 @@ public class UserEntity {
     @Column(nullable = false, unique = true, length = 254)
     private String email;
 
-    @Column(name = "password_hash", length = 255)
-    private String passwordHash;
-
     @Column(name = "display_name", nullable = false, length = 100)
     private String displayName;
 
@@ -39,6 +32,10 @@ public class UserEntity {
 
     @Column(nullable = false, length = 20)
     private String status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "platform_role", nullable = false, length = 20)
+    private PlatformRole platformRole;
 
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified;
@@ -59,30 +56,23 @@ public class UserEntity {
     @Column(nullable = false)
     private long version;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<RoleEntity> roles = new HashSet<>();
-
     protected UserEntity() {
     }
 
-    public UserEntity(String email, String passwordHash, String displayName, String status,
+    public UserEntity(String email, String displayName, String status,
             boolean emailVerified, Instant now) {
         this.email = email;
-        this.passwordHash = passwordHash;
         this.displayName = displayName;
         this.status = status;
+        this.platformRole = PlatformRole.MEMBER;
         this.emailVerified = emailVerified;
         this.tokenVersion = 0;
         this.createdAt = now;
         this.updatedAt = now;
     }
 
-    public void addRole(RoleEntity role) {
-        roles.add(role);
-    }
+    public void setPlatformRole(PlatformRole role) { this.platformRole = role; }
+    public void setStatus(String status, Instant now) { this.status = status; this.updatedAt = now; }
 
     public void markVerified(Instant now) {
         emailVerified = true;
@@ -101,12 +91,12 @@ public class UserEntity {
 
     public UUID getId() { return id; }
     public String getEmail() { return email; }
-    public String getPasswordHash() { return passwordHash; }
     public String getDisplayName() { return displayName; }
     public String getAvatarUrl() { return avatarUrl; }
     public String getStatus() { return status; }
     public boolean isEmailVerified() { return emailVerified; }
     public int getTokenVersion() { return tokenVersion; }
     public Instant getLastLoginAt() { return lastLoginAt; }
-    public Set<RoleEntity> getRoles() { return roles; }
+    public Instant getCreatedAt() { return createdAt; }
+    public PlatformRole getPlatformRole() { return platformRole; }
 }

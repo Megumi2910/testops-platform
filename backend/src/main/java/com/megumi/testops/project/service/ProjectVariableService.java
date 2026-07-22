@@ -29,13 +29,13 @@ public class ProjectVariableService {
     }
     @Transactional
     public ProjectDtos.VariableResponse create(Jwt jwt, UUID projectId, ProjectDtos.VariableRequest request) {
-        UserEntity user = access.user(jwt); ProjectEntity project = access.project(projectId); access.requireProjectRole(project, user, jwt, java.util.Set.of("OWNER", "ADMIN", "EDITOR")); ensureActive(project);
+        UserEntity user = access.user(jwt); ProjectEntity project = access.project(projectId); access.requireProjectRole(project, user, jwt, java.util.Set.of("PROJECT_MANAGER")); ensureActive(project);
         String key = normalizeKey(request.key()); if (variables.countByProjectId(projectId) >= 100) throw error(HttpStatus.CONFLICT, "variable_limit", "A project can contain at most 100 variables"); if (variables.findByProjectIdAndKey(projectId, key).isPresent()) throw error(HttpStatus.CONFLICT, "variable_exists", "Variable key already exists");
         ProjectVariableEntity entity = build(project, key, request, Instant.now()); project.touch(Instant.now()); return response(variables.save(entity), true);
     }
     @Transactional
     public ProjectDtos.VariableResponse update(Jwt jwt, UUID projectId, String key, ProjectDtos.VariableRequest request) {
-        UserEntity user = access.user(jwt); ProjectEntity project = access.project(projectId); access.requireProjectRole(project, user, jwt, java.util.Set.of("OWNER", "ADMIN", "EDITOR")); ensureActive(project);
+        UserEntity user = access.user(jwt); ProjectEntity project = access.project(projectId); access.requireProjectRole(project, user, jwt, java.util.Set.of("PROJECT_MANAGER")); ensureActive(project);
         ProjectVariableEntity entity = variables.findByProjectIdAndKey(projectId, normalizeKey(key)).orElseThrow(() -> error(HttpStatus.NOT_FOUND, "variable_not_found", "Variable was not found")); if (entity.isSecret() != request.secret()) throw error(HttpStatus.BAD_REQUEST, "variable_classification_immutable", "Variable secret classification cannot change");
         if (request.projectVersion() != null && project.getVersion() != request.projectVersion()) throw error(HttpStatus.CONFLICT, "stale_version", "The resource changed; reload and try again");
         String value = requiredValue(request); if (entity.isSecret()) { ProjectVariableCrypto.Encrypted encrypted = crypto.encrypt(projectId.toString(), entity.getKey(), value, properties.variableKeyVersion()); entity.updateEncrypted(encrypted.ciphertext(), encrypted.nonce(), properties.variableKeyVersion(), Instant.now()); } else entity.updatePlain(value, Instant.now()); project.touch(Instant.now());
@@ -43,7 +43,7 @@ public class ProjectVariableService {
     }
     @Transactional
     public void delete(Jwt jwt, UUID projectId, String key, Long projectVersion) {
-        UserEntity user = access.user(jwt); ProjectEntity project = access.project(projectId); access.requireProjectRole(project, user, jwt, java.util.Set.of("OWNER", "ADMIN")); ensureActive(project); if (projectVersion != null && project.getVersion() != projectVersion) throw error(HttpStatus.CONFLICT, "stale_version", "The resource changed; reload and try again");
+        UserEntity user = access.user(jwt); ProjectEntity project = access.project(projectId); access.requireProjectRole(project, user, jwt, java.util.Set.of("PROJECT_MANAGER")); ensureActive(project); if (projectVersion != null && project.getVersion() != projectVersion) throw error(HttpStatus.CONFLICT, "stale_version", "The resource changed; reload and try again");
         ProjectVariableEntity entity = variables.findByProjectIdAndKey(projectId, normalizeKey(key)).orElseThrow(() -> error(HttpStatus.NOT_FOUND, "variable_not_found", "Variable was not found")); variables.delete(entity); project.touch(Instant.now());
     }
     private ProjectVariableEntity build(ProjectEntity project, String key, ProjectDtos.VariableRequest request, Instant now) { String value = requiredValue(request); if (request.secret()) { if (!properties.secretVariablesEnabled()) throw error(HttpStatus.CONFLICT, "secret_variables_disabled", "Secret variables are disabled by configuration"); ProjectVariableCrypto.Encrypted encrypted = crypto.encrypt(project.getId().toString(), key, value, properties.variableKeyVersion()); return ProjectVariableEntity.encrypted(project, key, encrypted.ciphertext(), encrypted.nonce(), properties.variableKeyVersion(), now); } return ProjectVariableEntity.plain(project, key, value, now); }

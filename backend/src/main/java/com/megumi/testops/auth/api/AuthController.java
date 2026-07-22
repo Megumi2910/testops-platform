@@ -13,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -108,6 +109,38 @@ public class AuthController {
                 .build();
     }
 
+    @PostMapping("/me/password/challenge")
+    public ResponseEntity<MessageResponse> passwordChallenge(@AuthenticationPrincipal Jwt jwt, HttpServletRequest request) {
+        service().beginPasswordSetup(subject(jwt), clientIp(request));
+        return ResponseEntity.accepted().body(new MessageResponse("Check your email for a verification code"));
+    }
+
+    @PostMapping("/me/password/confirm")
+    public ResponseEntity<Void> passwordConfirm(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody PasswordSetupRequest body) {
+        service().confirmPasswordSetup(subject(jwt), body.otp(), body.password());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/me/password")
+    public ResponseEntity<Void> passwordChange(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody PasswordChangeRequest body) {
+        service().changePassword(subject(jwt), body.currentPassword(), body.newPassword());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/me/login-methods/google/unlink")
+    public ResponseEntity<Void> googleUnlink(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody GoogleUnlinkRequest body) {
+        service().unlinkGoogle(subject(jwt), body.currentPassword());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/me/login-methods/google/link-intent")
+    public ResponseEntity<java.util.Map<String, String>> googleLinkIntent(@AuthenticationPrincipal Jwt jwt, HttpServletRequest request) {
+        if (jwt == null) throw new AuthException(org.springframework.http.HttpStatus.UNAUTHORIZED, "authentication_required", "Authentication is required");
+        if (!properties.google().enabled()) throw new AuthException(org.springframework.http.HttpStatus.NOT_FOUND, "google_disabled", "Google sign-in is not enabled");
+        request.getSession(true).setAttribute("TESTOPS_GOOGLE_LINK_USER", jwt.getSubject());
+        return ResponseEntity.ok(java.util.Map.of("authorizationUrl", "/oauth2/authorization/google"));
+    }
+
     private AuthService service() {
         AuthService service = authService.getIfAvailable();
         if (service == null) throw new AuthException(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE,
@@ -128,6 +161,11 @@ public class AuthController {
             if (properties.cookie().name().equals(cookie.getName())) return cookie.getValue();
         }
         return null;
+    }
+
+    private static UUID subject(Jwt jwt) {
+        if (jwt == null) throw new AuthException(org.springframework.http.HttpStatus.UNAUTHORIZED, "authentication_required", "Authentication is required");
+        return UUID.fromString(jwt.getSubject());
     }
 
     private static String clientIp(HttpServletRequest request) {

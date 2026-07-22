@@ -25,7 +25,8 @@ public record PlatformProperties(Execution execution, Artifact artifact, Target 
             Duration staleAfter,
             Duration maxDuration,
             Duration defaultStepTimeout,
-            String browser) {
+            String browser,
+            boolean workerEnabled) {
 
         public Execution {
             if (workerCount < 1) {
@@ -40,7 +41,7 @@ public record PlatformProperties(Execution execution, Artifact artifact, Target 
             requirePositive(maxDuration, "max-duration");
             requirePositive(defaultStepTimeout, "default-step-timeout");
             if (!"chromium".equals(browser)) {
-                throw new IllegalArgumentException("browser must be chromium in Milestone 1");
+                throw new IllegalArgumentException("browser must be chromium in Milestone 4");
             }
         }
 
