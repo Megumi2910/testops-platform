@@ -268,6 +268,10 @@ Read the documents in this order:
 9. [Operations, scaling, and maintenance](04-operations-scaling-and-maintenance.md) — operating the system.
 10. [Risks, roadmap, and decisions](05-risks-roadmap-and-decisions.md) — tradeoffs and future work.
 11. [Identity and authorization milestone](06-milestone-5-identity-and-authorization.md) — the current unified account and permission model.
+12. [Product readiness milestone](11-milestone-6-product-readiness.md) — reporting, onboarding, sessions, and retention.
+13. [Local target testing guide](12-local-target-testing-guide.md) — safe Docker-to-host browser testing.
+14. [Guided local-target follow-ups](13-guided-local-target-follow-ups.md) — browser checks, metadata, builder behavior, and negative scenarios.
+15. [Milestone 9 release candidate](14-milestone-9-release-candidate.md) — release gates, verification evidence, and publication boundaries.
 
 ## 10. The fastest way to verify your understanding
 
@@ -298,4 +302,3 @@ PostgreSQL row
 ```
 
 If you can do that for login, creating a case, and queuing an execution, you understand the core of the project.
-

@@ -409,4 +409,3 @@ For a missing or stale screen, inspect in this order:
 8. Does the component have explicit pending, error, empty, and success states?
 
 The browser devtools Network panel plus the backend route/controller is usually enough to locate the boundary where behavior diverges.
-

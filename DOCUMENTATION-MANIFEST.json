@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestones 1 through 5 are implemented as the current foundation; dashboards, scheduling, notifications, distributed workers, and full retention remain planned; source-dependent facts are reconciled after each implementation slice",
+  "source_status": "Milestone 7 adds guided local-target testing, browser-based target checks, structured action metadata, editable case authoring, and negative E2E coverage; scheduling, notifications, and distributed workers remain planned",
   "documents": [
     {
       "path": "docs/00-project-implementation-handbook.md",
@@ -49,6 +49,14 @@
     {
       "path": "docs/06-milestone-5-identity-and-authorization.md",
       "role": "Unified accounts, platform/project roles, permissions, admin operations, and migration notes"
+    },
+    {
+      "path": "docs/11-milestone-6-product-readiness.md",
+      "role": "Registration integrity, self-service onboarding, reporting, dashboard, retention, and operational readiness"
+    },
+    {
+      "path": "docs/13-guided-local-target-follow-ups.md",
+      "role": "Docker host mapping, browser target checks, structured metadata, editable case authoring, and negative E2E scenarios"
     }
   ]
 }

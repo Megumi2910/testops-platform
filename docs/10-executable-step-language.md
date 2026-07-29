@@ -296,4 +296,3 @@ If you add a locator type, update:
 4. frontend selector UI;
 5. validation tests;
 6. documentation.
-

@@ -1,8 +1,8 @@
 # TestOps Platform — Managed Browser Testing for an Existing E-commerce Application
 
-> **Documentation status:** Milestones 1–5 are implemented as the current foundation; documentation is kept in sync with the source. Reporting, scheduling, notifications, and distributed execution remain planned.
+> **Documentation status:** Milestone 9 is the release-candidate closure for the combined identity, reporting, guided local-target testing, and workspace work. It adds aggregate onboarding counts, focused frontend route modules, deterministic enabled/disabled E2E gates, and reconciled release documentation. Scheduling, notifications, and distributed execution remain planned.
 >
-> The repository contains the Milestone 1 runtime, the Milestone 2 identity foundation plus stabilization, the Milestone 3 project/test-definition management foundation, and the Milestone 4 queue/runner/web execution workflow. Dashboards, scheduled runs, distributed workers, full artifact retention, and live target probing remain intentionally deferred and are marked as future work in the deep documentation.
+> The repository contains the Milestone 1–8 product foundation and the Milestone 9 release-candidate hardening work. See the release-candidate document for verified commands, remaining environment-dependent checks, and publication boundaries.
 
 TestOps Platform is an internal web application for defining, executing, and reviewing automated browser tests against an existing e-commerce website. It gives administrators, test managers, developers, and testers one place to manage projects, test suites, reusable test cases, Playwright executions, failure evidence, and quality trends.
 
@@ -18,6 +18,7 @@ The current implementation milestone provides:
 - React/TypeScript/Vite frontend shell;
 - PostgreSQL and Flyway wiring;
 - a summary Actuator health endpoint;
+- opt-in local-development target bridging with exact allowlist enforcement and browser-based connectivity checks;
 - deterministic Playwright launch verification;
 - Docker Compose services for `postgres`, `backend`, and `frontend`.
 - canonical action/locator step editing with aggregate validation;
@@ -159,7 +160,7 @@ The Milestone 1 foundation pins the following versions in its manifests, lockfil
 | CI/CD | GitHub Actions |
 | API documentation | OpenAPI API metadata is opt-in with `OPENAPI_ENABLED`; Swagger UI is not bundled |
 
-Milestone 4 runs a bounded in-process worker, persists case/step results, exposes execution history/cancellation, and provides the first usable execution workspace. Scheduled runs, dashboards/trends, distributed workers, and full artifact retention remain future work.
+Milestone 4 runs a bounded in-process worker, persists case/step results, exposes execution history/cancellation, and provides the first usable execution workspace. Milestone 6 adds reporting-quality snapshots, dashboard summaries, per-user sessions, self-service project creation, and opt-in artifact retention.
 
 ## Why this shape
 
@@ -227,6 +228,8 @@ docker compose up --build
 
 For an authenticated local workflow, run `scripts/setup-local.ps1` (PowerShell) or `scripts/setup-local.sh` (POSIX shell) first. The scripts generate ignored RSA/crypto files and prompt for a local bootstrap-admin password; they do not reset database volumes or contact the target site. For a non-interactive local setup with password registration and Google enabled, use `scripts/setup-local.ps1 -Force -GenerateBootstrapPassword -EnableEmailDelivery -EnableGoogle` or `scripts/setup-local.sh --force --generate-bootstrap-password --enable-email-delivery --enable-google`. This preserves existing scoped `.env` files, merges the selected auth flags, and stores the generated bootstrap password only in `backend/.secrets/bootstrap-admin-password`.
 
+Project creation also requires an explicit target allowlist. Set it to the HTTP(S) origins that the worker is allowed to visit, for example `scripts/setup-local.ps1 -Force -TargetAllowedOrigins https://staging-shop.example.com` or `scripts/setup-local.sh --force --target-allowed-origins https://staging-shop.example.com`. An empty `TARGET_ALLOWED_ORIGINS` intentionally keeps project creation disabled until an administrator configures a safe target.
+
 Expected local surfaces:
 
 | Surface | Intended URL |
@@ -266,8 +269,13 @@ Never commit `.env`, JWT private keys, Google client secrets, access or refresh 
 9. [Operations, scaling, and maintenance](docs/04-operations-scaling-and-maintenance.md) — local runtime, deployment, workers, queue ownership, observability, incidents, backups, and upgrade policy.
 10. [Risks, roadmap, and decisions](docs/05-risks-roadmap-and-decisions.md) — explicit limitations, delivery sequence, alternatives, tradeoffs, and change-safety notes.
 11. [Identity and authorization milestone](docs/06-milestone-5-identity-and-authorization.md) — unified accounts, platform/project roles, permissions, admin operations, and migration notes.
+12. [Product readiness milestone](docs/11-milestone-6-product-readiness.md) — registration integrity, self-service onboarding, reporting, dashboard, retention, and operational readiness.
+13. [Guided local-target follow-ups](docs/13-guided-local-target-follow-ups.md) — Docker host mapping, browser target checks, structured metadata, editable case authoring, and negative E2E scenarios.
+14. [Milestone 9 release candidate](docs/14-milestone-9-release-candidate.md) — repository hygiene, aggregate onboarding, frontend closure, release gates, and beginner-friendly verification commands.
 
 ## Verification boundary
+
+For the Docker-to-host workflow, guided case authoring, target checks, and troubleshooting, see [Local target testing guide](docs/12-local-target-testing-guide.md) and [Guided local-target follow-ups](docs/13-guided-local-target-follow-ups.md). For release verification and CI expectations, see [Milestone 9 release candidate](docs/14-milestone-9-release-candidate.md).
 
 Before describing future product capabilities as implemented, inspect and reconcile:
 

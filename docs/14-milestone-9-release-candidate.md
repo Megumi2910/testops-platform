@@ -1,0 +1,200 @@
+# Milestone 9 release candidate
+
+This milestone turns the combined identity, authorization, reporting, execution, and guided-testing work into a reproducible release candidate. It does not add a new product area. Its purpose is to make the existing product safer to build, test, review, and publish.
+
+## What changed
+
+### Repository contract
+
+- npm and `frontend/package-lock.json` are the only frontend package-manager contract.
+- `.pnpm-store/`, Playwright reports, test results, frontend build output, backend build output, runtime artifacts, and local environment files are ignored.
+- `.agents/` and `skills-lock.json` are user tooling and are not part of the product release.
+- The release branch is `codex/milestone-9-release-candidate`.
+
+Never commit `.env` files, `.secrets/`, private keys, SMTP or OAuth credentials, access/refresh tokens, local databases, or screenshots containing personal data.
+
+### Project onboarding API
+
+Every authorized project response now contains:
+
+```json
+{
+  "onboarding": {
+    "suiteCount": 1,
+    "caseCount": 3,
+    "readyCaseCount": 2,
+    "executionCount": 4
+  }
+}
+```
+
+The backend obtains all four values for a page of projects with one batched aggregate query. Archived suites, cases, and past executions remain in the historical counts. The frontend quick start reads this object directly; it no longer loads every suite and then requests its cases.
+
+### Frontend workspace
+
+The project frontend is separated into focused modules:
+
+- project list and project creation;
+- project layout and overview;
+- suite and case lists;
+- variables and members;
+- guided new-case builder;
+- saved-case editor;
+- execution history and evidence.
+
+The project layout loads the project once and provides the project, permissions, target health, onboarding counts, and absolute root path through React Router outlet context.
+
+The guided builder now provides:
+
+- stable client IDs, so validation stays with a step after reorder;
+- `?stage=details`, `?stage=steps`, and `?stage=review` URLs;
+- reload and internal-navigation warnings for unsaved changes;
+- draft, READY, and Save & run outcomes;
+- a recovery link when the case saves but queueing fails;
+- the same backend-provided action definitions for new and existing cases.
+
+## Verification for beginners
+
+Run commands from the repository root unless a step says otherwise.
+
+### 1. Install frontend dependencies
+
+```powershell
+Set-Location frontend
+npm ci
+Set-Location ..
+```
+
+`npm ci` uses the exact versions in `package-lock.json`. Do not run pnpm in this repository.
+
+### 2. Verify the frontend
+
+```powershell
+Set-Location frontend
+npm run lint
+npm run typecheck
+npm test
+npm run build
+Set-Location ..
+```
+
+Expected result:
+
+- ESLint reports no errors;
+- TypeScript reports no errors;
+- all Vitest files pass;
+- Vite creates lazy route chunks;
+- the initial entry chunk is no more than 100 KB gzip;
+- no individual route chunk exceeds 200 KB minified.
+
+### 3. Verify the backend
+
+Docker Desktop must be running because PostgreSQL integration tests use Testcontainers.
+
+```powershell
+Set-Location backend
+.\mvnw.cmd -B verify
+Set-Location ..
+```
+
+This checks Java compilation, unit tests, Flyway through V016, Hibernate query validation, PostgreSQL aggregate behavior, target-health persistence/reset, and Playwright launch.
+
+If `docker info` succeeds but Testcontainers still reports HTTP 400 from
+`npipe:////./pipe/docker_engine`, Docker Desktop's Windows socket proxy is not
+providing a usable Testcontainers endpoint. The same tests still run in the
+Linux GitHub Actions job. To verify a migration locally while diagnosing that
+environment, start a disposable PostgreSQL container and provide
+`TEST_DATABASE_URL`, `TEST_DATABASE_USERNAME`, and `TEST_DATABASE_PASSWORD` to
+the focused migration test. Do not point these variables at a database that
+contains data: the test expects an empty, disposable database.
+
+### 4. Validate Compose
+
+Create the ignored local environment files first if they do not exist:
+
+```powershell
+Copy-Item postgres_db/.env.example postgres_db/.env
+Copy-Item backend/.env.example backend/.env
+Copy-Item frontend/.env.example frontend/.env
+Copy-Item pgadmin4/.env.example pgadmin4/.env
+```
+
+Then validate:
+
+```powershell
+docker compose -f docker-compose.yml config --quiet
+docker compose -f docker-compose.yml -f docker-compose.e2e.yml config --quiet
+docker compose -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-local-disabled.yml config --quiet
+```
+
+### 5. Run enabled local-target acceptance
+
+```powershell
+docker compose -p testops-e2e -f docker-compose.yml -f docker-compose.e2e.yml up -d --build
+$env:E2E_BASE_URL = "http://127.0.0.1:3100"
+$env:MAILPIT_URL = "http://127.0.0.1:8025"
+Set-Location frontend
+npm run e2e
+Set-Location ..
+docker compose -p testops-e2e -f docker-compose.yml -f docker-compose.e2e.yml down -v
+```
+
+This proves registration/OTP, project creation, browser target checking, suite/case creation, Save & run, step outcomes, screenshots, failure position, unreachable targets, and cross-origin rejection.
+
+### 6. Run disabled local-target acceptance separately
+
+```powershell
+docker compose -p testops-e2e-disabled -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-local-disabled.yml up -d --build
+$env:E2E_DISABLED_BASE_URL = "http://127.0.0.1:3101"
+$env:MAILPIT_URL = "http://127.0.0.1:8026"
+Set-Location frontend
+npm run e2e -- local-target-disabled.spec.ts
+Set-Location ..
+docker compose -p testops-e2e-disabled -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-local-disabled.yml down -v
+```
+
+This stack sets `TARGET_LOCAL_DEV_ENABLED=false`. The localhost option must be visible but disabled with a safe reason.
+
+## CI release gates
+
+GitHub Actions runs five independent jobs:
+
+1. frontend lint, typecheck, unit tests, and build;
+2. backend compile, Chromium installation, unit tests, and PostgreSQL integration tests;
+3. container build and health smoke;
+4. enabled full-stack E2E;
+5. disabled-local-mode E2E.
+
+A release candidate is publishable only when all five jobs are green and the final diff contains no secrets, generated reports, local caches, mixed lockfiles, or unrelated `.agents` content.
+
+## Verification recorded for this candidate
+
+The following checks were run on 2026-07-29:
+
+- frontend lint, typecheck, 9 Vitest tests, and production build passed;
+- the initial entry was 99.94 KB gzip and route chunks stayed below the
+  configured limits;
+- 31 backend unit tests passed;
+- the focused PostgreSQL upgrade test migrated V001-V014 and then V015-V016;
+- all three Compose configurations validated and the enabled images built and
+  reached healthy status;
+- enabled Playwright acceptance passed 9 active scenarios with 1
+  disabled-mode-only scenario skipped;
+- the focused accessibility/local-target matrix passed 5 scenarios;
+- disabled-local-mode Playwright acceptance passed independently.
+
+The native Windows all-in-one Maven integration run remains environment-blocked
+by the Docker Desktop/Testcontainers socket response described above. The
+Compose acceptance stack exercises the built backend, PostgreSQL migrations,
+managed Chromium, frontend, and mail service without that socket path.
+
+## Publication boundary
+
+Local commits may be prepared as:
+
+1. `feat(platform): complete identity reporting and guided testing`
+2. `feat(web): finalize the TestOps workspace experience`
+3. `test(release): add full-stack release gates`
+4. `docs(release): reconcile the release candidate`
+
+Pushing the branch, opening a pull request, and merging still require explicit authorization. The release candidate must not be represented as fully verified if Docker-dependent gates were not run.

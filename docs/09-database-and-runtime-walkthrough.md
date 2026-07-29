@@ -380,4 +380,3 @@ ExecutionWorker.poll()
 | Target rejected | project origin, `TARGET_ALLOWED_ORIGINS`, DNS/IP safety checks. |
 
 Do not begin by changing timeout values. First determine which boundary failed: browser, target, worker, database, or frontend presentation.
-

@@ -373,7 +373,7 @@ The frontend may hide a button when a permission is absent, but this backend che
 
 ### 8.2 Project creation
 
-[`ProjectService.create`](../backend/src/main/java/com/megumi/testops/project/service/ProjectService.java) requires a global administrator, validates the target origin, inserts the project, automatically inserts the creator as `PROJECT_MANAGER`, and records an audit event.
+[`ProjectService.create`](../backend/src/main/java/com/megumi/testops/project/service/ProjectService.java) requires an active, verified platform user, validates the target origin against the configured allowlist, inserts the project, automatically inserts the creator as `PROJECT_MANAGER`, and records an audit event.
 
 The target policy rejects credentials, query strings, fragments, paths, and unsafe literal/private addresses. A configured `TARGET_ALLOWED_ORIGINS` list can further restrict project origins.
 
@@ -564,4 +564,3 @@ Start at the route in the controller. Then ask:
 8. Does a test cover the failure path?
 
 Useful error codes to search for include `project_access_denied`, `project_role_required`, `stale_version`, `execution_queue_full`, `case_not_ready`, `unsafe_target_url`, and `refresh_invalid`.
-

@@ -4,7 +4,7 @@
 
 This document records the project’s deliberate limitations and the conditions that would justify changing the architecture. It avoids vague “future scalability” claims: every item names a failure mode, current response, tradeoff, and revisit condition.
 
-Milestones 1 through 3 and the Milestone 4 execution foundation are reconciled against the current source and verification results. Reporting, scheduling, distributed workers, and full retention remain future work.
+Milestones 1 through 9 are reconciled against the current source and verification results. Scheduling, notifications, and distributed workers remain future work.
 
 ## 2. Risk register
 
@@ -132,7 +132,7 @@ Milestones 1 through 3 and the Milestone 4 execution foundation are reconciled a
 
 ### Milestone 1 — Scaffold and runtime
 
-Implemented on `codex/milestone-3-test-management`:
+Initially implemented during the foundation milestones and reconciled on `codex/milestone-9-release-candidate`:
 
 - repository structure;
 - React and Spring Boot builds;
@@ -228,27 +228,58 @@ Evidence and remaining hardening:
 - stale-worker recovery, infrastructure-only retry, trace persistence for non-secret cases, guarded navigation, and artifact download are implemented;
 - target-specific login/search/cart suites, broader live-target probing, and secret-variable snapshot hardening remain opt-in follow-up work.
 
-### Milestone 5 — Reporting and operations
+### Milestone 5 — Identity and authorization (implemented)
 
 Deliver:
 
-- filters;
-- dashboard;
-- artifact viewer;
-- retention;
-- structured logging;
-- metrics;
-- operational playbook;
-- production-like proxy.
+- unified password/Google accounts;
+- platform and project roles;
+- effective project permissions;
+- account/session controls and admin user management;
+- additive identity migrations and safe runtime toggles.
 
-Evidence:
+### Milestone 6 — Product readiness, reporting, and operations (implemented foundation)
 
-- dashboard from persisted data;
-- queue age visible;
-- Selenium/Playwright outage does not block history;
-- Google works behind reverse proxy.
+Deliver:
 
-### Milestone 6 — Optional scale improvements
+- registration persistence diagnostics and self-service project creation;
+- execution snapshots, failure categories, dashboard APIs, and accessible filters;
+- session-family revocation and opt-in artifact retention;
+- frontend onboarding/empty states and reporting navigation.
+
+### Milestone 7 — Guided local-target testing (implemented)
+
+Deliver:
+
+- opt-in exact-origin localhost transport through the Docker host gateway;
+- browser-based target checks and persisted target health;
+- structured action/locator metadata;
+- guided templates, step validation, queue navigation, and screenshot evidence;
+- enabled and negative local-target acceptance scenarios.
+
+### Milestone 8 — Workspace experience closure (implemented)
+
+Deliver:
+
+- responsive application shell and project workspace;
+- permission-aware controls and recoverable authentication states;
+- dashboard and execution evidence improvements;
+- reusable local UI primitives without a global component framework.
+
+### Milestone 9 — Release candidate closure (implemented; runtime gates environment-dependent)
+
+Deliver:
+
+- npm-only repository hygiene and generated-artifact exclusions;
+- batched project onboarding counts without per-suite case requests;
+- focused project route modules with shared outlet context;
+- stable case-step IDs, URL-addressable builder stages, navigation protection, and saved-case recovery;
+- separate enabled and disabled local-target CI jobs;
+- reconciled release documentation and intentional commit boundaries.
+
+The release candidate does not add scheduling, notifications, worker extraction, object storage, or cross-browser execution.
+
+### Future scale improvements
 
 Only when justified:
 
