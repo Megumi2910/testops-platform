@@ -2,7 +2,8 @@ param(
     [switch]$Force,
     [switch]$GenerateBootstrapPassword,
     [switch]$EnableEmailDelivery,
-    [switch]$EnableGoogle
+    [switch]$EnableGoogle,
+    [string[]]$TargetAllowedOrigins
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
@@ -72,5 +73,8 @@ if ($Force) {
     $pgadminEnv = Join-Path $root 'pgadmin4/.env'
     Set-EnvValue $pgadminEnv 'PGADMIN_DEFAULT_EMAIL' 'admin@localhost.test'
     Set-EnvValue $pgadminEnv 'PGADMIN_DEFAULT_PASSWORD' (New-RandomBase64 24)
+}
+if ($Force -and $TargetAllowedOrigins.Count -gt 0) {
+    Set-EnvValue (Join-Path $backend '.env') 'TARGET_ALLOWED_ORIGINS' ($TargetAllowedOrigins -join ',')
 }
 Write-Host 'Local files and ignored secrets are ready. Start with: docker compose up --build'

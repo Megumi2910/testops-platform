@@ -38,7 +38,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,prometheus
   endpoint:
     health:
       show-details: never
@@ -108,8 +108,11 @@ testops:
     browser: ${PLAYWRIGHT_BROWSER:chromium}
   artifact:
     directory: ${ARTIFACT_DIRECTORY:./artifacts}
+    retention-days: ${ARTIFACT_RETENTION_DAYS:0}
   target:
     allowed-origins: ${TARGET_ALLOWED_ORIGINS:}
+    local-development-enabled: ${TARGET_LOCAL_DEV_ENABLED:false}
+    local-host-alias: ${TARGET_LOCAL_DEV_HOST_ALIAS:host.docker.internal}
   project:
     secret-variables-enabled: ${PROJECT_SECRET_VARIABLES_ENABLED:false}
     variable-key-path: ${PROJECT_VARIABLE_KEY_PATH:}

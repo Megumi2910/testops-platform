@@ -37,6 +37,9 @@ public final class TestOpsJwtAuthenticationConverter implements Converter<Jwt, A
             }
             authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
         }
+        if (Boolean.TRUE.equals(jwt.getClaim("email_verified"))) {
+            authorities.add(new SimpleGrantedAuthority("EMAIL_VERIFIED"));
+        }
         return new JwtAuthenticationToken(jwt, authorities, subject);
     }
 }

@@ -16,6 +16,7 @@ import com.megumi.testops.auth.domain.PlatformRole;
 import com.megumi.testops.auth.domain.UserEntity;
 import com.megumi.testops.auth.repository.UserRepository;
 import com.megumi.testops.shared.api.ApiException;
+import com.megumi.testops.shared.api.PageResponse;
 
 @Service
 @ConditionalOnBean(AuthService.class)
@@ -27,9 +28,13 @@ public class AdminUserService {
     public AdminUserService(UserRepository users, AuthService auth, Clock clock) { this.users = users; this.auth = auth; this.clock = clock; }
 
     @Transactional(readOnly = true)
-    public List<AdminUserDtos.UserResponse> list(String query) {
-        List<UserEntity> result = query == null || query.isBlank() ? users.findAll(org.springframework.data.domain.Sort.by("email")) : users.findByEmailContainingIgnoreCaseOrDisplayNameContainingIgnoreCaseOrderByEmailAsc(query.trim(), query.trim());
-        return result.stream().map(AdminUserService::response).toList();
+    public PageResponse<AdminUserDtos.UserResponse> list(String query, int page, int size) {
+        int boundedSize = Math.min(Math.max(size, 1), 100); int boundedPage = Math.max(page, 0);
+        org.springframework.data.domain.PageRequest request = org.springframework.data.domain.PageRequest.of(boundedPage, boundedSize, org.springframework.data.domain.Sort.by("email"));
+        org.springframework.data.domain.Page<UserEntity> result = query == null || query.isBlank()
+                ? users.findAll(request)
+                : users.findByEmailContainingIgnoreCaseOrDisplayNameContainingIgnoreCase(query.trim(), query.trim(), request);
+        return new PageResponse<>(result.getContent().stream().map(AdminUserService::response).toList(), result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages());
     }
 
     @Transactional
@@ -37,7 +42,10 @@ public class AdminUserService {
         UserEntity user = find(id); PlatformRole role;
         try { role = PlatformRole.valueOf(value == null ? "" : value.trim().toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { throw error(HttpStatus.BAD_REQUEST, "invalid_platform_role", "Platform role must be ADMIN or MEMBER"); }
         if (user.getPlatformRole() == PlatformRole.ADMIN && role != PlatformRole.ADMIN && users.countByPlatformRole(PlatformRole.ADMIN) <= 1) throw error(HttpStatus.CONFLICT, "final_admin", "The final administrator cannot be demoted");
-        user.setPlatformRole(role); return response(user);
+        user.setPlatformRole(role);
+        user.incrementTokenVersion(Instant.now(clock));
+        auth.revokeAllSessions(id, null, null);
+        return response(user);
     }
 
     @Transactional

@@ -39,12 +39,17 @@ public class ExecutionEntity {
     @Column(name = "heartbeat_at") private Instant heartbeatAt;
     @Column(name = "cancel_requested_at") private Instant cancelRequestedAt;
     @Column(name = "error_message", length = 4000) private String errorMessage;
+    @Column(length = 40) private String browser;
+    @Column(name = "target_origin_snapshot", length = 500) private String targetOriginSnapshot;
+    @Column(name = "suite_name_snapshot", length = 200) private String suiteNameSnapshot;
+    @Column(name = "infrastructure_error_category", length = 40) private String infrastructureErrorCategory;
     @Version @Column(nullable = false) private long version;
 
     protected ExecutionEntity() { }
     public ExecutionEntity(ProjectEntity project, TestSuiteEntity suite, UserEntity requestedBy, int totalCases, UUID idempotencyKey, Instant now) {
         this.id = UUID.randomUUID(); this.project = project; this.suite = suite; this.requestedBy = requestedBy; this.status = ExecutionStatus.QUEUED;
         this.totalCases = totalCases; this.idempotencyKey = idempotencyKey; this.createdAt = now; this.heartbeatAt = now;
+        this.browser = "chromium"; this.targetOriginSnapshot = project.getTargetOrigin(); this.suiteNameSnapshot = suite == null ? null : suite.getName();
     }
     public void start(Instant now) { status = ExecutionStatus.RUNNING; startedAt = now; heartbeatAt = now; }
     public void heartbeat(Instant now) { heartbeatAt = now; }
@@ -56,4 +61,6 @@ public class ExecutionEntity {
     public ExecutionStatus getStatus() { return status; } public int getTotalCases() { return totalCases; } public int getCompletedCases() { return completedCases; }
     public int getPassedCases() { return passedCases; } public int getFailedCases() { return failedCases; } public int getErrorCases() { return errorCases; } public int getCancelledCases() { return cancelledCases; }
     public UUID getIdempotencyKey() { return idempotencyKey; } public Instant getCreatedAt() { return createdAt; } public Instant getStartedAt() { return startedAt; } public Instant getFinishedAt() { return finishedAt; } public Instant getHeartbeatAt() { return heartbeatAt; } public String getErrorMessage() { return errorMessage; }
+    public String getBrowser() { return browser; } public String getTargetOriginSnapshot() { return targetOriginSnapshot; } public String getSuiteNameSnapshot() { return suiteNameSnapshot; } public String getInfrastructureErrorCategory() { return infrastructureErrorCategory; }
+    public void setInfrastructureErrorCategory(String category) { this.infrastructureErrorCategory = category; }
 }

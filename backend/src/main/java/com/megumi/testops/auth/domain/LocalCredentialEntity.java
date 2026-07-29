@@ -30,13 +30,12 @@ public class LocalCredentialEntity {
 
     @Version
     @Column(nullable = false)
-    private long version;
+    private Long version;
 
     protected LocalCredentialEntity() { }
 
     public LocalCredentialEntity(UserEntity user, String passwordHash, Instant now) {
-        this.user = user;
-        this.userId = user.getId();
+        setUser(user);
         this.passwordHash = passwordHash;
         this.passwordChangedAt = now;
     }
@@ -44,6 +43,15 @@ public class LocalCredentialEntity {
     public void changePassword(String encodedPassword, Instant now) {
         this.passwordHash = encodedPassword;
         this.passwordChangedAt = now;
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
+        if (user != null) {
+            this.userId = user.getId();
+        } else {
+            this.userId = null;
+        }
     }
 
     public UUID getUserId() { return userId; }

@@ -12,6 +12,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "project_audit_events")
@@ -20,6 +22,7 @@ public class ProjectAuditEventEntity {
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "project_id", nullable = false) private ProjectEntity project;
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "actor_user_id") private UserEntity actor;
     @Column(name = "event_type", nullable = false, length = 64) private String eventType;
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb") private String metadata;
     @Column(name = "created_at", nullable = false) private Instant createdAt;
     protected ProjectAuditEventEntity() { }

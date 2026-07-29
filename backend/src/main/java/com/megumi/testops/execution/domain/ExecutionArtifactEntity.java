@@ -9,6 +9,7 @@ public class ExecutionArtifactEntity {
     @Id private UUID id;
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "execution_id", nullable = false) private ExecutionEntity execution;
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "case_result_id") private TestCaseResultEntity caseResult;
+    @Column(name = "step_position") private Integer stepPosition;
     @Column(nullable = false, length = 30) private String type;
     @Column(name = "relative_path", nullable = false, length = 1000) private String relativePath;
     @Column(name = "content_type", nullable = false, length = 200) private String contentType;
@@ -16,7 +17,12 @@ public class ExecutionArtifactEntity {
     @Column(nullable = false, length = 64) private String sha256;
     @Column(name = "secret_suppressed", nullable = false) private boolean secretSuppressed;
     @Column(name = "created_at", nullable = false) private Instant createdAt;
+    @Column(name = "purged_at") private Instant purgedAt;
+    @Column(name = "purge_reason", length = 120) private String purgeReason;
     protected ExecutionArtifactEntity() { }
-    public ExecutionArtifactEntity(ExecutionEntity execution, TestCaseResultEntity caseResult, String type, String relativePath, String contentType, long byteSize, String sha256, boolean secretSuppressed, Instant createdAt) { this.id = UUID.randomUUID(); this.execution = execution; this.caseResult = caseResult; this.type = type; this.relativePath = relativePath; this.contentType = contentType; this.byteSize = byteSize; this.sha256 = sha256; this.secretSuppressed = secretSuppressed; this.createdAt = createdAt; }
-    public UUID getId() { return id; } public UUID getCaseResultId() { return caseResult == null ? null : caseResult.getId(); } public String getType() { return type; } public String getRelativePath() { return relativePath; } public String getContentType() { return contentType; } public long getByteSize() { return byteSize; } public String getSha256() { return sha256; } public boolean isSecretSuppressed() { return secretSuppressed; } public Instant getCreatedAt() { return createdAt; }
+    public ExecutionArtifactEntity(ExecutionEntity execution, TestCaseResultEntity caseResult, String type, String relativePath, String contentType, long byteSize, String sha256, boolean secretSuppressed, Instant createdAt) { this(execution, caseResult, null, type, relativePath, contentType, byteSize, sha256, secretSuppressed, createdAt); }
+    public ExecutionArtifactEntity(ExecutionEntity execution, TestCaseResultEntity caseResult, Integer stepPosition, String type, String relativePath, String contentType, long byteSize, String sha256, boolean secretSuppressed, Instant createdAt) { this.id = UUID.randomUUID(); this.execution = execution; this.caseResult = caseResult; this.stepPosition = stepPosition; this.type = type; this.relativePath = relativePath; this.contentType = contentType; this.byteSize = byteSize; this.sha256 = sha256; this.secretSuppressed = secretSuppressed; this.createdAt = createdAt; }
+    public UUID getId() { return id; } public UUID getCaseResultId() { return caseResult == null ? null : caseResult.getId(); } public String getType() { return type; } public String getRelativePath() { return relativePath; } public String getContentType() { return contentType; } public long getByteSize() { return byteSize; } public String getSha256() { return sha256; } public boolean isSecretSuppressed() { return secretSuppressed; } public Instant getCreatedAt() { return createdAt; } public Integer getStepPosition() { return stepPosition; }
+    public Instant getPurgedAt() { return purgedAt; } public String getPurgeReason() { return purgeReason; }
+    public void markPurged(Instant now, String reason) { this.purgedAt = now; this.purgeReason = reason; }
 }

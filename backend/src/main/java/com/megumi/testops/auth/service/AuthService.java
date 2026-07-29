@@ -43,6 +43,7 @@ public class AuthService {
     private final AuditService audit;
     private final AuthProperties properties;
     private final Clock clock;
+    private final PlatformPermissionService platformPermissions;
     private final SecureRandom random = new SecureRandom();
 
     public AuthService(UserRepository users, LocalCredentialRepository credentials,
@@ -50,7 +51,7 @@ public class AuthService {
             PasswordEncoder passwordEncoder,
             OtpHasher otpHasher, EmailDeliveryService emailDelivery, JwtTokenService jwtTokens,
             RefreshTokenService refreshTokens, AuditService audit, AuthRateLimiter rateLimiter,
-            AuthProperties properties, Clock clock) {
+            AuthProperties properties, Clock clock, PlatformPermissionService platformPermissions) {
         this.users = users;
         this.credentials = credentials;
         this.challenges = challenges;
@@ -64,6 +65,7 @@ public class AuthService {
         this.rateLimiter = rateLimiter;
         this.properties = properties;
         this.clock = clock;
+        this.platformPermissions = platformPermissions;
     }
 
     @Transactional(dontRollbackOn = AuthException.class)
@@ -80,7 +82,7 @@ public class AuthService {
         Instant now = Instant.now(clock);
         UserEntity user = new UserEntity(email, request.displayName().trim(),
                 "ACTIVE", false, now);
-        users.save(user);
+        user = users.save(user);
         credentials.save(new LocalCredentialEntity(user, passwordEncoder.encode(request.password()), now));
         issueAndSendChallenge(user, ip, now);
         audit.record(user, "REGISTRATION_REQUESTED", true, ip, null, null);
@@ -103,6 +105,8 @@ public class AuthService {
         }
         challenge.consume(now);
         user.markVerified(now);
+        user.incrementTokenVersion(now);
+        refreshTokens.revokeAll(user, "EMAIL_VERIFIED");
         user.markLogin(now);
         audit.record(user, "EMAIL_VERIFIED", true, ip, userAgent, null);
         return issueSession(user, userAgent, ip);
@@ -126,6 +130,27 @@ public class AuthService {
             throw new AuthException(HttpStatus.TOO_MANY_REQUESTS, "verification_resend_cooldown", "Please wait before requesting another code");
         }
         if (previous != null) previous.invalidate(now, "RESENT");
+        if (previous != null) challenges.flush();
+        issueAndSendChallenge(user, ip, now);
+        audit.record(user, "EMAIL_VERIFICATION_RESENT", true, ip, null, null);
+    }
+
+    @Transactional(dontRollbackOn = AuthException.class)
+    public void resendVerificationAuthenticated(UUID userId, String ip) {
+        rateLimiter.check("otp-resend-ip", ip, properties.limits().otpResendIpAttempts(),
+                properties.limits().otpResendIpWindow());
+        UserEntity user = userById(userId);
+        if (user.isEmailVerified()) return;
+        Instant now = Instant.now(clock);
+        if (challenges.countByUserIdAndPurposeAndIssuedAtAfter(user.getId(), "REGISTRATION",
+                now.minus(java.time.Duration.ofHours(1))) >= properties.email().maxSendsPerHour()) {
+            throw new AuthException(HttpStatus.TOO_MANY_REQUESTS, "verification_rate_limited", "Verification email limit reached; try again later");
+        }
+        EmailVerificationChallengeEntity previous = challenges
+                .findTopByUserIdAndPurposeAndConsumedAtIsNullAndInvalidatedAtIsNullOrderByIssuedAtDesc(user.getId(), "REGISTRATION")
+                .orElse(null);
+        if (previous != null) previous.invalidate(now, "RESENT_AUTHENTICATED");
+        if (previous != null) challenges.flush();
         issueAndSendChallenge(user, ip, now);
         audit.record(user, "EMAIL_VERIFICATION_RESENT", true, ip, null, null);
     }
@@ -140,9 +165,6 @@ public class AuthService {
         if (user == null || credential == null || !passwordEncoder.matches(request.password(), credential.getPasswordHash())) {
             if (user != null) audit.record(user, "LOGIN_FAILED", false, ip, userAgent, null);
             throw new AuthException(HttpStatus.UNAUTHORIZED, "login_invalid", "Email or password is incorrect");
-        }
-        if (!user.isEmailVerified()) {
-            throw new AuthException(HttpStatus.FORBIDDEN, "email_verification_required", "Verify your email before signing in");
         }
         if (!"ACTIVE".equals(user.getStatus())) {
             throw new AuthException(HttpStatus.FORBIDDEN, "account_unavailable", "This account is unavailable");
@@ -295,7 +317,8 @@ public class AuthService {
         if (credentials.existsByUserId(user.getId())) methods.add("PASSWORD");
         if (oauthAccounts.existsByUserIdAndProvider(user.getId(), "GOOGLE")) methods.add("GOOGLE");
         return new UserSummaryResponse(user.getId(), user.getEmail(), user.getDisplayName(), user.getAvatarUrl(),
-                user.isEmailVerified(), user.getStatus(), user.getPlatformRole().name(), Set.copyOf(methods));
+                user.isEmailVerified(), user.getStatus(), user.getPlatformRole().name(), Set.copyOf(methods),
+                platformPermissions.permissions(user));
     }
 
     public record SessionResult(AuthResponse response, String refreshToken, Instant refreshExpiresAt) { }

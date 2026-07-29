@@ -8,11 +8,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.megumi.testops.auth.service.AuthException;
 
 @RestControllerAdvice
 public class AuthExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthExceptionHandler.class);
 
     @ExceptionHandler(AuthException.class)
     ResponseEntity<AuthProblem> auth(AuthException exception, HttpServletRequest request) {
@@ -32,8 +36,11 @@ public class AuthExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     ResponseEntity<AuthProblem> unexpected(Exception exception, HttpServletRequest request) {
+        String correlationId = correlationId(request);
+        log.error("Unhandled request failure correlationId={} method={} path={} exception={}", correlationId,
+                request.getMethod(), request.getRequestURI(), exception.getClass().getSimpleName(), exception);
         return ResponseEntity.internalServerError().body(AuthProblem.of("internal_error", "An unexpected error occurred",
-                500, request.getRequestURI(), correlationId(request), Map.of()));
+                500, request.getRequestURI(), correlationId, Map.of()));
     }
 
     private static String correlationId(HttpServletRequest request) {

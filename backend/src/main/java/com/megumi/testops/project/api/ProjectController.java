@@ -21,16 +21,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.megumi.testops.project.service.ProjectService;
 import com.megumi.testops.shared.api.PageResponse;
+import com.megumi.testops.project.service.TargetCheckService;
 
 @RestController
 @RequestMapping("/api/v1/projects")
 public class ProjectController {
     private final ProjectService service;
-    public ProjectController(ProjectService service) { this.service = service; }
+    private final TargetCheckService targetChecks;
+    public ProjectController(ProjectService service, TargetCheckService targetChecks) { this.service = service; this.targetChecks = targetChecks; }
     @GetMapping public PageResponse<ProjectDtos.ProjectResponse> list(@AuthenticationPrincipal Jwt jwt, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "25") int size, @RequestParam(required = false) String q) { return service.list(jwt, page, size, q); }
     @PostMapping @ResponseStatus(HttpStatus.CREATED) public ProjectDtos.ProjectResponse create(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody ProjectDtos.ProjectRequest request) { return service.create(jwt, request); }
     @GetMapping("/{id}") public ProjectDtos.ProjectResponse get(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) { return service.get(jwt, id); }
     @PutMapping("/{id}") public ProjectDtos.ProjectResponse update(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id, @Valid @RequestBody ProjectDtos.ProjectRequest request) { return service.update(jwt, id, request); }
+    @PostMapping("/{id}/target-check") public ProjectDtos.TargetCheckResponse targetCheck(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) { return targetChecks.check(jwt, id); }
     @PostMapping("/{id}/archive") public ProjectDtos.ProjectResponse archive(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) { return service.setArchived(jwt, id, true); }
     @PostMapping("/{id}/restore") public ProjectDtos.ProjectResponse restore(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) { return service.setArchived(jwt, id, false); }
     @GetMapping("/{id}/members") public List<ProjectDtos.MemberResponse> members(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) { return service.members(jwt, id); }

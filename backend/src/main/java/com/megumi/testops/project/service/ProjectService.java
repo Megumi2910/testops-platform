@@ -21,6 +21,7 @@ import com.megumi.testops.project.domain.ProjectEntity;
 import com.megumi.testops.project.domain.ProjectMemberEntity;
 import com.megumi.testops.project.repository.ProjectAuditEventRepository;
 import com.megumi.testops.project.repository.ProjectMemberRepository;
+import com.megumi.testops.project.repository.ProjectOnboardingRepository;
 import com.megumi.testops.project.repository.ProjectRepository;
 import com.megumi.testops.shared.api.ApiException;
 import com.megumi.testops.shared.api.PageResponse;
@@ -29,27 +30,42 @@ import com.megumi.testops.shared.api.PageResponse;
 public class ProjectService {
     private final ProjectRepository projects; private final ProjectMemberRepository members; private final ProjectAuditEventRepository audits;
     private final UserRepository users; private final ProjectAccessService access; private final ProjectTargetPolicy targets;
-    public ProjectService(ProjectRepository projects, ProjectMemberRepository members, ProjectAuditEventRepository audits, UserRepository users, ProjectAccessService access, ProjectTargetPolicy targets) {
-        this.projects = projects; this.members = members; this.audits = audits; this.users = users; this.access = access; this.targets = targets;
+    private final com.megumi.testops.auth.service.PlatformPermissionService platformPermissions;
+    private final ProjectOnboardingRepository onboarding;
+    public ProjectService(ProjectRepository projects, ProjectMemberRepository members, ProjectAuditEventRepository audits, UserRepository users, ProjectAccessService access, ProjectTargetPolicy targets, com.megumi.testops.auth.service.PlatformPermissionService platformPermissions, ProjectOnboardingRepository onboarding) {
+        this.projects = projects; this.members = members; this.audits = audits; this.users = users; this.access = access; this.targets = targets; this.platformPermissions = platformPermissions; this.onboarding = onboarding;
     }
 
     @Transactional(readOnly = true)
     public PageResponse<ProjectDtos.ProjectResponse> list(Jwt jwt, int page, int size, String query) {
-        UserEntity user = access.user(jwt); PageRequest request = PageRequest.of(Math.max(0, page), Math.min(Math.max(1, size), 100), Sort.by("name").ascending());
+        UserEntity user = access.user(jwt);
+        boolean globalAdmin = access.globalAdmin(jwt);
+        int normalizedPage = Math.max(0, page);
+        int normalizedSize = Math.min(Math.max(1, size), 100);
+        String normalizedQuery = query == null ? "" : query.trim();
         Page<ProjectEntity> result;
-        if (access.globalAdmin(jwt)) result = query == null || query.isBlank() ? projects.findAll(request) : projects.findByNameContainingIgnoreCase(query.trim(), request);
-        else {
-            List<UUID> ids = members.findByUserId(user.getId()).stream().map(m -> m.getProject().getId()).toList();
-            List<ProjectEntity> filtered = projects.findAllById(ids).stream().filter(p -> query == null || query.isBlank() || p.getName().toLowerCase(Locale.ROOT).contains(query.trim().toLowerCase(Locale.ROOT))).sorted(java.util.Comparator.comparing(ProjectEntity::getName)).toList();
-            int from = Math.min(page * request.getPageSize(), filtered.size()); int to = Math.min(from + request.getPageSize(), filtered.size());
-            return new PageResponse<>(filtered.subList(from, to).stream().map(p -> response(jwt, p)).toList(), page, request.getPageSize(), filtered.size(), (int) Math.ceil(filtered.size() / (double) request.getPageSize()));
+        if (globalAdmin) {
+            PageRequest request = PageRequest.of(normalizedPage, normalizedSize, Sort.by("name").ascending());
+            result = normalizedQuery.isBlank()
+                    ? projects.findAll(request)
+                    : projects.findByNameContainingIgnoreCase(normalizedQuery, request);
+        } else {
+            PageRequest request = PageRequest.of(normalizedPage, normalizedSize);
+            result = members.findProjectsForUser(user.getId(), normalizedQuery, request);
         }
-        return new PageResponse<>(result.getContent().stream().map(p -> response(jwt, p)).toList(), result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages());
+        List<UUID> projectIds = result.getContent().stream().map(ProjectEntity::getId).toList();
+        java.util.Map<UUID, String> roles = globalAdmin || projectIds.isEmpty()
+                ? java.util.Map.of()
+                : members.findByUserIdAndProjectIdIn(user.getId(), projectIds).stream()
+                        .collect(java.util.stream.Collectors.toMap(m -> m.getProject().getId(), ProjectMemberEntity::getRole));
+        java.util.Map<UUID, ProjectDtos.ProjectOnboardingResponse> onboardingCounts = onboarding.findByProjectIds(projectIds);
+        return new PageResponse<>(result.getContent().stream().map(p -> response(user, p, globalAdmin, roles, onboardingCounts)).toList(),
+                result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages());
     }
 
     @Transactional
     public ProjectDtos.ProjectResponse create(Jwt jwt, ProjectDtos.ProjectRequest request) {
-        UserEntity user = access.user(jwt); if (!access.globalAdmin(jwt)) throw error(HttpStatus.FORBIDDEN, "global_role_required", "Only administrators can create projects");
+        UserEntity user = access.user(jwt); if (!targets.isConfigured()) throw error(HttpStatus.SERVICE_UNAVAILABLE, "project_creation_unconfigured", "Project creation is unavailable until a target allowlist is configured"); if (!platformPermissions.canCreateProject(user)) throw error(HttpStatus.FORBIDDEN, "project_creation_denied", "Only active, verified members can create projects");
         String name = request.name().trim(); if (projects.existsByNameIgnoreCase(name)) throw error(HttpStatus.CONFLICT, "project_name_taken", "Project name is already in use");
         Instant now = Instant.now(); ProjectEntity project = projects.save(new ProjectEntity(name, trim(request.description()), targets.validate(request.targetOrigin()), user, now));
         ProjectMemberEntity owner = new ProjectMemberEntity(project, user, "PROJECT_MANAGER", now); owner.assignBy(user); members.save(owner); audit(project, user, "PROJECT_CREATED"); return response(jwt, project);
@@ -92,9 +108,24 @@ public class ProjectService {
     private void audit(ProjectEntity project, UserEntity user, String event) { audits.save(new ProjectAuditEventEntity(project, user, event, "{}", Instant.now())); }
     private ProjectDtos.ProjectResponse response(Jwt jwt, ProjectEntity p) {
         UserEntity user = access.user(jwt);
-        String role = access.globalAdmin(jwt) ? "ADMIN" : members.findByProjectIdAndUserId(p.getId(), user.getId()).map(ProjectMemberEntity::getRole).orElse(null);
-        java.util.Set<String> permissions = permissionSet(role, access.globalAdmin(jwt));
-        return new ProjectDtos.ProjectResponse(p.getId(), p.getName(), p.getDescription(), p.getTargetOrigin(), p.getStatus(), p.getVersion(), p.getCreatedAt(), p.getUpdatedAt(), role, permissions);
+        return response(user, p, access.globalAdmin(jwt), java.util.Map.of());
+    }
+    private ProjectDtos.ProjectResponse response(UserEntity user, ProjectEntity p, boolean globalAdmin,
+            java.util.Map<UUID, String> roles) {
+        return response(user, p, globalAdmin, roles, onboarding.findByProjectIds(java.util.List.of(p.getId())));
+    }
+    private ProjectDtos.ProjectResponse response(UserEntity user, ProjectEntity p, boolean globalAdmin,
+            java.util.Map<UUID, String> roles,
+            java.util.Map<UUID, ProjectDtos.ProjectOnboardingResponse> onboardingCounts) {
+        String role = globalAdmin ? "ADMIN" : roles.containsKey(p.getId())
+                ? roles.get(p.getId())
+                : members.findByProjectIdAndUserId(p.getId(), user.getId()).map(ProjectMemberEntity::getRole).orElse(null);
+        java.util.Set<String> permissions = permissionSet(role, globalAdmin);
+        ProjectDtos.ProjectOnboardingResponse projectOnboarding = onboardingCounts.getOrDefault(p.getId(),
+                new ProjectDtos.ProjectOnboardingResponse(0, 0, 0, 0));
+        return new ProjectDtos.ProjectResponse(p.getId(), p.getName(), p.getDescription(), p.getTargetOrigin(), p.getStatus(), p.getVersion(), p.getCreatedAt(), p.getUpdatedAt(), role, permissions,
+                new ProjectDtos.TargetHealthResponse(p.getTargetCheckStatus(), p.getTargetCheckHttpStatus(), p.getTargetCheckedAt(), p.getTargetCheckReason()),
+                projectOnboarding);
     }
     private static java.util.Set<String> permissionSet(String role, boolean admin) {
         if (admin) return java.util.Arrays.stream(ProjectPermission.values()).map(Enum::name).collect(java.util.stream.Collectors.toUnmodifiableSet());

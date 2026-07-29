@@ -65,6 +65,12 @@ public class AuthController {
         return ResponseEntity.accepted().body(new MessageResponse("If the account can be verified, a code has been sent"));
     }
 
+    @PostMapping("/me/email/resend")
+    public ResponseEntity<MessageResponse> resendAuthenticated(@AuthenticationPrincipal Jwt jwt, HttpServletRequest servletRequest) {
+        service().resendVerificationAuthenticated(subject(jwt), clientIp(servletRequest));
+        return ResponseEntity.accepted().body(new MessageResponse("If the account can be verified, a code has been sent"));
+    }
+
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest servletRequest) {
         AuthService.SessionResult session = service().login(request, servletRequest.getHeader("User-Agent"), clientIp(servletRequest));
