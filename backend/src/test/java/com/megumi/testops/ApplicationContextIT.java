@@ -94,7 +94,11 @@ class ApplicationContextIT {
                 "select count(*) from backbone_test_probe", Integer.class);
         org.junit.jupiter.api.Assertions.assertEquals(1, probeRows);
         org.junit.jupiter.api.Assertions.assertNotNull(flyway.info().current());
-        org.junit.jupiter.api.Assertions.assertEquals("16", flyway.info().current().getVersion().getVersion());
+        // Flyway preserves the migration's zero-padded identifier (V016), so
+        // compare the semantic version number instead of its display format.
+        org.junit.jupiter.api.Assertions.assertEquals(
+                16,
+                Integer.parseInt(flyway.info().current().getVersion().getVersion()));
         Integer targetHealthColumns = jdbcTemplate.queryForObject("""
                 select count(*)
                   from information_schema.columns
