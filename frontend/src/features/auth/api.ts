@@ -9,6 +9,7 @@ export type UserSummary = {
   status: string
   platformRole: 'ADMIN' | 'MEMBER'
   loginMethods: string[]
+  platformPermissions: string[]
 }
 
 export type AuthResponse = {
@@ -23,6 +24,7 @@ export type Providers = {
   emailVerificationEnabled: boolean
   googleEnabled: boolean
 }
+export type Session = { familyId: string; issuedAt: string; expiresAt: string; userAgent?: string; createdIp?: string }
 
 export const authApi = {
   providers: () => apiFetch<Providers>('/api/v1/auth/providers'),
@@ -35,6 +37,8 @@ export const authApi = {
   },
   resendEmail: (email: string) =>
     apiFetch<{ message: string }>('/api/v1/auth/email/resend', { method: 'POST', body: JSON.stringify({ email }) }),
+  resendAuthenticatedEmail: () =>
+    apiFetch<{ message: string }>('/api/v1/auth/me/email/resend', { method: 'POST' }),
   login: async (payload: { email: string; password: string }) => {
     const response = await apiFetch<AuthResponse>('/api/v1/auth/login', { method: 'POST', body: JSON.stringify(payload) })
     setAccessToken(response.accessToken)
@@ -44,6 +48,8 @@ export const authApi = {
   me: () => apiFetch<UserSummary>('/api/v1/auth/me'),
   logout: () => apiFetch<void>('/api/v1/auth/logout', { method: 'POST' }),
   revokeAll: () => apiFetch<void>('/api/v1/auth/sessions/revoke-all', { method: 'POST' }),
+  sessions: () => apiFetch<Session[]>('/api/v1/users/me/sessions'),
+  revokeSession: (familyId: string) => apiFetch<void>(`/api/v1/users/me/sessions/${familyId}`, { method: 'DELETE' }),
   passwordChallenge: () => apiFetch<{ message: string }>('/api/v1/auth/me/password/challenge', { method: 'POST' }),
   passwordConfirm: (payload: { otp: string; password: string }) => apiFetch<void>('/api/v1/auth/me/password/confirm', { method: 'POST', body: JSON.stringify(payload) }),
   changePassword: (payload: { currentPassword: string; newPassword: string }) => apiFetch<void>('/api/v1/auth/me/password', { method: 'PUT', body: JSON.stringify(payload) }),

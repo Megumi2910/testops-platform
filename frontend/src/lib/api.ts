@@ -1,10 +1,16 @@
 export class ApiError extends Error {
   readonly status: number
+  readonly code?: string
+  readonly correlationId?: string
+  readonly fieldErrors: Record<string, string>
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, details: { code?: string; correlationId?: string; errors?: Record<string, string> } = {}) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    this.code = details.code
+    this.correlationId = details.correlationId
+    this.fieldErrors = details.errors ?? {}
   }
 }
 
@@ -68,16 +74,18 @@ async function request<T>(input: RequestInfo | URL, init: RequestInit | undefine
 
   if (!response.ok) {
     let message = `Request failed with status ${response.status}`
+    let details: { code?: string; correlationId?: string; errors?: Record<string, string> } = {}
     try {
-      const problem = (await response.json()) as { message?: string; detail?: string }
+      const problem = (await response.json()) as { message?: string; detail?: string; code?: string; correlationId?: string; errors?: Record<string, string> }
       message = problem.message ?? problem.detail ?? message
+      details = { code: problem.code, correlationId: problem.correlationId, errors: problem.errors }
     } catch {
       // Keep the status-based fallback for empty and non-JSON responses.
     }
-    throw new ApiError(response.status, message)
+    throw new ApiError(response.status, message, details)
   }
 
-  if (response.status === 204 || response.status === 202) return undefined as T
+  if (response.status === 204) return undefined as T
   return (await response.json()) as T
 }
 

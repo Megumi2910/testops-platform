@@ -40,6 +40,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setUser(response.user)
     },
     resendEmail: async (email) => { await authApi.resendEmail(email) },
+    resendAuthenticatedEmail: async () => { await authApi.resendAuthenticatedEmail() },
     logout: async () => {
       try { await authApi.logout() } finally { authApi.clearAccessToken(); setUser(null) }
     },

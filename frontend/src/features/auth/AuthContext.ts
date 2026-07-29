@@ -10,6 +10,7 @@ export type AuthContextValue = {
   register: (email: string, displayName: string, password: string) => Promise<void>
   verifyEmail: (email: string, otp: string) => Promise<void>
   resendEmail: (email: string) => Promise<void>
+  resendAuthenticatedEmail: () => Promise<void>
   logout: () => Promise<void>
 }
 
