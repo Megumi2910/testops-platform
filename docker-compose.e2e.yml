@@ -1,0 +1,49 @@
+services:
+  postgres:
+    ports: !override
+      - "55432:5432"
+  mailpit:
+    image: axllent/mailpit:v1.30.0
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://127.0.0.1:8025/api/v1/info"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  backend:
+    ports: !override
+      - "8180:8080"
+    environment:
+      AUTH_ENABLED: "true"
+      AUTH_REGISTRATION_ENABLED: "true"
+      EMAIL_DELIVERY_ENABLED: "true"
+      AUTH_REGISTRATION_IP_LIMIT: "100"
+      AUTH_OTP_RESEND_IP_LIMIT: "100"
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
+      MAIL_SMTP_AUTH: "false"
+      MAIL_STARTTLS: "false"
+      FRONTEND_ORIGIN: http://localhost:3100
+      TARGET_ALLOWED_ORIGINS: http://frontend:8080,http://localhost:3201,http://localhost:3299
+      TARGET_LOCAL_DEV_ENABLED: "true"
+      TARGET_LOCAL_DEV_HOST_ALIAS: host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      mailpit:
+        condition: service_healthy
+  frontend:
+    ports: !override
+      - "3100:8080"
+
+  pgadmin4:
+    ports: !override
+      - "55050:80"
+
+  target-site:
+    build:
+      context: ./frontend/e2e/target-site
+    ports:
+      - "3201:8080"

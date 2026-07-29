@@ -1,0 +1,44 @@
+import { describe, expect, it } from 'vitest'
+
+import { serializeSteps, validateSteps, type EditableStep } from './caseBuilder'
+import type { ActionDefinition } from './api'
+
+const definitions: ActionDefinition[] = [
+  { action: 'NAVIGATE', label: 'Navigate', locator: false, input: true, expected: false, role: false, help: '/', inputRequirement: 'REQUIRED' },
+  { action: 'ASSERT_VISIBLE', label: 'Assert visible', locator: true, input: false, expected: false, role: true, help: 'Heading', locatorRequirement: 'REQUIRED' },
+]
+
+describe('guided case validation', () => {
+  it('keeps validation attached to the stable client step after reorder', () => {
+    const assertion: EditableStep = {
+      clientId: 'assertion',
+      position: 0,
+      action: 'ASSERT_VISIBLE',
+      locatorType: 'TEXT',
+      locatorValue: '',
+    }
+    const navigation: EditableStep = {
+      clientId: 'navigation',
+      position: 1,
+      action: 'NAVIGATE',
+      inputValue: '/',
+    }
+
+    const before = validateSteps([assertion, navigation], definitions)
+    const after = validateSteps([navigation, assertion], definitions)
+
+    expect(before.errors.assertion).toContain('first step')
+    expect(after.errors.assertion).toContain('locator')
+    expect(after.errors.navigation).toBeUndefined()
+  })
+
+  it('removes client-only IDs and normalizes positions before persistence', () => {
+    const serialized = serializeSteps([
+      { clientId: 'second', position: 9, action: 'NAVIGATE', inputValue: '/' },
+      { clientId: 'first', position: 3, action: 'ASSERT_VISIBLE', locatorType: 'TEXT', locatorValue: 'Products' },
+    ])
+
+    expect(serialized.map(step => step.position)).toEqual([0, 1])
+    expect(serialized).not.toEqual(expect.arrayContaining([expect.objectContaining({ clientId: expect.anything() })]))
+  })
+})

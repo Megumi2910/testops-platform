@@ -62,3 +62,98 @@ jobs:
           exit 1
       - if: always()
         run: docker compose -f docker-compose.yml down -v
+
+  e2e:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Prepare Compose environment
+        run: |
+          cp postgres_db/.env.example postgres_db/.env
+          cp backend/.env.example backend/.env
+          cp frontend/.env.example frontend/.env
+          cp pgadmin4/.env.example pgadmin4/.env
+      - run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml config --quiet
+      - run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml build
+      - name: Start isolated E2E stack
+        run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d
+      - name: Wait for services
+        run: |
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:8180/actuator/health >/dev/null && curl --fail --silent http://127.0.0.1:3100/ >/dev/null && curl --fail --silent http://127.0.0.1:8025/api/v1/info >/dev/null; then exit 0; fi
+            sleep 5
+          done
+          docker compose -f docker-compose.yml -f docker-compose.e2e.yml ps
+          docker compose -f docker-compose.yml -f docker-compose.e2e.yml logs --tail=200 backend frontend mailpit
+          exit 1
+      - run: npm ci
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: npm run e2e
+        working-directory: frontend
+        env:
+          E2E_BASE_URL: http://127.0.0.1:3100
+          MAILPIT_URL: http://127.0.0.1:8025
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report
+      - if: always()
+        run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml down -v
+
+  e2e-local-disabled:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Prepare Compose environment
+        run: |
+          cp postgres_db/.env.example postgres_db/.env
+          cp backend/.env.example backend/.env
+          cp frontend/.env.example frontend/.env
+          cp pgadmin4/.env.example pgadmin4/.env
+      - run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-local-disabled.yml config --quiet
+      - run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-local-disabled.yml build
+      - name: Start isolated local-disabled stack
+        run: docker compose -p testops-e2e-disabled -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-local-disabled.yml up -d
+      - name: Wait for services
+        run: |
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:8181/actuator/health >/dev/null && curl --fail --silent http://127.0.0.1:3101/ >/dev/null && curl --fail --silent http://127.0.0.1:8026/api/v1/info >/dev/null; then exit 0; fi
+            sleep 5
+          done
+          docker compose -p testops-e2e-disabled -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-local-disabled.yml ps
+          docker compose -p testops-e2e-disabled -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-local-disabled.yml logs --tail=200 backend frontend mailpit
+          exit 1
+      - run: npm ci
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: npm run e2e -- local-target-disabled.spec.ts
+        working-directory: frontend
+        env:
+          E2E_DISABLED_BASE_URL: http://127.0.0.1:3101
+          MAILPIT_URL: http://127.0.0.1:8026
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-local-disabled
+          path: frontend/playwright-report
+      - if: always()
+        run: docker compose -p testops-e2e-disabled -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-local-disabled.yml down -v

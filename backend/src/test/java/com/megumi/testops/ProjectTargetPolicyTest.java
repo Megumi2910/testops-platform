@@ -16,7 +16,7 @@ import com.megumi.testops.shared.api.ApiException;
 class ProjectTargetPolicyTest {
     private final PlatformProperties properties = new PlatformProperties(
             new PlatformProperties.Execution(1, 10, Duration.ofSeconds(1), Duration.ofSeconds(5), Duration.ofMinutes(1), Duration.ofMinutes(5), Duration.ofSeconds(10), "chromium", true),
-            new PlatformProperties.Artifact(Path.of("artifacts")), new PlatformProperties.Target(List.of("https://shop.example.test", "http://localhost:8080")));
+            new PlatformProperties.Artifact(Path.of("artifacts"), 0), new PlatformProperties.Target(List.of("https://shop.example.test", "http://localhost:8080"), false, "host.docker.internal"));
 
     @Test void acceptsConfiguredOriginAndNormalizesTrailingSlash() { assertEquals("https://shop.example.test", new ProjectTargetPolicy(properties).validate("https://SHOP.example.test/")); }
     @Test void rejectsCredentialsAndUnsafeLiteralAddresses() { ProjectTargetPolicy policy = new ProjectTargetPolicy(properties); assertThrows(ApiException.class, () -> policy.validate("https://user:pass@shop.example.test")); assertThrows(ApiException.class, () -> policy.validate("http://127.0.0.1")); }
