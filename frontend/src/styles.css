@@ -56,6 +56,7 @@ h2 { margin-bottom: .4rem; font-size: 1.1rem; }
 .search-field input:focus, .inline-form input:focus, .inline-form select:focus, .inline-form textarea:focus, .form-stack input:focus, .form-stack textarea:focus, .form-stack select:focus { border-color: #155eef; box-shadow: 0 0 0 3px rgb(21 94 239 / 16%); outline: 0; }
 .inline-form { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; }
 .inline-form label { display: grid; gap: .35rem; font-weight: 650; }
+.inline-form > label { min-width: 0; }
 .checkbox { display: inline-flex !important; align-items: center; gap: .4rem; }
 .subnav { display: flex; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid #e1e6f0; padding-bottom: .75rem; }
 .subnav a { color: #155eef; font-weight: 700; text-decoration: none; }
@@ -84,12 +85,16 @@ th { color: #566179; font-size: .8rem; text-transform: uppercase; }
 .step-results { display: grid; gap: .35rem; margin-bottom: 0; padding-left: 1.25rem; }
 .step-results li { display: flex; justify-content: space-between; gap: 1rem; }
 .step-editor { border-top: 1px solid #e1e6f0; margin-top: 1.5rem; padding-top: 1.5rem; }
-.step-card { border: 1px solid #d7deea; border-radius: .75rem; display: grid; gap: .75rem; margin: 1rem 0; padding: 1rem; }
+.step-card { border: 1px solid #d7deea; border-radius: .75rem; display: grid; gap: .75rem; margin: 1rem 0; min-width: 0; padding: 1rem; }
 .step-card legend { color: #566179; font-weight: 750; padding: 0 .35rem; }
-.step-card label { display: grid; gap: .35rem; font-weight: 650; }
+.step-card label { display: grid; gap: .35rem; font-weight: 650; min-width: 0; }
 .step-card input, .step-card select, .step-card textarea { border: 1px solid #b8c4d4; border-radius: .55rem; padding: .65rem .75rem; font: inherit; width: 100%; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
 @media (max-width: 640px) { .page-heading { display: grid; } .resource-list li { align-items: flex-start; flex-direction: column; } }
+@media (max-width: 640px) {
+  .step-card .inline-form { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .step-card .inline-form > label { width: 100%; }
+}
 
 /* Milestone 8 experience layer: shared tokens and intentional interaction states. */
 :root {

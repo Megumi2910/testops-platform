@@ -100,7 +100,7 @@
 </head>
 <body>
 <header class="bar">
-  <div><h1>TestOps + Ecommerce — codebase map</h1><div class="sub">two apps · two Spring APIs · PostgreSQL · Playwright execution · CI gates repaired</div></div>
+  <div><h1>TestOps + Ecommerce — codebase map</h1><div class="sub">two apps · two Spring APIs · PostgreSQL · Playwright execution · CI gates repaired · responsive editor fix</div></div>
   <div class="spacer"></div>
   <div class="chips" id="flows">
     <button class="chip on" data-flow="all">Everything</button>
@@ -173,7 +173,7 @@
     workspace: ['Project workspace','project + authorization domains','Projects own the approved target origin, memberships, suites, cases, variables, and the onboarding path from target check to READY case.'],
     execution: ['Execution service','backend/.../execution','Queueing snapshots the case and target, then the worker records per-step outcomes and eligible artifacts.'],
     auth: ['Identity + access','backend/.../auth · frontend/src/context','Registration and OTP verification establish the account; JWT authentication and project roles gate mutations.'],
-    'frontend-features': ['Guided authoring + messaging','frontend/src/features · frontend/src/pages/MessagesPage.jsx','The builder exposes action-specific fields. Messaging uses REST fallback plus same-origin STOMP, with route guards and thread ownership checks.'],
+    'frontend-features': ['Guided authoring + messaging','frontend/src/features · frontend/src/pages/MessagesPage.jsx','The builder exposes action-specific fields and keeps its step editor usable at narrow mobile widths. Messaging uses REST fallback plus same-origin STOMP, with route guards and thread ownership checks.'],
     'testops-db': ['TestOps PostgreSQL','docker-compose.yml · postgres18_data','The source of truth for identities, projects, cases, memberships, variables, target health, executions, steps, and artifact metadata.'],
     artifacts: ['Evidence artifacts','backend/artifacts · artifacts_data','Screenshots, Playwright traces, and execution logs are written to the mounted artifact volume and linked from run detail.'],
     worker: ['Managed Playwright','execution worker','The worker validates approved origins, maps logical localhost through host.docker.internal when enabled, and executes only supported step actions.'],
