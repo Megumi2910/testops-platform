@@ -23,6 +23,8 @@ services:
       AUTH_OTP_RESEND_IP_LIMIT: "100"
       MAIL_HOST: mailpit
       MAIL_PORT: "1025"
+      MAIL_FROM_ADDRESS: e2e@testops.local
+      MAIL_FROM_NAME: TestOps E2E
       MAIL_SMTP_AUTH: "false"
       MAIL_STARTTLS: "false"
       FRONTEND_ORIGIN: http://localhost:3100
