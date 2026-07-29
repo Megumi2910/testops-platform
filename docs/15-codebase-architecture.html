@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TestOps + Ecommerce — Codebase Architecture</title>
+<script>
+  (() => {
+    const saved = localStorage.getItem('theme');
+    const dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.classList.toggle('dark', dark);
+  })();
+</script>
+<style>
+  :root {
+    --bg:#f6f7fb; --surface:#fff; --surface-2:#eef1f7; --ink:#142033; --body:#40506a;
+    --muted:#71809a; --line:#cbd4e3; --line-soft:#e5eaf2; --accent:#356cf3;
+    --accent-soft:rgba(53,108,243,.11); --good:#238b62; --good-soft:rgba(35,139,98,.12);
+    --warn:#c47724; --warn-soft:rgba(196,119,36,.12); --danger:#bf4c4c; --zone:rgba(20,32,51,.035);
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular",Consolas,monospace;
+  }
+  html.dark {
+    --bg:#101722; --surface:#172231; --surface-2:#202d3d; --ink:#f3f7ff; --body:#c0ccdc;
+    --muted:#8d9bb0; --line:#344459; --line-soft:#263548; --accent:#7ca2ff;
+    --accent-soft:rgba(124,162,255,.15); --good:#64c59d; --good-soft:rgba(100,197,157,.15);
+    --warn:#e5a45b; --warn-soft:rgba(229,164,91,.14); --danger:#ef8585; --zone:rgba(243,247,255,.035);
+  }
+  * { box-sizing:border-box; }
+  html,body { height:100%; margin:0; }
+  body { overflow:hidden; background:var(--bg); color:var(--body); font-family:var(--sans); }
+  .bar { min-height:66px; display:flex; align-items:center; gap:16px; padding:12px 20px; border-bottom:1px solid var(--line-soft); }
+  h1 { margin:0; color:var(--ink); font-size:19px; letter-spacing:-.02em; }
+  .sub { margin-top:4px; color:var(--muted); font:10px var(--mono); letter-spacing:.08em; text-transform:uppercase; }
+  .spacer { flex:1; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  button { font:inherit; }
+  .chip,.theme,.reset { border:1px solid var(--line); border-radius:999px; background:transparent; color:var(--muted); cursor:pointer; padding:6px 10px; font:10px var(--mono); letter-spacing:.05em; text-transform:uppercase; }
+  .chip:hover,.theme:hover,.reset:hover { color:var(--ink); border-color:var(--accent); }
+  .chip.on { color:var(--bg); background:var(--ink); border-color:var(--ink); }
+  .stage { position:relative; height:calc(100% - 66px); min-height:0; overflow:hidden; }
+  svg { width:100%; height:100%; display:block; cursor:grab; user-select:none; }
+  svg.grabbing { cursor:grabbing; }
+  #svg-content { transform-origin:0 0; }
+  .zone rect { fill:var(--zone); stroke:var(--line); stroke-dasharray:6 5; stroke-width:1; rx:18; }
+  .zone .title { fill:var(--muted); font:12px var(--mono); letter-spacing:.11em; text-transform:uppercase; }
+  .zone .caption { fill:var(--muted); opacity:.8; font:10px var(--mono); }
+  .edge { fill:none; stroke:var(--muted); stroke-width:1.7; marker-end:url(#arrow); transition:opacity .2s,stroke .2s; }
+  .edge.dash { stroke-dasharray:5 4; }
+  .edge.ws { stroke-width:2.2; }
+  .edge-label { fill:var(--muted); font:10px var(--mono); pointer-events:none; }
+  .node { cursor:pointer; }
+  .node rect { fill:var(--surface); stroke:var(--line); stroke-width:1.5; rx:11; transition:stroke .15s,filter .15s; }
+  .node:hover rect { stroke:var(--accent); }
+  .node.selected rect { stroke:var(--accent); stroke-width:2.4; filter:drop-shadow(0 4px 9px rgba(0,0,0,.12)); }
+  .node .title { fill:var(--ink); font-size:15px; font-weight:700; pointer-events:none; }
+  .node .meta { fill:var(--muted); font:10.5px var(--mono); pointer-events:none; }
+  .node .kind { fill:var(--accent); font:10px var(--mono); letter-spacing:.08em; text-transform:uppercase; pointer-events:none; }
+  .node.store rect { fill:var(--surface-2); }
+  .node.target rect { fill:var(--warn-soft); stroke:var(--warn); }
+  .node.worker rect { fill:var(--good-soft); stroke:var(--good); }
+  .stage.flowing .edge { opacity:.14; }
+  .stage.flowing .edge-label { opacity:.12; }
+  .stage.flowing .node { opacity:.3; }
+  .stage.flowing .edge.lit { opacity:1; stroke:var(--accent); stroke-dasharray:8 5; animation:dash 1s linear infinite; marker-end:url(#arrow-accent); }
+  .stage.flowing .edge-label.lit { opacity:1; fill:var(--accent); }
+  .stage.flowing .node.lit { opacity:1; }
+  .stage.flowing .node.lit rect { stroke:var(--accent); }
+  @keyframes dash { to { stroke-dashoffset:-13; } }
+  @media (prefers-reduced-motion:reduce) { .stage.flowing .edge.lit { animation:none; } }
+  .overlay { position:absolute; background:var(--surface); border:1px solid var(--line); border-radius:13px; box-shadow:0 10px 32px rgba(0,0,0,.14); }
+  .overlay .close { position:absolute; top:8px; right:8px; width:26px; height:26px; padding:0; border:1px solid var(--line); border-radius:50%; background:transparent; color:var(--muted); cursor:pointer; }
+  .overlay .close:hover { color:var(--ink); border-color:var(--accent); }
+  #detail { right:18px; bottom:18px; width:340px; padding:17px 18px; }
+  #detail h2 { margin:0 28px 3px 0; color:var(--ink); font-size:18px; }
+  #detail .meta { margin-bottom:9px; color:var(--muted); font:10px var(--mono); text-transform:uppercase; letter-spacing:.06em; }
+  #detail p { margin:0; font-size:12.5px; line-height:1.55; }
+  #detail code,#flowcap code { color:var(--accent); font:11px var(--mono); }
+  #flowcap { left:18px; bottom:18px; width:430px; padding:15px 18px; display:none; }
+  #flowcap.show { display:block; }
+  #flowcap .flow-title { color:var(--accent); font:10px var(--mono); letter-spacing:.09em; text-transform:uppercase; margin-bottom:7px; }
+  #flowcap ol { margin:0 0 0 18px; padding:0; font-size:12px; line-height:1.55; }
+  .hud { position:absolute; top:14px; right:18px; display:flex; align-items:center; gap:8px; color:var(--muted); font:10px var(--mono); }
+  #zoom { min-width:44px; text-align:center; }
+  .legend { position:absolute; left:18px; top:14px; display:flex; gap:12px; flex-wrap:wrap; color:var(--muted); font-size:11px; }
+  .legend span { display:inline-flex; align-items:center; gap:5px; }
+  .dot { width:10px; height:10px; display:inline-block; border-radius:3px; background:var(--surface); border:1px solid var(--line); }
+  .dot.target { background:var(--warn-soft); border-color:var(--warn); }
+  .dot.worker { background:var(--good-soft); border-color:var(--good); }
+  @media (max-width:900px) {
+    body { overflow:auto; }
+    .bar { align-items:flex-start; flex-wrap:wrap; }
+    .chips { order:3; width:100%; }
+    .stage { height:720px; min-height:720px; }
+    #detail { right:12px; bottom:12px; width:min(340px,calc(100% - 24px)); }
+    #flowcap { left:12px; bottom:12px; width:min(430px,calc(100% - 24px)); }
+    .legend { display:none; }
+  }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div><h1>TestOps + Ecommerce — codebase map</h1><div class="sub">two apps · two Spring APIs · PostgreSQL · Playwright execution · Phase 4 parity slice current</div></div>
+  <div class="spacer"></div>
+  <div class="chips" id="flows">
+    <button class="chip on" data-flow="all">Everything</button>
+    <button class="chip" data-flow="login">Login</button>
+    <button class="chip" data-flow="workspace">Workspace</button>
+    <button class="chip" data-flow="execute">Execute</button>
+    <button class="chip" data-flow="checkout">Checkout</button>
+    <button class="chip" data-flow="message">Messaging</button>
+  </div>
+  <button class="theme" id="themeToggle" type="button">Theme</button>
+</header>
+
+<main class="stage" id="stage">
+  <svg id="diagram" viewBox="0 0 1540 920" role="img" aria-label="Interactive architecture diagram for TestOps and Ecommerce">
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" style="fill:var(--muted)"/></marker>
+      <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" style="fill:var(--accent)"/></marker>
+    </defs>
+    <g id="svg-content">
+      <g class="zone"><rect x="35" y="80" width="250" height="700"/><text class="title" x="58" y="113">BROWSER CLIENTS</text><text class="caption" x="58" y="132">human and target traffic</text></g>
+      <g class="zone"><rect x="325" y="80" width="500" height="700"/><text class="title" x="348" y="113">TESTOPS PLATFORM</text><text class="caption" x="348" y="132">React workspace + Spring orchestration API</text></g>
+      <g class="zone"><rect x="865" y="80" width="300" height="700"/><text class="title" x="888" y="113">EXECUTION BOUNDARY</text><text class="caption" x="888" y="132">isolated browser and target bridge</text></g>
+      <g class="zone"><rect x="1205" y="80" width="300" height="700"/><text class="title" x="1228" y="113">PERSISTENCE + TARGETS</text><text class="caption" x="1228" y="132">source of truth and local website</text></g>
+
+      <path class="edge" data-flows="login" d="M260 190 C300 190 315 190 355 190"/><text class="edge-label" data-flows="login" x="278" y="177">HTTPS / JWT</text>
+      <path class="edge" data-flows="workspace" d="M260 270 C305 270 320 265 355 265"/><text class="edge-label" data-flows="workspace" x="280" y="252">REST</text>
+      <path class="edge" data-flows="execute" d="M260 350 C305 350 320 360 355 360"/><text class="edge-label" data-flows="execute" x="275" y="337">queue run</text>
+      <path class="edge ws" data-flows="message" d="M260 430 C305 430 320 455 355 455"/><text class="edge-label" data-flows="message" x="275" y="424">STOMP / WS</text>
+      <path class="edge" data-flows="workspace" d="M795 265 C840 265 850 195 895 195"/><text class="edge-label" data-flows="workspace" x="818" y="238">project APIs</text>
+      <path class="edge" data-flows="execute" d="M795 360 C835 360 850 350 895 350"/><text class="edge-label" data-flows="execute" x="820" y="345">snapshot</text>
+      <path class="edge" data-flows="execute" d="M1115 350 C1160 350 1175 350 1235 350"/><text class="edge-label" data-flows="execute" x="1144" y="335">artifacts</text>
+      <path class="edge target" data-flows="execute" d="M1115 430 C1160 430 1180 540 1235 540"/><text class="edge-label" data-flows="execute" x="1143" y="462">localhost bridge</text>
+      <path class="edge" data-flows="workspace" d="M795 520 C850 520 850 610 895 610"/><text class="edge-label" data-flows="workspace" x="816" y="550">query</text>
+      <path class="edge" data-flows="checkout" d="M260 590 C480 620 505 640 560 640"/><text class="edge-label" data-flows="checkout" x="300" y="621">storefront API</text>
+      <path class="edge" data-flows="checkout" d="M795 640 C940 640 1050 670 1235 670"/><text class="edge-label" data-flows="checkout" x="962" y="655">target journey</text>
+      <path class="edge" data-flows="message" d="M795 455 C960 455 1030 540 1235 540"/><text class="edge-label" data-flows="message" x="968" y="494">same-origin WS</text>
+      <path class="edge dash" data-flows="login" d="M795 190 C960 150 1120 150 1235 190"/><text class="edge-label" data-flows="login" x="972" y="153">auth state</text>
+
+      <g class="node" data-k="testops-ui" data-flows="login workspace execute message"><rect x="60" y="150" width="200" height="80"/><text class="kind" x="78" y="175">CLIENT · :3000</text><text class="title" x="78" y="198">TestOps React UI</text><text class="meta" x="78" y="217">projects · cases · runs · evidence</text></g>
+      <g class="node" data-k="ecommerce-ui" data-flows="checkout message"><rect x="60" y="550" width="200" height="80"/><text class="kind" x="78" y="575">TARGET · :3001</text><text class="title" x="78" y="598">Ecommerce storefront</text><text class="meta" x="78" y="617">catalog · cart · checkout · chat</text></g>
+      <g class="node" data-k="browser" data-flows="execute"><rect x="60" y="320" width="200" height="80"/><text class="kind" x="78" y="345">RUNNER</text><text class="title" x="78" y="368">Chromium context</text><text class="meta" x="78" y="387">isolated cookies + trace</text></g>
+      <g class="node" data-k="platform-api" data-flows="login workspace execute message"><rect x="355" y="150" width="440" height="95"/><text class="kind" x="377" y="177">SPRING BOOT · :8080</text><text class="title" x="377" y="202">TestOps backend</text><text class="meta" x="377" y="222">auth · projects · step language · executions</text><text class="meta" x="377" y="238">target safety · permissions · artifact metadata</text></g>
+      <g class="node" data-k="workspace" data-flows="workspace"><rect x="355" y="270" width="200" height="72"/><text class="kind" x="375" y="294">DOMAIN</text><text class="title" x="375" y="317">Project workspace</text><text class="meta" x="375" y="334">target · suites · cases · members</text></g>
+      <g class="node worker" data-k="execution" data-flows="execute"><rect x="575" y="270" width="200" height="72"/><text class="kind" x="595" y="294">DOMAIN</text><text class="title" x="595" y="317">Execution service</text><text class="meta" x="595" y="334">queue · snapshot · outcomes</text></g>
+      <g class="node" data-k="auth" data-flows="login"><rect x="575" y="150" width="200" height="72"/><text class="kind" x="595" y="174">DOMAIN</text><text class="title" x="595" y="197">Identity + access</text><text class="meta" x="595" y="214">OTP · JWT · project roles</text></g>
+      <g class="node" data-k="frontend-features" data-flows="workspace message"><rect x="355" y="410" width="440" height="90"/><text class="kind" x="377" y="437">REACT FEATURES</text><text class="title" x="377" y="462">Guided authoring + messaging</text><text class="meta" x="377" y="481">step builder · route guards · same-origin WebSocket</text></g>
+      <g class="node store" data-k="testops-db" data-flows="workspace execute login"><rect x="355" y="560" width="200" height="72"/><text class="kind" x="375" y="584">POSTGRES · :5432</text><text class="title" x="375" y="607">TestOps database</text><text class="meta" x="375" y="624">users · projects · runs · variables</text></g>
+      <g class="node store" data-k="artifacts" data-flows="execute"><rect x="575" y="560" width="200" height="72"/><text class="kind" x="595" y="584">VOLUME</text><text class="title" x="595" y="607">Evidence artifacts</text><text class="meta" x="595" y="624">screenshots · traces · logs</text></g>
+      <g class="node worker" data-k="worker" data-flows="execute"><rect x="895" y="315" width="220" height="72"/><text class="kind" x="915" y="339">EXECUTION WORKER</text><text class="title" x="915" y="362">Managed Playwright</text><text class="meta" x="915" y="379">safe navigation · screenshots · timing</text></g>
+      <g class="node" data-k="target-check" data-flows="execute"><rect x="895" y="410" width="220" height="72"/><text class="kind" x="915" y="434">SAFETY GATE</text><text class="title" x="915" y="457">Target checker</text><text class="meta" x="915" y="474">allowlist · localhost bridge · health</text></g>
+      <g class="node store" data-k="mailpit" data-flows="login"><rect x="895" y="575" width="220" height="72"/><text class="kind" x="915" y="599">E2E SERVICE · :8025</text><text class="title" x="915" y="622">Mailpit</text><text class="meta" x="915" y="639">OTP + password reset inbox</text></g>
+      <g class="node target" data-k="ecommerce-api" data-flows="checkout message"><rect x="1235" y="150" width="240" height="95"/><text class="kind" x="1255" y="177">SPRING BOOT · :8081</text><text class="title" x="1255" y="202">Ecommerce backend</text><text class="meta" x="1255" y="222">REST auth · orders · cart · messages</text><text class="meta" x="1255" y="238">SockJS /ws · idempotent checkout</text></g>
+      <g class="node store" data-k="ecommerce-db" data-flows="checkout message"><rect x="1235" y="300" width="240" height="72"/><text class="kind" x="1255" y="324">POSTGRES · :5433</text><text class="title" x="1255" y="347">Ecommerce database</text><text class="meta" x="1255" y="364">products · carts · orders · threads</text></g>
+      <g class="node target" data-k="host-bridge" data-flows="execute checkout message"><rect x="1235" y="470" width="240" height="95"/><text class="kind" x="1255" y="497">DOCKER NETWORK</text><text class="title" x="1255" y="522">host.docker.internal</text><text class="meta" x="1255" y="542">logical localhost → host target</text><text class="meta" x="1255" y="558">exact allowlist + local-dev flag</text></g>
+      <g class="node store" data-k="ecommerce-mail" data-flows="login"><rect x="1235" y="610" width="240" height="72"/><text class="kind" x="1255" y="634">E2E SERVICE · :1025</text><text class="title" x="1255" y="657">Ecommerce Mailpit</text><text class="meta" x="1255" y="674">fixture verification messages</text></g>
+    </g>
+  </svg>
+
+  <div class="legend"><span><i class="dot"></i> application/domain</span><span><i class="dot worker"></i> worker/safety</span><span><i class="dot target"></i> target boundary</span></div>
+  <div class="hud"><button class="reset" id="reset" type="button">Reset</button><span id="zoom">100%</span></div>
+  <section class="overlay" id="flowcap" aria-live="polite"><button class="close" type="button" aria-label="Close flow summary">×</button><div class="flow-title" id="flow-title"></div><ol id="flow-steps"></ol></section>
+  <section class="overlay" id="detail" aria-live="polite"><button class="close" type="button" aria-label="Close node details">×</button><h2 id="detail-title">Click a node</h2><div class="meta" id="detail-meta">architecture detail</div><p id="detail-body">Use the chips to light up a workflow. Click any node for its responsibility and the files or ports that make it real.</p></section>
+</main>
+<script>
+  const DETAILS = {
+    'testops-ui': ['TestOps React UI','frontend/src','The workspace UI owns project navigation, guided case authoring, permission-aware controls, run summaries, and evidence previews. It calls the API through same-origin paths.'],
+    'ecommerce-ui': ['Ecommerce storefront','D:/Projects/ecommerce-web/webcky/frontend','The browser-facing storefront is the local target. Its production container is exposed on port 3001 and proxies REST /api and SockJS /ws to the ecommerce backend.'],
+    browser: ['Chromium context','Playwright execution boundary','Each run uses an isolated browser context. Cookies, redirects, screenshots, traces, and step timings stay scoped to the queued execution.'],
+    'platform-api': ['TestOps backend','backend/src/main/java/com/megumi/testops','Spring Boot exposes auth, projects, suites, cases, variables, target checks, queueing, and run detail APIs.'],
+    workspace: ['Project workspace','project + authorization domains','Projects own the approved target origin, memberships, suites, cases, variables, and the onboarding path from target check to READY case.'],
+    execution: ['Execution service','backend/.../execution','Queueing snapshots the case and target, then the worker records per-step outcomes and eligible artifacts.'],
+    auth: ['Identity + access','backend/.../auth · frontend/src/context','Registration and OTP verification establish the account; JWT authentication and project roles gate mutations.'],
+    'frontend-features': ['Guided authoring + messaging','frontend/src/features · frontend/src/pages/MessagesPage.jsx','The builder exposes action-specific fields. Messaging uses REST fallback plus same-origin STOMP, with route guards and thread ownership checks.'],
+    'testops-db': ['TestOps PostgreSQL','docker-compose.yml · postgres18_data','The source of truth for identities, projects, cases, memberships, variables, target health, executions, steps, and artifact metadata.'],
+    artifacts: ['Evidence artifacts','backend/artifacts · artifacts_data','Screenshots, Playwright traces, and execution logs are written to the mounted artifact volume and linked from run detail.'],
+    worker: ['Managed Playwright','execution worker','The worker validates approved origins, maps logical localhost through host.docker.internal when enabled, and executes only supported step actions.'],
+    'target-check': ['Target checker','POST /api/v1/projects/{id}/target-check','A project member with execution permission can check reachability. The result is sanitized and stored as target health, never page content.'],
+    mailpit: ['TestOps Mailpit','docker-compose.e2e.yml · :8025','The isolated E2E stack captures verification and password-reset email without touching a real mailbox.'],
+    'ecommerce-api': ['Ecommerce backend','D:/Projects/ecommerce-web/webcky/backend · :8081','The target application owns storefront REST, auth, cart/order integrity, and `/ws` messaging. Phase 3 added server-authoritative checkout replay protection; Phase 4 protects message ownership and aligns admin product creation with the implemented `/seller/products` contract.'],
+    'ecommerce-db': ['Ecommerce PostgreSQL','ecommerce_e2e_pgdata · :5433','Products, carts, orders, users, reviews, and message threads live here. E2E reset is isolated from the normal development volume.'],
+    'host-bridge': ['Docker host bridge','host.docker.internal:3001','Containers cannot use their own localhost to reach the host browser app. TestOps keeps the visible URL as localhost while routing container traffic through this explicit bridge.'],
+    'ecommerce-mail': ['Ecommerce Mailpit','ecommerce E2E profile · :8025','Fixture verification emails are captured here for native ecommerce tests and TestOps dogfooding.']
+  };
+  const FLOWS = {
+    all:{title:'All system paths',steps:['Browser clients call same-origin APIs.','TestOps persists workspace state and execution metadata.','Playwright reaches the approved ecommerce target through the local bridge.','Ecommerce persists catalog, checkout, and messaging state in its own database.']},
+    login:{title:'Login + verification',steps:['Browser submits credentials to the relevant auth API.','JWT identity is loaded into the UI and route guards.','E2E Mailpit captures OTP or reset messages.','Unverified accounts remain restricted until verification.']},
+    workspace:{title:'Create a runnable project',steps:['Register an exact target origin and check connectivity.','Create a suite and guided case with a NAVIGATE first step.','Validate the case and promote it to READY.','Run controls appear according to effective project permissions.']},
+    execute:{title:'Queue an evidence-producing run',steps:['UI queues an immutable case/target snapshot.','Worker starts isolated Chromium with safety rules.','Each step records status, duration, failure context, and eligible artifacts.','Run detail exposes screenshots, traces, and recovery guidance.']},
+    checkout:{title:'Ecommerce checkout journey',steps:['Playwright opens localhost:3001 through host.docker.internal.','Customer selects cart items and submits a UUID Idempotency-Key.','Ecommerce backend recomputes totals and removes only selected items.','A replay returns the original order instead of creating a duplicate.']},
+    message:{title:'Messaging journey',steps:['Authenticated user loads only their own threads.','SockJS connects through same-origin /ws with a JWT STOMP header.','Subscriptions and typing/send destinations are checked against membership.','Unauthorized users receive a generic 404 or rejected STOMP frame.']}
+  };
+  const stage=document.getElementById('stage'), content=document.getElementById('svg-content'), diagram=document.getElementById('diagram');
+  const detail=document.getElementById('detail'), flowcap=document.getElementById('flowcap');
+  const title=document.getElementById('detail-title'), meta=document.getElementById('detail-meta'), body=document.getElementById('detail-body');
+  const zoomLabel=document.getElementById('zoom'); let scale=1, tx=0, ty=0, dragging=false, moved=false, startX=0, startY=0, originX=0, originY=0;
+  function applyTransform(){ content.setAttribute('transform',`translate(${tx} ${ty}) scale(${scale})`); zoomLabel.textContent=`${Math.round(scale*100)}%`; }
+  function resetView(){ scale=1; tx=0; ty=0; applyTransform(); }
+  function showDetail(key){ const d=DETAILS[key]; if(!d)return; title.textContent=d[0]; meta.textContent=d[1]; body.textContent=d[2]; detail.hidden=false; document.querySelectorAll('.node').forEach(n=>n.classList.toggle('selected',n.dataset.k===key)); }
+  function hideOverlay(el){ el.hidden=true; }
+  function showFlow(name){ const f=FLOWS[name]||FLOWS.all; document.getElementById('flow-title').textContent=f.title; document.getElementById('flow-steps').innerHTML=f.steps.map(s=>`<li>${s}</li>`).join(''); flowcap.hidden=false; flowcap.classList.add('show'); stage.classList.toggle('flowing',name!=='all'); document.querySelectorAll('[data-flows]').forEach(el=>{ const matches=name==='all'||(el.dataset.flows||'').split(' ').includes(name); el.classList.toggle('lit',matches); }); }
+  document.querySelectorAll('.node').forEach(n=>n.addEventListener('click',()=>showDetail(n.dataset.k)));
+  document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{ document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on')); c.classList.add('on'); showFlow(c.dataset.flow); }));
+  document.querySelectorAll('.close').forEach(c=>c.addEventListener('click',()=>hideOverlay(c.parentElement)));
+  document.getElementById('reset').addEventListener('click',resetView);
+  document.getElementById('themeToggle').addEventListener('click',()=>{ const dark=!document.documentElement.classList.contains('dark'); document.documentElement.classList.toggle('dark',dark); localStorage.setItem('theme',dark?'dark':'light'); });
+  diagram.addEventListener('wheel',e=>{ e.preventDefault(); const rect=diagram.getBoundingClientRect(); const px=(e.clientX-rect.left)*(1540/rect.width); const py=(e.clientY-rect.top)*(920/rect.height); const beforeX=(px-tx)/scale,beforeY=(py-ty)/scale; const next=Math.min(3,Math.max(.45,scale*(e.deltaY<0?1.12:.89))); scale=next; tx=px-beforeX*scale; ty=py-beforeY*scale; applyTransform(); },{passive:false});
+  diagram.addEventListener('pointerdown',e=>{ dragging=true;moved=false;startX=e.clientX;startY=e.clientY;originX=tx;originY=ty;diagram.classList.add('grabbing');diagram.setPointerCapture(e.pointerId); });
+  diagram.addEventListener('pointermove',e=>{ if(!dragging)return; const dx=e.clientX-startX,dy=e.clientY-startY; if(Math.hypot(dx,dy)>5)moved=true; tx=originX+dx*(1540/diagram.clientWidth); ty=originY+dy*(920/diagram.clientHeight); applyTransform(); });
+  diagram.addEventListener('pointerup',e=>{ dragging=false;diagram.classList.remove('grabbing');diagram.releasePointerCapture(e.pointerId); if(moved){ diagram.addEventListener('click',ev=>ev.stopPropagation(),{capture:true,once:true}); } });
+  showDetail('platform-api'); showFlow('all'); resetView();
+</script>
+</body>
+</html>
