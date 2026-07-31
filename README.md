@@ -272,6 +272,7 @@ Never commit `.env`, JWT private keys, Google client secrets, access or refresh 
 12. [Product readiness milestone](docs/11-milestone-6-product-readiness.md) — registration integrity, self-service onboarding, reporting, dashboard, retention, and operational readiness.
 13. [Guided local-target follow-ups](docs/13-guided-local-target-follow-ups.md) — Docker host mapping, browser target checks, structured metadata, editable case authoring, and negative E2E scenarios.
 14. [Milestone 9 release candidate](docs/14-milestone-9-release-candidate.md) — repository hygiene, aggregate onboarding, frontend closure, release gates, and beginner-friendly verification commands.
+15. [Live target recovery](docs/16-live-target-recovery.md) — diagnose a blocked localhost target, recreate the backend bridge, refresh target health, and rerun a READY case safely.
 
 ## Verification boundary
 
