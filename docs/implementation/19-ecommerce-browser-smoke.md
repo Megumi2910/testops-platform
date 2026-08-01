@@ -75,6 +75,16 @@ After the coordinator's reference-counted cleanup was rebuilt into the backend i
 
 The post-mapping Compose health check reported the backend, frontend, and PostgreSQL healthy on 2026-08-01, with PgAdmin running and no E2E volume reset. The final six-test browser contract was then rerun against that image and passed in 14.5 seconds. This is the release evidence for the JPA uniqueness mapping plus reference-counted checkout coordinator.
 
+The next Phase 4 slice tightened order-status authorization: `/api/admin/orders/{id}/status` and the deprecated `/api/orders/{id}/status` compatibility route are admin-only, while `/api/seller/orders/{id}/status` remains the seller path with ownership validation. The focused native `OrderStatusAuthorizationTest` passed before the full backend verification rerun.
+
+The complete ecommerce backend `./mvnw.cmd verify` rerun then passed on 2026-08-01 with 8 tests and zero failures, rebuilding the Spring Boot jar after the authorization change.
+
+The ecommerce backend image was rebuilt from the verified source and the existing Compose database volume was reused; the container was recreated without a database reset.
+
+The post-rebuild Compose check reported the backend, frontend, and PostgreSQL healthy, with PgAdmin running, on ports `8081`, `3001`, `5433`, and `5051`.
+
+The six-test browser contract passed against the authorization-hardened image on 2026-08-01 in 17.1 seconds, covering authenticated checkout reachability, responsive layout, keyboard search, outage retry, pagination, and duplicate-submit locking.
+
 ## Scope boundary
 
 This smoke contract proves the customer entry path, responsive transport, and the frontend half of duplicate-submit protection. It is not a replacement for native ecommerce tests for Mailpit verification, two-user messaging, inventory locking, or transactional checkout replay/concurrency. Those scenarios need isolated fixtures and stronger orchestration and remain the next Phase 5/6 work items.
