@@ -67,6 +67,14 @@ After adding the contract, `npm run typecheck`, `npm run lint`, and `npm test --
 
 The final static-gate rerun after the duplicate-submit test and doc update passed again: TypeScript build, ESLint, and Vitest all completed successfully (`4` files, `9` tests).
 
+The ecommerce backend now adds native checkout coverage alongside this browser contract: `OrderRestControllerTest` verifies verified-customer UUID validation and unverified blocking, while `CheckoutIdempotencyCoordinatorTest` proves same-key work is serialized and different keys remain concurrent. `./mvnw.cmd verify` passed with 6 tests on 2026-08-01.
+
+After the backend image rebuild, the six-test browser contract was rerun against `http://localhost:3001` and passed in 17.9 seconds. This confirms the new service constructor and coordinator do not regress the target-facing login, cart, search, outage-retry, pagination, or checkout-lock paths.
+
+After the coordinator's reference-counted cleanup was rebuilt into the backend image, the same six tests passed again in 14.8 seconds on 2026-08-01.
+
+The post-mapping Compose health check reported the backend, frontend, and PostgreSQL healthy on 2026-08-01, with PgAdmin running and no E2E volume reset. The final six-test browser contract was then rerun against that image and passed in 14.5 seconds. This is the release evidence for the JPA uniqueness mapping plus reference-counted checkout coordinator.
+
 ## Scope boundary
 
 This smoke contract proves the customer entry path, responsive transport, and the frontend half of duplicate-submit protection. It is not a replacement for native ecommerce tests for Mailpit verification, two-user messaging, inventory locking, or transactional checkout replay/concurrency. Those scenarios need isolated fixtures and stronger orchestration and remain the next Phase 5/6 work items.
