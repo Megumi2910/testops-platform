@@ -49,4 +49,28 @@ test.describe('ecommerce storefront smoke', () => {
     await page.goto(`${ecommerceOrigin}/`, { waitUntil: 'networkidle' })
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390)
   })
+
+  test('search state is shareable and filters are keyboard-operable', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto(`${ecommerceOrigin}/search?q=shirt`, { waitUntil: 'networkidle' })
+    await expect(page.locator('input[name="q"]')).toHaveValue('shirt')
+
+    const filterToggle = page.getByRole('button', { name: /Bộ lọc/ })
+    await filterToggle.focus()
+    await page.keyboard.press('Enter')
+    await expect(filterToggle).toHaveAttribute('aria-expanded', 'true')
+
+    const category = page.getByLabel('Danh mục')
+    await expect(category).toBeVisible()
+    await category.focus()
+    await page.keyboard.press('ArrowDown')
+    await page.keyboard.press('Enter')
+    await expect(page).toHaveURL(/category=thoi-trang/)
+
+    const sort = page.getByLabel('Sắp xếp sản phẩm')
+    await sort.focus()
+    await page.keyboard.press('End')
+    await page.keyboard.press('Enter')
+    await expect(page).toHaveURL(/sort=rating/)
+  })
 })

@@ -19,6 +19,7 @@ The spec is `frontend/e2e/ecommerce-smoke.spec.ts`. It is skipped by default so 
 7. Collect console and network diagnostics. React route changes may abort obsolete requests; only non-aborted request failures fail the test.
 8. Assert that no browser request uses the removed hard-coded `localhost:8080` backend address.
 9. Run a second test at 390px wide and assert `document.documentElement.scrollWidth === 390`.
+10. Open the mobile filter panel from the keyboard, select the seeded `Thời trang` category with arrow keys, and change sorting with the keyboard. The test asserts that both choices are reflected in the URL.
 
 The test intentionally stops at the checkout form. It does not enter an address, select a payment method, or click `Đặt hàng`, so repeated runs cannot create orders, consume stock, or alter the permanent mock fixtures.
 
@@ -56,7 +57,7 @@ The Playwright config retains traces and screenshots on failure. A failed run is
 
 The authenticated manual evidence from 2026-08-01 is `artifacts/ecommerce-authenticated-checkout-smoke.png`. It shows the mobile checkout form, COD/QR options, order summary, and the disabled-state-safe route reached without submitting an order.
 
-After adding the contract, `npm run typecheck`, `npm run lint`, and `npm test -- --run` all passed in `D:\Projects\testops-platform\frontend` on 2026-08-01 (`4` test files, `9` unit tests). The opt-in browser suite passed both tests twice, including a trailing-slash `ECOMMERCE_BASE_URL`, confirming URL normalization.
+After adding the contract, `npm run typecheck`, `npm run lint`, and `npm test -- --run` all passed in `D:\Projects\testops-platform\frontend` on 2026-08-01 (`4` test files, `9` unit tests). The opt-in browser suite passed all three tests after the ecommerce image was rebuilt; the initial keyboard run exposed a stale production bundle, not a test flake. A subsequent run passed in 7.6 seconds, and the static gates were rerun successfully after the test expansion.
 
 ## Scope boundary
 
