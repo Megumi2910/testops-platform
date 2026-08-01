@@ -153,6 +153,18 @@ The six-test Playwright ecommerce contract passed against the rebuilt review ima
 
 Final ecommerce diff inspection passed with `git diff --check`; the TestOps workspace has no implementation changes from this slice.
 
+The next Phase 5 slice routes unverified-user, cart-add, buy-now, and missing-shop feedback in `CategoryProductsPage`, `ProductDetailPage`, and `FlashSalePage` through the shared toast system. Error outcomes now use the red variant, success outcomes retain the green variant, and the product breadcrumb back control has an accessible name. The frontend unit gate passed on 2026-08-01: 3 suites and 10 tests; only the existing stale browser-data advisory remains.
+
+The ecommerce production frontend build passed after the catalog/product toast changes. Existing CRA unused-import, hook-dependency, WebSocket export, and browser-data advisories remain non-blocking; the optimized bundle was generated successfully.
+
+The frontend image was rebuilt with the catalog/product toast changes and the existing PostgreSQL volume was retained. The backend was rebuilt from the unchanged source and reached its healthy state before the frontend restarted.
+
+After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy; PgAdmin remained available on port `5051`.
+
+The six-test Playwright ecommerce contract passed against the rebuilt catalog/product image on 2026-08-01 in 16.8 seconds. Authenticated checkout reachability, mobile layout, keyboard search state, outage retry, pagination, and duplicate-submit locking remained green.
+
+Final ecommerce diff inspection passed with `git diff --check`; the TestOps workspace has only the corresponding documentation updates.
+
 ## Scope boundary
 
 This smoke contract proves the customer entry path, responsive transport, and the frontend half of duplicate-submit protection. It is not a replacement for native ecommerce tests for Mailpit verification, two-user messaging, inventory locking, or transactional checkout replay/concurrency. Those scenarios need isolated fixtures and stronger orchestration and remain the next Phase 5/6 work items.

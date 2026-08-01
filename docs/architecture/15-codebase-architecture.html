@@ -237,5 +237,11 @@
 <!-- Verification note: docker compose ps reported react_frontend, springboot_backend, and postgres_db healthy after the review slice; PgAdmin remained on port 5051. -->
 <!-- Verification note: six-test ecommerce Playwright contract passed on 2026-08-01 in 18.5s against the rebuilt review image. -->
 <!-- Verification note: final ecommerce diff inspection passed with git diff --check; this slice is limited to ProductReviews and verification docs. -->
+<!-- Implementation note: catalog/product/flash-sale feedback now uses error-aware shared Toast notifications and the product breadcrumb back control is labeled; frontend unit gate passed with 3 suites and 10 tests on 2026-08-01. -->
+<!-- Verification note: ecommerce production frontend build passed after catalog/product toast changes on 2026-08-01; existing CRA warnings remain non-blocking. -->
+<!-- Verification note: ecommerce frontend image rebuild completed after catalog/product toast changes on 2026-08-01; the PostgreSQL volume was retained. -->
+<!-- Verification note: docker compose ps reported react_frontend, springboot_backend, and postgres_db healthy after the catalog/product slice; PgAdmin remained on port 5051. -->
+<!-- Verification note: six-test ecommerce Playwright contract passed on 2026-08-01 in 16.8s against the rebuilt catalog/product image. -->
+<!-- Verification note: final ecommerce diff inspection passed with git diff --check; this slice is limited to catalog/product/flash-sale notifications and docs. -->
 </body>
 </html>
