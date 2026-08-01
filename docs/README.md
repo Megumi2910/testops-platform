@@ -18,6 +18,7 @@ The root [README](../README.md) remains the project entry point. The machine-rea
 - New to the codebase: implementation handbook → backend/frontend walkthroughs → interactive workflow diagram.
 - Diagnosing a local target: local-target guide → live-target recovery → guided follow-ups.
 - Reviewing a feature: architecture specification → data/API workflows → feature implementation handbook.
+- Exercising the ecommerce target: [ecommerce browser smoke contract](implementation/19-ecommerce-browser-smoke.md) → ecommerce frontend reliability guide.
 - Reviewing delivery status: milestone 9 release candidate → risks/roadmap/decisions.
 
 Paths in this directory are intentionally relative to this index so links continue to work on GitHub and from a checked-out repository.

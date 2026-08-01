@@ -75,6 +75,10 @@
       "role": "Source-grounded syntax, implementation, business rules, decisions, and testing guide"
     },
     {
+      "path": "docs/implementation/19-ecommerce-browser-smoke.md",
+      "role": "Opt-in Playwright contract for authenticated ecommerce transport, checkout entry, diagnostics, and mobile overflow"
+    },
+    {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",
       "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
     }
