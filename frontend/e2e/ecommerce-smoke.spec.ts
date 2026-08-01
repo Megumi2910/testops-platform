@@ -138,4 +138,59 @@ test.describe('ecommerce storefront smoke', () => {
     await expect.poll(() => requestedPages.length).toBe(2)
     expect(requestedPages).toEqual([0, 1])
   })
+
+  test('checkout ignores duplicate clicks and sends one idempotent request', async ({ page }) => {
+    const checkoutRequests: Array<{ idempotencyKey: string | undefined; body: string }> = []
+    let releaseCheckout: (() => void) | undefined
+    const checkoutHeld = new Promise<void>((resolve) => {
+      releaseCheckout = resolve
+    })
+
+    await page.route('**/api/orders/checkout', async (route) => {
+      checkoutRequests.push({
+        idempotencyKey: route.request().headers()['idempotency-key'],
+        body: route.request().postData() ?? '',
+      })
+      await checkoutHeld
+      await route.fulfill({
+        status: 503,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: false, message: 'Synthetic checkout outage' }),
+      })
+    })
+
+    await page.goto(`${ecommerceOrigin}/login`, { waitUntil: 'networkidle' })
+    await page.getByLabel('Email').fill(ecommerceEmail)
+    await page.getByLabel('Mật khẩu').fill(ecommercePassword)
+    await page.getByRole('button', { name: 'Đăng nhập' }).click()
+    await expect(page).toHaveURL(`${ecommerceOrigin}/`)
+
+    await page.goto(`${ecommerceOrigin}/cart`, { waitUntil: 'networkidle' })
+    await page.getByRole('checkbox').first().check()
+    await page.getByRole('button', { name: /Mua hàng/ }).click()
+    await expect(page).toHaveURL(`${ecommerceOrigin}/checkout`)
+    await expect(page.getByRole('heading', { name: 'Thông tin thanh toán' })).toBeVisible()
+
+    await page.locator('textarea[name="shippingAddress"]').fill('123 Đường ABC, Quận 1, TP. Hồ Chí Minh')
+    await page.locator('input[name="phoneNumber"]').fill('0912345678')
+    const placeOrder = page.getByRole('button', { name: 'Đặt hàng' })
+    await placeOrder.click()
+    await expect(placeOrder).toBeDisabled()
+    await expect(placeOrder).toHaveAttribute('aria-busy', 'true')
+
+    // Dispatch a second click while the first request is held. The component's
+    // synchronous ref guard must reject it even before React re-renders.
+    await placeOrder.dispatchEvent('click')
+    await expect.poll(() => checkoutRequests.length).toBe(1)
+    expect(checkoutRequests[0].idempotencyKey).toMatch(/^[0-9a-f-]{36}$/i)
+    expect(JSON.parse(checkoutRequests[0].body)).toMatchObject({
+      paymentMethod: 'COD',
+      selectedCartItemIds: expect.any(Array),
+    })
+
+    releaseCheckout?.()
+    await expect(page.getByRole('alert')).toContainText('Synthetic checkout outage')
+    await expect(placeOrder).toBeEnabled()
+    await expect(placeOrder).toHaveAttribute('aria-busy', 'false')
+  })
 })
