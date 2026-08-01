@@ -243,5 +243,11 @@
 <!-- Verification note: docker compose ps reported react_frontend, springboot_backend, and postgres_db healthy after the catalog/product slice; PgAdmin remained on port 5051. -->
 <!-- Verification note: six-test ecommerce Playwright contract passed on 2026-08-01 in 16.8s against the rebuilt catalog/product image. -->
 <!-- Verification note: final ecommerce diff inspection passed with git diff --check; this slice is limited to catalog/product/flash-sale notifications and docs. -->
+<!-- Implementation note: ShoppingCart now uses an accessible confirmation dialog with focus trapping, Escape close, and focus restoration instead of window.confirm; frontend unit gate passed with 3 suites and 10 tests on 2026-08-01. -->
+<!-- Verification note: ecommerce production frontend build passed after cart dialog changes on 2026-08-01; existing CRA warnings remain non-blocking. -->
+<!-- Verification note: ecommerce frontend image rebuild completed after cart dialog changes on 2026-08-01; the PostgreSQL volume was retained. -->
+<!-- Verification note: docker compose ps reported react_frontend, springboot_backend, and postgres_db healthy after the cart dialog slice; PgAdmin remained on port 5051. -->
+<!-- Verification note: six-test ecommerce Playwright contract passed on 2026-08-01 in 17.6s against the rebuilt cart-dialog image. -->
+<!-- Verification note: final ecommerce diff inspection passed with git diff --check; this slice is limited to the customer cart dialog and docs. -->
 </body>
 </html>

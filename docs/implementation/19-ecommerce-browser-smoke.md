@@ -161,9 +161,21 @@ The frontend image was rebuilt with the catalog/product toast changes and the ex
 
 After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy; PgAdmin remained available on port `5051`.
 
+The six-test Playwright ecommerce contract passed against the rebuilt cart-dialog image on 2026-08-01 in 17.6 seconds. Authenticated checkout reachability, mobile layout, keyboard search state, outage retry, pagination, and duplicate-submit locking remained green.
+
+Final ecommerce diff inspection passed with `git diff --check`; the TestOps workspace has only the corresponding documentation updates.
+
 The six-test Playwright ecommerce contract passed against the rebuilt catalog/product image on 2026-08-01 in 16.8 seconds. Authenticated checkout reachability, mobile layout, keyboard search state, outage retry, pagination, and duplicate-submit locking remained green.
 
 Final ecommerce diff inspection passed with `git diff --check`; the TestOps workspace has only the corresponding documentation updates.
+
+The next Phase 5 slice replaces the cart’s native `window.confirm` removal prompt with a focus-managed, keyboard-operable dialog. It keeps the destructive action explicit, traps Tab focus while open, closes on Escape, restores focus to the triggering delete control, and uses the existing `Button` styles. The frontend unit gate passed on 2026-08-01: 3 suites and 10 tests; only the existing stale browser-data advisory remains.
+
+The ecommerce production frontend build passed after the cart dialog changes. Existing CRA unused-import, hook-dependency, WebSocket export, and browser-data advisories remain non-blocking; the optimized bundle was generated successfully.
+
+The frontend image was rebuilt with the accessible cart dialog and the existing PostgreSQL volume was retained. The backend image remained unchanged and reached a healthy state before the frontend restarted.
+
+After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy; PgAdmin remained available on port `5051`.
 
 ## Scope boundary
 
