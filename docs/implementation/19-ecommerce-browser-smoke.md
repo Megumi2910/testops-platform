@@ -99,6 +99,16 @@ The post-rebuild Compose check reported the backend, frontend, and PostgreSQL he
 
 The final six-test browser contract passed against the messaging-hardened image on 2026-08-01 in 16.8 seconds. Existing customer-facing transport, responsive, search, pagination, and duplicate-submit checks remained green.
 
+The initial WebSocket authorization test run caught an unnecessary shared Mockito stub in the no-token fixture. The test was corrected to keep strict stubbing meaningful; no production behavior was implicated.
+
+The corrected WebSocket authorization suite passed on 2026-08-01, covering missing authentication, non-member subscription rejection, and member subscribe/send access.
+
+The complete ecommerce backend verification gate passed after adding the WebSocket authorization suite: 13 tests ran with zero failures. The native test layer now covers checkout authorization/idempotency, order-status boundaries, message validation, and WebSocket authentication/thread membership. The existing Mockito/JDK dynamic-agent warning remains non-fatal.
+
+The backend image was rebuilt from that verified source and restarted without resetting the existing PostgreSQL volume. The Compose health check reported `springboot_backend`, `react_frontend`, and `postgres_db` healthy, with PgAdmin running on ports `8081`, `3001`, `5433`, and `5051`.
+
+The six-test Playwright ecommerce contract passed against the rebuilt healthy stack on 2026-08-01 in 16.8 seconds. Authenticated checkout reachability, mobile layout, keyboard search state, outage retry, pagination, and duplicate-submit locking remained green.
+
 ## Scope boundary
 
 This smoke contract proves the customer entry path, responsive transport, and the frontend half of duplicate-submit protection. It is not a replacement for native ecommerce tests for Mailpit verification, two-user messaging, inventory locking, or transactional checkout replay/concurrency. Those scenarios need isolated fixtures and stronger orchestration and remain the next Phase 5/6 work items.
