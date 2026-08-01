@@ -94,4 +94,48 @@ test.describe('ecommerce storefront smoke', () => {
     await expect(page.getByText(/Tìm thấy|Hiển thị/)).toBeVisible()
     await expect(alert).toHaveCount(0)
   })
+
+  test('search pagination follows the page URL and server response', async ({ page }) => {
+    const requestedPages: number[] = []
+    const image = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%221%22 height=%221%22/%3E'
+    await page.route('**/api/products/search**', async (route) => {
+      const requestUrl = new URL(route.request().url())
+      const pageNumber = Number(requestUrl.searchParams.get('page') ?? '0')
+      requestedPages.push(pageNumber)
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: [{
+            id: pageNumber + 1,
+            name: `Pagination product ${pageNumber + 1}`,
+            price: 100000,
+            originalPrice: 120000,
+            images: [image],
+            averageRating: 4,
+            reviews: [],
+            sellerName: 'Mock Local Store',
+          }],
+          pageNumber,
+          pageSize: 12,
+          totalElements: 13,
+          totalPages: 2,
+        }),
+      })
+    })
+
+    await page.goto(`${ecommerceOrigin}/search?q=shirt`, { waitUntil: 'networkidle' })
+    const pagination = page.getByRole('navigation', { name: 'Phân trang tìm kiếm' })
+    await expect(pagination).toContainText('Trang 1 / 2')
+    await expect(pagination.getByRole('button', { name: 'Trang trước' })).toBeDisabled()
+
+    await pagination.getByRole('button', { name: 'Trang tiếp theo' }).click()
+    await expect(page).toHaveURL(/page=1/)
+    await expect(pagination).toContainText('Trang 2 / 2')
+    await expect(pagination.getByRole('button', { name: 'Trang tiếp theo' })).toBeDisabled()
+    await expect(page.getByText('Pagination product 2')).toBeVisible()
+    await expect.poll(() => requestedPages.length).toBe(2)
+    expect(requestedPages).toEqual([0, 1])
+  })
 })

@@ -21,6 +21,7 @@ The spec is `frontend/e2e/ecommerce-smoke.spec.ts`. It is skipped by default so 
 9. Run a second test at 390px wide and assert `document.documentElement.scrollWidth === 390`.
 10. Open the mobile filter panel from the keyboard, select the seeded `Thời trang` category with arrow keys, and change sorting with the keyboard. The test asserts that both choices are reflected in the URL.
 11. Abort the first product request, confirm the search surface exposes an alert with `Thử lại tải sản phẩm`, retry, and confirm results recover. The request failure is injected in the browser so the shared backend remains available to other developers.
+12. Fulfill two deterministic search pages in the browser, move from page 1 to page 2, and assert that the `page=1` URL, boundary button states, and server page requests stay aligned. This fixture proves the UI contract even when the permanent local catalog has fewer than twelve products.
 
 The test intentionally stops at the checkout form. It does not enter an address, select a payment method, or click `Đặt hàng`, so repeated runs cannot create orders, consume stock, or alter the permanent mock fixtures.
 
@@ -58,7 +59,7 @@ The Playwright config retains traces and screenshots on failure. A failed run is
 
 The authenticated manual evidence from 2026-08-01 is `artifacts/ecommerce-authenticated-checkout-smoke.png`. It shows the mobile checkout form, COD/QR options, order summary, and the disabled-state-safe route reached without submitting an order.
 
-After adding the contract, `npm run typecheck`, `npm run lint`, and `npm test -- --run` all passed in `D:\Projects\testops-platform\frontend` on 2026-08-01 (`4` test files, `9` unit tests); all three static gates were rerun successfully after the outage test change. The opt-in browser suite now covers four tests, including outage/retry recovery, and passed in 9.1 seconds. The ecommerce image was rebuilt before the browser run because the Compose frontend serves a static production bundle. The initial outage run exposed an overly narrow glob that did not match the `/search` path; the corrected `/api/products/**` matcher and canonical network-error assertion then passed. This is a test-harness fix, not a production outage.
+After adding the contract, `npm run typecheck`, `npm run lint`, and `npm test -- --run` all passed in `D:\Projects\testops-platform\frontend` on 2026-08-01 (`4` test files, `9` unit tests); all three static gates passed again after the final pagination-test stabilization. The opt-in browser suite now covers five tests, including outage/retry recovery and URL-driven pagination, and passed in 11.6 seconds. The ecommerce image was rebuilt before the browser run because the Compose frontend serves a static production bundle. The initial outage run exposed an overly narrow glob that did not match the `/search` path; the first pagination run exposed an assertion before the debounced page-2 request completed. The corrected route matcher, canonical network-error assertion, and request-aware pagination wait then passed. These were test-harness timing/matching fixes, not production failures.
 
 ## Scope boundary
 
