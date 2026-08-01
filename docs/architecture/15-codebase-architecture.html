@@ -283,5 +283,20 @@
 <!-- Release note: the ecommerce CustomerProfile implementation has been pushed; the matching TestOps documentation/regression commit is next. -->
 <!-- Release note: the focused CustomerProfile Playwright regression commit was created successfully and is ready to push. -->
 <!-- Release note: both ecommerce and TestOps CustomerProfile commits were pushed successfully after verification. -->
+<!-- Implementation note: CustomerWishlist now uses Toast feedback for restricted add-to-cart, labels view toggles, wires empty-state navigation, and explains unavailable wishlist actions. Verification is pending. -->
+<!-- Verification note: CustomerWishlist alert scan found no browser alert calls and git diff --check passed. -->
+<!-- Verification note: ecommerce frontend unit gate passed after CustomerWishlist changes on 2026-08-01 with 3 suites and 10 tests. -->
+<!-- Verification note: ecommerce production frontend build passed after CustomerWishlist changes; existing CRA advisories remain non-blocking. -->
+<!-- Verification note: ecommerce frontend image rebuilt after CustomerWishlist changes; PostgreSQL retained and backend health gating completed. -->
+<!-- Verification note: docker compose ps reported react_frontend, springboot_backend, and postgres_db healthy after CustomerWishlist changes; ports remain 3001/8081/5433/5051. -->
+<!-- Verification note: eight-test ecommerce Playwright contract passed on 2026-08-01 in 22.9s against the CustomerWishlist image. -->
+<!-- Test note: the ecommerce Playwright contract now covers the wishlist empty-state message and catalog navigation. Verification is pending. -->
+<!-- Verification note: first nine-test run exposed only a strict-mode heading selector defect in the new test; the application behavior was not implicated. -->
+<!-- Test note: wishlist regression now uses an exact page-title locator after the strict-mode correction. -->
+<!-- Verification note: corrected nine-test ecommerce Playwright contract passed on 2026-08-01 in 20.3s. -->
+<!-- Verification note: final diff inspection passed with git diff --check; only intended wishlist source, browser regression, and docs are included. -->
+<!-- Release note: the ecommerce wishlist implementation has been pushed; the matching TestOps regression/docs commit is next. -->
+<!-- Release note: the focused wishlist Playwright regression commit was created successfully and is ready to push. -->
+<!-- Release note: both ecommerce and TestOps wishlist commits were pushed successfully after verification. -->
 </body>
 </html>

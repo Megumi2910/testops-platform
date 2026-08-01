@@ -207,6 +207,24 @@ The ecommerce frontend image was rebuilt with the CustomerProfile changes; Postg
 
 After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy. Ecommerce ports remain `3001`/`8081`, PostgreSQL `5433`, and PgAdmin `5051`.
 
+The eight-test ecommerce Playwright contract passed against the CustomerWishlist image on 2026-08-01 in 22.9 seconds. Existing checkout, cart-dialog, profile accessibility, mobile, search, outage-retry, pagination, and duplicate-submit coverage remained green.
+
+The browser contract now includes a wishlist empty-state regression that verifies the empty message and the actionable “Khám phá sản phẩm” navigation. Verification is pending.
+
+The first nine-test run found a strict-mode locator issue in the new test because the broad heading name matched both the page title and the empty-state heading. This is a test selector defect, not an application failure; the selector will be made exact.
+
+The wishlist browser regression now uses an exact page-title locator, preserving semantic matching for the empty-state heading.
+
+The corrected nine-test Playwright contract passed on 2026-08-01 in 20.3 seconds. Wishlist empty-state navigation and all previous ecommerce regressions are green.
+
+Final diff inspection passed with `git diff --check`. The TestOps working tree contains the wishlist browser regression and related docs; unrelated `.agents/` and `skills-lock.json` remain untouched.
+
+The wishlist browser regression and documentation are ready to commit on `codex/milestone-9-release-candidate`.
+
+The wishlist regression commit was created successfully and is ready to publish.
+
+The TestOps wishlist branch was pushed successfully after the corrected nine-test browser verification; both repositories now contain this slice.
+
 The seven-test Playwright ecommerce contract passed against the CustomerProfile image on 2026-08-01 in 21.0 seconds. Seeded-cart checkout, cart-dialog keyboard behavior, mobile layout, URL-driven search/pagination, outage retry, and duplicate-submit protection remained green.
 
 An initial profile-route lookup included a non-existent `App.jsx` path and returned a file-not-found error. No application code changed; the route lookup will be retried with the repository’s actual entry files.
@@ -224,6 +242,18 @@ The focused CustomerProfile browser regression and documentation are ready to co
 The CustomerProfile browser regression commit was created successfully; the branch is ready to publish.
 
 The TestOps branch was pushed successfully after the eight-test browser verification; both repositories now contain the CustomerProfile slice.
+
+The next Phase 5 slice updates `CustomerWishlist`: unverified-user add-to-cart failures use Toast feedback, empty-state navigation is actionable, view toggles expose pressed state and focus rings, and unavailable wishlist actions explain their status. Verification is pending.
+
+The targeted wishlist scan found no browser alert calls, and `git diff --check` passed; only normal line-ending normalization warnings were emitted.
+
+The ecommerce frontend unit gate passed after the CustomerWishlist changes on 2026-08-01: 3 suites and 10 tests. The existing browser-data advisory remains non-blocking.
+
+The ecommerce production frontend build passed after the CustomerWishlist changes. Existing CRA advisories remain non-blocking and the optimized bundle was generated successfully.
+
+The ecommerce frontend image was rebuilt with the CustomerWishlist changes; PostgreSQL data was retained and backend health gating completed before frontend startup.
+
+After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy. Ecommerce ports remain `3001`/`8081`, PostgreSQL `5433`, and PgAdmin `5051`.
 
 The final seven-test Playwright ecommerce contract passed against the refined frontend image on 2026-08-01 in 21.0 seconds. The cart-dialog keyboard regression remained green alongside seeded-cart checkout, mobile layout, URL-driven search/pagination, outage retry, and duplicate-submit protection.
 

@@ -98,6 +98,20 @@ test.describe('ecommerce storefront smoke', () => {
     await expect(page.getByRole('button', { name: 'Ẩn mật khẩu hiện tại' })).toBeFocused()
   })
 
+  test('wishlist empty state provides an actionable catalog link', async ({ page }) => {
+    await page.goto(`${ecommerceOrigin}/login`, { waitUntil: 'networkidle' })
+    await page.getByLabel('Email').fill(ecommerceEmail)
+    await page.getByLabel('Mật khẩu').fill(ecommercePassword)
+    await page.getByRole('button', { name: 'Đăng nhập' }).click()
+    await expect(page).toHaveURL(`${ecommerceOrigin}/`)
+
+    await page.goto(`${ecommerceOrigin}/customer/wishlist`, { waitUntil: 'networkidle' })
+    await expect(page.getByRole('heading', { name: 'Sản phẩm yêu thích', exact: true })).toBeVisible()
+    await expect(page.getByText('Chưa có sản phẩm yêu thích')).toBeVisible()
+    await page.getByRole('button', { name: 'Khám phá sản phẩm' }).click()
+    await expect(page).toHaveURL(`${ecommerceOrigin}/`)
+  })
+
   test('storefront keeps the mobile layout within the viewport', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(`${ecommerceOrigin}/`, { waitUntil: 'networkidle' })
