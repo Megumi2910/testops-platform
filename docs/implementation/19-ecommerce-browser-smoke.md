@@ -133,6 +133,14 @@ The Docker frontend image was rebuilt from the same production build and the exi
 
 The six-test Playwright ecommerce contract passed against the rebuilt homepage image on 2026-08-01 in 17.3 seconds. Authenticated checkout reachability, mobile layout, keyboard search state, outage retry, pagination, and duplicate-submit locking remained green.
 
+The Phase 5 accessibility slice replaced the clickable messaging thread `div` with a keyboard-operable button, added selected-state and accessible names to thread/tabs, labeled the mobile back control, and labeled homepage carousel controls. Frontend unit tests passed again on 2026-08-01: 3 suites and 10 tests.
+
+The ecommerce production frontend build passed after the accessibility changes. Existing CRA lint, hook-dependency, WebSocket export, and browser-data advisories remain non-blocking.
+
+The Docker frontend image was rebuilt from the accessibility build and the existing database volume was retained. After startup, Compose reported the frontend, backend, and PostgreSQL healthy, with PgAdmin running on the documented ports.
+
+The six-test Playwright ecommerce contract passed against the accessibility image on 2026-08-01 in 16.1 seconds. Authenticated checkout reachability, mobile layout, keyboard search state, outage retry, pagination, and duplicate-submit locking remained green.
+
 ## Scope boundary
 
 This smoke contract proves the customer entry path, responsive transport, and the frontend half of duplicate-submit protection. It is not a replacement for native ecommerce tests for Mailpit verification, two-user messaging, inventory locking, or transactional checkout replay/concurrency. Those scenarios need isolated fixtures and stronger orchestration and remain the next Phase 5/6 work items.
