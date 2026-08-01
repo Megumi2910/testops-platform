@@ -44,6 +44,35 @@ test.describe('ecommerce storefront smoke', () => {
     expect(page.url()).not.toContain('localhost:8080')
   })
 
+  test('cart removal confirmation is keyboard safe and non-destructive when cancelled', async ({ page }) => {
+    await page.goto(`${ecommerceOrigin}/login`, { waitUntil: 'networkidle' })
+    await page.getByLabel('Email').fill(ecommerceEmail)
+    await page.getByLabel('Mật khẩu').fill(ecommercePassword)
+    await page.getByRole('button', { name: 'Đăng nhập' }).click()
+    await expect(page).toHaveURL(`${ecommerceOrigin}/`)
+
+    await page.goto(`${ecommerceOrigin}/cart`, { waitUntil: 'networkidle' })
+    const removeButton = page.getByRole('button', { name: 'Xóa', exact: true }).last()
+    await expect(removeButton).toBeVisible()
+
+    await removeButton.click()
+    const dialog = page.getByRole('dialog', { name: 'Xóa sản phẩm khỏi giỏ hàng?' })
+    await expect(dialog).toBeVisible()
+    await expect(dialog.getByRole('button', { name: 'Hủy' })).toBeFocused()
+
+    await page.keyboard.press('Tab')
+    await expect(dialog.getByRole('button', { name: 'Xóa sản phẩm' })).toBeFocused()
+
+    await page.keyboard.press('Escape')
+    await expect(dialog).toHaveCount(0)
+    await expect(removeButton).toBeFocused()
+
+    await removeButton.click()
+    await dialog.getByRole('button', { name: 'Hủy' }).click()
+    await expect(dialog).toHaveCount(0)
+    await expect(removeButton).toBeFocused()
+  })
+
   test('storefront keeps the mobile layout within the viewport', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(`${ecommerceOrigin}/`, { waitUntil: 'networkidle' })

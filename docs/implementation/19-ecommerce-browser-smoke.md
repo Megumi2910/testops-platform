@@ -165,6 +165,12 @@ The six-test Playwright ecommerce contract passed against the rebuilt cart-dialo
 
 Final ecommerce diff inspection passed with `git diff --check`; the TestOps workspace has only the corresponding documentation updates.
 
+The Playwright ecommerce contract now includes a direct cart-confirmation regression: it verifies the dialog opens without deleting the seeded item, focuses the cancel action, cycles to the destructive action with Tab, closes on Escape, and restores focus after Escape and Cancel. The expanded contract passed on 2026-08-01: 7 tests in 18.5 seconds.
+
+The final TestOps diff passed `git diff --check`; this change adds one focused ecommerce browser regression and its documentation only. Existing untracked `.agents/` and `skills-lock.json` files remain untouched.
+
+The final TestOps diff passed `git diff --check`; this change adds one focused ecommerce browser regression and its documentation only. Existing untracked `.agents/` and `skills-lock.json` files remain untouched.
+
 The six-test Playwright ecommerce contract passed against the rebuilt catalog/product image on 2026-08-01 in 16.8 seconds. Authenticated checkout reachability, mobile layout, keyboard search state, outage retry, pagination, and duplicate-submit locking remained green.
 
 Final ecommerce diff inspection passed with `git diff --check`; the TestOps workspace has only the corresponding documentation updates.
