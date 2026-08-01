@@ -141,6 +141,18 @@ The Docker frontend image was rebuilt from the accessibility build and the exist
 
 The six-test Playwright ecommerce contract passed against the accessibility image on 2026-08-01 in 16.1 seconds. Authenticated checkout reachability, mobile layout, keyboard search state, outage retry, pagination, and duplicate-submit locking remained green.
 
+Product review submission and editing now use the shared `Toast` component for login prompts, rating validation, success confirmations, and API failures instead of blocking browser alerts. Review star controls, the edit action, the close action, and feedback buttons now declare button semantics and accessible names, keeping review authoring keyboard-operable while preserving the existing API flow. The frontend unit gate passed on 2026-08-01: 3 suites and 10 tests; only the existing stale browser-data advisory remains.
+
+The ecommerce production frontend build passed after the review notification changes. Existing CRA unused-import, hook-dependency, WebSocket export, and browser-data advisories remain non-blocking; the optimized bundle was generated successfully.
+
+The frontend image was rebuilt with the review notification changes and the existing PostgreSQL volume was retained. The Compose rebuild completed successfully; the backend was healthy before the frontend was started, preserving the documented startup dependency.
+
+After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy, with PgAdmin still available on the documented port `5051`.
+
+The six-test Playwright ecommerce contract passed against the rebuilt review image on 2026-08-01 in 18.5 seconds. Authenticated checkout reachability, mobile layout, keyboard search state, outage retry, pagination, and duplicate-submit locking remained green.
+
+Final ecommerce diff inspection passed with `git diff --check`; the TestOps workspace has no implementation changes from this slice.
+
 ## Scope boundary
 
 This smoke contract proves the customer entry path, responsive transport, and the frontend half of duplicate-submit protection. It is not a replacement for native ecommerce tests for Mailpit verification, two-user messaging, inventory locking, or transactional checkout replay/concurrency. Those scenarios need isolated fixtures and stronger orchestration and remain the next Phase 5/6 work items.
