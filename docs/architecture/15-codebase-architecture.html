@@ -309,5 +309,16 @@
 <!-- Release note: the ecommerce ShopPage implementation has been pushed; the matching TestOps documentation commit is next. -->
 <!-- Release note: the ShopPage verification documentation commit was created successfully and is ready to push. -->
 <!-- Release note: both ecommerce and TestOps ShopPage commits were pushed successfully after verification. -->
+<!-- Implementation note: SellerProducts now uses accessible Toast feedback for validation, success, and API failures; product controls and form dialog metadata were strengthened for keyboard and assistive-technology use. Verification is pending. -->
+<!-- Verification note: targeted SellerProducts alert scan found no browser alert calls and git diff --check passed. -->
+<!-- Verification note: ecommerce frontend unit gate passed after SellerProducts changes on 2026-08-01 with 3 suites and 10 tests; the stale baseline-browser-mapping advisory remains non-blocking. -->
+<!-- Verification note: ecommerce production frontend build passed after SellerProducts changes; existing CRA and browser-data advisories remain non-blocking. -->
+<!-- Verification note: ecommerce frontend image rebuilt after SellerProducts changes; PostgreSQL retained and backend health gating completed before frontend startup. -->
+<!-- Verification note: docker compose ps reported react_frontend, springboot_backend, and postgres_db healthy after SellerProducts changes; ports remain 3001/8081/5433/5051. -->
+<!-- Verification note: nine-test TestOps Playwright contract passed against the rebuilt SellerProducts image on 2026-08-01 in 26.6s; no dedicated seller fixture exists in this contract yet. -->
+<!-- Verification note: final ecommerce diff inspection passed with git diff --check; SellerProducts.jsx and its reliability log are the only ecommerce changes in this slice. -->
+<!-- Verification note: TestOps diff inspection found only the browser smoke guide and architecture map changed; untracked .agents/ and skills-lock.json remain untouched. -->
+<!-- Release note: SellerProducts implementation and verification documentation are staged or ready to stage for publication. -->
+<!-- Release note: ecommerce SellerProducts commit 9dd44cf was created successfully; matching TestOps documentation commit is next. -->
 </body>
 </html>

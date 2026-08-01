@@ -281,6 +281,28 @@ The final seven-test Playwright ecommerce contract passed against the refined fr
 
 The six-test Playwright ecommerce contract passed against the rebuilt cart-dialog image on 2026-08-01 in 17.6 seconds. Authenticated checkout reachability, mobile layout, keyboard search state, outage retry, pagination, and duplicate-submit locking remained green.
 
+The next Phase 5 slice updates `SellerProducts`: product deletion remains explicitly confirmed, while validation, success, and API failures use the shared accessible Toast. Seller product action controls, form labels, image actions, and the modal now expose semantic names, focus-visible states, dimensions, and dialog metadata. Verification is pending.
+
+The targeted seller-products scan found no browser `alert(...)` calls and `git diff --check` passed; only normal line-ending normalization warnings were emitted.
+
+The ecommerce frontend unit gate passed after the SellerProducts changes on 2026-08-01: 3 suites and 10 tests. The existing stale `baseline-browser-mapping` advisory remains non-blocking.
+
+The ecommerce production frontend build passed after the SellerProducts changes. Existing CRA unused-import, hook-dependency, WebSocket export, and browser-data advisories remain non-blocking; the optimized bundle was generated successfully.
+
+The ecommerce frontend image was rebuilt with the SellerProducts changes; PostgreSQL data was retained and backend health gating completed before frontend startup.
+
+After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy; PgAdmin remained available on port `5051`. Ecommerce ports remain `3001`/`8081`, PostgreSQL `5433`, and PgAdmin `5051`.
+
+The nine-test TestOps Playwright contract passed against the rebuilt SellerProducts image on 2026-08-01 in 26.6 seconds. Seeded-cart checkout, cart-dialog keyboard behavior, profile controls, wishlist empty state, mobile layout, URL-driven search/pagination, outage retry, and duplicate-submit protection remained green. No dedicated seller fixture exists in this contract yet, so SellerProducts remains covered by build verification and the targeted source/a11y review.
+
+Final ecommerce diff inspection passed with `git diff --check`; only `SellerProducts.jsx` and the reliability log are changed for this implementation slice.
+
+The TestOps documentation diff was inspected before publication; only this browser smoke guide and the architecture map are intended changes. Existing untracked `.agents/` and `skills-lock.json` remain untouched.
+
+The SellerProducts verification notes are ready to stage in the matching TestOps documentation commit.
+
+The ecommerce SellerProducts implementation commit `9dd44cf` was created successfully; the matching TestOps documentation commit is next.
+
 Final ecommerce diff inspection passed with `git diff --check`; the TestOps workspace has only the corresponding documentation updates.
 
 The Playwright ecommerce contract now includes a direct cart-confirmation regression: it verifies the dialog opens without deleting the seeded item, focuses the cancel action, cycles to the destructive action with Tab, closes on Escape, and restores focus after Escape and Cancel. The expanded contract passed on 2026-08-01: 7 tests in 18.5 seconds.
