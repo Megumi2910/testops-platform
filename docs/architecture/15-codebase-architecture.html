@@ -223,5 +223,9 @@
 <!-- Verification note: ecommerce backend ./mvnw.cmd verify passed on 2026-08-01 with 16 tests and zero failures after messaging role normalization. -->
 <!-- Verification note: the rebuilt messaging image is healthy in Compose on 2026-08-01; no database volume reset was performed. -->
 <!-- Verification note: six-test ecommerce Playwright contract passed on 2026-08-01 in 15.9s against the messaging role-normalization image. -->
+<!-- Verification note: homepage data requests now run concurrently with partial-failure retry UI; frontend unit gate passed with 3 suites and 10 tests on 2026-08-01. -->
+<!-- Verification note: ecommerce production frontend build passed after homepage changes; existing CRA warnings remain non-blocking. -->
+<!-- Verification note: rebuilt ecommerce frontend/backend Compose services are healthy on 2026-08-01; database volume was retained. -->
+<!-- Verification note: six-test ecommerce Playwright contract passed on 2026-08-01 in 17.3s against the rebuilt homepage image. -->
 </body>
 </html>

@@ -125,6 +125,14 @@ The backend image was rebuilt with the messaging role-normalization fix and the 
 
 The six-test Playwright ecommerce contract passed against the messaging role-normalization image on 2026-08-01 in 15.9 seconds. Authenticated checkout reachability, mobile layout, keyboard search state, outage retry, pagination, and duplicate-submit locking remained green.
 
+Phase 5 homepage reliability now starts category, featured, hot, and new-product requests concurrently with `Promise.allSettled`. Partial failures remain visible through an accessible retry alert, and unverified add-to-cart feedback uses the existing toast instead of a blocking browser alert. The frontend unit gate passed on 2026-08-01: 3 suites and 10 tests.
+
+The ecommerce production frontend build passed after the homepage changes. Existing CRA lint, hook-dependency, WebSocket export, and browser-data advisories remain non-blocking.
+
+The Docker frontend image was rebuilt from the same production build and the existing database volume was retained. After startup, Compose reported the frontend, backend, and PostgreSQL healthy, with PgAdmin running on the documented ports.
+
+The six-test Playwright ecommerce contract passed against the rebuilt homepage image on 2026-08-01 in 17.3 seconds. Authenticated checkout reachability, mobile layout, keyboard search state, outage retry, pagination, and duplicate-submit locking remained green.
+
 ## Scope boundary
 
 This smoke contract proves the customer entry path, responsive transport, and the frontend half of duplicate-submit protection. It is not a replacement for native ecommerce tests for Mailpit verification, two-user messaging, inventory locking, or transactional checkout replay/concurrency. Those scenarios need isolated fixtures and stronger orchestration and remain the next Phase 5/6 work items.
