@@ -117,6 +117,14 @@ The backend image was rebuilt with the cart permission fix and the existing Post
 
 The six-test Playwright ecommerce contract passed against the cart-permission image on 2026-08-01 in 16.0 seconds. Authenticated checkout reachability, mobile layout, keyboard search state, outage retry, pagination, and duplicate-submit locking remained green.
 
+The next messaging REST slice normalizes `targetRole` by trimming whitespace and ignoring case before resolving support threads. This fixes the frontend navigation payloads that use `admin` while the older controller compared only `ADMIN`. The focused `MessageRestControllerPermissionTest` passed on 2026-08-01.
+
+The complete ecommerce backend verification gate passed after the messaging REST normalization: 16 tests ran with zero failures. The existing Mockito/JDK dynamic-agent warning remains non-fatal.
+
+The backend image was rebuilt with the messaging role-normalization fix and the existing PostgreSQL volume was retained. After startup, the Compose health check reported the backend, frontend, and PostgreSQL healthy, with PgAdmin running on ports `8081`, `3001`, `5433`, and `5051`.
+
+The six-test Playwright ecommerce contract passed against the messaging role-normalization image on 2026-08-01 in 15.9 seconds. Authenticated checkout reachability, mobile layout, keyboard search state, outage retry, pagination, and duplicate-submit locking remained green.
+
 ## Scope boundary
 
 This smoke contract proves the customer entry path, responsive transport, and the frontend half of duplicate-submit protection. It is not a replacement for native ecommerce tests for Mailpit verification, two-user messaging, inventory locking, or transactional checkout replay/concurrency. Those scenarios need isolated fixtures and stronger orchestration and remain the next Phase 5/6 work items.
