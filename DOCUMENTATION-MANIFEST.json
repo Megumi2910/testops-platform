@@ -57,6 +57,22 @@
     {
       "path": "docs/13-guided-local-target-follow-ups.md",
       "role": "Docker host mapping, browser target checks, structured metadata, editable case authoring, and negative E2E scenarios"
+    },
+    {
+      "path": "docs/16-live-target-recovery.md",
+      "role": "Beginner recovery guide for blocked localhost targets and READY-case reruns"
+    },
+    {
+      "path": "docs/17-ui-to-execution-workflow.md",
+      "role": "Step-by-step browser-to-API-to-database-to-worker-to-evidence workflow"
+    },
+    {
+      "path": "docs/18-feature-implementation-handbook.md",
+      "role": "Source-grounded syntax, implementation, business rules, decisions, and testing guide"
+    },
+    {
+      "path": "docs/17-ui-to-execution-workflow.html",
+      "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
     }
   ]
 }
