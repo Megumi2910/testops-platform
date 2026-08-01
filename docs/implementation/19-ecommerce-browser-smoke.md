@@ -207,6 +207,16 @@ The ecommerce frontend image was rebuilt with the CustomerProfile changes; Postg
 
 After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy. Ecommerce ports remain `3001`/`8081`, PostgreSQL `5433`, and PgAdmin `5051`.
 
+The nine-test ecommerce Playwright contract passed against the ShopPage image on 2026-08-01 in 26.1 seconds. Existing checkout, cart-dialog, profile, wishlist, mobile, search, outage-retry, pagination, and duplicate-submit coverage remained green.
+
+Final diff inspection passed with `git diff --check`. The TestOps working tree contains only the ShopPage verification documentation; unrelated `.agents/` and `skills-lock.json` remain untouched.
+
+The ShopPage verification documentation is ready to commit on `codex/milestone-9-release-candidate`.
+
+The ShopPage documentation commit was created successfully and is ready to publish.
+
+The TestOps ShopPage branch was pushed successfully after the nine-test browser verification; both repositories now contain this slice.
+
 The eight-test ecommerce Playwright contract passed against the CustomerWishlist image on 2026-08-01 in 22.9 seconds. Existing checkout, cart-dialog, profile accessibility, mobile, search, outage-retry, pagination, and duplicate-submit coverage remained green.
 
 The browser contract now includes a wishlist empty-state regression that verifies the empty message and the actionable “Khám phá sản phẩm” navigation. Verification is pending.
@@ -224,6 +234,18 @@ The wishlist browser regression and documentation are ready to commit on `codex/
 The wishlist regression commit was created successfully and is ready to publish.
 
 The TestOps wishlist branch was pushed successfully after the corrected nine-test browser verification; both repositories now contain this slice.
+
+The next Phase 5 slice hardens `ShopPage`: restricted add-to-cart failures use Toast feedback, unavailable wishlist behavior is explicit, back navigation is labelled, and decorative shop icons are hidden from assistive technology. Verification is pending.
+
+The targeted ShopPage scan found no browser alert calls, and `git diff --check` passed; only normal line-ending normalization warnings were emitted.
+
+The ecommerce frontend unit gate passed after the ShopPage changes on 2026-08-01: 3 suites and 10 tests. The existing browser-data advisory remains non-blocking.
+
+The ecommerce production frontend build passed after the ShopPage changes. Existing CRA unused-import and hook-dependency advisories remain non-blocking, including the pre-existing `fetchShopData` dependency warning.
+
+The ecommerce frontend image was rebuilt with the ShopPage changes; PostgreSQL data was retained and backend health gating completed before frontend startup.
+
+After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy. Ecommerce ports remain `3001`/`8081`, PostgreSQL `5433`, and PgAdmin `5051`.
 
 The seven-test Playwright ecommerce contract passed against the CustomerProfile image on 2026-08-01 in 21.0 seconds. Seeded-cart checkout, cart-dialog keyboard behavior, mobile layout, URL-driven search/pagination, outage retry, and duplicate-submit protection remained green.
 
