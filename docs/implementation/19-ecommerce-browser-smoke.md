@@ -109,6 +109,14 @@ The backend image was rebuilt from that verified source and restarted without re
 
 The six-test Playwright ecommerce contract passed against the rebuilt healthy stack on 2026-08-01 in 16.8 seconds. Authenticated checkout reachability, mobile layout, keyboard search state, outage retry, pagination, and duplicate-submit locking remained green.
 
+The next Phase 4 permission slice fixed an unverified-account cart bypass: `buy-now` and `clear cart` now share the verified-account guard used by the other cart mutations. The focused `CartRestControllerPermissionTest` passed on 2026-08-01 and confirms no cart service mutation occurs for an unverified customer.
+
+The complete ecommerce backend verification gate passed after the cart permission fix: 15 tests ran with zero failures, including the two new unverified-cart regressions. The existing Mockito/JDK dynamic-agent warning remains non-fatal.
+
+The backend image was rebuilt with the cart permission fix and the existing PostgreSQL volume was retained. After startup, the Compose health check reported the backend, frontend, and PostgreSQL healthy, with PgAdmin running on ports `8081`, `3001`, `5433`, and `5051`.
+
+The six-test Playwright ecommerce contract passed against the cart-permission image on 2026-08-01 in 16.0 seconds. Authenticated checkout reachability, mobile layout, keyboard search state, outage retry, pagination, and duplicate-submit locking remained green.
+
 ## Scope boundary
 
 This smoke contract proves the customer entry path, responsive transport, and the frontend half of duplicate-submit protection. It is not a replacement for native ecommerce tests for Mailpit verification, two-user messaging, inventory locking, or transactional checkout replay/concurrency. Those scenarios need isolated fixtures and stronger orchestration and remain the next Phase 5/6 work items.

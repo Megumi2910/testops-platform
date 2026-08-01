@@ -215,5 +215,9 @@
 <!-- Verification note: ecommerce backend ./mvnw.cmd verify passed on 2026-08-01 with 13 tests and zero failures after WebSocket authentication and thread-membership coverage was added. -->
 <!-- Verification note: rebuilt backend Compose stack is healthy on 2026-08-01; ecommerce ports remain 3001 (frontend), 8081 (backend), 5433 (PostgreSQL), and 5051 (PgAdmin). -->
 <!-- Verification note: six-test ecommerce Playwright contract passed on 2026-08-01 in 16.8s against the rebuilt stack. -->
+<!-- Verification note: CartRestController now blocks unverified buy-now and clear-cart mutations; focused permission regression passed on 2026-08-01. -->
+<!-- Verification note: ecommerce backend ./mvnw.cmd verify passed on 2026-08-01 with 15 tests and zero failures after the cart permission fix. -->
+<!-- Verification note: the rebuilt cart-permission image is healthy in Compose on 2026-08-01; no database volume reset was performed. -->
+<!-- Verification note: six-test ecommerce Playwright contract passed on 2026-08-01 in 16.0s against the cart-permission image. -->
 </body>
 </html>
