@@ -251,5 +251,22 @@
 <!-- Verification note: final ecommerce diff inspection passed with git diff --check; this slice is limited to the customer cart dialog and docs. -->
 <!-- Implementation note: the ecommerce Playwright contract now covers cart confirmation focus, Escape/Cancel recovery, and non-destructive cancellation; the expanded suite passed with 7 tests in 18.5s on 2026-08-01. -->
 <!-- Verification note: final TestOps diff inspection passed with git diff --check; the cart regression change is isolated to the e2e spec and docs. -->
+<!-- Implementation note: customer order cancellation now uses a focus-managed, labelled dialog with submit locking; CustomerOrders and OrderDetailPage use shared Toast success/error feedback instead of alert dialogs. Verification is pending. -->
+<!-- Verification note: targeted order-cancellation alert scan found no browser alert calls and git diff --check passed; Git reported only normal line-ending normalization warnings. -->
+<!-- Verification note: ecommerce frontend unit gate passed after order-cancellation changes on 2026-08-01 with 3 suites and 10 tests; only the existing browser-data freshness advisory remains. -->
+<!-- Verification note: ecommerce production frontend build passed after order-cancellation changes; existing CRA warnings remain non-blocking and no compile errors were introduced. -->
+<!-- Verification note: ecommerce frontend image rebuilt after order-cancellation changes; PostgreSQL volume retained and backend reached healthy before frontend startup. -->
+<!-- Verification note: docker compose ps reported react_frontend, springboot_backend, and postgres_db healthy after the order-cancellation slice; ecommerce ports remain 3001/8081 and PgAdmin 5051. -->
+<!-- Verification note: seven-test ecommerce Playwright contract passed on 2026-08-01 in 21.7s after the order-cancellation rebuild; direct order cancellation remains a future browser coverage gap. -->
+<!-- Verification note: the existing contract was inspected; no deterministic cancellable-order fixture exists yet, so no flaky browser test was added. A supplementary rg.exe search hit a Windows process-access error only. -->
+<!-- Implementation note: CancelOrderModal now keeps its focus effect stable during submit and uses a ref-backed guard to prevent Escape from closing mid-request. -->
+<!-- Verification note: ecommerce frontend unit gate was rerun after the focus-effect refinement with 3 suites and 10 tests passing on 2026-08-01. -->
+<!-- Verification note: ecommerce production frontend build was rerun after the focus-effect refinement and passed; only existing CRA advisories remain. -->
+<!-- Verification note: frontend container rebuilt again from the refined focus-trap implementation; PostgreSQL retained and backend health gating remained green. -->
+<!-- Verification note: final docker compose ps reported react_frontend, springboot_backend, and postgres_db healthy; ports remain 3001/8081/5433/5051. -->
+<!-- Verification note: final seven-test ecommerce Playwright contract passed on 2026-08-01 in 21.0s against the refined frontend image. -->
+<!-- Verification note: final diff inspection passed with git diff --check; only intended ecommerce source/docs and TestOps docs are staged for the next commits. -->
+<!-- Release note: order-cancellation verification docs are committed on codex/milestone-9-release-candidate and will be pushed with this slice. -->
+<!-- Release note: both implementation/documentation branches were pushed successfully after final verification. -->
 </body>
 </html>

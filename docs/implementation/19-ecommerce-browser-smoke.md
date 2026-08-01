@@ -161,6 +161,42 @@ The frontend image was rebuilt with the catalog/product toast changes and the ex
 
 After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy; PgAdmin remained available on port `5051`.
 
+The next Phase 5 slice hardens customer order cancellation. `CancelOrderModal` now has dialog semantics, an associated reason field, Escape handling, focus trapping/restoration, and submit locking. Customer order list/detail cancellation feedback now uses the shared Toast component for success and API failures rather than browser-blocking alerts. Verification is pending.
+
+The targeted ecommerce scan found no `alert(...)` calls in the order cancellation files, and `git diff --check` passed. Git emitted only its normal line-ending normalization warning for edited files.
+
+The ecommerce frontend unit gate passed after the order-cancellation changes on 2026-08-01: 3 suites and 10 tests. The existing browser-data freshness advisory remains non-blocking.
+
+The ecommerce production frontend build passed after the order-cancellation changes. Existing CRA unused-import, hook-dependency, WebSocket export, and browser-data advisories remain non-blocking; no new compile errors were introduced.
+
+The ecommerce frontend image was rebuilt with the order-cancellation changes. Docker retained the existing PostgreSQL volume, recreated the application containers, and waited for a healthy backend before starting the frontend.
+
+After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy. PgAdmin remained available on port `5051`; ecommerce frontend/backend remained on `3001`/`8081`.
+
+The seven-test Playwright ecommerce contract passed against the rebuilt order-cancellation image on 2026-08-01 in 21.7 seconds. It covered seeded-cart checkout reachability, keyboard-safe cart removal, mobile layout, shareable search state, outage retry, URL-driven pagination, and duplicate-submit protection. A direct order-cancellation browser journey remains a future coverage gap.
+
+The existing browser contract was inspected before finalizing this slice. Because the E2E fixture currently guarantees a cart but not a cancellable order, no flaky order-cancellation test was introduced; deterministic order fixtures should be added with the next E2E data slice. A supplementary `rg.exe` route search was blocked by a Windows process-access error, while the actual Playwright contract remained green.
+
+The modal focus implementation was then tightened so its effect does not restart whenever submitting state changes. A ref-backed submitting guard blocks Escape during the request while preserving focus-trap stability.
+
+The focused ecommerce frontend unit gate was rerun after the focus-effect refinement: 3 suites and 10 tests passed on 2026-08-01. The existing browser-data advisory remains non-blocking.
+
+The ecommerce production frontend build was rerun after the focus-effect refinement and passed. The same pre-existing CRA advisories remain non-blocking.
+
+The ecommerce frontend container was rebuilt again from the refined focus-trap implementation; Docker retained PostgreSQL data and waited for backend health before frontend startup.
+
+Final Compose health verification reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy. The documented ports remain frontend `3001`, backend `8081`, PostgreSQL `5433`, and PgAdmin `5051`.
+
+The final seven-test Playwright ecommerce contract passed against the refined frontend image on 2026-08-01 in 21.0 seconds. The cart-dialog keyboard regression remained green alongside seeded-cart checkout, mobile layout, URL-driven search/pagination, outage retry, and duplicate-submit protection.
+
+Final diff inspection passed with `git diff --check`. The TestOps working tree contains only the two related documentation files; existing unrelated untracked `.agents/` and `skills-lock.json` remain untouched.
+
+The order-cancellation verification documentation was committed on branch `codex/milestone-9-release-candidate`; the branch is ready to publish alongside the ecommerce implementation commit.
+
+The documentation branch was pushed successfully to the remote after the final browser and Compose verification.
+
+The final seven-test Playwright ecommerce contract passed against the refined frontend image on 2026-08-01 in 21.0 seconds. The cart-dialog keyboard regression remained green alongside seeded-cart checkout, mobile layout, URL-driven search/pagination, outage retry, and duplicate-submit protection.
+
 The six-test Playwright ecommerce contract passed against the rebuilt cart-dialog image on 2026-08-01 in 17.6 seconds. Authenticated checkout reachability, mobile layout, keyboard search state, outage retry, pagination, and duplicate-submit locking remained green.
 
 Final ecommerce diff inspection passed with `git diff --check`; the TestOps workspace has only the corresponding documentation updates.
