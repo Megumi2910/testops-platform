@@ -303,6 +303,8 @@ The SellerProducts verification notes are ready to stage in the matching TestOps
 
 The ecommerce SellerProducts implementation commit `9dd44cf` was created successfully; the matching TestOps documentation commit is next.
 
+The matching TestOps SellerProducts verification documentation was committed on `codex/milestone-9-release-candidate` as `f4cb99b`; the branch is ready to publish.
+
 Final ecommerce diff inspection passed with `git diff --check`; the TestOps workspace has only the corresponding documentation updates.
 
 The Playwright ecommerce contract now includes a direct cart-confirmation regression: it verifies the dialog opens without deleting the seeded item, focuses the cancel action, cycles to the destructive action with Tab, closes on Escape, and restores focus after Escape and Cancel. The expanded contract passed on 2026-08-01: 7 tests in 18.5 seconds.
