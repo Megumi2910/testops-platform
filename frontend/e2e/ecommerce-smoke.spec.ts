@@ -73,4 +73,25 @@ test.describe('ecommerce storefront smoke', () => {
     await page.keyboard.press('Enter')
     await expect(page).toHaveURL(/sort=rating/)
   })
+
+  test('search exposes an actionable retry after a backend outage', async ({ page }) => {
+    let shouldFail = true
+    await page.route('**/api/products/**', async (route) => {
+      if (shouldFail) {
+        shouldFail = false
+        await route.abort('failed')
+        return
+      }
+      await route.continue()
+    })
+
+    await page.goto(`${ecommerceOrigin}/search?q=shirt`, { waitUntil: 'networkidle' })
+    const alert = page.getByRole('alert')
+    await expect(alert).toContainText('Lỗi khi tải dữ liệu')
+    await expect(alert).toContainText('Không thể kết nối tới máy chủ')
+    await expect(alert).toContainText('proxy /api')
+    await page.getByRole('button', { name: 'Thử lại tải sản phẩm' }).click()
+    await expect(page.getByText(/Tìm thấy|Hiển thị/)).toBeVisible()
+    await expect(alert).toHaveCount(0)
+  })
 })
