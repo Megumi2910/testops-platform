@@ -85,6 +85,20 @@ The post-rebuild Compose check reported the backend, frontend, and PostgreSQL he
 
 The six-test browser contract passed against the authorization-hardened image on 2026-08-01 in 17.1 seconds, covering authenticated checkout reachability, responsive layout, keyboard search, outage retry, pagination, and duplicate-submit locking.
 
+The messaging follow-up adds shared REST/WebSocket payload validation: blank text is rejected, input is trimmed, and text over 2,000 characters is rejected before thread access. The focused native `MessageServiceValidationTest` passed on 2026-08-01.
+
+The ecommerce frontend unit suite also passed after the reconnect-status UI change: 3 suites and 10 tests on 2026-08-01.
+
+The ecommerce production frontend build passed after the messaging reconnect change. Existing lint and browser-data advisories remain non-blocking; no new compile error was introduced.
+
+The full ecommerce backend verification then passed with 10 tests and zero failures after the messaging validation change, including both new blank/length regressions.
+
+The backend Docker image was rebuilt from that verified source and the existing database volume was reused.
+
+The post-rebuild Compose check reported the backend, frontend, and PostgreSQL healthy, with PgAdmin running on the documented ports.
+
+The final six-test browser contract passed against the messaging-hardened image on 2026-08-01 in 16.8 seconds. Existing customer-facing transport, responsive, search, pagination, and duplicate-submit checks remained green.
+
 ## Scope boundary
 
 This smoke contract proves the customer entry path, responsive transport, and the frontend half of duplicate-submit protection. It is not a replacement for native ecommerce tests for Mailpit verification, two-user messaging, inventory locking, or transactional checkout replay/concurrency. Those scenarios need isolated fixtures and stronger orchestration and remain the next Phase 5/6 work items.
