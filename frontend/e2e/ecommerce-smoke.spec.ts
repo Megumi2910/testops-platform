@@ -73,6 +73,31 @@ test.describe('ecommerce storefront smoke', () => {
     await expect(removeButton).toBeFocused()
   })
 
+  test('customer profile feedback and password controls are accessible', async ({ page }) => {
+    await page.goto(`${ecommerceOrigin}/login`, { waitUntil: 'networkidle' })
+    await page.getByLabel('Email').fill(ecommerceEmail)
+    await page.getByLabel('Mật khẩu').fill(ecommercePassword)
+    await page.getByRole('button', { name: 'Đăng nhập' }).click()
+    await expect(page).toHaveURL(`${ecommerceOrigin}/`)
+
+    await page.goto(`${ecommerceOrigin}/customer/profile`, { waitUntil: 'networkidle' })
+    await expect(page.getByRole('heading', { name: 'Hồ sơ của tôi' })).toBeVisible()
+
+    await page.getByRole('button', { name: 'Chỉnh sửa' }).click()
+    await expect(page.getByLabel('Họ')).toBeVisible()
+    await expect(page.getByLabel('Tên')).toBeVisible()
+    await expect(page.getByLabel('Email')).toBeVisible()
+    await expect(page.getByLabel('Số điện thoại')).toBeVisible()
+    await expect(page.getByLabel('Địa chỉ')).toBeVisible()
+
+    await page.getByRole('button', { name: 'Bảo mật' }).click()
+    const currentPasswordToggle = page.getByRole('button', { name: 'Hiện mật khẩu hiện tại' })
+    await expect(currentPasswordToggle).toBeVisible()
+    await currentPasswordToggle.focus()
+    await page.keyboard.press('Enter')
+    await expect(page.getByRole('button', { name: 'Ẩn mật khẩu hiện tại' })).toBeFocused()
+  })
+
   test('storefront keeps the mobile layout within the viewport', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto(`${ecommerceOrigin}/`, { waitUntil: 'networkidle' })

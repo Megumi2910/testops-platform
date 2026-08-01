@@ -268,5 +268,20 @@
 <!-- Verification note: final diff inspection passed with git diff --check; only intended ecommerce source/docs and TestOps docs are staged for the next commits. -->
 <!-- Release note: order-cancellation verification docs are committed on codex/milestone-9-release-candidate and will be pushed with this slice. -->
 <!-- Release note: both implementation/documentation branches were pushed successfully after final verification. -->
+<!-- Implementation note: CustomerProfile now replaces browser alerts with Toast feedback, associates labels with controls, and makes password visibility/avatar controls keyboard accessible. Verification is pending. -->
+<!-- Verification note: CustomerProfile alert scan found no browser alert calls and git diff --check passed. -->
+<!-- Verification note: ecommerce frontend unit gate passed after CustomerProfile changes on 2026-08-01 with 3 suites and 10 tests. -->
+<!-- Verification note: ecommerce production frontend build passed after CustomerProfile changes; existing CRA advisories remain non-blocking. -->
+<!-- Verification note: ecommerce frontend image rebuilt after CustomerProfile changes; PostgreSQL retained and backend health gating completed. -->
+<!-- Verification note: docker compose ps reported react_frontend, springboot_backend, and postgres_db healthy after CustomerProfile changes; ports remain 3001/8081/5433/5051. -->
+<!-- Verification note: seven-test ecommerce Playwright contract passed on 2026-08-01 in 21.0s against the CustomerProfile image. -->
+<!-- Verification note: an initial profile-route lookup referenced a non-existent App.jsx and returned only a file-not-found error; no source was changed. -->
+<!-- Verification note: corrected source search confirmed CustomerProfile routing in frontend/src/App.js and the customer layout. -->
+<!-- Test note: the ecommerce Playwright contract now covers labelled customer profile fields and keyboard password visibility toggling. Verification is pending. -->
+<!-- Verification note: expanded ecommerce Playwright contract passed on 2026-08-01 with 8 tests in 20.8s. -->
+<!-- Verification note: final diff inspection passed with git diff --check; only intended CustomerProfile source, browser regression, and docs are included. -->
+<!-- Release note: the ecommerce CustomerProfile implementation has been pushed; the matching TestOps documentation/regression commit is next. -->
+<!-- Release note: the focused CustomerProfile Playwright regression commit was created successfully and is ready to push. -->
+<!-- Release note: both ecommerce and TestOps CustomerProfile commits were pushed successfully after verification. -->
 </body>
 </html>

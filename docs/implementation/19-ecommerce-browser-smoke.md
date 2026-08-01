@@ -195,6 +195,36 @@ The order-cancellation verification documentation was committed on branch `codex
 
 The documentation branch was pushed successfully to the remote after the final browser and Compose verification.
 
+The next Phase 5 slice hardens `CustomerProfile`: save and avatar feedback now use shared Toast notifications, profile controls have explicit labels, avatar upload is accessible, and password visibility buttons are keyboard reachable with stateful names. Verification is pending.
+
+The targeted profile scan found no browser alert calls, and `git diff --check` passed; only the normal line-ending normalization warning was emitted.
+
+The ecommerce frontend unit gate passed after the CustomerProfile changes on 2026-08-01: 3 suites and 10 tests. The existing browser-data advisory remains non-blocking.
+
+The ecommerce production frontend build passed after the CustomerProfile changes. Existing CRA lint, hook-dependency, WebSocket export, and browser-data advisories remain non-blocking.
+
+The ecommerce frontend image was rebuilt with the CustomerProfile changes; PostgreSQL data was retained and backend health gating completed before frontend startup.
+
+After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy. Ecommerce ports remain `3001`/`8081`, PostgreSQL `5433`, and PgAdmin `5051`.
+
+The seven-test Playwright ecommerce contract passed against the CustomerProfile image on 2026-08-01 in 21.0 seconds. Seeded-cart checkout, cart-dialog keyboard behavior, mobile layout, URL-driven search/pagination, outage retry, and duplicate-submit protection remained green.
+
+An initial profile-route lookup included a non-existent `App.jsx` path and returned a file-not-found error. No application code changed; the route lookup will be retried with the repository’s actual entry files.
+
+The corrected source search confirmed `CustomerProfile` is wired from `frontend/src/App.js` and exposed by the customer layout; the earlier failure was only an incorrect path.
+
+The ecommerce browser contract now includes a focused customer-profile regression that checks labelled profile fields and keyboard operation of the password visibility control. Verification is pending.
+
+The expanded ecommerce Playwright contract passed on 2026-08-01: 8 tests in 20.8 seconds. The new CustomerProfile regression passed alongside the existing checkout, cart-dialog, mobile, search, outage-retry, pagination, and duplicate-submit coverage.
+
+Final diff inspection passed with `git diff --check`. The TestOps working tree contains the focused browser regression and its two documentation updates; unrelated `.agents/` and `skills-lock.json` remain untouched.
+
+The focused CustomerProfile browser regression and documentation are ready to commit on `codex/milestone-9-release-candidate`.
+
+The CustomerProfile browser regression commit was created successfully; the branch is ready to publish.
+
+The TestOps branch was pushed successfully after the eight-test browser verification; both repositories now contain the CustomerProfile slice.
+
 The final seven-test Playwright ecommerce contract passed against the refined frontend image on 2026-08-01 in 21.0 seconds. The cart-dialog keyboard regression remained green alongside seeded-cart checkout, mobile layout, URL-driven search/pagination, outage retry, and duplicate-submit protection.
 
 The six-test Playwright ecommerce contract passed against the rebuilt cart-dialog image on 2026-08-01 in 17.6 seconds. Authenticated checkout reachability, mobile layout, keyboard search state, outage retry, pagination, and duplicate-submit locking remained green.
