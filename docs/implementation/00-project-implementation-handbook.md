@@ -260,18 +260,18 @@ Read the documents in this order:
 1. This handbook — product idea, system map, vocabulary, and reading method.
 2. [Backend code walkthrough](07-backend-code-walkthrough.md) — Java, Spring, authentication, project services, execution, and Playwright.
 3. [Frontend code walkthrough](08-frontend-code-walkthrough.md) — React, TypeScript, routing, authentication bootstrap, queries, forms, and polling.
-4. [Database and runtime walkthrough](09-database-and-runtime-walkthrough.md) — migrations, relationships, Compose, configuration, startup, and verification.
+4. [Database and runtime walkthrough](../operations/09-database-and-runtime-walkthrough.md) — migrations, relationships, Compose, configuration, startup, and verification.
 5. [Executable step language](10-executable-step-language.md) — the JSON/domain syntax for browser actions, locators, variables, and assertions.
-6. [Technical specification](01-technical-specification.md) — product and architecture reference.
-7. [Authentication and security](02-authentication-and-security.md) — security-specific reference.
-8. [Data, API, and workflows](03-data-model-api-and-workflows.md) — relational/API reference.
-9. [Operations, scaling, and maintenance](04-operations-scaling-and-maintenance.md) — operating the system.
-10. [Risks, roadmap, and decisions](05-risks-roadmap-and-decisions.md) — tradeoffs and future work.
-11. [Identity and authorization milestone](06-milestone-5-identity-and-authorization.md) — the current unified account and permission model.
-12. [Product readiness milestone](11-milestone-6-product-readiness.md) — reporting, onboarding, sessions, and retention.
-13. [Local target testing guide](12-local-target-testing-guide.md) — safe Docker-to-host browser testing.
-14. [Guided local-target follow-ups](13-guided-local-target-follow-ups.md) — browser checks, metadata, builder behavior, and negative scenarios.
-15. [Milestone 9 release candidate](14-milestone-9-release-candidate.md) — release gates, verification evidence, and publication boundaries.
+6. [Technical specification](../architecture/01-technical-specification.md) — product and architecture reference.
+7. [Authentication and security](../security/02-authentication-and-security.md) — security-specific reference.
+8. [Data, API, and workflows](../architecture/03-data-model-api-and-workflows.md) — relational/API reference.
+9. [Operations, scaling, and maintenance](../operations/04-operations-scaling-and-maintenance.md) — operating the system.
+10. [Risks, roadmap, and decisions](../planning/05-risks-roadmap-and-decisions.md) — tradeoffs and future work.
+11. [Identity and authorization milestone](../milestones/06-milestone-5-identity-and-authorization.md) — the current unified account and permission model.
+12. [Product readiness milestone](../milestones/11-milestone-6-product-readiness.md) — reporting, onboarding, sessions, and retention.
+13. [Local target testing guide](../operations/12-local-target-testing-guide.md) — safe Docker-to-host browser testing.
+14. [Guided local-target follow-ups](../milestones/13-guided-local-target-follow-ups.md) — browser checks, metadata, builder behavior, and negative scenarios.
+15. [Milestone 9 release candidate](../milestones/14-milestone-9-release-candidate.md) — release gates, verification evidence, and publication boundaries.
 
 ## 10. The fastest way to verify your understanding
 

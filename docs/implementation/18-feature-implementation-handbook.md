@@ -345,5 +345,5 @@ When adding a feature:
 5. Add the frontend API function and query/mutation key.
 6. Render loading, empty, error, and success states.
 7. Add unit/integration/UI coverage at the smallest useful layer.
-8. Update `docs/17-ui-to-execution-workflow.md`, this handbook, and the HTML diagram.
+8. Update `docs/implementation/17-ui-to-execution-workflow.md`, this handbook, and the HTML diagram.
 9. Run formatting, lint/typecheck, tests, build, Compose health, and inspect the diff.

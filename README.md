@@ -199,12 +199,14 @@ testops-platform/
 │   ├── Dockerfile
 │   └── nginx.conf
 ├── docs/
-│   ├── 01-technical-specification.md
-│   ├── 02-authentication-and-security.md
-│   ├── 03-data-model-api-and-workflows.md
-│   ├── 04-operations-scaling-and-maintenance.md
-│   ├── 05-risks-roadmap-and-decisions.md
-│   └── assets/
+│   ├── architecture/
+│   ├── implementation/
+│   ├── operations/
+│   ├── security/
+│   ├── milestones/
+│   ├── planning/
+│   ├── assets/
+│   └── README.md
 ├── artifacts/
 ├── scripts/
 ├── docker-compose.yml
@@ -258,28 +260,30 @@ Never commit `.env`, JWT private keys, Google client secrets, access or refresh 
 
 ## Documentation map
 
-1. [Implementation handbook](docs/00-project-implementation-handbook.md) — start here for the idea, repository map, architecture, vocabulary, and a source-reading path.
-2. [Backend code walkthrough](docs/07-backend-code-walkthrough.md) — Java/Spring syntax, configuration, authentication, project services, execution, Playwright, and tests.
-3. [Frontend code walkthrough](docs/08-frontend-code-walkthrough.md) — React/TypeScript syntax, routing, auth bootstrap, API client, forms, queries, and polling.
-4. [Database and runtime walkthrough](docs/09-database-and-runtime-walkthrough.md) — Flyway schema, PostgreSQL relationships, Compose, environment files, scripts, and CI.
-5. [Executable step language](docs/10-executable-step-language.md) — case/step JSON shape, supported actions, locators, variables, URL safety, retries, and results.
-6. [Technical specification](docs/01-technical-specification.md) — product boundary, architecture, domain model, UI, and design rationale.
-7. [Authentication and security](docs/02-authentication-and-security.md) — JWT, refresh rotation, Google OIDC, authorization, secrets, and abuse controls.
-8. [Data, API, and workflows](docs/03-data-model-api-and-workflows.md) — relational model, constraints, routes, state transitions, normal paths, and failure paths.
-9. [Operations, scaling, and maintenance](docs/04-operations-scaling-and-maintenance.md) — local runtime, deployment, workers, queue ownership, observability, incidents, backups, and upgrade policy.
-10. [Risks, roadmap, and decisions](docs/05-risks-roadmap-and-decisions.md) — explicit limitations, delivery sequence, alternatives, tradeoffs, and change-safety notes.
-11. [Identity and authorization milestone](docs/06-milestone-5-identity-and-authorization.md) — unified accounts, platform/project roles, permissions, admin operations, and migration notes.
-12. [Product readiness milestone](docs/11-milestone-6-product-readiness.md) — registration integrity, self-service onboarding, reporting, dashboard, retention, and operational readiness.
-13. [Guided local-target follow-ups](docs/13-guided-local-target-follow-ups.md) — Docker host mapping, browser target checks, structured metadata, editable case authoring, and negative E2E scenarios.
-14. [Milestone 9 release candidate](docs/14-milestone-9-release-candidate.md) — repository hygiene, aggregate onboarding, frontend closure, release gates, and beginner-friendly verification commands.
-15. [Live target recovery](docs/16-live-target-recovery.md) — diagnose a blocked localhost target, recreate the backend bridge, refresh target health, and rerun a READY case safely.
-16. [UI-to-execution workflow](docs/17-ui-to-execution-workflow.md) — follow a user action from React route through HTTP, service, database, worker, target, and evidence.
-17. [Feature implementation handbook](docs/18-feature-implementation-handbook.md) — learn the TypeScript/React and Java/Spring syntax, validation rules, state machines, and business decisions behind each feature.
-18. [Interactive workflow diagram](docs/17-ui-to-execution-workflow.html) — pan, zoom, and highlight account, workspace, authoring, execution, and reporting paths.
+1. [Documentation index](docs/README.md) — choose a topic folder and follow a beginner-friendly reading path.
+2. [Implementation handbook](docs/implementation/00-project-implementation-handbook.md) — start here for the idea, repository map, architecture, vocabulary, and a source-reading path.
+3. [Backend code walkthrough](docs/implementation/07-backend-code-walkthrough.md) — Java/Spring syntax, configuration, authentication, project services, execution, Playwright, and tests.
+4. [Frontend code walkthrough](docs/implementation/08-frontend-code-walkthrough.md) — React/TypeScript syntax, routing, auth bootstrap, API client, forms, queries, and polling.
+5. [Database and runtime walkthrough](docs/operations/09-database-and-runtime-walkthrough.md) — Flyway schema, PostgreSQL relationships, Compose, environment files, scripts, and CI.
+6. [Executable step language](docs/implementation/10-executable-step-language.md) — case/step JSON shape, supported actions, locators, variables, URL safety, retries, and results.
+7. [Technical specification](docs/architecture/01-technical-specification.md) — product boundary, architecture, domain model, UI, and design rationale.
+8. [Authentication and security](docs/security/02-authentication-and-security.md) — JWT, refresh rotation, Google OIDC, authorization, secrets, and abuse controls.
+9. [Data, API, and workflows](docs/architecture/03-data-model-api-and-workflows.md) — relational model, constraints, routes, state transitions, normal paths, and failure paths.
+10. [Operations, scaling, and maintenance](docs/operations/04-operations-scaling-and-maintenance.md) — local runtime, deployment, workers, queue ownership, observability, incidents, backups, and upgrade policy.
+11. [Risks, roadmap, and decisions](docs/planning/05-risks-roadmap-and-decisions.md) — explicit limitations, delivery sequence, alternatives, tradeoffs, and change-safety notes.
+12. [Identity and authorization milestone](docs/milestones/06-milestone-5-identity-and-authorization.md) — unified accounts, platform/project roles, permissions, admin operations, and migration notes.
+13. [Product readiness milestone](docs/milestones/11-milestone-6-product-readiness.md) — registration integrity, self-service onboarding, reporting, dashboard, retention, and operational readiness.
+14. [Local target testing guide](docs/operations/12-local-target-testing-guide.md) — Docker host mapping, project setup, target checks, case authoring, and runs.
+15. [Guided local-target follow-ups](docs/milestones/13-guided-local-target-follow-ups.md) — structured metadata, editable case authoring, and negative E2E scenarios.
+16. [Milestone 9 release candidate](docs/milestones/14-milestone-9-release-candidate.md) — repository hygiene, aggregate onboarding, frontend closure, release gates, and beginner-friendly verification commands.
+17. [Live target recovery](docs/operations/16-live-target-recovery.md) — diagnose a blocked localhost target, recreate the backend bridge, refresh target health, and rerun a READY case safely.
+18. [UI-to-execution workflow](docs/implementation/17-ui-to-execution-workflow.md) — follow a user action from React route through HTTP, service, database, worker, target, and evidence.
+19. [Feature implementation handbook](docs/implementation/18-feature-implementation-handbook.md) — learn the TypeScript/React and Java/Spring syntax, validation rules, state machines, and business decisions behind each feature.
+20. [Interactive workflow diagram](docs/implementation/17-ui-to-execution-workflow.html) — pan, zoom, and highlight account, workspace, authoring, execution, and reporting paths.
 
 ## Verification boundary
 
-For the Docker-to-host workflow, guided case authoring, target checks, and troubleshooting, see [Local target testing guide](docs/12-local-target-testing-guide.md) and [Guided local-target follow-ups](docs/13-guided-local-target-follow-ups.md). For release verification and CI expectations, see [Milestone 9 release candidate](docs/14-milestone-9-release-candidate.md).
+For the Docker-to-host workflow, guided case authoring, target checks, and troubleshooting, see [Local target testing guide](docs/operations/12-local-target-testing-guide.md) and [Guided local-target follow-ups](docs/milestones/13-guided-local-target-follow-ups.md). For release verification and CI expectations, see [Milestone 9 release candidate](docs/milestones/14-milestone-9-release-candidate.md).
 
 Before describing future product capabilities as implemented, inspect and reconcile:
 
