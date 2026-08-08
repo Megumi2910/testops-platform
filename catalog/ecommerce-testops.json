@@ -200,6 +200,103 @@
             { "position": 5, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Danh mục sản phẩm", "timeoutMs": 15000 }
           ]
         },
+        {
+          "key": "customer-dashboard",
+          "name": "Open customer dashboard",
+          "status": "READY",
+          "priority": "P1",
+          "tags": "sync:ecommerce-customer-dashboard,role:customer,state:seeded,runner:testops",
+          "description": "Open the read-only customer dashboard and verify its seeded order summary.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/login", "timeoutMs": 15000 },
+            { "position": 1, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Email", "inputValue": "${E2E_CUSTOMER_EMAIL}", "timeoutMs": 15000 },
+            { "position": 2, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Mật khẩu", "inputValue": "${E2E_CUSTOMER_PASSWORD}", "timeoutMs": 15000 },
+            { "position": 3, "action": "CLICK", "locatorType": "ROLE", "locatorRole": "BUTTON", "locatorValue": "Đăng nhập", "timeoutMs": 15000 },
+            { "position": 4, "action": "ASSERT_URL_EQUALS", "expectedValue": "/", "timeoutMs": 15000 },
+            { "position": 5, "action": "NAVIGATE", "inputValue": "/customer/dashboard", "timeoutMs": 15000 },
+            { "position": 6, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Xin chào, Mock Customer!", "timeoutMs": 15000 },
+            { "position": 7, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Đơn hàng gần đây", "timeoutMs": 15000 },
+            { "position": 8, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
+        },
+        {
+          "key": "customer-orders",
+          "name": "Review customer order history",
+          "status": "READY",
+          "priority": "P1",
+          "tags": "sync:ecommerce-customer-orders,role:customer,state:seeded,runner:testops",
+          "description": "Open the seeded customer order history without changing order state.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/login", "timeoutMs": 15000 },
+            { "position": 1, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Email", "inputValue": "${E2E_CUSTOMER_EMAIL}", "timeoutMs": 15000 },
+            { "position": 2, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Mật khẩu", "inputValue": "${E2E_CUSTOMER_PASSWORD}", "timeoutMs": 15000 },
+            { "position": 3, "action": "CLICK", "locatorType": "ROLE", "locatorRole": "BUTTON", "locatorValue": "Đăng nhập", "timeoutMs": 15000 },
+            { "position": 4, "action": "ASSERT_URL_EQUALS", "expectedValue": "/", "timeoutMs": 15000 },
+            { "position": 5, "action": "NAVIGATE", "inputValue": "/customer/orders", "timeoutMs": 15000 },
+            { "position": 6, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Đơn hàng của tôi", "timeoutMs": 15000 },
+            { "position": 7, "action": "WAIT_VISIBLE", "locatorType": "TEXT", "locatorValue": "MOCK-ORDER-001", "locatorIndex": 0, "timeoutMs": 15000 },
+            { "position": 8, "action": "ASSERT_VISIBLE", "locatorType": "TEXT", "locatorValue": "MOCK-ORDER-001", "locatorIndex": 0, "timeoutMs": 15000 },
+            { "position": 9, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
+        },
+        {
+          "key": "customer-profile",
+          "name": "View customer profile",
+          "status": "READY",
+          "priority": "P2",
+          "tags": "sync:ecommerce-customer-profile,role:customer,state:seeded,runner:testops",
+          "description": "Open the customer profile in read-only mode and verify the account sections.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/login", "timeoutMs": 15000 },
+            { "position": 1, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Email", "inputValue": "${E2E_CUSTOMER_EMAIL}", "timeoutMs": 15000 },
+            { "position": 2, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Mật khẩu", "inputValue": "${E2E_CUSTOMER_PASSWORD}", "timeoutMs": 15000 },
+            { "position": 3, "action": "CLICK", "locatorType": "ROLE", "locatorRole": "BUTTON", "locatorValue": "Đăng nhập", "timeoutMs": 15000 },
+            { "position": 4, "action": "ASSERT_URL_EQUALS", "expectedValue": "/", "timeoutMs": 15000 },
+            { "position": 5, "action": "NAVIGATE", "inputValue": "/customer/profile", "timeoutMs": 15000 },
+            { "position": 6, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Hồ sơ của tôi", "timeoutMs": 15000 },
+            { "position": 7, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Thông tin cá nhân", "timeoutMs": 15000 },
+            { "position": 8, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
+        },
+        {
+          "key": "customer-settings",
+          "name": "Open customer settings",
+          "status": "READY",
+          "priority": "P2",
+          "tags": "sync:ecommerce-customer-settings,role:customer,state:seeded,runner:testops",
+          "description": "Open customer settings and verify the visible account-management sections without saving changes.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/login", "timeoutMs": 15000 },
+            { "position": 1, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Email", "inputValue": "${E2E_CUSTOMER_EMAIL}", "timeoutMs": 15000 },
+            { "position": 2, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Mật khẩu", "inputValue": "${E2E_CUSTOMER_PASSWORD}", "timeoutMs": 15000 },
+            { "position": 3, "action": "CLICK", "locatorType": "ROLE", "locatorRole": "BUTTON", "locatorValue": "Đăng nhập", "timeoutMs": 15000 },
+            { "position": 4, "action": "ASSERT_URL_EQUALS", "expectedValue": "/", "timeoutMs": 15000 },
+            { "position": 5, "action": "NAVIGATE", "inputValue": "/customer/settings", "timeoutMs": 15000 },
+            { "position": 6, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Cài đặt", "timeoutMs": 15000 },
+            { "position": 7, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Thông tin cá nhân", "timeoutMs": 15000 },
+            { "position": 8, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Đổi mật khẩu", "timeoutMs": 15000 },
+            { "position": 9, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
+        },
+        {
+          "key": "customer-wishlist-empty",
+          "name": "View empty wishlist",
+          "status": "READY",
+          "priority": "P2",
+          "tags": "sync:ecommerce-customer-wishlist-empty,role:customer,state:seeded,runner:testops",
+          "description": "Verify the seeded customer’s empty wishlist state without adding or removing products.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/login", "timeoutMs": 15000 },
+            { "position": 1, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Email", "inputValue": "${E2E_CUSTOMER_EMAIL}", "timeoutMs": 15000 },
+            { "position": 2, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Mật khẩu", "inputValue": "${E2E_CUSTOMER_PASSWORD}", "timeoutMs": 15000 },
+            { "position": 3, "action": "CLICK", "locatorType": "ROLE", "locatorRole": "BUTTON", "locatorValue": "Đăng nhập", "timeoutMs": 15000 },
+            { "position": 4, "action": "ASSERT_URL_EQUALS", "expectedValue": "/", "timeoutMs": 15000 },
+            { "position": 5, "action": "NAVIGATE", "inputValue": "/customer/wishlist", "timeoutMs": 15000 },
+            { "position": 6, "action": "ASSERT_VISIBLE", "locatorType": "TEXT_EXACT", "locatorValue": "Sản phẩm yêu thích", "locatorIndex": 0, "timeoutMs": 15000 },
+            { "position": 7, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Chưa có sản phẩm yêu thích", "timeoutMs": 15000 },
+            { "position": 8, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
+        },
         { "key": "unverified-restriction", "name": "Unverified account restriction", "status": "DRAFT", "priority": "P1", "tags": "sync:ecommerce-unverified-restriction,role:unverified,state:seeded,runner:native", "description": "The native ecommerce suite owns Mailpit and verification state.", "steps": [] }
       ]
     },

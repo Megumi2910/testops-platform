@@ -198,11 +198,11 @@ search-locator fixes, the current release-candidate evidence is:
 - enabled Playwright with the live ecommerce origin: 18 passed and 1
   intentionally skipped disabled-profile case;
 - disabled-local-target Playwright: 1 passed independently;
-- catalog dry-run: 9 suites and 19 cases with no API calls;
-- authenticated catalog apply: 9 suites and 19 cases reconciled with
+- catalog dry-run: 9 suites and 24 cases with no API calls;
+- authenticated catalog apply: 9 suites and 24 cases reconciled with
   redacted variables;
 - live target check: `REACHABLE`/HTTP 200;
-- all 12 current READY catalog cases: passed, 50 steps; ten screenshot-bearing
+- all 17 current READY catalog cases: passed, 97 steps; fifteen screenshot-bearing
   cases retained screenshot artifacts and traces.
 - final Compose inspection: normal, enabled E2E, and disabled E2E services all
   reported `running`.
@@ -218,6 +218,18 @@ V016. They now assert the current V020 release-candidate schema, covering the
 complete migration chain through execution-context settings. The package/unit
 gate remains green locally; the full integration assertion is left to the
 Linux CI Testcontainers job.
+
+The authenticated customer expansion is now part of the release evidence. The
+platform-smoke, catalog/search, and customer suites passed 1/1, 10/10, and 6/6
+respectively. Customer coverage includes dashboard, order history, profile,
+settings, empty wishlist, and valid login. Dashboard exploration discovered a
+real ecommerce PostgreSQL query defect; commit `e738f2f` replaced the invalid
+`DISTINCT` address projection with a bounded recent-order lookup, and its
+focused service test plus the rebuilt dashboard endpoint passed. The order
+history case was corrected to use a substring locator for the rendered order
+number, and the wishlist case was corrected to exact page-title text. A
+disposable backend restart cleared the E2E auth limiter during verification;
+the E2E volume and normal development database were preserved.
 
 ## Publication boundary
 

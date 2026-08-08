@@ -269,7 +269,7 @@ timeouts, context settings, `READY` ordering, and local variable references
 before making an API call. It should report:
 
 ```text
-Manifest validation passed: 9 suites, 19 cases.
+Manifest validation passed: 9 suites, 24 cases.
 Dry run complete. No API calls were made.
 ```
 
@@ -292,7 +292,7 @@ terminal logs can be shared without exposing fixture credentials.
 The synchronizer also discards the variable API response instead of letting
 PowerShell render it as a table after the request. A full-stream redaction
 assertion was verified locally with supplied test-only values;
-the preflight passed with 9 suites and 19 cases and the values did not appear
+the preflight passed with 9 suites and 24 cases and the values did not appear
 in captured output.
 Stable project, suite, and case markers are matched literally during apply, so
 rerunning the command updates existing catalog entities instead of creating
@@ -449,10 +449,11 @@ the Spring Boot backend, and the React frontend. The native Playwright contract
 ran with one worker against `http://localhost:3001` and passed all 9 tests,
 including login-to-checkout entry, keyboard-safe cart cancellation, mobile
 layout, shareable search state, retry behavior, pagination, and duplicate-submit
-protection. The TestOps catalog preflight then passed with 9 suites and 19
-cases, with no API calls during dry-run. Its 12-case READY set now includes
-the non-destructive verified-customer login, product detail, category browse,
-category directory, flash-sale, about, contact, and help journeys; dry-run still skips the two variable
+protection. The TestOps catalog preflight then passed with 9 suites and 24
+cases, with no API calls during dry-run. Its 17-case READY set now includes
+the non-destructive verified-customer login, customer dashboard, order history,
+profile, settings, empty wishlist, product detail, category browse, category
+directory, flash-sale, about, contact, and help journeys; dry-run still skips the two variable
 values unless `TESTOPS_E2E_CUSTOMER_EMAIL` and
 `TESTOPS_E2E_CUSTOMER_PASSWORD` are provided.
 
@@ -464,7 +465,7 @@ and project creation. Run the disabled profile separately when you need the
 negative local-bridge assertion.
 
 The catalog was applied successfully to the isolated E2E backend on 2026-08-08
-(port 8180): 9 suites and 19 cases were reconciled, including all READY
+(port 8180): 9 suites and 24 cases were reconciled, including all READY
 promotions and the secret-safe customer variables. The normal development
 database was not used for this operation.
 
@@ -479,11 +480,11 @@ When a page contains both a global header search box and a page-level search
 box, prefer the page field's accessible `LABEL` locator over a broad `ROLE`
 name. The synchronized search-state case now uses `Tìm kiếm sản phẩm` as that
 unique label, avoiding Playwright strict-mode ambiguity.
-The follow-up dry run passed for 9 suites and 19 cases with no API calls.
+The follow-up dry run passed for 9 suites and 24 cases with no API calls.
 The corrected search-state case then passed in the isolated E2E run with all
 four steps and one screenshot artifact.
 The guest catalog expansion was then applied and rerun after a clean backend
-restart. Target health was `REACHABLE`/HTTP 200; all 12 READY cases passed, with
+restart. Target health was `REACHABLE`/HTTP 200; all 12 initial guest READY cases passed, with
 50 successful steps. The 10 cases that contain `TAKE_SCREENSHOT` each retained
 a screenshot artifact (and the execution detail also retained the worker
 trace); the credentialed login intentionally produced no screenshot.
@@ -493,6 +494,28 @@ storefront rendered `Danh mục sản phẩm` as both a heading and a footer lin
 The manifest now uses the semantic `ROLE=HEADING` locator. A fresh rerun passed
 all six login steps, confirming the definition fix without changing ecommerce
 application code.
+
+The authenticated customer expansion is now green in the managed worker. The
+dashboard, order history, profile, settings, and empty-wishlist journeys ran
+alongside valid login; the customer suite passed 6/6 cases. The dashboard
+investigation also fixed a real ecommerce defect: PostgreSQL rejected the
+dashboard address query because `SELECT DISTINCT shipping_address` ordered by
+`order_date` without selecting that column. Ecommerce commit `e738f2f`
+replaced it with a bounded recent-order query and the rebuilt backend returned
+HTTP 200 for `/api/orders/dashboard-statistics`; its focused service test passed.
+The order-history case uses a substring locator for `MOCK-ORDER-001` because
+managed Chromium renders the order number with surrounding label text, while
+the wishlist case uses exact page-title text to avoid a strict-mode collision
+with `Chưa có sản phẩm yêu thích`. The current manifest totals are therefore
+24 cases, 17 `READY`, 97 steps, and 15 screenshot-bearing cases. The complete
+READY acceptance is 1/1 platform smoke, 10/10 catalog-and-search, and 6/6
+authenticated customer cases.
+
+Repeated scripted logins can exhaust the disposable E2E auth limiter and return
+HTTP 429. The verified recovery is to restart only `testops-e2e-backend-1`,
+wait for its health check, and use one fresh token for apply/queue/poll. This
+does not remove the E2E PostgreSQL volume or touch the normal development
+database.
 
 The public-route expansion also exposed a strict-mode failure on `/flash-sale`:
 the partial `ROLE=HEADING` locator for `FLASH SALE` matched both the page title
