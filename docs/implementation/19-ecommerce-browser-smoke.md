@@ -213,6 +213,22 @@ The next Phase 5 slice hardens ecommerce `CustomerOrders`: stable fetching remov
 
 The focused CustomerOrders audit found no browser alerts, debug logs, or stale clickable-card classes; `git diff --check` passed.
 
+The next Phase 5 slice hardens ecommerce `VerifyEmailPage`: stable verification callbacks, encoded query parameters, cleaned-up redirect timers, no duplicate token submissions after status transitions, and semantic live/focus states are being added. Verification is pending.
+
+The focused VerifyEmailPage audit found no browser alerts, stale effect dependency, or debug-only output; `git diff --check` passed.
+
+The ecommerce frontend unit gate passed after VerifyEmailPage changes on 2026-08-08: 3 suites and 10 tests. The production build also passed; existing CRA and browser-data advisories remain non-blocking.
+
+The ecommerce frontend image was rebuilt successfully with VerifyEmailPage on 2026-08-08; PostgreSQL data was retained and backend health gating completed before frontend startup.
+
+Post-rebuild `docker compose ps` confirmed `postgres_db`, `springboot_backend`, and `react_frontend` are healthy; ecommerce ports remain `3001`, `8081`, `5433`, and `5051`.
+
+The TestOps Playwright ecommerce contract passed against the rebuilt VerifyEmailPage image on 2026-08-08: all 9 tests passed in 25.3 seconds. Existing checkout, cart-dialog, profile, wishlist, mobile, search, outage-retry, pagination, and duplicate-submit journeys remained green; email-token verification still requires the dedicated Mailpit/native flow.
+
+Final VerifyEmailPage TestOps documentation diff inspection passed with `git diff --check`; only the browser smoke guide and architecture map changed. Existing untracked `.agents/` and `skills-lock.json` remain untouched.
+
+The matching ecommerce VerifyEmailPage implementation commit is `1249870`; the TestOps verification documentation is being committed separately.
+
 The ecommerce frontend unit gate passed after CustomerOrders changes on 2026-08-08: 3 suites and 10 tests. The production build also passed; existing CRA and browser-data advisories remain non-blocking.
 
 The ecommerce frontend image was rebuilt successfully with CustomerOrders on 2026-08-08; PostgreSQL data was retained and backend health gating completed before frontend startup.
