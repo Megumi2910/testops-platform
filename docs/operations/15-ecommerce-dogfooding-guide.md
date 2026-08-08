@@ -285,6 +285,15 @@ terminal logs can be shared without exposing fixture credentials.
 The redaction assertion was verified locally with supplied test-only values;
 the preflight passed with 9 suites and 12 cases and the values did not appear
 in captured output.
+Stable project, suite, and case markers are matched literally during apply, so
+rerunning the command updates existing catalog entities instead of creating
+duplicates.
+The manifest uses `P0`/`P1`/`P2` labels for humans; the apply script translates
+them to the backend’s `CRITICAL`/`HIGH`/`MEDIUM` enum before sending case
+payloads, preventing the API’s “Priority is invalid” response.
+READY promotion replaces the stored step list safely: the backend flushes the
+bulk delete before reinserting positions, so repeated applies do not hit the
+PostgreSQL duplicate-position constraint.
 
 The current catalog intentionally keeps credentialed, destructive, Mailpit,
 two-user WebSocket, concurrency, seller, and administrator scenarios as
@@ -443,6 +452,11 @@ verification/recovery, the ecommerce contract, target connectivity, offline
 and cross-origin negative cases, READY-case validation, failing-step evidence,
 and project creation. Run the disabled profile separately when you need the
 negative local-bridge assertion.
+
+The catalog was applied successfully to the isolated E2E backend on 2026-08-08
+(port 8180): 9 suites and 12 cases were reconciled, including all READY
+promotions and the secret-safe customer variables. The normal development
+database was not used for this operation.
 
 After the E2E backend was recreated with the opt-in `http://localhost:3001`
 allowlist entry, the same enabled gate passed again with 18 tests passed and 1

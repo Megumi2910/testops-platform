@@ -38,6 +38,25 @@ an accidental credential leak.
 The redaction check was exercised with sentinel email/password values and
 confirmed that neither appeared in captured dry-run output.
 
+Marker reconciliation uses literal string containment for the stable
+`[testops-key:...]` and `sync:...` markers. It must not use wildcard matching:
+PowerShell treats `[` as a character-class operator, which would reject a
+previously synchronized project before any API write.
+
+The manifest intentionally uses the product-facing `P0`, `P1`, and `P2`
+priority labels. The TestOps definition API uses `CRITICAL`, `HIGH`, and
+`MEDIUM`, so the synchronizer maps `P0 → CRITICAL`, `P1 → HIGH`, and
+`P2 → MEDIUM` before creating or updating a case. The original P-level remains
+in the case tags for catalog review, while the API receives only values it
+accepts.
+
+READY promotion is intentionally a second case update. Because that update
+replaces the existing step list, the backend flushes the bulk step delete
+before inserting the replacement positions. This prevents PostgreSQL's
+`test_steps_case_position_unique` constraint from turning a valid DRAFT → READY
+promotion into HTTP 500. The focused `DefinitionServiceTest` suite passed after
+the transaction-ordering fix.
+
 ## Synchronization behavior
 
 1. The project is matched by `[testops-key:ecommerce-platform]`, then by exact display name; an existing match is updated so its marker and target origin are repaired.
@@ -58,6 +77,7 @@ TestOps is the reusable single-browser journey layer: navigation, locators, inte
 - `401`: set `TESTOPS_TOKEN` to a valid bearer token for a user with project-management and definition-management permissions.
 - `target origin is not allowed`: add `http://localhost:3001` to TestOps `TARGET_ALLOWED_ORIGINS` and enable `TARGET_LOCAL_DEV_ENABLED=true` for the local bridge.
 - `case cannot become READY`: inspect the API response; READY cases need at least one step beginning with `NAVIGATE`, and each action must satisfy its descriptor fields.
+- `internal_error` mentioning `test_steps_case_position_unique`: rebuild the TestOps backend so the step-replacement flush fix is running, then rerun apply; do not manually edit the database.
 - Duplicate project or suite: check that the marker is still present in its description. Restore the marker before running apply again.
 - Secret variable skipped: set the environment variable named by `valueFromEnv`; the script intentionally refuses to invent a secret value.
 
@@ -85,3 +105,8 @@ The surrounding enabled TestOps Playwright gate passed 18 tests with one
 disabled-profile test skipped on 2026-08-08. The separate disabled-local-target
 profile remains the required check for proving that the same localhost origin
 is blocked when `TARGET_LOCAL_DEV_ENABLED=false`.
+
+On 2026-08-08, an authenticated apply against the isolated E2E backend on
+port 8180 completed successfully for all 9 suites and 12 cases. The run
+exercised marker reconciliation, redacted variable updates, P0/P1 mapping,
+and READY promotion after the step-replacement flush fix.

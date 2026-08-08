@@ -10,13 +10,24 @@ param(
 $ErrorActionPreference = 'Stop'
 $manifest = Get-Content -Raw -LiteralPath $ManifestPath | ConvertFrom-Json
 if ($manifest.schemaVersion -ne 1) { throw "Unsupported catalog schema version: $($manifest.schemaVersion)" }
+$script:CatalogToken = [string]$Token
 
 $supportedActions = @('NAVIGATE', 'CLICK', 'FILL', 'CLEAR', 'SELECT_OPTION', 'CHECK', 'UNCHECK', 'WAIT', 'WAIT_VISIBLE', 'WAIT_HIDDEN', 'PRESS', 'HOVER', 'ASSERT_TEXT_EQUALS', 'ASSERT_TEXT_CONTAINS', 'ASSERT_VISIBLE', 'ASSERT_HIDDEN', 'ASSERT_VALUE', 'ASSERT_CHECKED', 'ASSERT_ENABLED', 'ASSERT_DISABLED', 'ASSERT_ATTRIBUTE', 'ASSERT_COUNT', 'ASSERT_URL_CONTAINS', 'ASSERT_URL_EQUALS', 'TAKE_SCREENSHOT')
 $locatorActions = @('CLICK', 'FILL', 'CLEAR', 'SELECT_OPTION', 'CHECK', 'UNCHECK', 'WAIT_VISIBLE', 'WAIT_HIDDEN', 'PRESS', 'HOVER', 'ASSERT_TEXT_EQUALS', 'ASSERT_TEXT_CONTAINS', 'ASSERT_VISIBLE', 'ASSERT_HIDDEN', 'ASSERT_VALUE', 'ASSERT_CHECKED', 'ASSERT_ENABLED', 'ASSERT_DISABLED', 'ASSERT_ATTRIBUTE', 'ASSERT_COUNT')
 $locatorTypes = @('ROLE', 'LABEL', 'TEST_ID', 'TEXT', 'TEXT_EXACT', 'PLACEHOLDER', 'ALT_TEXT', 'TITLE', 'CSS', 'XPATH')
 $expectedActions = @('ASSERT_TEXT_EQUALS', 'ASSERT_TEXT_CONTAINS', 'ASSERT_VALUE', 'ASSERT_ATTRIBUTE', 'ASSERT_COUNT', 'ASSERT_URL_CONTAINS', 'ASSERT_URL_EQUALS')
+$manifestPriorities = @('P0', 'P1', 'P2')
 
 function Has-Text([object]$value) { return $null -ne $value -and -not [string]::IsNullOrWhiteSpace([string]$value) }
+
+function Api-Priority([string]$priority) {
+    switch ($priority.Trim().ToUpperInvariant()) {
+        'P0' { return 'CRITICAL' }
+        'P1' { return 'HIGH' }
+        'P2' { return 'MEDIUM' }
+        default { throw "Unsupported manifest priority '$priority'. Use P0, P1, or P2." }
+    }
+}
 
 function Validate-Step([object]$step, [string]$suiteKey, [string]$caseKey, [int]$expectedPosition) {
     if ($null -eq $step) { throw "Case '$caseKey' in suite '$suiteKey' contains a null step." }
@@ -48,6 +59,8 @@ function Validate-Step([object]$step, [string]$suiteKey, [string]$caseKey, [int]
 
 foreach ($suiteDefinition in @($manifest.suites)) {
     foreach ($caseDefinition in @($suiteDefinition.cases)) {
+        $manifestPriority = ([string]$caseDefinition.priority).Trim().ToUpperInvariant()
+        if ($manifestPriorities -notcontains $manifestPriority) { throw "Case '$($caseDefinition.key)' in suite '$($suiteDefinition.key)' uses unsupported priority '$($caseDefinition.priority)'; use P0, P1, or P2." }
         $caseSteps = @($caseDefinition.steps)
         if ($caseSteps.Count -eq 1 -and $null -eq $caseSteps[0]) { $caseSteps = @() }
         for ($position = 0; $position -lt $caseSteps.Count; $position++) { Validate-Step $caseSteps[$position] ([string]$suiteDefinition.key) ([string]$caseDefinition.key) $position }
@@ -67,8 +80,8 @@ function Write-Plan([string]$method, [string]$path, [object]$body) {
 function Invoke-TestOps([string]$method, [string]$path, [object]$body = $null, [object]$logBody = $null) {
     Write-Plan $method $path $(if ($null -eq $logBody) { $body } else { $logBody })
     if ($Mode -eq 'dry-run') { return $null }
-    if ([string]::IsNullOrWhiteSpace($Token)) { throw 'Apply mode requires TESTOPS_TOKEN or -Token.' }
-    $headers = @{ Authorization = "Bearer $Token" }
+    if ([string]::IsNullOrWhiteSpace($script:CatalogToken)) { throw 'Apply mode requires TESTOPS_TOKEN or -Token.' }
+    $headers = @{ Authorization = "Bearer $script:CatalogToken" }
     $request = @{ Method = $method; Uri = "$($BaseUrl.TrimEnd('/'))$path"; Headers = $headers; ContentType = 'application/json' }
     if ($null -ne $body) { $request.Body = $body | ConvertTo-Json -Depth 20 }
     Invoke-RestMethod @request
@@ -76,11 +89,14 @@ function Invoke-TestOps([string]$method, [string]$path, [object]$body = $null, [
 
 function Marker([string]$key) { return "[testops-key:$key]" }
 function CaseTags([object]$case) { return [string]$case.tags }
+function Has-Marker([object]$value, [string]$marker) {
+    return $null -ne $value -and ([string]$value).Contains($marker)
+}
 
 function Find-Project {
     $page = Invoke-TestOps GET '/api/v1/projects?page=0&size=100'
     if ($Mode -eq 'dry-run') { return $null }
-    $page.content | Where-Object { $_.description -like "*$((Marker $manifest.project.key))*" -or $_.name -eq $manifest.project.name } | Select-Object -First 1
+    $page.content | Where-Object { (Has-Marker $_.description (Marker $manifest.project.key)) -or $_.name -eq $manifest.project.name } | Select-Object -First 1
 }
 
 $project = Find-Project
@@ -109,7 +125,7 @@ foreach ($variable in @($manifest.variables)) {
 $suites = if ($Mode -eq 'dry-run') { @() } else { @(Invoke-TestOps GET "/api/v1/projects/$projectId/suites") }
 foreach ($suiteDefinition in @($manifest.suites)) {
     $suiteMarker = Marker $suiteDefinition.key
-    $suite = $suites | Where-Object { $_.description -like "*$suiteMarker*" -or $_.name -eq $suiteDefinition.name } | Select-Object -First 1
+    $suite = $suites | Where-Object { (Has-Marker $_.description $suiteMarker) -or $_.name -eq $suiteDefinition.name } | Select-Object -First 1
     $suitePayload = @{ name = $suiteDefinition.name; description = $suiteDefinition.description; projectVersion = $null }
     if ($null -eq $suite) { $suite = Invoke-TestOps POST "/api/v1/projects/$projectId/suites" $suitePayload }
     elseif ($Mode -eq 'apply') { $suite = Invoke-TestOps PUT "/api/v1/projects/$projectId/suites/$($suite.id)" @{ name = $suiteDefinition.name; description = $suiteDefinition.description; projectVersion = $suite.version } }
@@ -117,8 +133,8 @@ foreach ($suiteDefinition in @($manifest.suites)) {
     $cases = if ($Mode -eq 'dry-run') { @() } else { @(Invoke-TestOps GET "/api/v1/projects/$projectId/suites/$suiteId/cases") }
     foreach ($caseDefinition in @($suiteDefinition.cases)) {
         $caseMarker = "sync:$($caseDefinition.key)"
-        $case = $cases | Where-Object { (CaseTags $_) -like "*$caseMarker*" -or $_.name -eq $caseDefinition.name } | Select-Object -First 1
-        $payload = @{ name = $caseDefinition.name; description = $caseDefinition.description; status = 'DRAFT'; priority = $caseDefinition.priority; tags = $caseDefinition.tags; retryCount = 0; dataIsolation = $true; projectVersion = if ($case) { $case.version } else { $null }; steps = @($caseDefinition.steps) }
+        $case = $cases | Where-Object { (Has-Marker (CaseTags $_) $caseMarker) -or $_.name -eq $caseDefinition.name } | Select-Object -First 1
+        $payload = @{ name = $caseDefinition.name; description = $caseDefinition.description; status = 'DRAFT'; priority = (Api-Priority $caseDefinition.priority); tags = $caseDefinition.tags; retryCount = 0; dataIsolation = $true; projectVersion = if ($case) { $case.version } else { $null }; steps = @($caseDefinition.steps) }
         if ($null -eq $case) { $case = Invoke-TestOps POST "/api/v1/projects/$projectId/suites/$suiteId/cases" $payload }
         else { $case = Invoke-TestOps PUT "/api/v1/projects/$projectId/suites/$suiteId/cases/$($case.id)" $payload }
         if ([string]$caseDefinition.status -eq 'READY') {
