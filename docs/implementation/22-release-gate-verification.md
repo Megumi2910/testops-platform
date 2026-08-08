@@ -16,7 +16,7 @@ same checks without guessing which Compose profile or port is in use.
 | Disabled local-target Playwright | `E2E_DISABLED_BASE_URL=http://localhost:3101`, `MAILPIT_URL=http://127.0.0.1:8026` | PASS — 1 passed |
 | Catalog preflight | `scripts/sync-ecommerce-catalog.ps1 -Mode dry-run` | PASS — 9 suites, 24 cases, no API calls |
 | Catalog apply | `-Mode apply -BaseUrl http://localhost:8180` | PASS — 9 suites, 24 cases reconciled; variable values redacted in logs |
-| Live READY acceptance | target check + three suite queue requests | PASS — target `REACHABLE`/HTTP 200, all 17 READY cases passed, 97 steps, 15 screenshot artifacts plus traces |
+| Live READY acceptance | target check + four suite queue requests | PASS — target `REACHABLE`/HTTP 200, all 18 READY cases passed, 102 steps, 16 screenshot artifacts plus traces |
 
 The full backend command’s only errors were `ApplicationContextIT` and
 `MigrationUpgradeIT` failing before test execution because Testcontainers saw
@@ -39,10 +39,13 @@ The post-fix local package/unit gate remains green (`55` tests with
 Testcontainers job because this Windows shell cannot expose a usable Docker API
 to the Java client.
 
-The live acceptance now covers three runnable suites: platform smoke (1/1),
-catalog and search (10/10), and authenticated customer routes (6/6). The
+The live acceptance now covers four runnable suites: platform smoke (1/1),
+catalog and search (10/10), authenticated customer routes (6/6), and
+resilience/accessibility (1/1). The
 customer run includes dashboard, order history, profile, settings, empty
-wishlist, and valid login. Dashboard exploration found and corrected the
+wishlist, and valid login. The resilience case uses a 390×844 context, fills
+the storefront search placeholder, presses Enter, asserts `/search?q=shirt`,
+and retains a screenshot. Dashboard exploration found and corrected the
 ecommerce PostgreSQL `DISTINCT`/`ORDER BY` defect in commit `e738f2f`; the
 focused service test and rebuilt `/api/orders/dashboard-statistics` endpoint
 both passed. The order-history definition was made stable by using a rendered

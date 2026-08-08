@@ -345,7 +345,21 @@
       "name": "80 — Resilience and Accessibility",
       "description": "Failure states, keyboard navigation, dialogs, mobile, and evidence safety. [testops-key:80-resilience-accessibility]",
       "cases": [
-        { "key": "keyboard-smoke", "name": "Keyboard navigation smoke", "status": "DRAFT", "priority": "P1", "tags": "sync:ecommerce-keyboard-smoke,role:guest,state:clean,runner:testops", "description": "Use PRESS and focus assertions after the storefront accessibility pass.", "steps": [] }
+        {
+          "key": "keyboard-smoke",
+          "name": "Mobile keyboard search",
+          "status": "READY",
+          "priority": "P1",
+          "tags": "sync:ecommerce-keyboard-smoke,role:guest,state:clean,runner:testops",
+          "description": "Use the storefront search field with the keyboard at a mobile viewport and verify shareable URL state.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/", "timeoutMs": 15000, "viewportWidth": 390, "viewportHeight": 844, "locale": "en-US", "timezoneId": "Asia/Ho_Chi_Minh" },
+            { "position": 1, "action": "FILL", "locatorType": "PLACEHOLDER", "locatorValue": "Tìm kiếm sản phẩm, thương hiệu...", "inputValue": "shirt", "timeoutMs": 15000 },
+            { "position": 2, "action": "PRESS", "locatorType": "PLACEHOLDER", "locatorValue": "Tìm kiếm sản phẩm, thương hiệu...", "inputValue": "Enter", "timeoutMs": 15000 },
+            { "position": 3, "action": "ASSERT_URL_EQUALS", "expectedValue": "/search?q=shirt", "timeoutMs": 15000 },
+            { "position": 4, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
+        }
       ]
     }
   ]
