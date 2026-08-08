@@ -20,6 +20,7 @@ The root [README](../README.md) remains the project entry point. The machine-rea
 - Reviewing a feature: architecture specification → data/API workflows → feature implementation handbook.
 - Exercising the ecommerce target: [ecommerce browser smoke contract](implementation/19-ecommerce-browser-smoke.md) → ecommerce frontend reliability guide.
 - Synchronizing the ecommerce TestOps catalog: [catalog synchronization](implementation/21-catalog-synchronization.md) → [local target guide](operations/12-local-target-testing-guide.md).
+- Verifying the negative target matrix: use the local-disabled Compose profile described in the [local target guide](operations/12-local-target-testing-guide.md).
 - Reviewing delivery status: milestone 9 release candidate → risks/roadmap/decisions.
 
 Paths in this directory are intentionally relative to this index so links continue to work on GitHub and from a checked-out repository.

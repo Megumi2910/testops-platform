@@ -49,6 +49,19 @@ Use semantic locators (`ROLE`, `LABEL`, `TEXT`, `PLACEHOLDER`, or `TEST_ID`) bef
 
 The reusable ecommerce project is defined in `catalog/ecommerce-testops.json`. Preview changes with `scripts/sync-ecommerce-catalog.ps1 -Mode dry-run`; apply them with a short-lived `TESTOPS_TOKEN`. The synchronizer uses stable markers, creates cases as drafts, and promotes only definitions that pass the same READY validation as the UI. See [`21-catalog-synchronization.md`](../implementation/21-catalog-synchronization.md) for the complete beginner workflow.
 
+### Running the local-disabled negative check
+
+The negative matrix has a separate Compose project so it cannot change the normal or enabled E2E database. Start it with:
+
+```powershell
+docker compose -p testops-e2e-disabled -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-local-disabled.yml up -d
+$env:E2E_DISABLED_BASE_URL = 'http://localhost:3101'
+$env:MAILPIT_URL = 'http://127.0.0.1:8026'
+npx playwright test e2e/local-target-disabled.spec.ts
+```
+
+The expected result is one passing test showing `http://localhost:3201` disabled with reason `local_target_disabled`.
+
 | Symptom | Check | Recovery |
 |---|---|---|
 | Target is `UNREACHABLE` | Host process, port, and the container `wget` command | Start the site, use the host port, and recreate `backend` |
