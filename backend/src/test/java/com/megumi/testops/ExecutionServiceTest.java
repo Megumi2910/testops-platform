@@ -20,23 +20,29 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import com.megumi.testops.auth.domain.UserEntity;
 import com.megumi.testops.config.PlatformProperties;
 import com.megumi.testops.execution.domain.ExecutionArtifactEntity;
 import com.megumi.testops.execution.domain.ExecutionEntity;
+import com.megumi.testops.execution.domain.ExecutionQueueGuardEntity;
+import com.megumi.testops.execution.domain.ExecutionVariableSnapshotEntity;
 import com.megumi.testops.execution.repository.ExecutionArtifactRepository;
 import com.megumi.testops.execution.repository.ExecutionQueueGuardRepository;
 import com.megumi.testops.execution.repository.ExecutionRepository;
+import com.megumi.testops.execution.repository.ExecutionVariableSnapshotRepository;
 import com.megumi.testops.execution.repository.TestCaseResultRepository;
 import com.megumi.testops.execution.repository.TestStepResultRepository;
 import com.megumi.testops.execution.runner.ArtifactWriter;
 import com.megumi.testops.execution.service.ExecutionService;
 import com.megumi.testops.project.domain.ProjectEntity;
 import com.megumi.testops.project.domain.ProjectMemberEntity;
+import com.megumi.testops.project.domain.TestCaseEntity;
 import com.megumi.testops.project.domain.TestSuiteEntity;
 import com.megumi.testops.project.repository.TestCaseRepository;
+import com.megumi.testops.project.repository.ProjectVariableRepository;
 import com.megumi.testops.project.repository.TestSuiteRepository;
 import com.megumi.testops.project.service.ProjectAccessService;
 import com.megumi.testops.shared.api.ApiException;
@@ -51,6 +57,8 @@ class ExecutionServiceTest {
     private final ProjectAccessService access = mock(ProjectAccessService.class);
     private final ArtifactWriter artifactWriter = mock(ArtifactWriter.class);
     private final ExecutionQueueGuardRepository queueGuard = mock(ExecutionQueueGuardRepository.class);
+    private final ExecutionVariableSnapshotRepository variableSnapshots = mock(ExecutionVariableSnapshotRepository.class);
+    private final ProjectVariableRepository projectVariables = mock(ProjectVariableRepository.class);
     private final PlatformProperties properties = new PlatformProperties(
             new PlatformProperties.Execution(1, 10, Duration.ofSeconds(1), Duration.ofSeconds(5), Duration.ofMinutes(1),
                     Duration.ofMinutes(5), Duration.ofSeconds(10), "chromium", true),
@@ -71,7 +79,7 @@ class ExecutionServiceTest {
         suite = new TestSuiteEntity(project, "Smoke suite", null, user, now);
         jwt = Jwt.withTokenValue("test-token").header("alg", "none").subject(user.getId().toString()).build();
         service = new ExecutionService(executions, caseResults, stepResults, artifacts, suites, cases, access,
-                properties, artifactWriter, queueGuard);
+                properties, artifactWriter, queueGuard, variableSnapshots, projectVariables);
         when(access.user(jwt)).thenReturn(user);
         when(access.project(project.getId())).thenReturn(project);
         doNothing().when(access).requireProjectRole(eq(project), eq(user), eq(jwt), any());
@@ -99,6 +107,7 @@ class ExecutionServiceTest {
         assertSame(existing, replay);
         verify(queueGuard, never()).lockGuard();
         verify(caseResults, never()).saveAll(any());
+        verify(variableSnapshots, never()).saveAll(any());
     }
 
     @Test
@@ -113,6 +122,33 @@ class ExecutionServiceTest {
         assertEquals("no_ready_cases", error.getCode());
         verify(queueGuard, never()).lockGuard();
         verify(executions, never()).save(any());
+    }
+
+    @Test
+    void snapshotsPlainAndEncryptedVariablesWhenQueueing() {
+        UUID key = UUID.randomUUID();
+        TestCaseEntity testCase = new TestCaseEntity(suite, "Ready case", null, "READY", "HIGH", null, 0, false, user, Instant.now());
+        when(executions.findByProjectIdAndIdempotencyKey(project.getId(), key)).thenReturn(Optional.empty());
+        when(cases.findBySuiteIdAndStatusNotOrderByNameAsc(suite.getId(), "ARCHIVED")).thenReturn(List.of(testCase));
+        ExecutionQueueGuardEntity guard = mock(ExecutionQueueGuardEntity.class);
+        when(guard.full(10)).thenReturn(false);
+        when(queueGuard.lockGuard()).thenReturn(Optional.of(guard));
+        when(executions.save(any(ExecutionEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(projectVariables.findByProjectIdOrderByKeyAsc(project.getId())).thenReturn(List.of(
+                com.megumi.testops.project.domain.ProjectVariableEntity.plain(project, "SEARCH_TERM", "dress", Instant.now()),
+                com.megumi.testops.project.domain.ProjectVariableEntity.encrypted(project, "PASSWORD", new byte[] { 1 }, new byte[] { 2 }, 1, Instant.now())));
+
+        service.queueSuite(jwt, project.getId(), suite.getId(), key);
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Iterable<ExecutionVariableSnapshotEntity>> captured = ArgumentCaptor.forClass(Iterable.class);
+        verify(variableSnapshots).saveAll(captured.capture());
+        List<ExecutionVariableSnapshotEntity> snapshots = java.util.stream.StreamSupport.stream(captured.getValue().spliterator(), false).toList();
+        assertEquals(2, snapshots.size());
+        var byKey = snapshots.stream().collect(java.util.stream.Collectors.toMap(ExecutionVariableSnapshotEntity::getKey, snapshot -> snapshot));
+        assertEquals(true, byKey.get("PASSWORD").isSecret());
+        assertEquals(null, byKey.get("PASSWORD").getValue());
+        assertEquals("dress", byKey.get("SEARCH_TERM").getValue());
     }
 
     @Test

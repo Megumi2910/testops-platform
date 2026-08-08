@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
@@ -28,21 +29,22 @@ public class PlaywrightCaseRunner {
 
     public PlaywrightCaseRunner(TestStepRepository steps, ExecutionTargetGuard targetGuard, PlatformProperties properties, ArtifactWriter artifacts, ManagedChromium chromium) { this.steps = steps; this.targetGuard = targetGuard; this.properties = properties; this.artifacts = artifacts; this.chromium = chromium; }
 
-    public Result run(TestCaseEntity testCase, String targetOrigin, String executionId, String caseResultId, Map<String, String> variables) {
-        List<TestStepEntity> definitions = steps.findByTestCaseIdOrderByPositionAsc(testCase.getId()); boolean secret = definitions.stream().anyMatch(s -> s.getInputValue() != null && s.getInputValue().contains("${"));
+    public Result run(TestCaseEntity testCase, String targetOrigin, String executionId, String caseResultId, Map<String, String> variables, Set<String> secretKeys) {
+        List<TestStepEntity> definitions = steps.findByTestCaseIdOrderByPositionAsc(testCase.getId());
         List<StepOutcome> outcomes = new ArrayList<>(); List<CapturedScreenshot> screenshots = new ArrayList<>();
+        boolean[] secretUsed = { false };
         try (BrowserContext context = chromium.newContext(); Page page = context.newPage()) {
             context.setDefaultTimeout(properties.execution().defaultStepTimeout().toMillis());
-            Path trace = null; if (!secret) { trace = Files.createTempFile("testops-trace-", ".zip"); context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true)); }
+            Path trace = Files.createTempFile("testops-trace-", ".zip"); context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true));
             long deadline = System.nanoTime() + properties.execution().maxDuration().toNanos();
             int failedStepPosition = -1;
-            try { for (TestStepEntity step : definitions) { failedStepPosition = step.getPosition(); if (System.nanoTime() > deadline) throw new TimeoutError("Execution duration exceeded"); long started = System.nanoTime(); try { execute(page, step, targetOrigin, variables, screenshots, secret); outcomes.add(new StepOutcome(step.getPosition(), step.getAction(), "PASSED", (System.nanoTime() - started) / 1_000_000, null)); } catch (Throwable stepError) { outcomes.add(new StepOutcome(step.getPosition(), step.getAction(), "FAILED", (System.nanoTime() - started) / 1_000_000, sanitizeMessage(stepError))); if (stepError instanceof RuntimeException runtime) throw runtime; if (stepError instanceof Error error) throw error; throw new RuntimeException(stepError); } } return new Result(true, null, null, secret, false, null, null, trace, outcomes, screenshots); }
-            catch (Throwable ex) { byte[] screenshot = secret ? null : page.screenshot(new Page.ScreenshotOptions().setFullPage(true)); boolean infrastructure = ex instanceof com.microsoft.playwright.PlaywrightException || ex instanceof com.megumi.testops.shared.api.ApiException || ex instanceof TimeoutError; return new Result(false, sanitizeMessage(ex), screenshot, secret, infrastructure, infrastructure ? category(ex) : null, failedStepPosition < 0 ? null : failedStepPosition, trace, outcomes, screenshots); }
-            finally { if (trace != null) { try { context.tracing().stop(new Tracing.StopOptions().setPath(trace)); } catch (Exception ignored) { } } }
-        } catch (Exception ex) { return new Result(false, sanitizeMessage(ex), null, secret, true, category(ex), null, null); }
+            try { for (TestStepEntity step : definitions) { failedStepPosition = step.getPosition(); if (System.nanoTime() > deadline) throw new TimeoutError("Execution duration exceeded"); long started = System.nanoTime(); boolean stepUsesSecret = referencesSecret(step, secretKeys); secretUsed[0] |= stepUsesSecret; try { execute(page, step, targetOrigin, variables, screenshots, secretUsed[0]); outcomes.add(new StepOutcome(step.getPosition(), step.getAction(), "PASSED", (System.nanoTime() - started) / 1_000_000, null)); } catch (Throwable stepError) { outcomes.add(new StepOutcome(step.getPosition(), step.getAction(), "FAILED", (System.nanoTime() - started) / 1_000_000, sanitizeMessage(stepError))); if (stepError instanceof RuntimeException runtime) throw runtime; if (stepError instanceof Error error) throw error; throw new RuntimeException(stepError); } } return new Result(true, null, null, secretUsed[0], false, null, null, trace, outcomes, screenshots); }
+            catch (Throwable ex) { byte[] screenshot = secretUsed[0] ? null : page.screenshot(new Page.ScreenshotOptions().setFullPage(true)); boolean infrastructure = ex instanceof com.microsoft.playwright.PlaywrightException || ex instanceof com.megumi.testops.shared.api.ApiException || ex instanceof TimeoutError; return new Result(false, sanitizeMessage(ex), screenshot, secretUsed[0], infrastructure, infrastructure ? category(ex) : null, failedStepPosition < 0 ? null : failedStepPosition, trace, outcomes, screenshots); }
+            finally { try { context.tracing().stop(new Tracing.StopOptions().setPath(trace)); } catch (Exception ignored) { } if (secretUsed[0]) { try { Files.deleteIfExists(trace); } catch (Exception ignored) { } } }
+        } catch (Exception ex) { return new Result(false, sanitizeMessage(ex), null, secretUsed[0], true, category(ex), null, null); }
     }
 
-    private void execute(Page page, TestStepEntity step, String origin, Map<String, String> variables, List<CapturedScreenshot> screenshots, boolean secret) {
+    private void execute(Page page, TestStepEntity step, String origin, Map<String, String> variables, List<CapturedScreenshot> screenshots, boolean suppressEvidence) {
         String action = step.getAction().toUpperCase(Locale.ROOT); Locator locator = locator(page, step);
         int timeout = step.getTimeoutMs() == null ? (int) properties.execution().defaultStepTimeout().toMillis() : step.getTimeoutMs();
         switch (action) {
@@ -61,9 +63,23 @@ public class PlaywrightCaseRunner {
             case "ASSERT_VISIBLE" -> PlaywrightAssertions.assertThat(locator).isVisible(new com.microsoft.playwright.assertions.LocatorAssertions.IsVisibleOptions().setTimeout(timeout));
             case "ASSERT_HIDDEN" -> PlaywrightAssertions.assertThat(locator).isHidden(new com.microsoft.playwright.assertions.LocatorAssertions.IsHiddenOptions().setTimeout(timeout));
             case "ASSERT_URL_CONTAINS" -> PlaywrightAssertions.assertThat(page).hasURL(java.util.regex.Pattern.compile(".*" + java.util.regex.Pattern.quote(step.getExpectedValue()) + ".*"));
-            case "TAKE_SCREENSHOT" -> { if (!secret) screenshots.add(new CapturedScreenshot(step.getPosition(), page.screenshot(new Page.ScreenshotOptions().setFullPage(true)))); }
+            case "TAKE_SCREENSHOT" -> { if (!suppressEvidence) screenshots.add(new CapturedScreenshot(step.getPosition(), page.screenshot(new Page.ScreenshotOptions().setFullPage(true)))); }
             default -> throw new IllegalArgumentException("Unsupported action " + action);
         }
+    }
+
+    static boolean referencesSecret(TestStepEntity step, Set<String> secretKeys) {
+        if (secretKeys.isEmpty()) return false;
+        return referencesSecret(step.getInputValue(), secretKeys)
+                || referencesSecret(step.getExpectedValue(), secretKeys)
+                || referencesSecret(step.getLocatorValue(), secretKeys);
+    }
+
+    private static boolean referencesSecret(String value, Set<String> secretKeys) {
+        if (value == null) return false;
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("\\$\\{([A-Za-z][A-Za-z0-9_]{1,63})}").matcher(value);
+        while (matcher.find()) if (secretKeys.contains(matcher.group(1).toUpperCase(Locale.ROOT))) return true;
+        return false;
     }
 
     private Locator locator(Page page, TestStepEntity step) {

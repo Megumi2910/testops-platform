@@ -347,3 +347,7 @@ When adding a feature:
 7. Add unit/integration/UI coverage at the smallest useful layer.
 8. Update `docs/implementation/17-ui-to-execution-workflow.md`, this handbook, and the HTML diagram.
 9. Run formatting, lint/typecheck, tests, build, Compose health, and inspect the diff.
+
+## 8. Phase 6 execution correctness
+
+Execution variables are copied at queue time into `execution_variable_snapshots`. Plain values remain readable only to the worker path; secret values retain AES-GCM ciphertext, nonce, and key version. `ExecutionRunService` decrypts secrets immediately before invoking `PlaywrightCaseRunner`, and no controller or response DTO exposes the resolved map. The runner receives the secret-key set separately so `${NON_SECRET}` does not disable evidence while a genuine secret reference suppresses screenshots and removes the trace after the run. See `20-phase-6-execution-correctness.md` for the data flow, failure policy, and verification evidence.

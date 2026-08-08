@@ -1,6 +1,7 @@
 package com.megumi.testops;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -17,6 +18,7 @@ import org.mockito.ArgumentCaptor;
 import com.megumi.testops.auth.domain.UserEntity;
 import com.megumi.testops.execution.domain.ExecutionEntity;
 import com.megumi.testops.execution.domain.ExecutionStatus;
+import com.megumi.testops.execution.domain.ExecutionVariableSnapshotEntity;
 import com.megumi.testops.execution.domain.TestCaseResultEntity;
 import com.megumi.testops.execution.domain.TestStepResultEntity;
 import com.megumi.testops.execution.repository.ExecutionArtifactRepository;
@@ -24,6 +26,7 @@ import com.megumi.testops.execution.repository.ExecutionQueueGuardRepository;
 import com.megumi.testops.execution.repository.ExecutionRepository;
 import com.megumi.testops.execution.repository.TestCaseResultRepository;
 import com.megumi.testops.execution.repository.TestStepResultRepository;
+import com.megumi.testops.execution.repository.ExecutionVariableSnapshotRepository;
 import com.megumi.testops.execution.runner.ArtifactWriter;
 import com.megumi.testops.execution.runner.PlaywrightCaseRunner;
 import com.megumi.testops.execution.service.ExecutionRunService;
@@ -32,6 +35,7 @@ import com.megumi.testops.project.domain.TestCaseEntity;
 import com.megumi.testops.project.domain.TestSuiteEntity;
 import com.megumi.testops.project.repository.ProjectVariableRepository;
 import com.megumi.testops.project.repository.TestStepRepository;
+import com.megumi.testops.project.service.ProjectVariableCrypto;
 
 class ExecutionRunServiceTest {
     private final ExecutionRepository executions = mock(ExecutionRepository.class);
@@ -42,6 +46,8 @@ class ExecutionRunServiceTest {
     private final TestStepRepository stepDefinitions = mock(TestStepRepository.class);
     private final TestStepResultRepository stepResults = mock(TestStepResultRepository.class);
     private final ExecutionQueueGuardRepository queueGuard = mock(ExecutionQueueGuardRepository.class);
+    private final ExecutionVariableSnapshotRepository variableSnapshots = mock(ExecutionVariableSnapshotRepository.class);
+    private final ProjectVariableCrypto variableCrypto = mock(ProjectVariableCrypto.class);
     private ExecutionRunService service;
     private ExecutionEntity execution;
     private TestCaseResultEntity caseResult;
@@ -55,8 +61,8 @@ class ExecutionRunServiceTest {
         TestCaseEntity testCase = new TestCaseEntity(suite, "Homepage smoke", null, "READY", "HIGH", null, 0, false, user, now);
         execution = new ExecutionEntity(project, suite, user, 1, java.util.UUID.randomUUID(), now);
         caseResult = new TestCaseResultEntity(execution, testCase);
-        service = new ExecutionRunService(executions, results, runner, artifactWriter, variables, stepDefinitions,
-                stepResults, queueGuard);
+        service = new ExecutionRunService(executions, results, runner, artifactWriter, stepDefinitions,
+                stepResults, queueGuard, variableSnapshots, variableCrypto);
     }
 
     @Test
@@ -74,8 +80,8 @@ class ExecutionRunServiceTest {
                 List.of(new PlaywrightCaseRunner.CapturedScreenshot(2, new byte[] { 1, 2, 3 })));
         when(executions.findById(execution.getId())).thenReturn(Optional.of(execution));
         when(results.findByExecutionIdOrderByTestCase_NameAsc(execution.getId())).thenReturn(List.of(caseResult));
-        when(variables.findByProjectIdOrderByKeyAsc(execution.getProject().getId())).thenReturn(List.of());
-        when(runner.run(any(), any(), any(), any(), any())).thenReturn(outcome);
+        when(variableSnapshots.findByExecutionIdOrderByKeyAsc(execution.getId())).thenReturn(List.of());
+        when(runner.run(any(), any(), any(), any(), any(), any())).thenReturn(outcome);
         when(queueGuard.lockGuard()).thenReturn(Optional.empty());
 
         service.run(execution.getId());
@@ -89,5 +95,29 @@ class ExecutionRunServiceTest {
         assertEquals("PASSED", captured.getValue().getStatus());
         assertEquals(42L, captured.getValue().getDurationMs());
         verify(artifactWriter).writeScreenshot(execution, caseResult, 2, new byte[] { 1, 2, 3 });
+    }
+
+    @Test
+    void decryptsSecretSnapshotInsideWorkerBeforeRunningCase() {
+        var now = Instant.now();
+        var secret = com.megumi.testops.project.domain.ProjectVariableEntity.encrypted(execution.getProject(), "PASSWORD", new byte[] { 9 }, new byte[] { 8 }, 1, now);
+        var snapshot = ExecutionVariableSnapshotEntity.secret(execution, secret);
+        PlaywrightCaseRunner.Result outcome = new PlaywrightCaseRunner.Result(true, null, null, true, false, null, null, null);
+        when(executions.findById(execution.getId())).thenReturn(Optional.of(execution));
+        when(results.findByExecutionIdOrderByTestCase_NameAsc(execution.getId())).thenReturn(List.of(caseResult));
+        when(variableSnapshots.findByExecutionIdOrderByKeyAsc(execution.getId())).thenReturn(List.of(snapshot));
+        when(variableCrypto.decrypt(execution.getProject().getId().toString(), "PASSWORD", new byte[] { 9 }, new byte[] { 8 }, 1)).thenReturn("super-secret");
+        when(runner.run(any(), any(), any(), any(), any(), any())).thenReturn(outcome);
+        when(queueGuard.lockGuard()).thenReturn(Optional.empty());
+
+        service.run(execution.getId());
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<java.util.Map<String, String>> variablesCaptor = ArgumentCaptor.forClass(java.util.Map.class);
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<java.util.Set<String>> secretKeysCaptor = ArgumentCaptor.forClass(java.util.Set.class);
+        verify(runner).run(any(), anyString(), anyString(), anyString(), variablesCaptor.capture(), secretKeysCaptor.capture());
+        assertEquals("super-secret", variablesCaptor.getValue().get("PASSWORD"));
+        assertEquals(java.util.Set.of("PASSWORD"), secretKeysCaptor.getValue());
     }
 }
