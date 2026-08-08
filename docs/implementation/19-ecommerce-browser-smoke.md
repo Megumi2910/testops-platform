@@ -303,9 +303,31 @@ The SellerProducts verification notes are ready to stage in the matching TestOps
 
 The ecommerce SellerProducts implementation commit `9dd44cf` was created successfully; the matching TestOps documentation commit is next.
 
-The matching TestOps SellerProducts verification documentation was committed on `codex/milestone-9-release-candidate` as `f4cb99b`; the branch is ready to publish.
+The matching TestOps SellerProducts verification documentation was committed on `codex/milestone-9-release-candidate` as `f4cb99b`; the documentation branch is now published through `475e298`.
 
-The ecommerce SellerProducts commits through `13bf46e` were pushed successfully; the TestOps documentation branch remains ready to publish.
+The ecommerce SellerProducts commits through `13bf46e` were pushed successfully; the TestOps documentation branch was also pushed through `475e298`.
+
+The next Phase 5 slice updates `SellerStore`: save success and failure use the shared Toast, save controls lock while pending, statistics expose a loading state, unfinished logo upload is labelled as unavailable, and store/contact/policy fields receive semantic labels, autocomplete hints, focus-visible states, and accessible icon treatment. Verification is pending.
+
+The targeted SellerStore scan found no browser `alert(...)` calls and `git diff --check` passed; only normal line-ending normalization warnings were emitted.
+
+The ecommerce frontend unit gate passed after the SellerStore changes on 2026-08-08: 3 suites and 10 tests. The existing stale `baseline-browser-mapping` advisory remains non-blocking.
+
+The ecommerce production frontend build passed after the SellerStore changes. Existing CRA unused-import, hook-dependency, WebSocket export, and browser-data advisories remain non-blocking; the optimized bundle was generated successfully.
+
+The first Docker rebuild attempt for SellerStore exceeded the 120-second command timeout before returning a completion result; container health is being checked separately before treating this as a failure.
+
+Compose recovery completed with `docker compose up -d frontend`: the existing PostgreSQL container and volume were retained, the backend was recreated and reached healthy status, and the frontend started successfully.
+
+After recovery, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy. Ecommerce ports remain `3001`/`8081`, PostgreSQL `5433`, and PgAdmin `5051`.
+
+The nine-test TestOps Playwright contract passed against the recovered SellerStore image on 2026-08-08 in 27.6 seconds. Seeded-cart checkout, cart-dialog keyboard behavior, profile controls, wishlist empty state, mobile layout, URL-driven search/pagination, outage retry, and duplicate-submit protection remained green. SellerStore itself has no dedicated stable seller fixture in this contract, so it remains covered by build verification and targeted source/a11y review.
+
+Final ecommerce diff inspection passed with `git diff --check`; only `SellerStore.jsx` and the reliability log are changed for this implementation slice.
+
+The matching TestOps documentation diff was inspected before publication; only this browser smoke guide and the architecture map are intended changes. Existing untracked `.agents/` and `skills-lock.json` remain untouched.
+
+The ecommerce SellerStore implementation commit `19d3efd` was created successfully; the matching TestOps documentation commit is next.
 
 Final ecommerce diff inspection passed with `git diff --check`; the TestOps workspace has only the corresponding documentation updates.
 
