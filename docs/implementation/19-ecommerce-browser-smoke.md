@@ -549,6 +549,8 @@ Post-rebuild Compose health passed for `postgres_db`, `springboot_backend`, and 
 
 The ecommerce Playwright contract passed against the message-navigation rebuild on 2026-08-08: 9 tests in 25.4 seconds; all existing checks remained green.
 
+Publication: matching TestOps verification and architecture notes were committed as `5a38faa` and pushed to `codex/milestone-9-release-candidate`; `.agents/` and `skills-lock.json` remain untouched.
+
 The ecommerce Playwright contract passed against the ProductReviews rebuild on 2026-08-08: 9 tests in 22.8 seconds; all existing checks remained green.
 
 Publication: matching TestOps verification and architecture notes were committed as `94cc0fe` and pushed to `codex/milestone-9-release-candidate`; `.agents/` and `skills-lock.json` remain untouched.
