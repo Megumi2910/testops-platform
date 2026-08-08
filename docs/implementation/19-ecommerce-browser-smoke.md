@@ -333,6 +333,8 @@ The matching TestOps SellerStore verification documentation was committed on `co
 
 The ecommerce SellerStore commits through `de756b5` were pushed successfully; the TestOps documentation branch was also pushed through `cc760fc`.
 
+Final TestOps repository status is clean aside from the preserved untracked `.agents/` and `skills-lock.json`; the latest SellerStore documentation commit is `6206bc5`.
+
 Final ecommerce diff inspection passed with `git diff --check`; the TestOps workspace has only the corresponding documentation updates.
 
 The Playwright ecommerce contract now includes a direct cart-confirmation regression: it verifies the dialog opens without deleting the seeded item, focuses the cancel action, cycles to the destructive action with Tab, closes on Escape, and restores focus after Escape and Cancel. The expanded contract passed on 2026-08-01: 7 tests in 18.5 seconds.
