@@ -198,11 +198,11 @@ search-locator fixes, the current release-candidate evidence is:
 - enabled Playwright with the live ecommerce origin: 18 passed and 1
   intentionally skipped disabled-profile case;
 - disabled-local-target Playwright: 1 passed independently;
-- catalog dry-run: 9 suites and 29 cases with no API calls;
-- authenticated catalog apply: 9 suites and 29 cases reconciled with
+- catalog dry-run: 9 suites and 30 cases with no API calls;
+- authenticated catalog apply: 9 suites and 30 cases reconciled with
   redacted variables;
 - live target check: `REACHABLE`/HTTP 200;
-- all 23 current READY catalog cases: passed, 146 steps; twenty-one screenshot-bearing
+- all 24 current READY catalog cases: passed, 157 steps; twenty-two screenshot-bearing
   cases retained screenshot artifacts and traces.
 - final Compose inspection: normal, enabled E2E, and disabled E2E services all
   reported `running`.
@@ -220,8 +220,9 @@ gate remains green locally; the full integration assertion is left to the
 Linux CI Testcontainers job.
 
 The authenticated customer expansion is now part of the release evidence. The
-platform-smoke, catalog/search, customer, and resilience/accessibility suites
-passed 1/1, 10/10, 9/9, and 3/3 respectively. Customer coverage includes
+platform-smoke, catalog/search, customer, orders/reviews, and
+resilience/accessibility suites passed 1/1, 10/10, 9/9, 1/1, and 3/3
+respectively. Customer coverage includes
 dashboard, order history, profile, settings, empty wishlist, and valid login.
 The resilience case also verifies mobile keyboard search at 390×844 and the
 shareable `/search?q=shirt` URL. The guest cart route guard also confirms an
@@ -234,7 +235,11 @@ public home state, and verifies the protected order route redirects to `/login`;
 its screenshot is taken only after the session is cleared. The seeded order-detail
 case passed fourteen steps after clicking `Đơn hàng #MOCK-ORDER-001`, verifying
 both products, COD payment, and `MOCK-TXN-001`; its screenshot was suppressed by
-the secret-safe evidence policy.
+the secret-safe evidence policy. The verified-review-visibility case opened
+`/product/1`, confirmed the seeded purchased-review marker, exact review text,
+and edit affordance, and passed all 11 steps in execution
+`4a7b84aa-9d70-45c9-b859-aa1f20f4a4d2`; its screenshot was likewise suppressed
+because the run used the secret customer password.
 Dashboard exploration discovered a
 real ecommerce PostgreSQL query defect; commit `e738f2f` replaced the invalid
 `DISTINCT` address projection with a bounded recent-order lookup, and its

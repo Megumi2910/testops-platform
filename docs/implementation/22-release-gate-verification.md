@@ -14,9 +14,9 @@ same checks without guessing which Compose profile or port is in use.
 | Frontend quality gate | `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build` | PASS — lint/typecheck clean, 12 unit tests passed, production build succeeded |
 | Enabled Playwright | `E2E_BASE_URL=http://127.0.0.1:3100`, `ECOMMERCE_BASE_URL=http://localhost:3001` | PASS — 18 passed, 1 intentionally skipped disabled-profile test |
 | Disabled local-target Playwright | `E2E_DISABLED_BASE_URL=http://localhost:3101`, `MAILPIT_URL=http://127.0.0.1:8026` | PASS — 1 passed |
-| Catalog preflight | `scripts/sync-ecommerce-catalog.ps1 -Mode dry-run` | PASS — 9 suites, 29 cases, no API calls |
-| Catalog apply | `-Mode apply -BaseUrl http://localhost:8180` | PASS — 9 suites, 29 cases reconciled; variable values redacted in logs |
-| Live READY acceptance | target check + four suite queue requests | PASS — target `REACHABLE`/HTTP 200, all 23 READY cases passed, 146 steps, 21 screenshot-bearing definitions; secret-bearing artifacts suppressed by policy |
+| Catalog preflight | `scripts/sync-ecommerce-catalog.ps1 -Mode dry-run` | PASS — 9 suites, 30 cases, no API calls |
+| Catalog apply | `-Mode apply -BaseUrl http://localhost:8180` | PASS — 9 suites, 30 cases reconciled; variable values redacted in logs |
+| Live READY acceptance | target check + five suite/case queue requests | PASS — target `REACHABLE`/HTTP 200, all 24 READY cases passed, 157 steps, 22 screenshot-bearing definitions; secret-bearing artifacts suppressed by policy |
 
 The full backend command’s only errors were `ApplicationContextIT` and
 `MigrationUpgradeIT` failing before test execution because Testcontainers saw
@@ -39,9 +39,9 @@ The post-fix local package/unit gate remains green (`55` tests with
 Testcontainers job because this Windows shell cannot expose a usable Docker API
 to the Java client.
 
-The live acceptance now covers four runnable suites: platform smoke (1/1),
-catalog and search (10/10), authentication/customer routes (9/9), and
-resilience/accessibility (3/3). The
+The live acceptance now covers five runnable suites/case groups: platform smoke
+(1/1), catalog and search (10/10), authentication/customer routes (9/9),
+orders/reviews (1/1), and resilience/accessibility (3/3). The
 customer run includes dashboard, order history, profile, settings, empty
 wishlist, and valid login. The resilience case uses a 390×844 context, fills
 the storefront search placeholder, presses Enter, asserts `/search?q=shirt`,
@@ -57,6 +57,10 @@ logout. The order-detail case clicks `Đơn hàng #MOCK-ORDER-001`, verifies bot
 products, COD payment, and `MOCK-TXN-001`, and passes all 14 steps. Its
 screenshot step is intentionally suppressed because the run uses the secret
 customer password.
+The verified-review-visibility case opens `/product/1`, checks the seeded
+purchased-review marker, exact review text, and edit affordance, and passes all
+11 steps in execution `4a7b84aa-9d70-45c9-b859-aa1f20f4a4d2`; its screenshot is
+likewise suppressed by the secret-safe evidence policy.
 Dashboard exploration found and corrected the
 ecommerce PostgreSQL `DISTINCT`/`ORDER BY` defect in commit `e738f2f`; the
 focused service test and rebuilt `/api/orders/dashboard-statistics` endpoint
