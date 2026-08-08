@@ -549,6 +549,8 @@ Post-rebuild Compose health passed for `postgres_db`, `springboot_backend`, and 
 
 The ecommerce Playwright contract passed against the final WebSocket export rebuild on 2026-08-08: 9 tests in 22.9 seconds; all existing checks remained green.
 
+Publication: matching TestOps verification and architecture notes were committed as `cb07652` and pushed to `codex/milestone-9-release-candidate`; `.agents/` and `skills-lock.json` remain untouched.
+
 The ecommerce Playwright contract passed against the seller cleanup rebuild on 2026-08-08: 9 tests in 25.8 seconds; all existing checks remained green.
 
 Publication: matching TestOps verification and architecture notes were committed as `30765c4` and pushed to `codex/milestone-9-release-candidate`; `.agents/` and `skills-lock.json` remain untouched.
