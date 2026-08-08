@@ -466,7 +466,7 @@ and project creation. Run the disabled profile separately when you need the
 negative local-bridge assertion.
 
 The catalog was applied successfully to the isolated E2E backend on 2026-08-08
-(port 8180): 9 suites and 37 cases were reconciled, including all READY
+(port 8180): 9 suites and 38 cases were reconciled, including all READY
 promotions and the secret-safe customer and seller variables. The normal development
 database was not used for this operation.
 
@@ -508,10 +508,10 @@ The order-history case uses a substring locator for `MOCK-ORDER-001` because
 managed Chromium renders the order number with surrounding label text, while
 the wishlist case uses exact page-title text to avoid a strict-mode collision
 with `Chưa có sản phẩm yêu thích`. The current manifest totals are therefore
-37 cases, 32 `READY`, 263 steps, and 30 screenshot-bearing definitions. The
+38 cases, 33 `READY`, 268 steps, and 31 screenshot-bearing definitions. The
 complete READY acceptance is 1/1 platform smoke, 10/10 catalog-and-search,
 9/9 authentication/customer cases, 2/2 orders-and-reviews cases,
-7/7 seller-workflows cases, and 3/3 resilience/accessibility cases.
+7/7 seller-workflows cases, and 4/4 resilience/accessibility cases.
 
 The mobile keyboard resilience case uses a 390×844 browser context, fills the unique storefront
 search placeholder with `shirt`, presses `Enter`, and asserts the shareable
@@ -580,6 +580,11 @@ payment tabs and verifying the seeded email-alert, low-stock, bank-account,
 Vietcombank, and Stripe controls without saving changes. Its screenshot was
 suppressed because the seller password is secret-backed. A direct browser
 check also confirmed the same tabs render without console errors.
+The admin-route-guard case passed all 5 steps in execution
+`dfa5e7be-b46f-4ee0-ade4-674cb868d697`, proving an unauthenticated `/admin`
+request redirects to the usable login form; its screenshot artifact is
+available because the journey does not use credentials. A direct browser check
+also confirmed the redirect and no console errors.
 
 Repeated scripted logins can exhaust the disposable E2E auth limiter and return
 HTTP 429. The verified recovery is to restart only `testops-e2e-backend-1`,

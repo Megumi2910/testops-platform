@@ -661,6 +661,21 @@
             { "position": 4, "action": "ASSERT_ENABLED", "locatorType": "ROLE", "locatorRole": "BUTTON", "locatorValue": "Gửi tin nhắn", "timeoutMs": 15000 },
             { "position": 5, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
           ]
+        },
+        {
+          "key": "admin-route-guard",
+          "name": "Protect guest admin route",
+          "status": "READY",
+          "priority": "P1",
+          "tags": "sync:ecommerce-admin-route-guard,role:guest,state:clean,runner:testops",
+          "description": "Redirect an unauthenticated visitor from the administrator route to the usable login form.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/admin", "timeoutMs": 15000 },
+            { "position": 1, "action": "ASSERT_URL_EQUALS", "expectedValue": "/login", "timeoutMs": 15000 },
+            { "position": 2, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Chào mừng trở lại!", "timeoutMs": 15000 },
+            { "position": 3, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Email", "timeoutMs": 15000 },
+            { "position": 4, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
         }
       ]
     }
