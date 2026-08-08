@@ -14,9 +14,9 @@ same checks without guessing which Compose profile or port is in use.
 | Frontend quality gate | `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build` | PASS — lint/typecheck clean, 12 unit tests passed, production build succeeded |
 | Enabled Playwright | `E2E_BASE_URL=http://127.0.0.1:3100`, `ECOMMERCE_BASE_URL=http://localhost:3001` | PASS — 18 passed, 1 intentionally skipped disabled-profile test |
 | Disabled local-target Playwright | `E2E_DISABLED_BASE_URL=http://localhost:3101`, `MAILPIT_URL=http://127.0.0.1:8026` | PASS — 1 passed |
-| Catalog preflight | `scripts/sync-ecommerce-catalog.ps1 -Mode dry-run` | PASS — 9 suites, 32 cases, no API calls |
-| Catalog apply | `-Mode apply -BaseUrl http://localhost:8180` | PASS — 9 suites, 32 cases reconciled; variable values redacted in logs |
-| Live READY acceptance | target check + eight suite/case queue requests | PASS — target `REACHABLE`/HTTP 200, all 27 READY cases passed, 192 steps, 25 screenshot-bearing definitions; secret-bearing artifacts suppressed by policy |
+| Catalog preflight | `scripts/sync-ecommerce-catalog.ps1 -Mode dry-run` | PASS — 9 suites, 33 cases, no API calls |
+| Catalog apply | `-Mode apply -BaseUrl http://localhost:8180` | PASS — 9 suites, 33 cases reconciled; variable values redacted in logs |
+| Live READY acceptance | target check + nine suite/case queue requests | PASS — target `REACHABLE`/HTTP 200, all 28 READY cases passed, 207 steps, 26 screenshot-bearing definitions; secret-bearing artifacts suppressed by policy |
 
 The full backend command’s only errors were `ApplicationContextIT` and
 `MigrationUpgradeIT` failing before test execution because Testcontainers saw
@@ -41,7 +41,7 @@ to the Java client.
 
 The live acceptance now covers six runnable suites/case groups: platform smoke
 (1/1), catalog and search (10/10), authentication/customer routes (9/9),
-orders/reviews (2/2), seller workflows (2/2), and resilience/accessibility (3/3). The
+orders/reviews (2/2), seller workflows (3/3), and resilience/accessibility (3/3). The
 customer run includes dashboard, order history, profile, settings, empty
 wishlist, and valid login. The resilience case uses a 390×844 context, fills
 the storefront search placeholder, presses Enter, asserts `/search?q=shirt`,
@@ -74,6 +74,12 @@ The seller-store-profile case then passed all 13 steps in execution
 (`68308019-b7ef-424e-b4ee-11ab108e9f69`), verifying the read-only store, contact,
 operating-hours, and policy sections; its screenshot is suppressed because the
 seller password is secret-backed.
+The seller-analytics case then passed all 15 steps in execution
+(`21747642-8c8d-46a7-bf13-bc8ad8eaab8e`), verifying reporting, customer,
+performance, search-trend, and operating-hours sections; its screenshot is
+suppressed because the seller password is secret-backed. Artifact metadata is
+returned by the execution detail endpoint; the unsupported `/artifacts` list URL
+must not be used.
 Dashboard exploration found and corrected the
 ecommerce PostgreSQL `DISTINCT`/`ORDER BY` defect in commit `e738f2f`; the
 focused service test and rebuilt `/api/orders/dashboard-statistics` endpoint

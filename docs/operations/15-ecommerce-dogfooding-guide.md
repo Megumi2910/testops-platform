@@ -180,7 +180,7 @@ It creates these mock-only identities and reuses them on every restart:
 | --- | --- | --- | --- |
 | Verified customer | `mock.customer@example.test` | `MockCustomer!123` | Login, cart review, checkout entry, order and review reads |
 | Unverified customer | `mock.unverified@example.test` | `MockUnverified!123` | Verification restriction and resend flows |
-| Seller | `mock.seller@example.test` | `MockSeller!123` | Seller dashboard and ownership checks |
+| Seller | `mock.seller@example.test` | `MockSeller!123` | Seller dashboard, store profile, analytics, and ownership checks |
 
 The seed also provides three categories, three approved products, a two-item
 customer cart, a completed order, a verified-purchase review, and a customer ↔
@@ -449,8 +449,8 @@ the Spring Boot backend, and the React frontend. The native Playwright contract
 ran with one worker against `http://localhost:3001` and passed all 9 tests,
 including login-to-checkout entry, keyboard-safe cart cancellation, mobile
 layout, shareable search state, retry behavior, pagination, and duplicate-submit
-protection. The TestOps catalog preflight then passed with 9 suites and 32
-cases, with no API calls during dry-run. Its 27-case READY set now includes
+protection. The TestOps catalog preflight then passed with 9 suites and 33
+cases, with no API calls during dry-run. Its 28-case READY set now includes
 the non-destructive verified-customer login, customer dashboard, order history,
 profile, settings, empty wishlist, order detail, product detail, category browse, category
 directory, flash-sale, about, contact, help, mobile keyboard search, guest cart route-guard, invalid-login, contact-form accessibility, logout-session, seeded order-detail, verified-review-visibility, completed-order-cancel-guard, seller-dashboard, and seller-store-profile journeys; dry-run still skips the four variable
@@ -466,7 +466,7 @@ and project creation. Run the disabled profile separately when you need the
 negative local-bridge assertion.
 
 The catalog was applied successfully to the isolated E2E backend on 2026-08-08
-(port 8180): 9 suites and 32 cases were reconciled, including all READY
+(port 8180): 9 suites and 33 cases were reconciled, including all READY
 promotions and the secret-safe customer and seller variables. The normal development
 database was not used for this operation.
 
@@ -508,10 +508,10 @@ The order-history case uses a substring locator for `MOCK-ORDER-001` because
 managed Chromium renders the order number with surrounding label text, while
 the wishlist case uses exact page-title text to avoid a strict-mode collision
 with `Chưa có sản phẩm yêu thích`. The current manifest totals are therefore
-32 cases, 27 `READY`, 192 steps, and 25 screenshot-bearing definitions. The
+33 cases, 28 `READY`, 207 steps, and 26 screenshot-bearing definitions. The
 complete READY acceptance is 1/1 platform smoke, 10/10 catalog-and-search,
 9/9 authentication/customer cases, 2/2 orders-and-reviews cases, 2/2
-seller-workflows cases, and 3/3 resilience/accessibility cases.
+3/3 seller-workflows cases, and 3/3 resilience/accessibility cases.
 
 The mobile keyboard resilience case uses a 390×844 browser context, fills the unique storefront
 search placeholder with `shirt`, presses `Enter`, and asserts the shareable
@@ -551,6 +551,12 @@ The seller-store-profile case then passed all 13 steps in execution
 `68308019-b7ef-424e-b4ee-11ab108e9f69`, verifying the read-only store, contact,
 operating-hours, and policy sections without a save control; its screenshot was
 also suppressed by the secret-safe policy.
+The seller-analytics case then passed all 15 steps in execution
+`21747642-8c8d-46a7-bf13-bc8ad8eaab8e`, verifying the reporting, customer,
+performance, search-trend, and operating-hours sections. Its screenshot was
+suppressed because the seller password is secret-backed; artifact metadata is
+available on the execution detail response rather than a separate artifact-list
+endpoint.
 
 Repeated scripted logins can exhaust the disposable E2E auth limiter and return
 HTTP 429. The verified recovery is to restart only `testops-e2e-backend-1`,
