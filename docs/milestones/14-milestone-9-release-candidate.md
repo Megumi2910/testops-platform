@@ -198,11 +198,11 @@ search-locator fixes, the current release-candidate evidence is:
 - enabled Playwright with the live ecommerce origin: 18 passed and 1
   intentionally skipped disabled-profile case;
 - disabled-local-target Playwright: 1 passed independently;
-- catalog dry-run: 9 suites and 14 cases with no API calls;
-- authenticated catalog apply: 9 suites and 14 cases reconciled with
+- catalog dry-run: 9 suites and 19 cases with no API calls;
+- authenticated catalog apply: 9 suites and 19 cases reconciled with
   redacted variables;
 - live target check: `REACHABLE`/HTTP 200;
-- all 7 current READY catalog cases: passed, 28 steps; five screenshot-bearing
+- all 12 current READY catalog cases: passed, 50 steps; ten screenshot-bearing
   cases retained screenshot artifacts and traces.
 - final Compose inspection: normal, enabled E2E, and disabled E2E services all
   reported `running`.

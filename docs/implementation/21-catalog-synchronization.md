@@ -7,9 +7,10 @@ The ecommerce catalog is source-controlled at `catalog/ecommerce-testops.json`. 
 The manifest gives every project, suite, and case a stable external key. The key is stored as a marker in the project/suite description or case tags, so a renamed display name does not create a duplicate on the next synchronization. Cases are first written as `DRAFT`; a manifest case marked `READY` is promoted only after the same API validation that the UI uses.
 
 The first catalog contains the nine ecommerce domains from Milestone 10. The
-current manifest has 14 cases: seven safe single-browser cases are `READY`
+current manifest has 19 cases: twelve safe single-browser cases are `READY`
 (homepage, catalog entry, shareable search, no-results search, product detail,
-category browse, and verified-customer login). Credentialed verification,
+category browse, category directory, flash sale, about, contact, help, and
+verified-customer login). Credentialed verification,
 transactional, Mailpit, two-user messaging, and destructive cases remain drafts
 until their native fixture/test harness is available; this prevents a catalog
 apply from publishing misleading READY checks.
@@ -103,16 +104,20 @@ docker volume rm testops-e2e_postgres18_data
 
 Do not run that command against the normal `testops-platform_postgres18_data` volume.
 
-The current catalog has 9 suites and 14 cases. Its seven-case READY set
+The current catalog has 9 suites and 19 cases. Its 12-case READY set
 includes the non-destructive verified-customer login, guest homepage/catalog
 checks, shareable/no-results search checks, a product-detail journey for
-`/product/1`, and a category-browse journey for `/category/1`. Search uses
+`/product/1`, a category-browse journey for `/category/1`, a category-directory
+journey for `/categories`, a flash-sale journey for `/flash-sale`, and public
+about/contact/help journeys. Search uses
 `ASSERT_VALUE` with the unique `LABEL` locator for the page's
 `Tìm kiếm sản phẩm` textbox, `ASSERT_URL_EQUALS` for `/search?q=shirt`, and a
 role-based heading assertion for `Không tìm thấy sản phẩm`. Product and
 category assertions use exact text plus stable locator indexes; the valid-login
 case uses the semantic `ROLE=HEADING` locator for `Danh mục sản phẩm` because
-the same phrase also appears in the footer. The live ecommerce Playwright
+the same phrase also appears in the footer. The flash-sale case uses
+`TEXT_EXACT` because partial role matching would match both `FLASH SALE` and
+`Sản phẩm Flash Sale`. The live ecommerce Playwright
 contract passed all 9 tests against `http://localhost:3001` on 2026-08-08.
 The valid-login case references permanent mock customer credentials without
 putting either value in the manifest.
@@ -123,12 +128,12 @@ profile remains the required check for proving that the same localhost origin
 is blocked when `TARGET_LOCAL_DEV_ENABLED=false`.
 
 On 2026-08-08, an authenticated apply against the isolated E2E backend on
-port 8180 completed successfully for all 9 suites and 14 cases. The run
+port 8180 completed successfully for all 9 suites and 19 cases. The run
 exercised marker reconciliation, redacted variable updates, P0/P1 mapping,
 and READY promotion after the step-replacement flush fix.
 
 The follow-up dry run after the search and guest-catalog locator corrections
-again validated 9 suites and 14 cases, printed the `LABEL` and semantic role
+again validated 9 suites and 19 cases, printed the `LABEL`, exact-text, and semantic role
 locators, and made no API calls.
 
 The corrected search-state case was reapplied and rerun in the isolated E2E
@@ -137,7 +142,9 @@ environment on 2026-08-08. It passed all four steps (`NAVIGATE`, `ASSERT_VALUE`,
 artifact.
 
 The complete READY catalog was then queued again after a clean backend restart.
-Target checking returned `REACHABLE` with HTTP 200; all 7 READY cases passed,
-with 28 total steps. The five screenshot-bearing cases each retained a
+Target checking returned `REACHABLE` with HTTP 200; all 12 READY cases passed,
+with 50 total steps. Ten screenshot-bearing cases each retained a
 `SCREENSHOT` artifact, while the valid-login case passed six steps without
-capturing credential evidence.
+capturing credential evidence. Repeated disposable-stack logins can hit the
+auth rate limiter; recreating only the E2E backend is safe when diagnosing that
+condition.

@@ -269,7 +269,7 @@ timeouts, context settings, `READY` ordering, and local variable references
 before making an API call. It should report:
 
 ```text
-Manifest validation passed: 9 suites, 14 cases.
+Manifest validation passed: 9 suites, 19 cases.
 Dry run complete. No API calls were made.
 ```
 
@@ -292,7 +292,7 @@ terminal logs can be shared without exposing fixture credentials.
 The synchronizer also discards the variable API response instead of letting
 PowerShell render it as a table after the request. A full-stream redaction
 assertion was verified locally with supplied test-only values;
-the preflight passed with 9 suites and 14 cases and the values did not appear
+the preflight passed with 9 suites and 19 cases and the values did not appear
 in captured output.
 Stable project, suite, and case markers are matched literally during apply, so
 rerunning the command updates existing catalog entities instead of creating
@@ -449,10 +449,10 @@ the Spring Boot backend, and the React frontend. The native Playwright contract
 ran with one worker against `http://localhost:3001` and passed all 9 tests,
 including login-to-checkout entry, keyboard-safe cart cancellation, mobile
 layout, shareable search state, retry behavior, pagination, and duplicate-submit
-protection. The TestOps catalog preflight then passed with 9 suites and 14
-cases, with no API calls during dry-run. Its seven-case READY set now includes
-the non-destructive verified-customer login, product detail, and category
-browse journeys; dry-run still skips the two variable
+protection. The TestOps catalog preflight then passed with 9 suites and 19
+cases, with no API calls during dry-run. Its 12-case READY set now includes
+the non-destructive verified-customer login, product detail, category browse,
+category directory, flash-sale, about, contact, and help journeys; dry-run still skips the two variable
 values unless `TESTOPS_E2E_CUSTOMER_EMAIL` and
 `TESTOPS_E2E_CUSTOMER_PASSWORD` are provided.
 
@@ -464,7 +464,7 @@ and project creation. Run the disabled profile separately when you need the
 negative local-bridge assertion.
 
 The catalog was applied successfully to the isolated E2E backend on 2026-08-08
-(port 8180): 9 suites and 14 cases were reconciled, including all READY
+(port 8180): 9 suites and 19 cases were reconciled, including all READY
 promotions and the secret-safe customer variables. The normal development
 database was not used for this operation.
 
@@ -479,20 +479,32 @@ When a page contains both a global header search box and a page-level search
 box, prefer the page field's accessible `LABEL` locator over a broad `ROLE`
 name. The synchronized search-state case now uses `Tìm kiếm sản phẩm` as that
 unique label, avoiding Playwright strict-mode ambiguity.
-The follow-up dry run passed for 9 suites and 14 cases with no API calls.
+The follow-up dry run passed for 9 suites and 19 cases with no API calls.
 The corrected search-state case then passed in the isolated E2E run with all
 four steps and one screenshot artifact.
 The guest catalog expansion was then applied and rerun after a clean backend
-restart. Target health was `REACHABLE`/HTTP 200; all 7 READY cases passed, with
-28 successful steps. The five cases that contain `TAKE_SCREENSHOT` each
-retained a screenshot artifact (and the execution detail also retained the
-worker trace); the credentialed login intentionally produced no screenshot.
+restart. Target health was `REACHABLE`/HTTP 200; all 12 READY cases passed, with
+50 successful steps. The 10 cases that contain `TAKE_SCREENSHOT` each retained
+a screenshot artifact (and the execution detail also retained the worker
+trace); the credentialed login intentionally produced no screenshot.
 
 The valid-login case initially exposed a strict-mode failure because the
 storefront rendered `Danh mục sản phẩm` as both a heading and a footer link.
 The manifest now uses the semantic `ROLE=HEADING` locator. A fresh rerun passed
 all six login steps, confirming the definition fix without changing ecommerce
 application code.
+
+The public-route expansion also exposed a strict-mode failure on `/flash-sale`:
+the partial `ROLE=HEADING` locator for `FLASH SALE` matched both the page title
+and `Sản phẩm Flash Sale`. The case now uses `TEXT_EXACT` for both headings.
+The corrected run passed four steps and retained its screenshot. The category
+directory, about, contact, and help cases use route-specific headings and each
+passed with evidence.
+
+If repeated logins against the disposable E2E backend return HTTP 429, the
+auth failure window has been exhausted. Wait for the configured window or
+recreate only `testops-e2e-backend-1`; do not reset or remove the normal
+development database volume.
 
 After the E2E backend was recreated with the opt-in `http://localhost:3001`
 allowlist entry, the same enabled gate passed again with 18 tests passed and 1

@@ -104,6 +104,78 @@
             { "position": 3, "action": "ASSERT_VISIBLE", "locatorType": "TEXT_EXACT", "locatorValue": "Áo thun basic cotton", "timeoutMs": 15000, "locatorIndex": 0 },
             { "position": 4, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
           ]
+        },
+        {
+          "key": "categories-directory",
+          "name": "Browse the category directory",
+          "status": "READY",
+          "priority": "P1",
+          "tags": "sync:ecommerce-categories-directory,role:guest,state:clean,runner:testops",
+          "description": "Open the public category directory and verify the permanent category fixtures.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/categories", "timeoutMs": 15000 },
+            { "position": 1, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Danh mục sản phẩm", "timeoutMs": 15000 },
+            { "position": 2, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Thời trang", "timeoutMs": 15000 },
+            { "position": 3, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Điện tử", "timeoutMs": 15000 },
+            { "position": 4, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Gia dụng", "timeoutMs": 15000 },
+            { "position": 5, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
+        },
+        {
+          "key": "flash-sale-page",
+          "name": "Open the flash sale page",
+          "status": "READY",
+          "priority": "P1",
+          "tags": "sync:ecommerce-flash-sale-page,role:guest,state:clean,runner:testops",
+          "description": "Verify the public flash-sale route renders its intentional page headings.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/flash-sale", "timeoutMs": 15000 },
+            { "position": 1, "action": "ASSERT_VISIBLE", "locatorType": "TEXT_EXACT", "locatorValue": "FLASH SALE", "timeoutMs": 15000, "locatorIndex": 0 },
+            { "position": 2, "action": "ASSERT_VISIBLE", "locatorType": "TEXT_EXACT", "locatorValue": "Sản phẩm Flash Sale", "timeoutMs": 15000, "locatorIndex": 0 },
+            { "position": 3, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
+        },
+        {
+          "key": "about-page",
+          "name": "Read the about page",
+          "status": "READY",
+          "priority": "P2",
+          "tags": "sync:ecommerce-about-page,role:guest,state:clean,runner:testops",
+          "description": "Verify the public about page renders its story content.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/about", "timeoutMs": 15000 },
+            { "position": 1, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Về chúng tôi", "timeoutMs": 15000 },
+            { "position": 2, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Câu chuyện của chúng tôi", "timeoutMs": 15000 },
+            { "position": 3, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
+        },
+        {
+          "key": "contact-page",
+          "name": "Open the contact page",
+          "status": "READY",
+          "priority": "P2",
+          "tags": "sync:ecommerce-contact-page,role:guest,state:clean,runner:testops",
+          "description": "Verify the public contact page exposes support and message sections.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/contact", "timeoutMs": 15000 },
+            { "position": 1, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Liên hệ với chúng tôi", "timeoutMs": 15000 },
+            { "position": 2, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Gửi tin nhắn cho chúng tôi", "timeoutMs": 15000 },
+            { "position": 3, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
+        },
+        {
+          "key": "help-page",
+          "name": "Open the help center",
+          "status": "READY",
+          "priority": "P2",
+          "tags": "sync:ecommerce-help-page,role:guest,state:clean,runner:testops",
+          "description": "Verify the public help center renders its topic directory.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/help", "timeoutMs": 15000 },
+            { "position": 1, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Trung tâm trợ giúp", "timeoutMs": 15000 },
+            { "position": 2, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Chủ đề phổ biến", "timeoutMs": 15000 },
+            { "position": 3, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
         }
       ]
     },
