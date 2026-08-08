@@ -547,9 +547,21 @@ The ecommerce frontend image rebuilt successfully for the CategoryProductsPage s
 
 Post-rebuild Compose health passed for `postgres_db`, `springboot_backend`, and `react_frontend`.
 
+The ecommerce Playwright contract passed against the final WebSocket export rebuild on 2026-08-08: 9 tests in 22.9 seconds; all existing checks remained green.
+
 The ecommerce Playwright contract passed against the seller cleanup rebuild on 2026-08-08: 9 tests in 25.8 seconds; all existing checks remained green.
 
 Publication: matching TestOps verification and architecture notes were committed as `30765c4` and pushed to `codex/milestone-9-release-candidate`; `.agents/` and `skills-lock.json` remain untouched.
+
+The next Phase 5 slice names the shared WebSocket singleton before exporting it, removing the final frontend build warning without changing transport behavior. Verification is pending.
+
+The ecommerce frontend unit gate passed for the WebSocket export cleanup: 3 suites and 10 tests on 2026-08-08; only the stale browser-data advisory remains.
+
+The production build passed with `Compiled successfully` and no ESLint warning; only the stale browser-data advisory remains.
+
+The ecommerce frontend image rebuilt successfully for the WebSocket export cleanup with PostgreSQL data retained and backend/database health gating intact.
+
+Post-rebuild Compose health passed for `postgres_db`, `springboot_backend`, and `react_frontend`.
 
 The ecommerce Playwright contract passed against the admin import rebuild on 2026-08-08: 9 tests in 22.3 seconds; all existing checks remained green.
 

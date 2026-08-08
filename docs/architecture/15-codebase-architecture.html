@@ -439,6 +439,8 @@
   <h3>Seller import and logging hygiene slice</h3>
   <p>SellerAnalytics, SellerDashboard, and SellerLayout now keep only rendered icons/chart primitives and no longer emit debug statistics logs. Existing seller data, loading, and error-state flows are unchanged; the unit gate passed with three suites and ten tests, the production build has no seller warning, its frontend image rebuilt successfully with health gating, all three services are healthy, and the 9-test ecommerce Playwright contract remains green.</p>
   <p>Publication commits: ecommerce `080020b`; TestOps documentation `30765c4`. Both branches were pushed after verification.</p>
+  <h3>WebSocket export hygiene slice</h3>
+  <p>The shared WebSocket service now exports a named singleton instance, removing the anonymous default-export warning while preserving connection, reconnection, subscription, and REST-fallback behavior; its unit gate passed with three suites and ten tests, the production build now compiles successfully without ESLint warnings, its frontend image rebuilt successfully with health gating, all three services are healthy, and the 9-test ecommerce Playwright contract remains green.</p>
 </section>
 </body>
 </html>
