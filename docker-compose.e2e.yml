@@ -28,7 +28,7 @@ services:
       MAIL_SMTP_AUTH: "false"
       MAIL_STARTTLS: "false"
       FRONTEND_ORIGIN: http://localhost:3100
-      TARGET_ALLOWED_ORIGINS: http://frontend:8080,http://localhost:3201,http://localhost:3299
+      TARGET_ALLOWED_ORIGINS: http://frontend:8080,http://localhost:3001,http://localhost:3201,http://localhost:3299
       TARGET_LOCAL_DEV_ENABLED: "true"
       TARGET_LOCAL_DEV_HOST_ALIAS: host.docker.internal
     extra_hosts:

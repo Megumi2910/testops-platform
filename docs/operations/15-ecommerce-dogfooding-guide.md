@@ -299,6 +299,7 @@ The TestOps E2E profile is separate from the normal development stack:
 | TestOps PostgreSQL | 55432 |
 | Mailpit UI/SMTP | 8025 / 1025 |
 | Static target fixture | 3201 |
+| Host ecommerce target (opt-in) | 3001 |
 
 Start it with:
 
@@ -306,6 +307,11 @@ Start it with:
 cd D:\\Projects\\testops-platform
 docker compose -p testops-e2e -f docker-compose.yml -f docker-compose.e2e.yml up -d --build
 ```
+
+The enabled profile allowlists both the static fixture and the exact local
+ecommerce origin `http://localhost:3001`; it still requires the local bridge
+feature flag. The disabled profile intentionally allowlists neither a live
+ecommerce origin nor the bridge.
 
 Run the enabled local-target contract:
 
@@ -432,6 +438,11 @@ verification/recovery, the ecommerce contract, target connectivity, offline
 and cross-origin negative cases, READY-case validation, failing-step evidence,
 and project creation. Run the disabled profile separately when you need the
 negative local-bridge assertion.
+
+After the E2E backend was recreated with the opt-in `http://localhost:3001`
+allowlist entry, the same enabled gate passed again with 18 tests passed and 1
+intentional skip. This confirms that exposing the live target in the enabled
+profile does not weaken the existing static-fixture or cross-origin checks.
 
 Related source walkthroughs:
 
