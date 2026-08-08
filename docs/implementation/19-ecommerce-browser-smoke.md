@@ -231,6 +231,8 @@ The matching ecommerce VerifyEmailPage implementation commit is `1249870`; the T
 
 The VerifyEmailPage browser verification and architecture updates were committed as `e03c40e`.
 
+Matching TestOps VerifyEmailPage documentation commits through `9c73139` were pushed successfully to `codex/milestone-9-release-candidate`.
+
 The ecommerce frontend unit gate passed after CustomerOrders changes on 2026-08-08: 3 suites and 10 tests. The production build also passed; existing CRA and browser-data advisories remain non-blocking.
 
 The ecommerce frontend image was rebuilt successfully with CustomerOrders on 2026-08-08; PostgreSQL data was retained and backend health gating completed before frontend startup.
