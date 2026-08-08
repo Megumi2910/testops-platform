@@ -535,6 +535,8 @@ Post-rebuild Compose health passed: `postgres_db`, `springboot_backend`, and `re
 
 The ecommerce Playwright contract passed against `http://localhost:3001` on 2026-08-08: 9 tests in 25.5 seconds. Checkout reachability, keyboard-safe cart removal, profile controls, wishlist empty state, mobile layout, URL-driven search, outage retry, pagination, and duplicate-submit locking remained green; no request to `localhost:8080` was observed.
 
+Publication: the matching TestOps smoke and architecture notes were committed as `8b82db6` and pushed to `codex/milestone-9-release-candidate`; untracked `.agents/` and `skills-lock.json` remain preserved.
+
 The frontend image was rebuilt with the accessible cart dialog and the existing PostgreSQL volume was retained. The backend image remained unchanged and reached a healthy state before the frontend restarted.
 
 After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy; PgAdmin remained available on port `5051`.
