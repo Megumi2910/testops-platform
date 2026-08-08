@@ -359,6 +359,21 @@
             { "position": 3, "action": "ASSERT_URL_EQUALS", "expectedValue": "/search?q=shirt", "timeoutMs": 15000 },
             { "position": 4, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
           ]
+        },
+        {
+          "key": "guest-cart-route-guard",
+          "name": "Protect guest cart route",
+          "status": "READY",
+          "priority": "P1",
+          "tags": "sync:ecommerce-guest-cart-route-guard,role:guest,state:clean,runner:testops",
+          "description": "Redirect an unauthenticated visitor from the cart to login and expose the login form instead of a dead end.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/cart", "timeoutMs": 15000 },
+            { "position": 1, "action": "ASSERT_URL_EQUALS", "expectedValue": "/login", "timeoutMs": 15000 },
+            { "position": 2, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Chào mừng trở lại!", "timeoutMs": 15000 },
+            { "position": 3, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Email", "timeoutMs": 15000 },
+            { "position": 4, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
         }
       ]
     }
