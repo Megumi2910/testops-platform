@@ -197,6 +197,8 @@ Final TestOps diff inspection passed with `git diff --check`; only the browser s
 
 The matching ecommerce CustomerDashboard implementation commit is `1c56887`; the TestOps verification documentation is being committed separately.
 
+The CustomerDashboard browser verification and architecture updates were committed as `3e9486b`.
+
 The next Phase 5 slice hardens customer order cancellation. `CancelOrderModal` now has dialog semantics, an associated reason field, Escape handling, focus trapping/restoration, and submit locking. Customer order list/detail cancellation feedback now uses the shared Toast component for success and API failures rather than browser-blocking alerts. Verification is pending.
 
 The targeted ecommerce scan found no `alert(...)` calls in the order cancellation files, and `git diff --check` passed. Git emitted only its normal line-ending normalization warning for edited files.
