@@ -215,9 +215,9 @@ The matching TestOps documentation diff was inspected before publication; only t
 
 The ecommerce SellerSettings implementation commit `72f9f85` was created successfully; the matching TestOps documentation commit is next.
 
-The matching TestOps SellerSettings verification documentation was committed on `codex/milestone-9-release-candidate` as `bddd3c8`; the branch is ready to publish.
+The matching TestOps SellerSettings verification documentation was committed on `codex/milestone-9-release-candidate` as `bddd3c8`; the documentation branch is now published through `505838b`.
 
-The ecommerce SellerSettings commits through `56879e7` were pushed successfully; the TestOps documentation branch remains ready to publish.
+The ecommerce SellerSettings commits through `56879e7` were pushed successfully; the TestOps documentation branch was also pushed through `505838b`.
 
 Final ecommerce diff inspection passed with `git diff --check`; only `SellerSettings.jsx` and the reliability log are changed for this implementation slice.
 
