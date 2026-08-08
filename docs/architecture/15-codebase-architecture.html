@@ -475,6 +475,7 @@
   <p>The post-fix READY acceptance pass checked target health as <code>REACHABLE</code>/HTTP 200 and passed all 5 currently runnable cases (18 steps total), retaining one screenshot artifact for each case.</p>
   <h3>Release-gate verification</h3>
   <p>The release-gate record in <a href="../implementation/22-release-gate-verification.md"><code>docs/implementation/22-release-gate-verification.md</code></a> is the reproducible handoff for this architecture. It records the 55-test backend unit/package gate, frontend lint/typecheck/unit/build gate, enabled and disabled Playwright profiles, catalog dry-run/apply, and the live READY acceptance pass. The only local PARTIAL is Maven's Testcontainers integration phase, which cannot use the Docker Desktop <code>docker_cli</code> named pipe in this shell; CI remains responsible for that full integration gate.</p>
+  <p>The release-gate follow-up corrected two integration tests that had stopped at V016 while the repository had advanced through V017–V020. Both now assert the current V020 schema, so the migration contract covers variable snapshots, immutable queued definitions, locator metadata, and browser-context settings. This changes test expectations only; Flyway remains the source of truth for production schema evolution.</p>
 </section>
 </body>
 </html>

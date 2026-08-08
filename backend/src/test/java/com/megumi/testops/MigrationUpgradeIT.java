@@ -12,7 +12,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 class MigrationUpgradeIT {
 
     @Test
-    void upgradesPreReportingSchemaThroughGuidedTargetMigration() throws Exception {
+    void upgradesPreReportingSchemaThroughCurrentReleaseMigrations() throws Exception {
         PostgreSQLContainer<?> postgres = null;
         String jdbcUrl = System.getenv("TEST_DATABASE_URL");
         String username = System.getenv("TEST_DATABASE_USERNAME");
@@ -33,7 +33,7 @@ class MigrationUpgradeIT {
             Flyway releaseCandidate = flyway(jdbcUrl, username, password, null);
             releaseCandidate.migrate();
 
-            assertThat(releaseCandidate.info().current().getVersion().getVersion()).isEqualTo("016");
+            assertThat(releaseCandidate.info().current().getVersion().getVersion()).isEqualTo("020");
             try (var connection = DriverManager.getConnection(
                     jdbcUrl,
                     username,

@@ -213,6 +213,12 @@ execution by the local Docker Desktop/Testcontainers named-pipe response. See
 the [release-gate verification guide](../implementation/22-release-gate-verification.md)
 for exact reproduction commands and CI guidance.
 
+The subsequent CI run also caught two stale assertions that still expected
+V016. They now assert the current V020 release-candidate schema, covering the
+complete migration chain through execution-context settings. The package/unit
+gate remains green locally; the full integration assertion is left to the
+Linux CI Testcontainers job.
+
 ## Publication boundary
 
 Local commits may be prepared as:

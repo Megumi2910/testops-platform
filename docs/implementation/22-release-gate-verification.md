@@ -23,6 +23,22 @@ The full backend command’s only errors were `ApplicationContextIT` and
 Docker Desktop’s `docker_cli` named pipe as an empty API. This is an execution
 environment limitation; the same integration tests are still required in CI.
 
+## CI migration-version correction
+
+The first CI runs after V017–V020 were added exposed a stale release assertion:
+`ApplicationContextIT` and `MigrationUpgradeIT` still expected V016, the
+guided-local-target migration, even though the release candidate now includes
+V017 variable-snapshot hardening, V018 immutable case snapshots, V019 locator
+metadata, and V020 browser-context settings. The tests now assert the current
+zero-padded Flyway version `020` and describe the upgrade as the complete
+release migration chain. This is a test-contract correction only; no production
+schema or data was changed.
+
+The post-fix local package/unit gate remains green (`55` tests with
+`-DskipITs`). The integration assertion is intentionally verified by the CI
+Testcontainers job because this Windows shell cannot expose a usable Docker API
+to the Java client.
+
 ## Reproduce the gates
 
 Start the enabled E2E profile first:
