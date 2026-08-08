@@ -33,7 +33,7 @@ The script creates or updates the `Ecommerce` project at `http://localhost:3001`
 
 ## Synchronization behavior
 
-1. The project is matched by `[testops-key:ecommerce-platform]`, then by exact display name.
+1. The project is matched by `[testops-key:ecommerce-platform]`, then by exact display name; an existing match is updated so its marker and target origin are repaired.
 2. Suites are matched by `[testops-key:<suite-key>]`, then by exact name.
 3. Cases are matched by `sync:<case-key>` in tags, then by exact name.
 4. Existing entities are updated with their optimistic-concurrency version.

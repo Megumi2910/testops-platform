@@ -39,6 +39,9 @@ $project = Find-Project
 if ($null -eq $project) {
     $project = Invoke-TestOps POST '/api/v1/projects' @{ name = $manifest.project.name; description = $manifest.project.description; targetOrigin = $manifest.project.targetOrigin }
 }
+elseif ($Mode -eq 'apply') {
+    $project = Invoke-TestOps PUT "/api/v1/projects/$($project.id)" @{ name = $manifest.project.name; description = $manifest.project.description; targetOrigin = $manifest.project.targetOrigin; projectVersion = $project.version }
+}
 $projectId = if ($Mode -eq 'dry-run') { '<project-id>' } else { $project.id }
 
 foreach ($variable in @($manifest.variables)) {
