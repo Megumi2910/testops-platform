@@ -547,9 +547,21 @@ The ecommerce frontend image rebuilt successfully for the CategoryProductsPage s
 
 Post-rebuild Compose health passed for `postgres_db`, `springboot_backend`, and `react_frontend`.
 
+The ecommerce Playwright contract passed against the message-navigation rebuild on 2026-08-08: 9 tests in 25.4 seconds; all existing checks remained green.
+
 The ecommerce Playwright contract passed against the ProductReviews rebuild on 2026-08-08: 9 tests in 22.8 seconds; all existing checks remained green.
 
 Publication: matching TestOps verification and architecture notes were committed as `94cc0fe` and pushed to `codex/milestone-9-release-candidate`; `.agents/` and `skills-lock.json` remain untouched.
+
+The next Phase 5 slice removes unused inline example components from the shared message-navigation helper without changing its routing API. Verification is pending.
+
+The ecommerce frontend unit gate passed for the message-navigation cleanup: 3 suites and 10 tests on 2026-08-08; only the stale browser-data advisory remains.
+
+The message-navigation cleanup production build passed with no helper warning; remaining warnings are pre-existing outside this slice.
+
+The ecommerce frontend image rebuilt successfully for the message-navigation cleanup with PostgreSQL data retained and backend/database health gating intact.
+
+Post-rebuild Compose health passed for `postgres_db`, `springboot_backend`, and `react_frontend`.
 
 The ecommerce Playwright contract passed against the ProductInfo rebuild on 2026-08-08: 9 tests in 22.7 seconds; all existing checks remained green.
 
