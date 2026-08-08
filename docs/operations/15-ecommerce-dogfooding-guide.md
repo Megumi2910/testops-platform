@@ -150,6 +150,13 @@ The source-controlled manifest at
 | 1 | `ASSERT_VISIBLE` | `TEXT_EXACT`, `Danh mục sản phẩm`, index `0` | Confirms the storefront category heading is visible and selects the first exact match |
 | 2 | `TAKE_SCREENSHOT` | no locator | Produces visual evidence for a non-secret run |
 
+The catalog also keeps two deterministic guest search cases `READY`: **Search
+state is shareable** opens `/search?q=shirt`, checks the labelled search input
+with `ASSERT_VALUE`, and checks the exact URL; **Search no-results state** opens
+a deliberately unknown term and checks the `Không tìm thấy sản phẩm` heading.
+Both cases are safe to run repeatedly because they do not authenticate, mutate
+cart state, or create an order.
+
 `TEXT` is a forgiving text search; `TEXT_EXACT` requires an exact match.
 `locatorIndex` is zero-based and is useful when a page has repeated semantic
 matches. Prefer a role, label, test id, or exact visible text over CSS/XPath.
@@ -385,6 +392,16 @@ For a beginner smoke, the smallest complete workflow is:
 After that smoke is reliable, expand coverage in the manifest and choose the
 runner deliberately: TestOps for reusable browser journeys, native ecommerce
 tests for email, two-user realtime, concurrency, and database-integrity cases.
+
+## Verification record
+
+On 2026-08-08 the live ecommerce Compose stack reported healthy for PostgreSQL,
+the Spring Boot backend, and the React frontend. The native Playwright contract
+ran with one worker against `http://localhost:3001` and passed all 9 tests,
+including login-to-checkout entry, keyboard-safe cart cancellation, mobile
+layout, shareable search state, retry behavior, pagination, and duplicate-submit
+protection. The TestOps catalog preflight then passed with 9 suites and 12
+cases, with no API calls during dry-run.
 
 Related source walkthroughs:
 

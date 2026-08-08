@@ -6,7 +6,7 @@ The ecommerce catalog is source-controlled at `catalog/ecommerce-testops.json`. 
 
 The manifest gives every project, suite, and case a stable external key. The key is stored as a marker in the project/suite description or case tags, so a renamed display name does not create a duplicate on the next synchronization. Cases are first written as `DRAFT`; a manifest case marked `READY` is promoted only after the same API validation that the UI uses.
 
-The first catalog contains the nine ecommerce domains from Milestone 10. The guest homepage and catalog smoke cases are runnable immediately. Credentialed, transactional, Mailpit, two-user messaging, and destructive cases remain drafts until their native fixture/test harness is available; this prevents a catalog apply from publishing misleading READY checks.
+The first catalog contains the nine ecommerce domains from Milestone 10. The guest homepage, catalog, search-state, and no-results smoke cases are runnable immediately. Credentialed, transactional, Mailpit, two-user messaging, and destructive cases remain drafts until their native fixture/test harness is available; this prevents a catalog apply from publishing misleading READY checks.
 
 ## Dry run
 
@@ -62,3 +62,10 @@ docker volume rm testops-e2e_postgres18_data
 ```
 
 Do not run that command against the normal `testops-platform_postgres18_data` volume.
+
+The current guest catalog has 9 suites and 12 cases. Its additional READY search
+cases use `ASSERT_VALUE` for the labelled `Tìm kiếm sản phẩm` textbox,
+`ASSERT_URL_EQUALS` for `/search?q=shirt`, and a role-based heading assertion
+for `Không tìm thấy sản phẩm`. The live ecommerce Playwright contract passed
+all 9 tests against `http://localhost:3001` on 2026-08-08, confirming the same
+search and empty-state behavior before catalog synchronization.

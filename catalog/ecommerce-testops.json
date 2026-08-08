@@ -47,6 +47,33 @@
             { "position": 0, "action": "NAVIGATE", "inputValue": "/", "timeoutMs": 15000 },
             { "position": 1, "action": "ASSERT_VISIBLE", "locatorType": "TEXT", "locatorValue": "Danh mục sản phẩm", "timeoutMs": 15000 }
           ]
+        },
+        {
+          "key": "search-state",
+          "name": "Search state is shareable",
+          "status": "READY",
+          "priority": "P1",
+          "tags": "sync:ecommerce-search-state,role:guest,state:clean,runner:testops",
+          "description": "Verify a search query is reflected in the input and URL without requiring an account.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/search?q=shirt", "timeoutMs": 15000 },
+            { "position": 1, "action": "ASSERT_VALUE", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Tìm kiếm sản phẩm", "expectedValue": "shirt", "timeoutMs": 15000 },
+            { "position": 2, "action": "ASSERT_URL_EQUALS", "expectedValue": "/search?q=shirt", "timeoutMs": 15000 },
+            { "position": 3, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
+        },
+        {
+          "key": "search-empty-state",
+          "name": "Search no-results state",
+          "status": "READY",
+          "priority": "P1",
+          "tags": "sync:ecommerce-search-empty-state,role:guest,state:clean,runner:testops",
+          "description": "Verify an unknown search term produces the intentional empty state instead of a blank page.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/search?q=definitely-no-local-product-9f4c", "timeoutMs": 15000 },
+            { "position": 1, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Không tìm thấy sản phẩm", "timeoutMs": 15000 },
+            { "position": 2, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
         }
       ]
     },
