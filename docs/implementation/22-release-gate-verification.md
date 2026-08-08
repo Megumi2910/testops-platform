@@ -14,9 +14,9 @@ same checks without guessing which Compose profile or port is in use.
 | Frontend quality gate | `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build` | PASS — lint/typecheck clean, 12 unit tests passed, production build succeeded |
 | Enabled Playwright | `E2E_BASE_URL=http://127.0.0.1:3100`, `ECOMMERCE_BASE_URL=http://localhost:3001` | PASS — 18 passed, 1 intentionally skipped disabled-profile test |
 | Disabled local-target Playwright | `E2E_DISABLED_BASE_URL=http://localhost:3101`, `MAILPIT_URL=http://127.0.0.1:8026` | PASS — 1 passed |
-| Catalog preflight | `scripts/sync-ecommerce-catalog.ps1 -Mode dry-run` | PASS — 9 suites, 12 cases, no API calls |
-| Catalog apply | `-Mode apply -BaseUrl http://localhost:8180` | PASS — 9 suites, 12 cases reconciled; variable values redacted in logs |
-| Live READY acceptance | target check + five case queue requests | PASS — target `REACHABLE`/HTTP 200, all 5 READY cases passed, 18 steps, one screenshot artifact per case |
+| Catalog preflight | `scripts/sync-ecommerce-catalog.ps1 -Mode dry-run` | PASS — 9 suites, 14 cases, no API calls |
+| Catalog apply | `-Mode apply -BaseUrl http://localhost:8180` | PASS — 9 suites, 14 cases reconciled; variable values redacted in logs |
+| Live READY acceptance | target check + seven case queue requests | PASS — target `REACHABLE`/HTTP 200, all 7 READY cases passed, 28 steps, five screenshot artifacts plus traces |
 
 The full backend command’s only errors were `ApplicationContextIT` and
 `MigrationUpgradeIT` failing before test execution because Testcontainers saw
@@ -98,8 +98,9 @@ different because the Compose project names differ.
 4. Open the Ecommerce project in the UI and click **Check connection**.
 5. Queue each READY case individually or queue its suite.
 6. Confirm the run reaches `PASSED`, inspect each step duration/status, and
-   open the screenshot artifact. Credentialed cases may suppress sensitive
-   evidence by design; the current valid-login case remains secret-safe.
+   open each screenshot artifact. Credentialed cases may suppress sensitive
+   evidence by design; the current valid-login case remains secret-safe and
+   intentionally has no screenshot.
 
 Do not use the normal backend port `8080` when applying to the E2E profile. Do
 not paste token or password values into the manifest, documentation, or a

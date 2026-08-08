@@ -6,7 +6,13 @@ The ecommerce catalog is source-controlled at `catalog/ecommerce-testops.json`. 
 
 The manifest gives every project, suite, and case a stable external key. The key is stored as a marker in the project/suite description or case tags, so a renamed display name does not create a duplicate on the next synchronization. Cases are first written as `DRAFT`; a manifest case marked `READY` is promoted only after the same API validation that the UI uses.
 
-The first catalog contains the nine ecommerce domains from Milestone 10. The guest homepage, catalog, search-state, no-results, and verified-customer login cases are runnable immediately. Credentialed verification, transactional, Mailpit, two-user messaging, and destructive cases remain drafts until their native fixture/test harness is available; this prevents a catalog apply from publishing misleading READY checks.
+The first catalog contains the nine ecommerce domains from Milestone 10. The
+current manifest has 14 cases: seven safe single-browser cases are `READY`
+(homepage, catalog entry, shareable search, no-results search, product detail,
+category browse, and verified-customer login). Credentialed verification,
+transactional, Mailpit, two-user messaging, and destructive cases remain drafts
+until their native fixture/test harness is available; this prevents a catalog
+apply from publishing misleading READY checks.
 
 ## Dry run
 
@@ -35,8 +41,11 @@ Apply logging is secret-safe: variable payloads are sent with their real values,
 but the operation plan always prints `value: [REDACTED]` for both secret and
 non-secret variables. This prevents a copied terminal transcript from becoming
 an accidental credential leak.
+The apply loop discards each variable endpoint response as well, preventing
+PowerShell from rendering a returned non-secret email (or any future variable
+fields) after the redacted request log.
 The redaction check was exercised with sentinel email/password values and
-confirmed that neither appeared in captured dry-run output.
+confirmed that neither appeared in a full-stream captured apply transcript.
 
 Marker reconciliation uses literal string containment for the stable
 `[testops-key:...]` and `sync:...` markers. It must not use wildcard matching:
@@ -79,6 +88,10 @@ TestOps is the reusable single-browser journey layer: navigation, locators, inte
 - `case cannot become READY`: inspect the API response; READY cases need at least one step beginning with `NAVIGATE`, and each action must satisfy its descriptor fields.
 - `internal_error` mentioning `test_steps_case_position_unique`: rebuild the TestOps backend so the step-replacement flush fix is running, then rerun apply; do not manually edit the database.
 - Duplicate project or suite: check that the marker is still present in its description. Restore the marker before running apply again.
+- `Project name is already in use` after a fresh disposable login: project
+  listing is owner-scoped. Reuse the owner that created the existing E2E
+  project, or reset only `testops-e2e_postgres18_data` and apply again. Do not
+  remove the normal development volume.
 - Secret variable skipped: set the environment variable named by `valueFromEnv`; the script intentionally refuses to invent a secret value.
 
 The E2E Compose project intentionally keeps its named volume so a restart is fast and repeatable. Acceptance fixtures that create projects use a timestamped display name to remain repeatable across runs. If you need a completely empty E2E database, stop the isolated project and remove only its named volume:
@@ -90,16 +103,18 @@ docker volume rm testops-e2e_postgres18_data
 
 Do not run that command against the normal `testops-platform_postgres18_data` volume.
 
-The current catalog has 9 suites and 12 cases. Its READY set includes the
-non-destructive verified-customer login plus guest homepage/search checks. The
-additional READY search
-cases use `ASSERT_VALUE` with the unique `LABEL` locator for the page's
-`Tìm kiếm sản phẩm` textbox,
-`ASSERT_URL_EQUALS` for `/search?q=shirt`, and a role-based heading assertion
-for `Không tìm thấy sản phẩm`. The live ecommerce Playwright contract passed
-all 9 tests against `http://localhost:3001` on 2026-08-08, confirming the same
-search and empty-state behavior before catalog synchronization. The valid-login
-case references the permanent mock customer credentials and is READY without
+The current catalog has 9 suites and 14 cases. Its seven-case READY set
+includes the non-destructive verified-customer login, guest homepage/catalog
+checks, shareable/no-results search checks, a product-detail journey for
+`/product/1`, and a category-browse journey for `/category/1`. Search uses
+`ASSERT_VALUE` with the unique `LABEL` locator for the page's
+`Tìm kiếm sản phẩm` textbox, `ASSERT_URL_EQUALS` for `/search?q=shirt`, and a
+role-based heading assertion for `Không tìm thấy sản phẩm`. Product and
+category assertions use exact text plus stable locator indexes; the valid-login
+case uses the semantic `ROLE=HEADING` locator for `Danh mục sản phẩm` because
+the same phrase also appears in the footer. The live ecommerce Playwright
+contract passed all 9 tests against `http://localhost:3001` on 2026-08-08.
+The valid-login case references permanent mock customer credentials without
 putting either value in the manifest.
 
 The surrounding enabled TestOps Playwright gate passed 18 tests with one
@@ -108,12 +123,13 @@ profile remains the required check for proving that the same localhost origin
 is blocked when `TARGET_LOCAL_DEV_ENABLED=false`.
 
 On 2026-08-08, an authenticated apply against the isolated E2E backend on
-port 8180 completed successfully for all 9 suites and 12 cases. The run
+port 8180 completed successfully for all 9 suites and 14 cases. The run
 exercised marker reconciliation, redacted variable updates, P0/P1 mapping,
 and READY promotion after the step-replacement flush fix.
 
-The follow-up dry run after the search locator correction again validated 9
-suites and 12 cases, printed the `LABEL` locator, and made no API calls.
+The follow-up dry run after the search and guest-catalog locator corrections
+again validated 9 suites and 14 cases, printed the `LABEL` and semantic role
+locators, and made no API calls.
 
 The corrected search-state case was reapplied and rerun in the isolated E2E
 environment on 2026-08-08. It passed all four steps (`NAVIGATE`, `ASSERT_VALUE`,
@@ -121,6 +137,7 @@ environment on 2026-08-08. It passed all four steps (`NAVIGATE`, `ASSERT_VALUE`,
 artifact.
 
 The complete READY catalog was then queued again after a clean backend restart.
-Target checking returned `REACHABLE` with HTTP 200; all 5 READY cases passed,
-with 18 total steps and one screenshot artifact per case. This is the clean
-post-fix acceptance pass for the currently runnable catalog.
+Target checking returned `REACHABLE` with HTTP 200; all 7 READY cases passed,
+with 28 total steps. The five screenshot-bearing cases each retained a
+`SCREENSHOT` artifact, while the valid-login case passed six steps without
+capturing credential evidence.

@@ -157,6 +157,13 @@ a deliberately unknown term and checks the `Không tìm thấy sản phẩm` hea
 Both cases are safe to run repeatedly because they do not authenticate, mutate
 cart state, or create an order.
 
+The catalog also includes two permanent-fixture guest journeys in the
+catalog/search suite: **Product detail page** opens `/product/1` and checks the
+mock shirt name, seller, and `Mua ngay` button; **Browse a category** opens
+`/category/1` and checks the `Thời trang` heading, the `Tìm thấy 1 sản phẩm`
+count, and the shirt card. These cases assert stable seeded content rather
+than volatile prices or inventory, so they remain safe to rerun.
+
 `TEXT` is a forgiving text search; `TEXT_EXACT` requires an exact match.
 `locatorIndex` is zero-based and is useful when a page has repeated semantic
 matches. Prefer a role, label, test id, or exact visible text over CSS/XPath.
@@ -262,7 +269,7 @@ timeouts, context settings, `READY` ordering, and local variable references
 before making an API call. It should report:
 
 ```text
-Manifest validation passed: 9 suites, 10 cases.
+Manifest validation passed: 9 suites, 14 cases.
 Dry run complete. No API calls were made.
 ```
 
@@ -282,8 +289,10 @@ The default API base is `http://localhost:8080`; override it with
 manifest cases that pass readiness validation to `READY`.
 Apply output redacts every variable value, including the non-secret email, so
 terminal logs can be shared without exposing fixture credentials.
-The redaction assertion was verified locally with supplied test-only values;
-the preflight passed with 9 suites and 12 cases and the values did not appear
+The synchronizer also discards the variable API response instead of letting
+PowerShell render it as a table after the request. A full-stream redaction
+assertion was verified locally with supplied test-only values;
+the preflight passed with 9 suites and 14 cases and the values did not appear
 in captured output.
 Stable project, suite, and case markers are matched literally during apply, so
 rerunning the command updates existing catalog entities instead of creating
@@ -440,9 +449,10 @@ the Spring Boot backend, and the React frontend. The native Playwright contract
 ran with one worker against `http://localhost:3001` and passed all 9 tests,
 including login-to-checkout entry, keyboard-safe cart cancellation, mobile
 layout, shareable search state, retry behavior, pagination, and duplicate-submit
-protection. The TestOps catalog preflight then passed with 9 suites and 12
-cases, with no API calls during dry-run. Its READY set now includes the
-non-destructive verified-customer login; dry-run still skips the two variable
+protection. The TestOps catalog preflight then passed with 9 suites and 14
+cases, with no API calls during dry-run. Its seven-case READY set now includes
+the non-destructive verified-customer login, product detail, and category
+browse journeys; dry-run still skips the two variable
 values unless `TESTOPS_E2E_CUSTOMER_EMAIL` and
 `TESTOPS_E2E_CUSTOMER_PASSWORD` are provided.
 
@@ -454,20 +464,35 @@ and project creation. Run the disabled profile separately when you need the
 negative local-bridge assertion.
 
 The catalog was applied successfully to the isolated E2E backend on 2026-08-08
-(port 8180): 9 suites and 12 cases were reconciled, including all READY
+(port 8180): 9 suites and 14 cases were reconciled, including all READY
 promotions and the secret-safe customer variables. The normal development
 database was not used for this operation.
+
+Project ownership is intentionally scoped to the authenticated TestOps user.
+If a persistent E2E database already contains an `Ecommerce` project owned by
+an old disposable account, a new account cannot see it and the API may return
+`Project name is already in use`. Re-authenticate as the original owner, or
+reset only `testops-e2e_postgres18_data` before applying with the new disposable
+owner; never remove the normal development volume.
 
 When a page contains both a global header search box and a page-level search
 box, prefer the page field's accessible `LABEL` locator over a broad `ROLE`
 name. The synchronized search-state case now uses `Tìm kiếm sản phẩm` as that
 unique label, avoiding Playwright strict-mode ambiguity.
-The follow-up dry run passed for 9 suites and 12 cases with no API calls.
+The follow-up dry run passed for 9 suites and 14 cases with no API calls.
 The corrected search-state case then passed in the isolated E2E run with all
 four steps and one screenshot artifact.
-The complete READY catalog was subsequently rerun after a clean backend
-restart: target health was `REACHABLE`/HTTP 200, all 5 cases passed, and every
-case retained its screenshot artifact (18 steps total).
+The guest catalog expansion was then applied and rerun after a clean backend
+restart. Target health was `REACHABLE`/HTTP 200; all 7 READY cases passed, with
+28 successful steps. The five cases that contain `TAKE_SCREENSHOT` each
+retained a screenshot artifact (and the execution detail also retained the
+worker trace); the credentialed login intentionally produced no screenshot.
+
+The valid-login case initially exposed a strict-mode failure because the
+storefront rendered `Danh mục sản phẩm` as both a heading and a footer link.
+The manifest now uses the semantic `ROLE=HEADING` locator. A fresh rerun passed
+all six login steps, confirming the definition fix without changing ecommerce
+application code.
 
 After the E2E backend was recreated with the opt-in `http://localhost:3001`
 allowlist entry, the same enabled gate passed again with 18 tests passed and 1

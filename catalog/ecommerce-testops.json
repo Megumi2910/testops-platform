@@ -74,6 +74,36 @@
             { "position": 1, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Không tìm thấy sản phẩm", "timeoutMs": 15000 },
             { "position": 2, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
           ]
+        },
+        {
+          "key": "product-detail",
+          "name": "Product detail page",
+          "status": "READY",
+          "priority": "P1",
+          "tags": "sync:ecommerce-product-detail,role:guest,state:clean,runner:testops",
+          "description": "Open the permanent mock t-shirt fixture and verify its purchase and seller information.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/product/1", "timeoutMs": 15000 },
+            { "position": 1, "action": "ASSERT_VISIBLE", "locatorType": "TEXT_EXACT", "locatorValue": "Áo thun basic cotton", "timeoutMs": 15000, "locatorIndex": 0 },
+            { "position": 2, "action": "ASSERT_VISIBLE", "locatorType": "TEXT_EXACT", "locatorValue": "Mock Local Store", "timeoutMs": 15000, "locatorIndex": 0 },
+            { "position": 3, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "BUTTON", "locatorValue": "Mua ngay", "timeoutMs": 15000 },
+            { "position": 4, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
+        },
+        {
+          "key": "category-browse",
+          "name": "Browse a category",
+          "status": "READY",
+          "priority": "P1",
+          "tags": "sync:ecommerce-category-browse,role:guest,state:clean,runner:testops",
+          "description": "Open the permanent fashion category fixture and verify its result count and product card.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/category/1", "timeoutMs": 15000 },
+            { "position": 1, "action": "ASSERT_VISIBLE", "locatorType": "TEXT_EXACT", "locatorValue": "Thời trang", "timeoutMs": 15000, "locatorIndex": 0 },
+            { "position": 2, "action": "ASSERT_VISIBLE", "locatorType": "TEXT_EXACT", "locatorValue": "Tìm thấy 1 sản phẩm", "timeoutMs": 15000, "locatorIndex": 0 },
+            { "position": 3, "action": "ASSERT_VISIBLE", "locatorType": "TEXT_EXACT", "locatorValue": "Áo thun basic cotton", "timeoutMs": 15000, "locatorIndex": 0 },
+            { "position": 4, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
         }
       ]
     },
@@ -95,7 +125,7 @@
             { "position": 2, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Mật khẩu", "inputValue": "${E2E_CUSTOMER_PASSWORD}", "timeoutMs": 15000 },
             { "position": 3, "action": "CLICK", "locatorType": "ROLE", "locatorRole": "BUTTON", "locatorValue": "Đăng nhập", "timeoutMs": 15000 },
             { "position": 4, "action": "ASSERT_URL_EQUALS", "expectedValue": "/", "timeoutMs": 15000 },
-            { "position": 5, "action": "ASSERT_VISIBLE", "locatorType": "TEXT", "locatorValue": "Danh mục sản phẩm", "timeoutMs": 15000 }
+            { "position": 5, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Danh mục sản phẩm", "timeoutMs": 15000 }
           ]
         },
         { "key": "unverified-restriction", "name": "Unverified account restriction", "status": "DRAFT", "priority": "P1", "tags": "sync:ecommerce-unverified-restriction,role:unverified,state:seeded,runner:native", "description": "The native ecommerce suite owns Mailpit and verification state.", "steps": [] }

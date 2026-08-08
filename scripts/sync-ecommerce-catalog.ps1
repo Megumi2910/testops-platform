@@ -118,8 +118,8 @@ foreach ($variable in @($manifest.variables)) {
     $existing = $existingVariables | Where-Object { $_.key -eq $variable.key } | Select-Object -First 1
     $payload = @{ key = $variable.key; secret = [bool]$variable.secret; value = $value }
     $safeLogPayload = @{ key = $variable.key; secret = [bool]$variable.secret; value = '[REDACTED]' }
-    if ($null -eq $existing) { Invoke-TestOps POST "/api/v1/projects/$projectId/variables" $payload $safeLogPayload }
-    else { Invoke-TestOps PUT "/api/v1/projects/$projectId/variables/$([uri]::EscapeDataString($variable.key))" $payload $safeLogPayload }
+    if ($null -eq $existing) { $null = Invoke-TestOps POST "/api/v1/projects/$projectId/variables" $payload $safeLogPayload }
+    else { $null = Invoke-TestOps PUT "/api/v1/projects/$projectId/variables/$([uri]::EscapeDataString($variable.key))" $payload $safeLogPayload }
 }
 
 $suites = if ($Mode -eq 'dry-run') { @() } else { @(Invoke-TestOps GET "/api/v1/projects/$projectId/suites") }
