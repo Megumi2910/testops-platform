@@ -205,6 +205,22 @@ The matching TestOps CustomerDashboard documentation commits through `047014d` w
 
 Final publication confirmation: TestOps branch `codex/milestone-9-release-candidate` is synchronized with origin at `347a14e`; existing untracked `.agents/` and `skills-lock.json` remain preserved.
 
+The next Phase 5 slice hardens ecommerce `CustomerSettings`: semantic tablist/tab/tabpanel relationships, stable IDs, keyboard arrow/Home/End navigation, focus-visible controls, and honest payment-feature messaging are being added. Verification is pending.
+
+The focused CustomerSettings audit found no browser alerts, debug logs, or unused auth state; explicit icon, tab, panel, and button semantics are present and `git diff --check` passed.
+
+The ecommerce frontend unit gate passed after CustomerSettings changes on 2026-08-08: 3 suites and 10 tests. The production build also passed; existing CRA and browser-data advisories remain non-blocking.
+
+The ecommerce frontend image was rebuilt successfully with CustomerSettings on 2026-08-08; PostgreSQL data was retained and backend health gating completed before frontend startup.
+
+Post-rebuild `docker compose ps` confirmed `postgres_db`, `springboot_backend`, and `react_frontend` are healthy; ecommerce ports remain `3001`, `8081`, `5433`, and `5051`.
+
+The TestOps Playwright ecommerce contract passed against the rebuilt CustomerSettings image on 2026-08-08: all 9 tests passed in 25.7 seconds. Existing checkout, cart-dialog, profile, wishlist, mobile, search, outage-retry, pagination, and duplicate-submit journeys remained green; CustomerSettings has no dedicated stable fixture yet.
+
+Final CustomerSettings TestOps documentation diff inspection passed with `git diff --check`; only the browser smoke guide and architecture map changed. Existing untracked `.agents/` and `skills-lock.json` remain untouched.
+
+The matching ecommerce CustomerSettings implementation commit is `600610c`; the TestOps verification documentation is being committed separately.
+
 The next Phase 5 slice hardens customer order cancellation. `CancelOrderModal` now has dialog semantics, an associated reason field, Escape handling, focus trapping/restoration, and submit locking. Customer order list/detail cancellation feedback now uses the shared Toast component for success and API failures rather than browser-blocking alerts. Verification is pending.
 
 The targeted ecommerce scan found no `alert(...)` calls in the order cancellation files, and `git diff --check` passed. Git emitted only its normal line-ending normalization warning for edited files.
