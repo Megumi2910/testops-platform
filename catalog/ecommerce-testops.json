@@ -390,6 +390,22 @@
             { "position": 3, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Email", "timeoutMs": 15000 },
             { "position": 4, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
           ]
+        },
+        {
+          "key": "contact-form-accessibility",
+          "name": "Expose contact form controls",
+          "status": "READY",
+          "priority": "P2",
+          "tags": "sync:ecommerce-contact-form-accessibility,role:guest,state:clean,runner:testops",
+          "description": "Verify the public contact form exposes its core fields and an enabled submit control without sending a message.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/contact", "timeoutMs": 15000 },
+            { "position": 1, "action": "ASSERT_VISIBLE", "locatorType": "PLACEHOLDER", "locatorValue": "Nhập họ và tên", "timeoutMs": 15000 },
+            { "position": 2, "action": "ASSERT_VISIBLE", "locatorType": "PLACEHOLDER", "locatorValue": "email@example.com", "timeoutMs": 15000 },
+            { "position": 3, "action": "ASSERT_VISIBLE", "locatorType": "PLACEHOLDER", "locatorValue": "Nhập nội dung chi tiết...", "timeoutMs": 15000 },
+            { "position": 4, "action": "ASSERT_ENABLED", "locatorType": "ROLE", "locatorRole": "BUTTON", "locatorValue": "Gửi tin nhắn", "timeoutMs": 15000 },
+            { "position": 5, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
         }
       ]
     }
