@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "key": "ecommerce-platform",
+    "name": "Ecommerce",
+    "description": "Reusable browser checks for the local ecommerce storefront. [testops-key:ecommerce-platform]",
+    "targetOrigin": "http://localhost:3001"
+  },
+  "variables": [
+    { "key": "E2E_CUSTOMER_EMAIL", "secret": false, "valueFromEnv": "TESTOPS_E2E_CUSTOMER_EMAIL" },
+    { "key": "E2E_CUSTOMER_PASSWORD", "secret": true, "valueFromEnv": "TESTOPS_E2E_CUSTOMER_PASSWORD" }
+  ],
+  "suites": [
+    {
+      "key": "00-platform-smoke",
+      "name": "00 — Platform Smoke",
+      "description": "Guest storefront availability and fatal-error smoke. [testops-key:00-platform-smoke]",
+      "cases": [
+        {
+          "key": "homepage-smoke",
+          "name": "Homepage smoke",
+          "status": "READY",
+          "priority": "P0",
+          "tags": "sync:ecommerce-homepage-smoke,role:guest,state:clean,runner:testops",
+          "description": "Open the storefront homepage and verify its product category landmark.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/", "timeoutMs": 15000 },
+            { "position": 1, "action": "ASSERT_VISIBLE", "locatorType": "TEXT", "locatorValue": "Danh mục sản phẩm", "timeoutMs": 15000 },
+            { "position": 2, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "10-catalog-search",
+      "name": "10 — Catalog and Search",
+      "description": "Catalog, details, search, filters, sorting, and URL state. [testops-key:10-catalog-search]",
+      "cases": [
+        {
+          "key": "catalog-homepage",
+          "name": "Catalog homepage",
+          "status": "READY",
+          "priority": "P1",
+          "tags": "sync:ecommerce-catalog-homepage,role:guest,state:clean,runner:testops",
+          "description": "Verify the storefront catalog entry point is visible.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/", "timeoutMs": 15000 },
+            { "position": 1, "action": "ASSERT_VISIBLE", "locatorType": "TEXT", "locatorValue": "Danh mục sản phẩm", "timeoutMs": 15000 }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "20-auth-verification",
+      "name": "20 — Authentication and Verification",
+      "description": "Login, verification, reset, logout, and protected routes. [testops-key:20-auth-verification]",
+      "cases": [
+        { "key": "login-valid", "name": "Valid login", "status": "DRAFT", "priority": "P0", "tags": "sync:ecommerce-login-valid,role:customer,state:seeded,runner:testops", "description": "Credentialed login uses E2E_CUSTOMER_EMAIL and E2E_CUSTOMER_PASSWORD.", "steps": [] },
+        { "key": "unverified-restriction", "name": "Unverified account restriction", "status": "DRAFT", "priority": "P1", "tags": "sync:ecommerce-unverified-restriction,role:unverified,state:seeded,runner:native", "description": "The native ecommerce suite owns Mailpit and verification state.", "steps": [] }
+      ]
+    },
+    {
+      "key": "30-cart-checkout",
+      "name": "30 — Cart and Checkout",
+      "description": "Selected-item, COD, QR, stock, and duplicate-submit checks. [testops-key:30-cart-checkout]",
+      "cases": [
+        { "key": "selected-item-checkout", "name": "Selected-item checkout", "status": "DRAFT", "priority": "P0", "tags": "sync:ecommerce-selected-checkout,role:customer,state:destructive,runner:native", "description": "Transactional selected-item and idempotency checks stay in native tests.", "steps": [] }
+      ]
+    },
+    {
+      "key": "40-orders-reviews",
+      "name": "40 — Orders and Reviews",
+      "description": "Order history, cancellation, and review eligibility. [testops-key:40-orders-reviews]",
+      "cases": [
+        { "key": "order-history", "name": "Order history", "status": "DRAFT", "priority": "P1", "tags": "sync:ecommerce-order-history,role:customer,state:seeded,runner:testops", "description": "Review seeded order history and detail navigation.", "steps": [] }
+      ]
+    },
+    {
+      "key": "50-messaging",
+      "name": "50 — Messaging",
+      "description": "Seller conversations, unread state, and reconnect behavior. [testops-key:50-messaging]",
+      "cases": [
+        { "key": "seller-conversation", "name": "Seller conversation", "status": "DRAFT", "priority": "P1", "tags": "sync:ecommerce-seller-conversation,role:customer,state:seeded,runner:native", "description": "Two-user WebSocket orchestration remains in native Playwright tests.", "steps": [] }
+      ]
+    },
+    {
+      "key": "60-seller-workflows",
+      "name": "60 — Seller Workflows",
+      "description": "Seller dashboard, product management, and order processing. [testops-key:60-seller-workflows]",
+      "cases": [
+        { "key": "seller-dashboard", "name": "Seller dashboard", "status": "DRAFT", "priority": "P1", "tags": "sync:ecommerce-seller-dashboard,role:seller,state:seeded,runner:testops", "description": "Seller fixture access and ownership checks.", "steps": [] }
+      ]
+    },
+    {
+      "key": "70-administration",
+      "name": "70 — Administration",
+      "description": "Administrative catalog, user, category, and order controls. [testops-key:70-administration]",
+      "cases": [
+        { "key": "admin-dashboard", "name": "Admin dashboard", "status": "DRAFT", "priority": "P1", "tags": "sync:ecommerce-admin-dashboard,role:admin,state:seeded,runner:testops", "description": "Administrator fixture access and permission boundary.", "steps": [] }
+      ]
+    },
+    {
+      "key": "80-resilience-accessibility",
+      "name": "80 — Resilience and Accessibility",
+      "description": "Failure states, keyboard navigation, dialogs, mobile, and evidence safety. [testops-key:80-resilience-accessibility]",
+      "cases": [
+        { "key": "keyboard-smoke", "name": "Keyboard navigation smoke", "status": "DRAFT", "priority": "P1", "tags": "sync:ecommerce-keyboard-smoke,role:guest,state:clean,runner:testops", "description": "Use PRESS and focus assertions after the storefront accessibility pass.", "steps": [] }
+      ]
+    }
+  ]
+}

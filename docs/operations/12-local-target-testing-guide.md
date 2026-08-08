@@ -45,6 +45,10 @@ Use semantic locators (`ROLE`, `LABEL`, `TEXT`, `PLACEHOLDER`, or `TEST_ID`) bef
 
 ## Troubleshooting
 
+### Synchronizing the ecommerce catalog
+
+The reusable ecommerce project is defined in `catalog/ecommerce-testops.json`. Preview changes with `scripts/sync-ecommerce-catalog.ps1 -Mode dry-run`; apply them with a short-lived `TESTOPS_TOKEN`. The synchronizer uses stable markers, creates cases as drafts, and promotes only definitions that pass the same READY validation as the UI. See [`21-catalog-synchronization.md`](../implementation/21-catalog-synchronization.md) for the complete beginner workflow.
+
 | Symptom | Check | Recovery |
 |---|---|---|
 | Target is `UNREACHABLE` | Host process, port, and the container `wget` command | Start the site, use the host port, and recreate `backend` |
