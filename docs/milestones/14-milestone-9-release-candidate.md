@@ -288,6 +288,12 @@ number, and the wishlist case was corrected to exact page-title text. A
 disposable backend restart cleared the E2E auth limiter during verification;
 the E2E volume and normal development database were preserved.
 
+The follow-up synchronization hardening also handles legacy duplicate markers
+deterministically. It prefers a `READY` definition and then the newest version,
+prints every matching ID as a warning, and leaves stale records untouched until
+an explicit API/UI cleanup is approved. The duplicate-marker dry-run, isolated
+apply, and TestOps CI gate all passed.
+
 ## Publication boundary
 
 Local commits may be prepared as:
