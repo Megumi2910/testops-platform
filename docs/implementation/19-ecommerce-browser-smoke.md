@@ -217,6 +217,8 @@ The ecommerce SellerSettings implementation commit `72f9f85` was created success
 
 The matching TestOps SellerSettings verification documentation was committed on `codex/milestone-9-release-candidate` as `bddd3c8`; the branch is ready to publish.
 
+The ecommerce SellerSettings commits through `56879e7` were pushed successfully; the TestOps documentation branch remains ready to publish.
+
 Final ecommerce diff inspection passed with `git diff --check`; only `SellerSettings.jsx` and the reliability log are changed for this implementation slice.
 
 The nine-test ecommerce Playwright contract passed against the ShopPage image on 2026-08-01 in 26.1 seconds. Existing checkout, cart-dialog, profile, wishlist, mobile, search, outage-retry, pagination, and duplicate-submit coverage remained green.
