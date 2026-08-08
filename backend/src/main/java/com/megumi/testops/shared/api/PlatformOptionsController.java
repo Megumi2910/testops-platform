@@ -65,7 +65,7 @@ public class PlatformOptionsController {
                 action("TAKE_SCREENSHOT", "Take screenshot", "NOT_APPLICABLE", "NOT_APPLICABLE", "NOT_APPLICABLE", "Captures the current page"));
         return new Options(platform.target().allowedOrigins(), origins, targetConfigured, platform.target().localDevelopmentEnabled(), projectCreationEnabled, reportingAvailable, project.secretVariablesEnabled(), platform.execution().workerEnabled(),
                 Set.of("NAVIGATE", "CLICK", "FILL", "CLEAR", "SELECT_OPTION", "CHECK", "UNCHECK", "PRESS", "HOVER", "WAIT", "WAIT_VISIBLE", "WAIT_HIDDEN", "ASSERT_TEXT_EQUALS", "ASSERT_TEXT_CONTAINS", "ASSERT_VISIBLE", "ASSERT_HIDDEN", "ASSERT_VALUE", "ASSERT_CHECKED", "ASSERT_ENABLED", "ASSERT_DISABLED", "ASSERT_ATTRIBUTE", "ASSERT_COUNT", "ASSERT_URL_CONTAINS", "ASSERT_URL_EQUALS", "TAKE_SCREENSHOT"),
-                Set.of("ROLE", "LABEL", "TEST_ID", "TEXT", "PLACEHOLDER", "ALT_TEXT", "TITLE", "CSS", "XPATH"),
+                Set.of("ROLE", "LABEL", "TEST_ID", "TEXT", "TEXT_EXACT", "PLACEHOLDER", "ALT_TEXT", "TITLE", "CSS", "XPATH"),
                 Set.of("BUTTON", "LINK", "CHECKBOX", "COMBOBOX", "HEADING", "TEXTBOX"), actions);
     }
 

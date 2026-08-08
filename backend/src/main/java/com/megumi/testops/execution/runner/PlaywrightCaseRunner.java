@@ -93,7 +93,7 @@ public class PlaywrightCaseRunner {
 
     static StepDefinition interpolateStep(StepDefinition step, Map<String, String> variables) {
         return new StepDefinition(step.position(), step.action(), step.locatorType(), interpolate(step.locatorValue(), variables),
-                step.locatorRole(), interpolate(step.inputValue(), variables), interpolate(step.expectedValue(), variables), step.timeoutMs());
+                step.locatorRole(), step.locatorIndex(), interpolate(step.inputValue(), variables), interpolate(step.expectedValue(), variables), step.timeoutMs());
     }
 
     private static boolean referencesSecret(String value, Set<String> secretKeys) {
@@ -105,16 +105,20 @@ public class PlaywrightCaseRunner {
 
     private Locator locator(Page page, StepDefinition step) {
         if (step.locatorType() == null || step.locatorValue() == null) return page.locator("body");
-        String value = step.locatorValue(); return switch (step.locatorType().toUpperCase(Locale.ROOT)) {
-            case "CSS" -> page.locator(value); case "XPATH" -> page.locator("xpath=" + value); case "TEXT" -> page.getByText(value); case "LABEL" -> page.getByLabel(value); case "PLACEHOLDER" -> page.getByPlaceholder(value); case "TEST_ID" -> page.getByTestId(value); case "ALT_TEXT" -> page.getByAltText(value); case "TITLE" -> page.getByTitle(value); case "ROLE" -> role(page, step.locatorRole(), value); default -> throw new IllegalArgumentException("Unsupported locator type");
-        };
+        String value = step.locatorValue(); Locator resolved = switch (step.locatorType().toUpperCase(Locale.ROOT)) {
+            case "CSS" -> page.locator(value); case "XPATH" -> page.locator("xpath=" + value); case "TEXT" -> page.getByText(value); case "TEXT_EXACT" -> page.getByText(value, new Page.GetByTextOptions().setExact(true)); case "LABEL" -> page.getByLabel(value); case "PLACEHOLDER" -> page.getByPlaceholder(value); case "TEST_ID" -> page.getByTestId(value); case "ALT_TEXT" -> page.getByAltText(value); case "TITLE" -> page.getByTitle(value); case "ROLE" -> role(page, step.locatorRole(), value); default -> throw new IllegalArgumentException("Unsupported locator type");
+        }; return step.locatorIndex() == null ? resolved : resolved.nth(step.locatorIndex());
     }
 
     public record StepDefinition(int position, String action, String locatorType, String locatorValue, String locatorRole,
-            String inputValue, String expectedValue, Integer timeoutMs) {
+            Integer locatorIndex, String inputValue, String expectedValue, Integer timeoutMs) {
+        public StepDefinition(int position, String action, String locatorType, String locatorValue, String locatorRole,
+                String inputValue, String expectedValue, Integer timeoutMs) {
+            this(position, action, locatorType, locatorValue, locatorRole, null, inputValue, expectedValue, timeoutMs);
+        }
         public static StepDefinition from(ExecutionStepSnapshotEntity snapshot) {
             return new StepDefinition(snapshot.getPosition(), snapshot.getAction(), snapshot.getLocatorType(), snapshot.getLocatorValue(),
-                    snapshot.getLocatorRole(), snapshot.getInputValue(), snapshot.getExpectedValue(), snapshot.getTimeoutMs());
+                    snapshot.getLocatorRole(), snapshot.getLocatorIndex(), snapshot.getInputValue(), snapshot.getExpectedValue(), snapshot.getTimeoutMs());
         }
     }
     private static Locator role(Page page, String role, String name) { AriaRole aria = switch (role == null ? "" : role.toUpperCase(Locale.ROOT)) { case "BUTTON" -> AriaRole.BUTTON; case "LINK" -> AriaRole.LINK; case "CHECKBOX" -> AriaRole.CHECKBOX; case "COMBOBOX" -> AriaRole.COMBOBOX; case "HEADING" -> AriaRole.HEADING; case "TEXTBOX" -> AriaRole.TEXTBOX; default -> throw new IllegalArgumentException("Unsupported ARIA role"); }; return page.getByRole(aria, new Page.GetByRoleOptions().setName(name)); }

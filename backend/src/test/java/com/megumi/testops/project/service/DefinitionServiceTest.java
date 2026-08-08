@@ -18,6 +18,7 @@ class DefinitionServiceTest {
         assertDoesNotThrow(() -> DefinitionService.validateStep(step("ASSERT_ATTRIBUTE", "TEXT", "Cart", null, "aria-label", "Open cart")));
         assertDoesNotThrow(() -> DefinitionService.validateStep(step("ASSERT_COUNT", "CSS", ".product-card", null, null, "3")));
         assertDoesNotThrow(() -> DefinitionService.validateStep(step("ASSERT_URL_EQUALS", null, null, null, null, "/checkout")));
+        assertDoesNotThrow(() -> DefinitionService.validateStep(new ProjectDtos.StepRequest(0, "ASSERT_VISIBLE", "TEXT_EXACT", "Products", null, 1, null, null, 5000)));
     }
 
     @Test
@@ -29,6 +30,10 @@ class DefinitionServiceTest {
         ApiException missingAttributeName = assertThrows(ApiException.class,
                 () -> DefinitionService.validateStep(step("ASSERT_ATTRIBUTE", "TEXT", "Cart", null, "", "Open cart")));
         assertEquals("attribute_name_required", missingAttributeName.getCode());
+
+        ApiException invalidIndex = assertThrows(ApiException.class,
+                () -> DefinitionService.validateStep(new ProjectDtos.StepRequest(0, "ASSERT_VISIBLE", "TEXT", "Product", null, -1, null, null, 5000)));
+        assertEquals("invalid_locator_index", invalidIndex.getCode());
     }
 
     private static ProjectDtos.StepRequest step(String action, String locatorType, String locatorValue, String role,

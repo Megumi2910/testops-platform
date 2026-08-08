@@ -43,6 +43,17 @@ describe('guided case validation', () => {
     expect(serialized).not.toEqual(expect.arrayContaining([expect.objectContaining({ clientId: expect.anything() })]))
   })
 
+  it('persists an element index and rejects non-integer indexes', () => {
+    const serialized = serializeSteps([{ clientId: 'indexed', position: 0, action: 'ASSERT_VISIBLE', locatorType: 'TEXT_EXACT', locatorValue: 'Products', locatorIndex: 2 }])
+    expect(serialized[0].locatorIndex).toBe(2)
+
+    const result = validateSteps([
+      { clientId: 'navigate', position: 0, action: 'NAVIGATE', inputValue: '/' },
+      { clientId: 'indexed', position: 1, action: 'ASSERT_VISIBLE', locatorType: 'TEXT', locatorValue: 'Products', locatorIndex: 1.5 },
+    ], definitions)
+    expect(result.errors.indexed).toContain('whole number')
+  })
+
   it('rejects malformed count assertions before a READY case is sent', () => {
     const result = validateSteps([
       { clientId: 'navigate', position: 0, action: 'NAVIGATE', inputValue: '/' },

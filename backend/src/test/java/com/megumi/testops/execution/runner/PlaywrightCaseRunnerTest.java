@@ -40,6 +40,16 @@ class PlaywrightCaseRunnerTest {
         assertEquals("Cart", resolved.locatorValue());
         assertEquals("unused", resolved.inputValue());
         assertEquals("Products", resolved.expectedValue());
+        assertEquals(null, resolved.locatorIndex());
+    }
+
+    @Test
+    void preservesTheOptionalLocatorIndexWhenResolvingVariables() {
+        var step = new PlaywrightCaseRunner.StepDefinition(1, "ASSERT_VISIBLE", "TEXT_EXACT", "Products", null, 2, null, null, 5000);
+
+        var resolved = PlaywrightCaseRunner.interpolateStep(step, Map.of());
+
+        assertEquals(2, resolved.locatorIndex());
     }
 
     @Test

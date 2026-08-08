@@ -74,6 +74,7 @@ Only `READY` cases are eligible for execution. A draft can be edited while incom
 | `locatorType` | string | How to find the target element. |
 | `locatorValue` | string | The value passed to the locator strategy. |
 | `locatorRole` | string | ARIA role when `locatorType` is `ROLE`. |
+| `locatorIndex` | integer or null | Optional zero-based match index. The runner applies it after resolving the locator, so `0` is the first matching element. |
 | `inputValue` | string | URL, text, select value, or interpolated input. |
 | `expectedValue` | string | Expected text or URL fragment for assertions. |
 | `timeoutMs` | integer | Per-step timeout, from 100 to 120000 ms. |
@@ -129,6 +130,7 @@ An unqualified `WAIT` is intentionally not a complete modern action. A `READY` c
 | `LABEL` | `locatorValue` | `page.getByLabel(value)` |
 | `TEST_ID` | `locatorValue` | `page.getByTestId(value)` |
 | `TEXT` | `locatorValue` | `page.getByText(value)` |
+| `TEXT_EXACT` | `locatorValue` | `page.getByText(value, { exact: true })`; use this when a partial text match would select the wrong control. |
 | `PLACEHOLDER` | `locatorValue` | `page.getByPlaceholder(value)` |
 | `ALT_TEXT` | `locatorValue` | `page.getByAltText(value)` |
 | `TITLE` | `locatorValue` | `page.getByTitle(value)` |
@@ -153,6 +155,21 @@ The role name and accessible name are separate values:
 }
 ```
 
+### Exact text and repeated matches
+
+`TEXT` uses Playwright's normal text matching, which can match a containing element or more than one element. `TEXT_EXACT` requests an exact text match. When a semantic locator is intentionally repeated, set `locatorIndex` to select one result after the locator has been resolved:
+
+```json
+{
+  "action": "CLICK",
+  "locatorType": "TEXT_EXACT",
+  "locatorValue": "Add to cart",
+  "locatorIndex": 1
+}
+```
+
+Indexing is zero-based and is persisted in both the editable step and the immutable execution snapshot. An index without a locator, a negative index, or a non-integer value is rejected before a READY case can be saved. This keeps the selection deterministic while still allowing a test to express “the second matching card” without falling back to a brittle CSS selector.
+
 ## 6. Validation rules
 
 Before a case is saved, `DefinitionService` checks:
@@ -160,12 +177,13 @@ Before a case is saved, `DefinitionService` checks:
 1. Action is supported after normalization.
 2. Locator action has both locator type and locator value.
 3. Locator type is supported.
-4. `NAVIGATE` has `inputValue`.
-5. Text/URL/state assertions have `expectedValue` where their descriptor says it is required.
-6. `PRESS` has a keyboard input; `ASSERT_ATTRIBUTE` has an attribute name in `inputValue` and an expected value; `ASSERT_COUNT` is a non-negative integer.
-7. Step count is at most 100.
-8. Positions are `[0, 1, 2, ...]` with no duplicates.
-9. `READY` cases do not contain legacy unqualified `WAIT`.
+4. Locator index, when present, is a non-negative integer attached to a complete locator.
+5. `NAVIGATE` has `inputValue`.
+6. Text/URL/state assertions have `expectedValue` where their descriptor says it is required.
+7. `PRESS` has a keyboard input; `ASSERT_ATTRIBUTE` has an attribute name in `inputValue` and an expected value; `ASSERT_COUNT` is a non-negative integer.
+8. Step count is at most 100.
+9. Positions are `[0, 1, 2, ...]` with no duplicates.
+10. `READY` cases do not contain legacy unqualified `WAIT`.
 
 This is aggregate validation: the service validates the whole case before committing its replacement step list.
 

@@ -14,7 +14,7 @@ export type Project = { id: string; name: string; description?: string; targetOr
 export type Member = { userId: string; email: string; displayName: string; role: string; version: number; assignedBy?: string }
 export type Variable = { key: string; secret: boolean; value?: string; version: number }
 export type Suite = { id: string; projectId: string; name: string; description?: string; status: string; version: number }
-export type Step = { id?: string; position: number; action: string; locatorType?: string; locatorValue?: string; locatorRole?: string; inputValue?: string; expectedValue?: string; timeoutMs?: number }
+export type Step = { id?: string; position: number; action: string; locatorType?: string; locatorValue?: string; locatorRole?: string; locatorIndex?: number; inputValue?: string; expectedValue?: string; timeoutMs?: number }
 export type TestCase = { id: string; suiteId: string; name: string; description?: string; status: string; priority: string; tags?: string; retryCount: number; dataIsolation: boolean; version: number; steps: Step[] }
 
 export const projectKeys = {

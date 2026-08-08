@@ -453,6 +453,8 @@
   <p>Execution interpolation also exposes immutable generated values: <code>RUN_ID</code>, <code>CASE_RESULT_ID</code>, and <code>RUN_TIMESTAMP</code>. They are inserted by <code>ExecutionRunService</code> after queue-time snapshots, so retries are reproducible and ordinary evidence remains available.</p>
   <p>The E2E topology includes a second isolated disabled-local-target project on frontend <code>:3101</code>, Mailpit <code>:8026</code>, and a separate PostgreSQL volume. Its negative test confirms the same allowlisted localhost origin is visibly blocked when <code>TARGET_LOCAL_DEV_ENABLED=false</code>.</p>
   <p><code>PlaywrightCaseRunner</code> now resolves variables across locator, input, expected, and navigation fields as one immutable action payload. Missing variables fail closed before Playwright receives the action, while generated run values remain evidence-safe.</p>
+  <h3>Phase 7 exact-text and repeated-locator controls</h3>
+  <p><code>TEXT_EXACT</code> is now exposed by the platform metadata endpoint and maps to Playwright's exact text option. The optional zero-based <code>locatorIndex</code> is stored with the step, copied into the immutable execution snapshot, and applied with <code>Locator.nth</code> after semantic locator resolution. The guided builder explains when to use each control and validates non-negative whole numbers before the backend repeats the same fail-closed checks. Flyway V019 adds the two persisted columns and non-negative constraints.</p>
 </section>
 </body>
 </html>

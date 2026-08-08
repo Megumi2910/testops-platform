@@ -67,6 +67,10 @@ After adding the contract, `npm run typecheck`, `npm run lint`, and `npm test --
 
 The final static-gate rerun after the duplicate-submit test and doc update passed again: TypeScript build, ESLint, and Vitest all completed successfully (`4` files, `9` tests).
 
+## TestOps local-target language coverage
+
+The managed local-target acceptance journey also exercises the step language rather than relying only on the default template. Its assertion step selects `TEXT_EXACT` for the fixture heading `Danh mục sản phẩm` and sets `locatorIndex` to `0`. This proves that metadata-driven locator choices survive the guided builder, API persistence, immutable queue snapshot, and Playwright execution path. The index is intentionally explicit even though the fixture has one match, making the zero-based contract visible to maintainers.
+
 The ecommerce backend now adds native checkout coverage alongside this browser contract: `OrderRestControllerTest` verifies verified-customer UUID validation and unverified blocking, while `CheckoutIdempotencyCoordinatorTest` proves same-key work is serialized and different keys remain concurrent. `./mvnw.cmd verify` passed with 6 tests on 2026-08-01.
 
 After the backend image rebuild, the six-test browser contract was rerun against `http://localhost:3001` and passed in 17.9 seconds. This confirms the new service constructor and coordinator do not regress the target-facing login, cart, search, outage-retry, pagination, or checkout-lock paths.

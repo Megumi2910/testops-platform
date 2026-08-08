@@ -33,12 +33,22 @@ public final class ProjectDtos {
     public record SuiteRequest(@NotBlank @Size(max = 160) String name, @Size(max = 2000) String description, Long projectVersion) { }
     public record SuiteResponse(UUID id, UUID projectId, String name, String description, String status, long version) { }
     public record StepRequest(@Min(0) int position, @NotBlank String action, String locatorType, String locatorValue,
-            String locatorRole, String inputValue, String expectedValue, @Min(100) @Max(120000) Integer timeoutMs) { }
+            String locatorRole, @Min(0) Integer locatorIndex, String inputValue, String expectedValue, @Min(100) @Max(120000) Integer timeoutMs) {
+        public StepRequest(int position, String action, String locatorType, String locatorValue, String locatorRole,
+                String inputValue, String expectedValue, Integer timeoutMs) {
+            this(position, action, locatorType, locatorValue, locatorRole, null, inputValue, expectedValue, timeoutMs);
+        }
+    }
     public record CaseRequest(@NotBlank @Size(max = 200) String name, @Size(max = 4000) String description,
             String status, String priority, @Size(max = 4000) String tags, @Min(0) @Max(5) Integer retryCount,
             Boolean dataIsolation, Long projectVersion, @Valid List<StepRequest> steps) { }
     public record StepResponse(UUID id, int position, String action, String locatorType, String locatorValue,
-            String locatorRole, String inputValue, String expectedValue, Integer timeoutMs) { }
+            String locatorRole, Integer locatorIndex, String inputValue, String expectedValue, Integer timeoutMs) {
+        public StepResponse(UUID id, int position, String action, String locatorType, String locatorValue,
+                String locatorRole, String inputValue, String expectedValue, Integer timeoutMs) {
+            this(id, position, action, locatorType, locatorValue, locatorRole, null, inputValue, expectedValue, timeoutMs);
+        }
+    }
     public record CaseResponse(UUID id, UUID suiteId, String name, String description, String status, String priority,
             String tags, int retryCount, boolean dataIsolation, long version, List<StepResponse> steps) { }
 }

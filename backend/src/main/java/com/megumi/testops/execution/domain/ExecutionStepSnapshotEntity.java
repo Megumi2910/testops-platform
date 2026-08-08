@@ -22,6 +22,7 @@ public class ExecutionStepSnapshotEntity {
     @Column(name = "locator_type", length = 40) private String locatorType;
     @Column(name = "locator_value", length = 2000) private String locatorValue;
     @Column(name = "locator_role", length = 120) private String locatorRole;
+    @Column(name = "locator_index") private Integer locatorIndex;
     @Column(name = "input_value") private String inputValue;
     @Column(name = "expected_value", length = 4000) private String expectedValue;
     @Column(name = "timeout_ms") private Integer timeoutMs;
@@ -36,6 +37,7 @@ public class ExecutionStepSnapshotEntity {
         this.locatorType = step.getLocatorType();
         this.locatorValue = step.getLocatorValue();
         this.locatorRole = step.getLocatorRole();
+        this.locatorIndex = step.getLocatorIndex();
         this.inputValue = step.getInputValue();
         this.expectedValue = step.getExpectedValue();
         this.timeoutMs = step.getTimeoutMs();
@@ -52,6 +54,7 @@ public class ExecutionStepSnapshotEntity {
     public String getLocatorType() { return locatorType; }
     public String getLocatorValue() { return locatorValue; }
     public String getLocatorRole() { return locatorRole; }
+    public Integer getLocatorIndex() { return locatorIndex; }
     public String getInputValue() { return inputValue; }
     public String getExpectedValue() { return expectedValue; }
     public Integer getTimeoutMs() { return timeoutMs; }

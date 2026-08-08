@@ -14,6 +14,7 @@ export function serializeSteps(steps: EditableStep[]): Step[] {
     locatorType: step.locatorType,
     locatorValue: step.locatorValue,
     locatorRole: step.locatorRole,
+    locatorIndex: step.locatorIndex,
     inputValue: step.inputValue,
     expectedValue: step.expectedValue,
     timeoutMs: step.timeoutMs,
@@ -38,6 +39,7 @@ export function validateSteps(steps: EditableStep[], definitions: ActionDefiniti
     if (requirement(definition, 'expected') === 'REQUIRED' && !step.expectedValue?.trim()) setError('Enter the expected value for this assertion.')
     if (step.action === 'ASSERT_COUNT' && step.expectedValue?.trim() && !/^\d+$/.test(step.expectedValue.trim())) setError('Expected count must be a non-negative integer.')
     if (step.locatorType === 'ROLE' && !step.locatorRole) setError('Choose an ARIA role when using ROLE.')
+    if (step.locatorIndex !== undefined && (!Number.isInteger(step.locatorIndex) || step.locatorIndex < 0)) setError('Locator index must be a whole number zero or greater.')
     if (step.timeoutMs !== undefined && (step.timeoutMs < 100 || step.timeoutMs > 120000)) setError('Timeout must be between 100 and 120000 milliseconds.')
   })
   return { errors, message: Object.keys(errors).length ? 'Fix the highlighted step before saving as READY.' : undefined }

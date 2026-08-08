@@ -97,3 +97,9 @@ The execution snapshot now supports interaction and state assertions needed by e
 These actions are declared once by `DefinitionService` and exposed through platform action descriptors. The guided frontend builder uses those descriptors to show only applicable fields and action-specific examples, keeping authoring and execution semantics aligned.
 
 The worker also injects `RUN_ID`, `CASE_RESULT_ID`, and `RUN_TIMESTAMP` after reading the execution-owned variable snapshots. These values are generated from immutable queue records, are available to every interpolation field, and are intentionally classified as non-secret evidence-safe data. `PlaywrightCaseRunner` resolves locator, input, expected, and navigation values together before dispatch, preventing an assertion from accidentally using a stale or unresolved placeholder.
+
+## Phase 7 — Exact text and repeated locator selection
+
+The next step-language slice adds two authoring controls without weakening the existing target-safety boundary. `TEXT_EXACT` maps to Playwright's exact text option, while `locatorIndex` applies `Locator.nth(...)` after the semantic locator is resolved. Both fields are copied from `test_steps` into `execution_step_snapshots`, so a queued run keeps the same matching behavior even if the case is edited later.
+
+The guided builder receives `TEXT_EXACT` from `/api/v1/platform/options` and exposes an optional “Matching element index” field for every locator action. The frontend validates whole numbers before submission; the backend repeats that validation and rejects an index without a complete locator. Use `TEXT` for ordinary user-facing matching, `TEXT_EXACT` when containing text is ambiguous, and an index only when the product intentionally renders repeated equivalent controls. Prefer a role, label, or test id when the target has a stable semantic identity.
