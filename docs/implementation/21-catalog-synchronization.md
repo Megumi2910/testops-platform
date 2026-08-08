@@ -7,12 +7,12 @@ The ecommerce catalog is source-controlled at `catalog/ecommerce-testops.json`. 
 The manifest gives every project, suite, and case a stable external key. The key is stored as a marker in the project/suite description or case tags, so a renamed display name does not create a duplicate on the next synchronization. Cases are first written as `DRAFT`; a manifest case marked `READY` is promoted only after the same API validation that the UI uses.
 
 The first catalog contains the nine ecommerce domains from Milestone 10. The
-current manifest has 25 cases: nineteen safe single-browser cases are `READY`
+current manifest has 26 cases: twenty safe single-browser cases are `READY`
 (homepage, catalog entry, shareable search, no-results search, product detail,
 category browse, category directory, flash sale, about, contact, help,
 verified-customer login, customer dashboard, order history, profile, settings,
-and empty wishlist, plus mobile keyboard search and the guest cart route guard).
-Credentialed verification,
+and empty wishlist, plus mobile keyboard search, the guest cart route guard, and
+invalid-login feedback). Credentialed verification,
 transactional, Mailpit, two-user messaging, and destructive cases remain drafts
 until their native fixture/test harness is available; this prevents a catalog
 apply from publishing misleading READY checks.
@@ -106,13 +106,13 @@ docker volume rm testops-e2e_postgres18_data
 
 Do not run that command against the normal `testops-platform_postgres18_data` volume.
 
-The current catalog has 9 suites and 25 cases. Its 19-case READY set
+The current catalog has 9 suites and 26 cases. Its 20-case READY set
 includes the non-destructive verified-customer login, guest homepage/catalog
 checks, shareable/no-results search checks, a product-detail journey for
 `/product/1`, a category-browse journey for `/category/1`, a category-directory
 journey for `/categories`, a flash-sale journey for `/flash-sale`, public
 about/contact/help journeys, six authenticated customer journeys, and the
-mobile keyboard search and guest cart route-guard journeys. Search uses
+mobile keyboard search, guest cart route-guard, and invalid-login journeys. Search uses
 `ASSERT_VALUE` with the unique `LABEL` locator for the page's
 `Tìm kiếm sản phẩm` textbox, `ASSERT_URL_EQUALS` for `/search?q=shirt`, and a
 role-based heading assertion for `Không tìm thấy sản phẩm`. Product and
@@ -145,8 +145,8 @@ environment on 2026-08-08. It passed all four steps (`NAVIGATE`, `ASSERT_VALUE`,
 artifact.
 
 The complete READY catalog was then queued again after a clean backend restart.
-Target checking returned `REACHABLE` with HTTP 200; all 19 READY cases passed,
-with 107 total steps. Seventeen screenshot-bearing cases each retained a
+Target checking returned `REACHABLE` with HTTP 200; all 20 READY cases passed,
+with 113 total steps. Eighteen screenshot-bearing cases each retained a
 `SCREENSHOT` artifact, while the valid-login case passed six steps without
 capturing credential evidence. Repeated disposable-stack logins can hit the
 auth rate limiter; recreating only the E2E backend is safe when diagnosing that
@@ -163,12 +163,14 @@ text and timed out in managed Chromium; changing both the wait and assertion to
 the rendered `TEXT` substring made the case deterministic. The empty wishlist
 case uses `TEXT_EXACT` for the page title because the page also contains the
 similar empty-state heading. The final suite results were 1/1, 10/10, 6/6,
-and 2/2 for platform smoke, catalog/search, authenticated customer, and
+and 2/2 for platform smoke, catalog/search, authentication/customer, and
 resilience/accessibility coverage. The mobile case uses the first-step
 390×844 viewport context, a `PLACEHOLDER` fill, `PRESS=Enter`, and an exact
 `/search?q=shirt` URL assertion; its screenshot artifact was retained. The
 guest cart route-guard case then confirmed `/cart` redirects to `/login`, with
-the expected login heading and email textbox, and retained its screenshot.
+the expected login heading and email textbox, and retained its screenshot. The
+invalid-login case passed with the exact `Invalid email or password` message,
+remained on `/login`, and retained its screenshot.
 
 If the disposable auth limiter returns HTTP 429 during apply or polling,
 restart only `testops-e2e-backend-1`, wait for its health check, then obtain one
