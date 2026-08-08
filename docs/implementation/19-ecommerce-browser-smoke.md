@@ -209,6 +209,22 @@ The next Phase 5 slice hardens ecommerce `CustomerLayout`: stable order-count fe
 
 The focused CustomerLayout audit found no browser alerts, debug logs, or unused `MapPin` import; `git diff --check` passed.
 
+The next Phase 5 slice hardens ecommerce `CustomerOrders`: stable fetching removes unnecessary tab-change refetches, search/filter/error/loading states are labelled, status tabs support keyboard navigation, unavailable filters are explicit, and order actions/icons/images expose semantic focus and fallback behavior. Verification is pending.
+
+The focused CustomerOrders audit found no browser alerts, debug logs, or stale clickable-card classes; `git diff --check` passed.
+
+The ecommerce frontend unit gate passed after CustomerOrders changes on 2026-08-08: 3 suites and 10 tests. The production build also passed; existing CRA and browser-data advisories remain non-blocking.
+
+The ecommerce frontend image was rebuilt successfully with CustomerOrders on 2026-08-08; PostgreSQL data was retained and backend health gating completed before frontend startup.
+
+Post-rebuild `docker compose ps` confirmed `postgres_db`, `springboot_backend`, and `react_frontend` are healthy; ecommerce ports remain `3001`, `8081`, `5433`, and `5051`.
+
+The TestOps Playwright ecommerce contract passed against the rebuilt CustomerOrders image on 2026-08-08: all 9 tests passed in 22.6 seconds. Existing checkout, cart-dialog, profile, wishlist, mobile, search, outage-retry, pagination, and duplicate-submit journeys remained green; CustomerOrders has no dedicated stable cancellable-order fixture yet.
+
+Final CustomerOrders TestOps documentation diff inspection passed with `git diff --check`; only the browser smoke guide and architecture map changed. Existing untracked `.agents/` and `skills-lock.json` remain untouched.
+
+The matching ecommerce CustomerOrders implementation commit is `441e2a1`; the TestOps verification documentation is being committed separately.
+
 The ecommerce frontend unit gate passed after CustomerLayout changes on 2026-08-08: 3 suites and 10 tests. The production build also passed; existing CRA and browser-data advisories remain non-blocking.
 
 The ecommerce frontend image was rebuilt successfully with CustomerLayout on 2026-08-08; PostgreSQL data was retained and backend health gating completed before frontend startup.
