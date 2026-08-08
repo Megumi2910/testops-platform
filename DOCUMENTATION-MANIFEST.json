@@ -67,6 +67,10 @@
       "role": "Beginner recovery guide for blocked localhost targets and READY-case reruns"
     },
     {
+      "path": "docs/operations/15-ecommerce-dogfooding-guide.md",
+      "role": "Beginner workflow for starting ecommerce, configuring the local bridge, synchronizing the catalog, running cases, and troubleshooting evidence"
+    },
+    {
       "path": "docs/implementation/17-ui-to-execution-workflow.md",
       "role": "Step-by-step browser-to-API-to-database-to-worker-to-evidence workflow"
     },
