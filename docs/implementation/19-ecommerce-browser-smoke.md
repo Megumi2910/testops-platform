@@ -656,3 +656,7 @@ After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_ba
 ## Scope boundary
 
 This smoke contract proves the customer entry path, responsive transport, and the frontend half of duplicate-submit protection. It is not a replacement for native ecommerce tests for Mailpit verification, two-user messaging, inventory locking, or transactional checkout replay/concurrency. Those scenarios need isolated fixtures and stronger orchestration and remain the next Phase 5/6 work items.
+
+## Continuous Phase 5 handoff — 2026-08-08
+
+The continuous frontend-reliability run is complete for the published slices. Final inspection passed on `codex/milestone-9-release-candidate`: the latest TestOps documentation confirmation is `f6e1ec0`, and the matching ecommerce implementation/publication commits are `e5d7a6d` and `9e83ec0`, all pushed. The repository’s pre-existing untracked `.agents/` and `skills-lock.json` were preserved and are not part of the milestone changes. The latest browser contract remains green at 9/9; native Mailpit, two-user realtime, inventory/concurrency, and TestOps P6/P7 coverage remain planned follow-up work.
