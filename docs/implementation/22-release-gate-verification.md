@@ -16,7 +16,7 @@ same checks without guessing which Compose profile or port is in use.
 | Disabled local-target Playwright | `E2E_DISABLED_BASE_URL=http://localhost:3101`, `MAILPIT_URL=http://127.0.0.1:8026` | PASS — 1 passed |
 | Catalog preflight | `scripts/sync-ecommerce-catalog.ps1 -Mode dry-run` | PASS — 9 suites, 31 cases, no API calls |
 | Catalog apply | `-Mode apply -BaseUrl http://localhost:8180` | PASS — 9 suites, 31 cases reconciled; variable values redacted in logs |
-| Live READY acceptance | target check + six suite/case queue requests | PASS — target `REACHABLE`/HTTP 200, all 25 READY cases passed, 168 steps, 23 screenshot-bearing definitions; secret-bearing artifacts suppressed by policy |
+| Live READY acceptance | target check + seven suite/case queue requests | PASS — target `REACHABLE`/HTTP 200, all 26 READY cases passed, 179 steps, 24 screenshot-bearing definitions; secret-bearing artifacts suppressed by policy |
 
 The full backend command’s only errors were `ApplicationContextIT` and
 `MigrationUpgradeIT` failing before test execution because Testcontainers saw
@@ -39,9 +39,9 @@ The post-fix local package/unit gate remains green (`55` tests with
 Testcontainers job because this Windows shell cannot expose a usable Docker API
 to the Java client.
 
-The live acceptance now covers five runnable suites/case groups: platform smoke
+The live acceptance now covers six runnable suites/case groups: platform smoke
 (1/1), catalog and search (10/10), authentication/customer routes (9/9),
-orders/reviews (2/2), and resilience/accessibility (3/3). The
+orders/reviews (2/2), seller workflows (1/1), and resilience/accessibility (3/3). The
 customer run includes dashboard, order history, profile, settings, empty
 wishlist, and valid login. The resilience case uses a 390×844 context, fills
 the storefront search placeholder, presses Enter, asserts `/search?q=shirt`,
@@ -65,6 +65,11 @@ The completed-order cancellation guard then verifies `Hoàn thành` and zero
 `Hủy đơn hàng` buttons in 11 passing steps
 (`95bc969a-2168-4aa0-a479-1bfada26aaaf`); its screenshot is likewise suppressed
 because the run uses the secret customer password.
+The seller-dashboard case follows the seller-specific `/seller` redirect and
+verifies the seeded store name, dashboard summary, recent-orders section, and
+top-products section in 11 passing steps
+(`743d26d3-c620-4fd8-987a-b6d9844aed79`); its screenshot is suppressed because
+the seller password is secret-backed.
 Dashboard exploration found and corrected the
 ecommerce PostgreSQL `DISTINCT`/`ORDER BY` defect in commit `e738f2f`; the
 focused service test and rebuilt `/api/orders/dashboard-statistics` endpoint

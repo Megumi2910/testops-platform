@@ -8,7 +8,9 @@
   },
   "variables": [
     { "key": "E2E_CUSTOMER_EMAIL", "secret": false, "valueFromEnv": "TESTOPS_E2E_CUSTOMER_EMAIL" },
-    { "key": "E2E_CUSTOMER_PASSWORD", "secret": true, "valueFromEnv": "TESTOPS_E2E_CUSTOMER_PASSWORD" }
+    { "key": "E2E_CUSTOMER_PASSWORD", "secret": true, "valueFromEnv": "TESTOPS_E2E_CUSTOMER_PASSWORD" },
+    { "key": "E2E_SELLER_EMAIL", "secret": false, "valueFromEnv": "TESTOPS_E2E_SELLER_EMAIL" },
+    { "key": "E2E_SELLER_PASSWORD", "secret": true, "valueFromEnv": "TESTOPS_E2E_SELLER_PASSWORD" }
   ],
   "suites": [
     {
@@ -434,7 +436,27 @@
       "name": "60 — Seller Workflows",
       "description": "Seller dashboard, product management, and order processing. [testops-key:60-seller-workflows]",
       "cases": [
-        { "key": "seller-dashboard", "name": "Seller dashboard", "status": "DRAFT", "priority": "P1", "tags": "sync:ecommerce-seller-dashboard,role:seller,state:seeded,runner:testops", "description": "Seller fixture access and ownership checks.", "steps": [] }
+        {
+          "key": "seller-dashboard",
+          "name": "Open seller dashboard",
+          "status": "READY",
+          "priority": "P1",
+          "tags": "sync:ecommerce-seller-dashboard,role:seller,state:seeded,runner:testops",
+          "description": "Sign in with the permanent seller fixture and verify the read-only store dashboard loads with its seeded store and metrics sections.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/login", "timeoutMs": 15000 },
+            { "position": 1, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Email", "inputValue": "${E2E_SELLER_EMAIL}", "timeoutMs": 15000 },
+            { "position": 2, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Mật khẩu", "inputValue": "${E2E_SELLER_PASSWORD}", "timeoutMs": 15000 },
+            { "position": 3, "action": "CLICK", "locatorType": "ROLE", "locatorRole": "BUTTON", "locatorValue": "Đăng nhập", "timeoutMs": 15000 },
+            { "position": 4, "action": "ASSERT_URL_EQUALS", "expectedValue": "/seller", "timeoutMs": 15000 },
+            { "position": 5, "action": "ASSERT_VISIBLE", "locatorType": "TEXT_EXACT", "locatorValue": "Mock Local Store", "locatorIndex": 0, "timeoutMs": 15000 },
+            { "position": 6, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Dashboard", "locatorIndex": 1, "timeoutMs": 15000 },
+            { "position": 7, "action": "ASSERT_VISIBLE", "locatorType": "TEXT_EXACT", "locatorValue": "Tổng quan về hoạt động cửa hàng của bạn", "locatorIndex": 0, "timeoutMs": 15000 },
+            { "position": 8, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Đơn hàng gần đây", "timeoutMs": 15000 },
+            { "position": 9, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Sản phẩm bán chạy", "timeoutMs": 15000 },
+            { "position": 10, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
+        }
       ]
     },
     {

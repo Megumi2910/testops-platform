@@ -202,7 +202,7 @@ search-locator fixes, the current release-candidate evidence is:
 - authenticated catalog apply: 9 suites and 31 cases reconciled with
   redacted variables;
 - live target check: `REACHABLE`/HTTP 200;
-- all 25 current READY catalog cases: passed, 168 steps; twenty-three screenshot-bearing
+- all 26 current READY catalog cases: passed, 179 steps; twenty-four screenshot-bearing
   cases retained screenshot artifacts and traces.
 - final Compose inspection: normal, enabled E2E, and disabled E2E services all
   reported `running`.
@@ -220,8 +220,8 @@ gate remains green locally; the full integration assertion is left to the
 Linux CI Testcontainers job.
 
 The authenticated customer expansion is now part of the release evidence. The
-platform-smoke, catalog/search, customer, orders/reviews, and
-resilience/accessibility suites passed 1/1, 10/10, 9/9, 2/2, and 3/3
+platform-smoke, catalog/search, customer, orders/reviews, seller workflows,
+and resilience/accessibility suites passed 1/1, 10/10, 9/9, 2/2, 1/1, and 3/3
 respectively. Customer coverage includes
 dashboard, order history, profile, settings, empty wishlist, and valid login.
 The resilience case also verifies mobile keyboard search at 390×844 and the
@@ -243,7 +243,11 @@ because the run used the secret customer password. The completed-order
 cancellation guard also passed 11 steps, verifying `Hoàn thành` and zero
 `Hủy đơn hàng` controls in execution
 `95bc969a-2168-4aa0-a479-1bfada26aaaf`; its screenshot was suppressed by the
-same secret-safe evidence policy.
+same secret-safe evidence policy. The seller-dashboard case passed 11 steps,
+followed the seller-specific `/seller` redirect, and verified the seeded store
+and dashboard sections in execution
+`743d26d3-c620-4fd8-987a-b6d9844aed79`; its screenshot was suppressed because
+the seller password is secret-backed.
 Dashboard exploration discovered a
 real ecommerce PostgreSQL query defect; commit `e738f2f` replaced the invalid
 `DISTINCT` address projection with a bounded recent-order lookup, and its
