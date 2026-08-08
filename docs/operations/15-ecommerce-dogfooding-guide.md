@@ -426,6 +426,13 @@ non-destructive verified-customer login; dry-run still skips the two variable
 values unless `TESTOPS_E2E_CUSTOMER_EMAIL` and
 `TESTOPS_E2E_CUSTOMER_PASSWORD` are provided.
 
+The enabled TestOps Playwright gate also passed on 2026-08-08 with 18 tests
+passed and 1 profile-dependent local-disabled test skipped. It covered account
+verification/recovery, the ecommerce contract, target connectivity, offline
+and cross-origin negative cases, READY-case validation, failing-step evidence,
+and project creation. Run the disabled profile separately when you need the
+negative local-bridge assertion.
+
 Related source walkthroughs:
 
 - [UI-to-execution workflow](../implementation/17-ui-to-execution-workflow.md)

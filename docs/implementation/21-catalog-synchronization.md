@@ -73,3 +73,8 @@ all 9 tests against `http://localhost:3001` on 2026-08-08, confirming the same
 search and empty-state behavior before catalog synchronization. The valid-login
 case references the permanent mock customer credentials and is READY without
 putting either value in the manifest.
+
+The surrounding enabled TestOps Playwright gate passed 18 tests with one
+disabled-profile test skipped on 2026-08-08. The separate disabled-local-target
+profile remains the required check for proving that the same localhost origin
+is blocked when `TARGET_LOCAL_DEV_ENABLED=false`.
