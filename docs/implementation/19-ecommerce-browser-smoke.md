@@ -221,6 +221,8 @@ Final CustomerLayout TestOps documentation diff inspection passed with `git diff
 
 The matching ecommerce CustomerLayout implementation commit is `53eb83c`; the TestOps verification documentation is being committed separately.
 
+The CustomerLayout browser verification and architecture updates were committed as `43a1cb9`.
+
 Post-rebuild `docker compose ps` confirmed `postgres_db`, `springboot_backend`, and `react_frontend` are healthy; ecommerce ports remain `3001`, `8081`, `5433`, and `5051`.
 
 The next Phase 5 slice hardens ecommerce `CustomerSettings`: semantic tablist/tab/tabpanel relationships, stable IDs, keyboard arrow/Home/End navigation, focus-visible controls, and honest payment-feature messaging are being added. Verification is pending.
