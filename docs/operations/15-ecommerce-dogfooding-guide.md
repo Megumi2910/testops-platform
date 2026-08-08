@@ -465,6 +465,9 @@ unique label, avoiding Playwright strict-mode ambiguity.
 The follow-up dry run passed for 9 suites and 12 cases with no API calls.
 The corrected search-state case then passed in the isolated E2E run with all
 four steps and one screenshot artifact.
+The complete READY catalog was subsequently rerun after a clean backend
+restart: target health was `REACHABLE`/HTTP 200, all 5 cases passed, and every
+case retained its screenshot artifact (18 steps total).
 
 After the E2E backend was recreated with the opt-in `http://localhost:3001`
 allowlist entry, the same enabled gate passed again with 18 tests passed and 1

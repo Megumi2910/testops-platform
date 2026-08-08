@@ -119,3 +119,8 @@ The corrected search-state case was reapplied and rerun in the isolated E2E
 environment on 2026-08-08. It passed all four steps (`NAVIGATE`, `ASSERT_VALUE`,
 `ASSERT_URL_EQUALS`, and `TAKE_SCREENSHOT`) and retained one screenshot
 artifact.
+
+The complete READY catalog was then queued again after a clean backend restart.
+Target checking returned `REACHABLE` with HTTP 200; all 5 READY cases passed,
+with 18 total steps and one screenshot artifact per case. This is the clean
+post-fix acceptance pass for the currently runnable catalog.
