@@ -19,6 +19,7 @@ class DefinitionServiceTest {
         assertDoesNotThrow(() -> DefinitionService.validateStep(step("ASSERT_COUNT", "CSS", ".product-card", null, null, "3")));
         assertDoesNotThrow(() -> DefinitionService.validateStep(step("ASSERT_URL_EQUALS", null, null, null, null, "/checkout")));
         assertDoesNotThrow(() -> DefinitionService.validateStep(new ProjectDtos.StepRequest(0, "ASSERT_VISIBLE", "TEXT_EXACT", "Products", null, 1, null, null, 5000)));
+        assertDoesNotThrow(() -> DefinitionService.validateStep(new ProjectDtos.StepRequest(0, "NAVIGATE", null, null, null, null, "/", null, 5000, 1280, 720, "vi-VN", "Asia/Ho_Chi_Minh")));
     }
 
     @Test
@@ -34,6 +35,14 @@ class DefinitionServiceTest {
         ApiException invalidIndex = assertThrows(ApiException.class,
                 () -> DefinitionService.validateStep(new ProjectDtos.StepRequest(0, "ASSERT_VISIBLE", "TEXT", "Product", null, -1, null, null, 5000)));
         assertEquals("invalid_locator_index", invalidIndex.getCode());
+
+        ApiException invalidViewport = assertThrows(ApiException.class,
+                () -> DefinitionService.validateStep(new ProjectDtos.StepRequest(0, "NAVIGATE", null, null, null, null, "/", null, 5000, 1280, null, null, null)));
+        assertEquals("viewport_dimensions_required", invalidViewport.getCode());
+
+        ApiException invalidTimezone = assertThrows(ApiException.class,
+                () -> DefinitionService.validateStep(new ProjectDtos.StepRequest(0, "NAVIGATE", null, null, null, null, "/", null, 5000, null, null, null, "Not/AZone")));
+        assertEquals("invalid_timezone", invalidTimezone.getCode());
     }
 
     private static ProjectDtos.StepRequest step(String action, String locatorType, String locatorValue, String role,

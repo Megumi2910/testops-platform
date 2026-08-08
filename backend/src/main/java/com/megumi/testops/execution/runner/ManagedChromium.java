@@ -27,6 +27,10 @@ public class ManagedChromium {
         return browser().newContext();
     }
 
+    public BrowserContext newContext(Browser.NewContextOptions options) {
+        return browser().newContext(options);
+    }
+
     private Browser browser() {
         if (browser != null) return browser;
         synchronized (this) {

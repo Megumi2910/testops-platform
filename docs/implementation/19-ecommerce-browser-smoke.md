@@ -59,6 +59,8 @@ The Playwright config retains traces and screenshots on failure. A failed run is
 
 The authenticated manual evidence from 2026-08-01 is `artifacts/ecommerce-authenticated-checkout-smoke.png`. It shows the mobile checkout form, COD/QR options, order summary, and the disabled-state-safe route reached without submitting an order.
 
+The TestOps local-target fixture also configures the first step with a 1280×720 viewport, `en-US`, and `Asia/Ho_Chi_Minh`. Those values are intentionally harmless but prove the guided builder → V020 persistence → immutable snapshot → Playwright context-options path without changing the storefront or consuming seeded data.
+
 ### Duplicate-submit contract
 
 The sixth test fills only disposable address and phone values, intercepts `/api/orders/checkout`, and holds the response open. It clicks `Đặt hàng` once, verifies the control is disabled and exposes `aria-busy="true"`, then dispatches a second click while the first request is still pending. The request log must contain exactly one entry with a UUID-shaped `Idempotency-Key`; the body must include COD and the selected cart-item IDs. The route returns a synthetic `503`, after which the UI shows the server message and re-enables the control. This proves the frontend lock and header contract without creating an order.

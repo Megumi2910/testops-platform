@@ -53,6 +53,18 @@ class PlaywrightCaseRunnerTest {
     }
 
     @Test
+    void buildsBrowserContextOptionsFromTheFirstStep() {
+        var step = new PlaywrightCaseRunner.StepDefinition(0, "NAVIGATE", null, null, null, null, "/", null, 5000, 1280, 720, "en-US", "Asia/Ho_Chi_Minh");
+
+        var options = PlaywrightCaseRunner.contextOptions(java.util.List.of(step));
+
+        assertEquals("en-US", options.locale);
+        assertEquals("Asia/Ho_Chi_Minh", options.timezoneId);
+        assertEquals(1280, options.viewportSize.orElseThrow().width);
+        assertEquals(720, options.viewportSize.orElseThrow().height);
+    }
+
+    @Test
     void classifiesFailuresWithoutCollapsingTestAndInfrastructureErrors() {
         assertEquals("ASSERTION_FAILURE", PlaywrightCaseRunner.category(new AssertionError("expected text")));
         assertEquals("INVALID_DEFINITION", PlaywrightCaseRunner.category(new IllegalArgumentException("unsupported action")));

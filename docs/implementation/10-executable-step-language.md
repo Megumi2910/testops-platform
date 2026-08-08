@@ -78,6 +78,9 @@ Only `READY` cases are eligible for execution. A draft can be edited while incom
 | `inputValue` | string | URL, text, select value, or interpolated input. |
 | `expectedValue` | string | Expected text or URL fragment for assertions. |
 | `timeoutMs` | integer | Per-step timeout, from 100 to 120000 ms. |
+| `viewportWidth` / `viewportHeight` | integer or null | Optional isolated-context viewport. Both are required together and must be 320–3840 by 240–2160. Put them on position 0. |
+| `locale` | string or null | Optional BCP-47 locale for the isolated browser context, such as `en-US`. Put it on position 0. |
+| `timezoneId` | string or null | Optional IANA timezone for the isolated browser context, such as `Asia/Ho_Chi_Minh`. Put it on position 0. |
 
 Not every field applies to every action. The backend rejects combinations that cannot be interpreted safely.
 
@@ -170,6 +173,24 @@ The role name and accessible name are separate values:
 
 Indexing is zero-based and is persisted in both the editable step and the immutable execution snapshot. An index without a locator, a negative index, or a non-integer value is rejected before a READY case can be saved. This keeps the selection deterministic while still allowing a test to express “the second matching card” without falling back to a brittle CSS selector.
 
+### Browser context settings
+
+Viewport, locale, and timezone are context-level Playwright options, not page actions. The guided builder therefore exposes them only on the first step. The backend persists them with that step and the worker reads them before creating the isolated context:
+
+```json
+{
+  "position": 0,
+  "action": "NAVIGATE",
+  "inputValue": "/",
+  "viewportWidth": 1280,
+  "viewportHeight": 720,
+  "locale": "en-US",
+  "timezoneId": "Asia/Ho_Chi_Minh"
+}
+```
+
+Width and height must be supplied together. The backend validates the supported range, parses the locale as a BCP-47 tag, and resolves the timezone with `ZoneId`. Settings on later steps are rejected instead of silently applying to only part of a run. Leaving all four values blank keeps Playwright's worker defaults.
+
 ## 6. Validation rules
 
 Before a case is saved, `DefinitionService` checks:
@@ -184,6 +205,7 @@ Before a case is saved, `DefinitionService` checks:
 8. Step count is at most 100.
 9. Positions are `[0, 1, 2, ...]` with no duplicates.
 10. `READY` cases do not contain legacy unqualified `WAIT`.
+11. Browser context settings are valid and, when present, are attached to position 0.
 
 This is aggregate validation: the service validates the whole case before committing its replacement step list.
 

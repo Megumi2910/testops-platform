@@ -30,7 +30,7 @@ public class PlaywrightCaseRunner {
     public Result run(List<StepDefinition> definitions, String targetOrigin, String executionId, String caseResultId, Map<String, String> variables, Set<String> secretKeys) {
         List<StepOutcome> outcomes = new ArrayList<>(); List<CapturedScreenshot> screenshots = new ArrayList<>();
         boolean[] secretUsed = { false };
-        try (BrowserContext context = chromium.newContext(); Page page = context.newPage()) {
+        try (BrowserContext context = chromium.newContext(contextOptions(definitions)); Page page = context.newPage()) {
             context.setDefaultTimeout(properties.execution().defaultStepTimeout().toMillis());
             AtomicReference<NavigationViolation> navigationViolation = new AtomicReference<>();
             monitorNavigation(page, targetOrigin, navigationViolation);
@@ -93,7 +93,8 @@ public class PlaywrightCaseRunner {
 
     static StepDefinition interpolateStep(StepDefinition step, Map<String, String> variables) {
         return new StepDefinition(step.position(), step.action(), step.locatorType(), interpolate(step.locatorValue(), variables),
-                step.locatorRole(), step.locatorIndex(), interpolate(step.inputValue(), variables), interpolate(step.expectedValue(), variables), step.timeoutMs());
+                step.locatorRole(), step.locatorIndex(), interpolate(step.inputValue(), variables), interpolate(step.expectedValue(), variables), step.timeoutMs(),
+                step.viewportWidth(), step.viewportHeight(), step.locale(), step.timezoneId());
     }
 
     private static boolean referencesSecret(String value, Set<String> secretKeys) {
@@ -110,15 +111,34 @@ public class PlaywrightCaseRunner {
         }; return step.locatorIndex() == null ? resolved : resolved.nth(step.locatorIndex());
     }
 
+    static Browser.NewContextOptions contextOptions(List<StepDefinition> definitions) {
+        Browser.NewContextOptions options = new Browser.NewContextOptions();
+        if (definitions == null || definitions.isEmpty()) return options;
+        StepDefinition first = definitions.stream().min(java.util.Comparator.comparingInt(StepDefinition::position)).orElseThrow();
+        if (first.viewportWidth() != null || first.viewportHeight() != null) {
+            if (first.viewportWidth() == null || first.viewportHeight() == null) throw new IllegalArgumentException("Viewport width and height must be provided together");
+            options.setViewportSize(first.viewportWidth(), first.viewportHeight());
+        }
+        if (first.locale() != null && !first.locale().isBlank()) options.setLocale(first.locale());
+        if (first.timezoneId() != null && !first.timezoneId().isBlank()) options.setTimezoneId(first.timezoneId());
+        return options;
+    }
+
     public record StepDefinition(int position, String action, String locatorType, String locatorValue, String locatorRole,
-            Integer locatorIndex, String inputValue, String expectedValue, Integer timeoutMs) {
+            Integer locatorIndex, String inputValue, String expectedValue, Integer timeoutMs,
+            Integer viewportWidth, Integer viewportHeight, String locale, String timezoneId) {
         public StepDefinition(int position, String action, String locatorType, String locatorValue, String locatorRole,
                 String inputValue, String expectedValue, Integer timeoutMs) {
-            this(position, action, locatorType, locatorValue, locatorRole, null, inputValue, expectedValue, timeoutMs);
+            this(position, action, locatorType, locatorValue, locatorRole, null, inputValue, expectedValue, timeoutMs, null, null, null, null);
+        }
+        public StepDefinition(int position, String action, String locatorType, String locatorValue, String locatorRole,
+                Integer locatorIndex, String inputValue, String expectedValue, Integer timeoutMs) {
+            this(position, action, locatorType, locatorValue, locatorRole, locatorIndex, inputValue, expectedValue, timeoutMs, null, null, null, null);
         }
         public static StepDefinition from(ExecutionStepSnapshotEntity snapshot) {
             return new StepDefinition(snapshot.getPosition(), snapshot.getAction(), snapshot.getLocatorType(), snapshot.getLocatorValue(),
-                    snapshot.getLocatorRole(), snapshot.getLocatorIndex(), snapshot.getInputValue(), snapshot.getExpectedValue(), snapshot.getTimeoutMs());
+                    snapshot.getLocatorRole(), snapshot.getLocatorIndex(), snapshot.getInputValue(), snapshot.getExpectedValue(), snapshot.getTimeoutMs(),
+                    snapshot.getViewportWidth(), snapshot.getViewportHeight(), snapshot.getLocale(), snapshot.getTimezoneId());
         }
     }
     private static Locator role(Page page, String role, String name) { AriaRole aria = switch (role == null ? "" : role.toUpperCase(Locale.ROOT)) { case "BUTTON" -> AriaRole.BUTTON; case "LINK" -> AriaRole.LINK; case "CHECKBOX" -> AriaRole.CHECKBOX; case "COMBOBOX" -> AriaRole.COMBOBOX; case "HEADING" -> AriaRole.HEADING; case "TEXTBOX" -> AriaRole.TEXTBOX; default -> throw new IllegalArgumentException("Unsupported ARIA role"); }; return page.getByRole(aria, new Page.GetByRoleOptions().setName(name)); }

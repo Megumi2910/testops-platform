@@ -18,6 +18,10 @@ export function serializeSteps(steps: EditableStep[]): Step[] {
     inputValue: step.inputValue,
     expectedValue: step.expectedValue,
     timeoutMs: step.timeoutMs,
+    viewportWidth: step.viewportWidth,
+    viewportHeight: step.viewportHeight,
+    locale: step.locale,
+    timezoneId: step.timezoneId,
   }))
 }
 
@@ -40,6 +44,13 @@ export function validateSteps(steps: EditableStep[], definitions: ActionDefiniti
     if (step.action === 'ASSERT_COUNT' && step.expectedValue?.trim() && !/^\d+$/.test(step.expectedValue.trim())) setError('Expected count must be a non-negative integer.')
     if (step.locatorType === 'ROLE' && !step.locatorRole) setError('Choose an ARIA role when using ROLE.')
     if (step.locatorIndex !== undefined && (!Number.isInteger(step.locatorIndex) || step.locatorIndex < 0)) setError('Locator index must be a whole number zero or greater.')
+    const hasViewportWidth = step.viewportWidth !== undefined
+    const hasViewportHeight = step.viewportHeight !== undefined
+    if (hasViewportWidth !== hasViewportHeight) setError('Viewport width and height must be provided together.')
+    if (hasViewportWidth && (step.viewportWidth! < 320 || step.viewportWidth! > 3840 || step.viewportHeight! < 240 || step.viewportHeight! > 2160)) setError('Viewport must be between 320x240 and 3840x2160.')
+    if (step.position !== 0 && (hasViewportWidth || hasViewportHeight || !!step.locale?.trim() || !!step.timezoneId?.trim())) setError('Browser context settings belong on the first step.')
+    if (step.locale?.trim() && !/^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$/.test(step.locale.trim())) setError('Locale must be a BCP-47 language tag such as en-US.')
+    if (step.timezoneId?.trim() && !/^[A-Za-z_]+(?:\/[A-Za-z0-9_+-]+)+$/.test(step.timezoneId.trim())) setError('Timezone must be an IANA id such as Asia/Ho_Chi_Minh.')
     if (step.timeoutMs !== undefined && (step.timeoutMs < 100 || step.timeoutMs > 120000)) setError('Timeout must be between 100 and 120000 milliseconds.')
   })
   return { errors, message: Object.keys(errors).length ? 'Fix the highlighted step before saving as READY.' : undefined }

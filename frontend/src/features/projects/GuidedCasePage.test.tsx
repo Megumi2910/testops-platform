@@ -54,6 +54,15 @@ describe('guided case validation', () => {
     expect(result.errors.indexed).toContain('whole number')
   })
 
+  it('keeps browser context settings on the first step and validates their shape', () => {
+    const result = validateSteps([
+      { clientId: 'navigate', position: 0, action: 'NAVIGATE', inputValue: '/', viewportWidth: 1280, viewportHeight: 720, locale: 'en-US', timezoneId: 'Asia/Ho_Chi_Minh' },
+      { clientId: 'assertion', position: 1, action: 'ASSERT_VISIBLE', locatorType: 'TEXT', locatorValue: 'Products', viewportWidth: 640, viewportHeight: 480 },
+    ], definitions)
+    expect(result.errors.assertion).toContain('first step')
+    expect(serializeSteps([{ clientId: 'navigate', position: 0, action: 'NAVIGATE', inputValue: '/', viewportWidth: 1280, viewportHeight: 720, locale: 'en-US', timezoneId: 'Asia/Ho_Chi_Minh' }])[0]).toMatchObject({ viewportWidth: 1280, viewportHeight: 720, locale: 'en-US', timezoneId: 'Asia/Ho_Chi_Minh' })
+  })
+
   it('rejects malformed count assertions before a READY case is sent', () => {
     const result = validateSteps([
       { clientId: 'navigate', position: 0, action: 'NAVIGATE', inputValue: '/' },

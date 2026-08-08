@@ -26,6 +26,10 @@ public class ExecutionStepSnapshotEntity {
     @Column(name = "input_value") private String inputValue;
     @Column(name = "expected_value", length = 4000) private String expectedValue;
     @Column(name = "timeout_ms") private Integer timeoutMs;
+    @Column(name = "viewport_width") private Integer viewportWidth;
+    @Column(name = "viewport_height") private Integer viewportHeight;
+    @Column(length = 80) private String locale;
+    @Column(name = "timezone_id", length = 120) private String timezoneId;
 
     protected ExecutionStepSnapshotEntity() { }
 
@@ -41,6 +45,10 @@ public class ExecutionStepSnapshotEntity {
         this.inputValue = step.getInputValue();
         this.expectedValue = step.getExpectedValue();
         this.timeoutMs = step.getTimeoutMs();
+        this.viewportWidth = step.getViewportWidth();
+        this.viewportHeight = step.getViewportHeight();
+        this.locale = step.getLocale();
+        this.timezoneId = step.getTimezoneId();
     }
 
     public static ExecutionStepSnapshotEntity from(TestCaseResultEntity caseResult, TestStepEntity step) {
@@ -58,4 +66,8 @@ public class ExecutionStepSnapshotEntity {
     public String getInputValue() { return inputValue; }
     public String getExpectedValue() { return expectedValue; }
     public Integer getTimeoutMs() { return timeoutMs; }
+    public Integer getViewportWidth() { return viewportWidth; }
+    public Integer getViewportHeight() { return viewportHeight; }
+    public String getLocale() { return locale; }
+    public String getTimezoneId() { return timezoneId; }
 }

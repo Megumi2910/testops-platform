@@ -455,6 +455,7 @@
   <p><code>PlaywrightCaseRunner</code> now resolves variables across locator, input, expected, and navigation fields as one immutable action payload. Missing variables fail closed before Playwright receives the action, while generated run values remain evidence-safe.</p>
   <h3>Phase 7 exact-text and repeated-locator controls</h3>
   <p><code>TEXT_EXACT</code> is now exposed by the platform metadata endpoint and maps to Playwright's exact text option. The optional zero-based <code>locatorIndex</code> is stored with the step, copied into the immutable execution snapshot, and applied with <code>Locator.nth</code> after semantic locator resolution. The guided builder explains when to use each control and validates non-negative whole numbers before the backend repeats the same fail-closed checks. Flyway V019 adds the two persisted columns and non-negative constraints.</p>
+  <p>Flyway V020 adds optional first-step browser-context settings: viewport dimensions, BCP-47 locale, and IANA timezone. The worker applies them while creating the isolated Chromium context, rather than attempting a mid-run page mutation. Partial dimensions, invalid formats, and settings on later steps are rejected at authoring time; blank values retain worker defaults.</p>
 </section>
 </body>
 </html>
