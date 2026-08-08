@@ -469,6 +469,9 @@
   <p>Catalog priorities remain readable as <code>P0</code>, <code>P1</code>, and <code>P2</code> in source control, then map to the backend’s accepted <code>CRITICAL</code>, <code>HIGH</code>, and <code>MEDIUM</code> values at apply time. This keeps product triage labels while avoiding invalid definition payloads.</p>
   <p>Case updates replace steps transactionally. The definition service flushes the bulk delete before reinserting replacement positions, which keeps READY promotion and repeat synchronization clear of PostgreSQL's case-position uniqueness constraint.</p>
   <p>The isolated E2E catalog apply completed on 2026-08-08 for 9 suites and 12 cases, including redacted variable updates, priority translation, marker reconciliation, and READY promotion.</p>
+  <p>The search-state case uses the page search field's unique accessible <code>LABEL</code> locator rather than a broad textbox role/name, because the storefront also renders a header search input. This keeps strict-mode assertions deterministic.</p>
+  <p>The post-correction catalog dry run passed with 9 suites and 12 cases and made no API calls.</p>
+  <p>The corrected search-state run passed in the isolated E2E environment with four successful steps and one screenshot artifact.</p>
 </section>
 </body>
 </html>

@@ -93,7 +93,8 @@ Do not run that command against the normal `testops-platform_postgres18_data` vo
 The current catalog has 9 suites and 12 cases. Its READY set includes the
 non-destructive verified-customer login plus guest homepage/search checks. The
 additional READY search
-cases use `ASSERT_VALUE` for the labelled `Tìm kiếm sản phẩm` textbox,
+cases use `ASSERT_VALUE` with the unique `LABEL` locator for the page's
+`Tìm kiếm sản phẩm` textbox,
 `ASSERT_URL_EQUALS` for `/search?q=shirt`, and a role-based heading assertion
 for `Không tìm thấy sản phẩm`. The live ecommerce Playwright contract passed
 all 9 tests against `http://localhost:3001` on 2026-08-08, confirming the same
@@ -110,3 +111,11 @@ On 2026-08-08, an authenticated apply against the isolated E2E backend on
 port 8180 completed successfully for all 9 suites and 12 cases. The run
 exercised marker reconciliation, redacted variable updates, P0/P1 mapping,
 and READY promotion after the step-replacement flush fix.
+
+The follow-up dry run after the search locator correction again validated 9
+suites and 12 cases, printed the `LABEL` locator, and made no API calls.
+
+The corrected search-state case was reapplied and rerun in the isolated E2E
+environment on 2026-08-08. It passed all four steps (`NAVIGATE`, `ASSERT_VALUE`,
+`ASSERT_URL_EQUALS`, and `TAKE_SCREENSHOT`) and retained one screenshot
+artifact.

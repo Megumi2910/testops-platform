@@ -458,6 +458,14 @@ The catalog was applied successfully to the isolated E2E backend on 2026-08-08
 promotions and the secret-safe customer variables. The normal development
 database was not used for this operation.
 
+When a page contains both a global header search box and a page-level search
+box, prefer the page field's accessible `LABEL` locator over a broad `ROLE`
+name. The synchronized search-state case now uses `Tìm kiếm sản phẩm` as that
+unique label, avoiding Playwright strict-mode ambiguity.
+The follow-up dry run passed for 9 suites and 12 cases with no API calls.
+The corrected search-state case then passed in the isolated E2E run with all
+four steps and one screenshot artifact.
+
 After the E2E backend was recreated with the opt-in `http://localhost:3001`
 allowlist entry, the same enabled gate passed again with 18 tests passed and 1
 intentional skip. This confirms that exposing the live target in the enabled

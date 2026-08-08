@@ -57,7 +57,7 @@
           "description": "Verify a search query is reflected in the input and URL without requiring an account.",
           "steps": [
             { "position": 0, "action": "NAVIGATE", "inputValue": "/search?q=shirt", "timeoutMs": 15000 },
-            { "position": 1, "action": "ASSERT_VALUE", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Tìm kiếm sản phẩm", "expectedValue": "shirt", "timeoutMs": 15000 },
+            { "position": 1, "action": "ASSERT_VALUE", "locatorType": "LABEL", "locatorValue": "Tìm kiếm sản phẩm", "expectedValue": "shirt", "timeoutMs": 15000 },
             { "position": 2, "action": "ASSERT_URL_EQUALS", "expectedValue": "/search?q=shirt", "timeoutMs": 15000 },
             { "position": 3, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
           ]
