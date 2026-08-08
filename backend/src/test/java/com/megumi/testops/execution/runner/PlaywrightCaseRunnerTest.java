@@ -29,4 +29,13 @@ class PlaywrightCaseRunnerTest {
         assertTrue(PlaywrightCaseRunner.referencesSecret(secretStep, Set.of("PASSWORD")));
         assertFalse(PlaywrightCaseRunner.referencesSecret(ordinaryStep, Set.of("PASSWORD")));
     }
+
+    @Test
+    void classifiesFailuresWithoutCollapsingTestAndInfrastructureErrors() {
+        assertEquals("ASSERTION_FAILURE", PlaywrightCaseRunner.category(new AssertionError("expected text")));
+        assertEquals("INVALID_DEFINITION", PlaywrightCaseRunner.category(new IllegalArgumentException("unsupported action")));
+        assertEquals("LOCATOR_TIMEOUT", PlaywrightCaseRunner.category(new RuntimeException("Timeout 5000ms exceeded")));
+        assertEquals("TARGET_UNREACHABLE", PlaywrightCaseRunner.category(new RuntimeException("net::ERR_CONNECTION_REFUSED")));
+        assertEquals("BLOCKED_NAVIGATION", PlaywrightCaseRunner.category(new PlaywrightCaseRunner.NavigationViolation()));
+    }
 }

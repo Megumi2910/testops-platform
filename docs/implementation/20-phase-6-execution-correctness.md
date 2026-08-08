@@ -66,3 +66,20 @@ The runner now attaches a main-frame navigation monitor to every isolated page. 
 Blocked navigation is classified as infrastructure category `BLOCKED_NAVIGATION`, and its failure text deliberately omits the untrusted URL. This keeps the run actionable without allowing query strings or redirect URLs to become an evidence or log leak. Same-origin redirects and the configured localhost bridge remain valid because they pass the existing origin and local-target policy.
 
 Focused target-guard and runner tests pass after this change. The next Phase 6 slice is to add explicit browser-level regression coverage for click redirects, form submissions, popup escapes, and same-origin redirects.
+
+## Failure classification
+
+Runner failures now retain a stable category for the case result instead of leaving all non-infrastructure failures uncategorized:
+
+| Category | Meaning | Run classification |
+| --- | --- | --- |
+| `ASSERTION_FAILURE` | Expected text, visibility, URL, or another assertion did not match | Test failure |
+| `INVALID_DEFINITION` | Unsupported action, locator, role, or malformed wait value | Test failure |
+| `LOCATOR_TIMEOUT` | Playwright waited for a locator beyond its step timeout | Test failure |
+| `BLOCKED_NAVIGATION` | Main frame or popup escaped the approved origin | Infrastructure error |
+| `TARGET_UNREACHABLE` | The target refused or could not establish the connection | Infrastructure error |
+| `BROWSER_CRASH` | The browser/context/page closed unexpectedly | Infrastructure error |
+| `WORKER_TIMEOUT` | The execution exceeded its global duration | Infrastructure error |
+| `WORKER_INFRASTRUCTURE` | An uncategorized failure occurred outside the action definition | Infrastructure error |
+
+The case result stores the category for both test and infrastructure failures. The execution-level infrastructure category is set only for infrastructure rows, so dashboards can distinguish a failing assertion from an unavailable worker without losing the detailed case diagnosis.

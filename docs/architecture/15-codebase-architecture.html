@@ -447,6 +447,7 @@
   <h3>Phase 6 variable snapshot slice</h3>
   <p>Queued executions now persist execution-owned copies of project variables and ordered case definitions. Plain values are snapshotted as plain test data; secret values retain AES-GCM ciphertext, nonce, and key version until <code>ExecutionRunService</code> decrypts them inside the worker. Ordered steps and retry count are copied into execution snapshots, so later case edits cannot change a queued run. <code>PlaywrightCaseRunner</code> tracks the configured secret-key set instead of treating every interpolation as secret, so non-secret variables preserve screenshots and traces while secret-bearing steps suppress their evidence. Focused unit tests, the non-integration backend verification, and Compose rebuild passed; Flyway applied V018 and the backend reported healthy.</p>
   <p>The runner also monitors main-frame and popup navigation caused by clicks, forms, redirects, and scripts. Any escape from the approved origin is closed or failed as the sanitized <code>BLOCKED_NAVIGATION</code> category; same-origin redirects and the explicit localhost bridge continue through the shared target guard.</p>
+  <p>Execution failures now retain stable categories for assertion mismatches, invalid definitions, locator timeouts, blocked navigation, unreachable targets, browser crashes, and worker timeouts. Case results preserve the category for both test and infrastructure failures while execution-level infrastructure reporting remains limited to worker/target failures.</p>
 </section>
 </body>
 </html>

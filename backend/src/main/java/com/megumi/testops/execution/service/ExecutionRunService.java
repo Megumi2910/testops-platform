@@ -74,7 +74,7 @@ public class ExecutionRunService {
             for (var step : outcomes) stepResults.save(new com.megumi.testops.execution.domain.TestStepResultEntity(result, step.position(), step.action(), step.status(), step.durationMs(), step.errorMessage()));
         }
         Integer failedStep = outcome.passed() ? null : outcome.failedStepPosition();
-        result.setFailure(failedStep, outcome.infrastructureError() ? outcome.infrastructureCategory() : null);
+        result.setFailure(failedStep, outcome.infrastructureCategory());
         if (outcome.infrastructureError()) execution.setInfrastructureErrorCategory(outcome.infrastructureCategory());
         result.finish(status, Instant.now(), outcome.errorMessage()); results.save(result); execution.record(status); executions.save(execution);
         if (outcome.screenshot() != null) artifacts.writeScreenshot(execution, result, outcome.failedStepPosition(), outcome.screenshot());
