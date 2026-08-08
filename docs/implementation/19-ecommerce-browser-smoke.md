@@ -547,9 +547,21 @@ The ecommerce frontend image rebuilt successfully for the CategoryProductsPage s
 
 Post-rebuild Compose health passed for `postgres_db`, `springboot_backend`, and `react_frontend`.
 
+The ecommerce Playwright contract passed against the ShopPage rebuild on 2026-08-08: 9 tests in 22.9 seconds; all existing checks remained green.
+
 The ecommerce Playwright contract passed against the CategoryProductsPage rebuild on 2026-08-08: 9 tests in 25.4 seconds; all existing checks remained green.
 
 Publication: matching TestOps verification and architecture notes were committed as `60f1696` and pushed to `codex/milestone-9-release-candidate`; `.agents/` and `skills-lock.json` remain untouched.
+
+The next Phase 5 slice hardens ShopPage’s fetch lifecycle, loading/error semantics, seller-name mapping, and unfinished wishlist affordance. Verification is pending.
+
+The ecommerce frontend unit gate passed for the ShopPage slice: 3 suites and 10 tests on 2026-08-08; only the stale browser-data advisory remains.
+
+The ShopPage production build passed with no shop-page warning; remaining warnings are pre-existing outside this slice.
+
+The ecommerce frontend image rebuilt successfully for ShopPage with PostgreSQL data retained and backend/database health gating intact.
+
+Post-rebuild Compose health passed for `postgres_db`, `springboot_backend`, and `react_frontend`.
 
 The frontend image was rebuilt with the accessible cart dialog and the existing PostgreSQL volume was retained. The backend image remained unchanged and reached a healthy state before the frontend restarted.
 
