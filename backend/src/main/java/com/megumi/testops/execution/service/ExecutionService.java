@@ -18,10 +18,12 @@ import com.megumi.testops.execution.domain.ExecutionEntity;
 import com.megumi.testops.execution.domain.ExecutionStatus;
 import com.megumi.testops.execution.domain.TestCaseResultEntity;
 import com.megumi.testops.execution.domain.ExecutionVariableSnapshotEntity;
+import com.megumi.testops.execution.domain.ExecutionStepSnapshotEntity;
 import com.megumi.testops.execution.repository.ExecutionArtifactRepository;
 import com.megumi.testops.execution.repository.ExecutionRepository;
 import com.megumi.testops.execution.repository.ExecutionQueueGuardRepository;
 import com.megumi.testops.execution.repository.ExecutionVariableSnapshotRepository;
+import com.megumi.testops.execution.repository.ExecutionStepSnapshotRepository;
 import com.megumi.testops.execution.repository.TestCaseResultRepository;
 import com.megumi.testops.execution.repository.TestStepResultRepository;
 import com.megumi.testops.execution.runner.ArtifactWriter;
@@ -31,6 +33,7 @@ import com.megumi.testops.project.domain.TestSuiteEntity;
 import com.megumi.testops.project.repository.TestCaseRepository;
 import com.megumi.testops.project.repository.TestSuiteRepository;
 import com.megumi.testops.project.repository.ProjectVariableRepository;
+import com.megumi.testops.project.repository.TestStepRepository;
 import com.megumi.testops.project.service.ProjectAccessService;
 import com.megumi.testops.shared.api.ApiException;
 
@@ -49,14 +52,17 @@ public class ExecutionService {
     private final ExecutionQueueGuardRepository queueGuard;
     private final ExecutionVariableSnapshotRepository variableSnapshots;
     private final ProjectVariableRepository projectVariables;
+    private final ExecutionStepSnapshotRepository stepSnapshots;
+    private final TestStepRepository testSteps;
 
     public ExecutionService(ExecutionRepository executions, TestCaseResultRepository caseResults, TestStepResultRepository stepResults,
             ExecutionArtifactRepository artifacts, TestSuiteRepository suites, TestCaseRepository cases, ProjectAccessService access,
             PlatformProperties properties, ArtifactWriter artifactWriter, ExecutionQueueGuardRepository queueGuard,
-            ExecutionVariableSnapshotRepository variableSnapshots, ProjectVariableRepository projectVariables) {
+            ExecutionVariableSnapshotRepository variableSnapshots, ProjectVariableRepository projectVariables,
+            ExecutionStepSnapshotRepository stepSnapshots, TestStepRepository testSteps) {
         this.executions = executions; this.caseResults = caseResults; this.stepResults = stepResults; this.artifacts = artifacts;
         this.suites = suites; this.cases = cases; this.access = access; this.properties = properties; this.artifactWriter = artifactWriter; this.queueGuard = queueGuard;
-        this.variableSnapshots = variableSnapshots; this.projectVariables = projectVariables;
+        this.variableSnapshots = variableSnapshots; this.projectVariables = projectVariables; this.stepSnapshots = stepSnapshots; this.testSteps = testSteps;
     }
 
     @Transactional
@@ -84,7 +90,12 @@ public class ExecutionService {
         if (selected.isEmpty()) throw error(HttpStatus.BAD_REQUEST, "no_ready_cases", "There are no READY test cases to run");
         var guard = queueGuard.lockGuard().orElseThrow(() -> new IllegalStateException("Execution queue guard row is missing")); if (guard.full(properties.execution().queueCapacity())) throw error(HttpStatus.TOO_MANY_REQUESTS, "execution_queue_full", "The execution queue is full"); guard.acquire(); queueGuard.save(guard);
         Instant now = Instant.now(); ExecutionEntity execution = executions.save(new ExecutionEntity(project, suite, user, selected.size(), key, now));
-        caseResults.saveAll(selected.stream().map(testCase -> new TestCaseResultEntity(execution, testCase)).toList());
+        var caseResultEntities = selected.stream().map(testCase -> new TestCaseResultEntity(execution, testCase)).toList();
+        caseResults.saveAll(caseResultEntities);
+        stepSnapshots.saveAll(caseResultEntities.stream()
+                .flatMap(caseResult -> testSteps.findByTestCaseIdOrderByPositionAsc(caseResult.getTestCase().getId()).stream()
+                        .map(step -> ExecutionStepSnapshotEntity.from(caseResult, step)))
+                .toList());
         variableSnapshots.saveAll(projectVariables.findByProjectIdOrderByKeyAsc(project.getId()).stream()
                 .map(variable -> variable.isSecret() ? ExecutionVariableSnapshotEntity.secret(execution, variable)
                         : ExecutionVariableSnapshotEntity.plain(execution, variable))

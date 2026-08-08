@@ -27,14 +27,13 @@ import com.megumi.testops.execution.repository.ExecutionRepository;
 import com.megumi.testops.execution.repository.TestCaseResultRepository;
 import com.megumi.testops.execution.repository.TestStepResultRepository;
 import com.megumi.testops.execution.repository.ExecutionVariableSnapshotRepository;
+import com.megumi.testops.execution.repository.ExecutionStepSnapshotRepository;
 import com.megumi.testops.execution.runner.ArtifactWriter;
 import com.megumi.testops.execution.runner.PlaywrightCaseRunner;
 import com.megumi.testops.execution.service.ExecutionRunService;
 import com.megumi.testops.project.domain.ProjectEntity;
 import com.megumi.testops.project.domain.TestCaseEntity;
 import com.megumi.testops.project.domain.TestSuiteEntity;
-import com.megumi.testops.project.repository.ProjectVariableRepository;
-import com.megumi.testops.project.repository.TestStepRepository;
 import com.megumi.testops.project.service.ProjectVariableCrypto;
 
 class ExecutionRunServiceTest {
@@ -42,12 +41,11 @@ class ExecutionRunServiceTest {
     private final TestCaseResultRepository results = mock(TestCaseResultRepository.class);
     private final PlaywrightCaseRunner runner = mock(PlaywrightCaseRunner.class);
     private final ArtifactWriter artifactWriter = mock(ArtifactWriter.class);
-    private final ProjectVariableRepository variables = mock(ProjectVariableRepository.class);
-    private final TestStepRepository stepDefinitions = mock(TestStepRepository.class);
     private final TestStepResultRepository stepResults = mock(TestStepResultRepository.class);
     private final ExecutionQueueGuardRepository queueGuard = mock(ExecutionQueueGuardRepository.class);
     private final ExecutionVariableSnapshotRepository variableSnapshots = mock(ExecutionVariableSnapshotRepository.class);
     private final ProjectVariableCrypto variableCrypto = mock(ProjectVariableCrypto.class);
+    private final ExecutionStepSnapshotRepository stepSnapshots = mock(ExecutionStepSnapshotRepository.class);
     private ExecutionRunService service;
     private ExecutionEntity execution;
     private TestCaseResultEntity caseResult;
@@ -61,8 +59,8 @@ class ExecutionRunServiceTest {
         TestCaseEntity testCase = new TestCaseEntity(suite, "Homepage smoke", null, "READY", "HIGH", null, 0, false, user, now);
         execution = new ExecutionEntity(project, suite, user, 1, java.util.UUID.randomUUID(), now);
         caseResult = new TestCaseResultEntity(execution, testCase);
-        service = new ExecutionRunService(executions, results, runner, artifactWriter, stepDefinitions,
-                stepResults, queueGuard, variableSnapshots, variableCrypto);
+        service = new ExecutionRunService(executions, results, runner, artifactWriter,
+                stepResults, queueGuard, variableSnapshots, variableCrypto, stepSnapshots);
     }
 
     @Test
@@ -81,6 +79,7 @@ class ExecutionRunServiceTest {
         when(executions.findById(execution.getId())).thenReturn(Optional.of(execution));
         when(results.findByExecutionIdOrderByTestCase_NameAsc(execution.getId())).thenReturn(List.of(caseResult));
         when(variableSnapshots.findByExecutionIdOrderByKeyAsc(execution.getId())).thenReturn(List.of());
+        when(stepSnapshots.findByCaseResultIdOrderByPositionAsc(caseResult.getId())).thenReturn(List.of());
         when(runner.run(any(), any(), any(), any(), any(), any())).thenReturn(outcome);
         when(queueGuard.lockGuard()).thenReturn(Optional.empty());
 
@@ -106,6 +105,7 @@ class ExecutionRunServiceTest {
         when(executions.findById(execution.getId())).thenReturn(Optional.of(execution));
         when(results.findByExecutionIdOrderByTestCase_NameAsc(execution.getId())).thenReturn(List.of(caseResult));
         when(variableSnapshots.findByExecutionIdOrderByKeyAsc(execution.getId())).thenReturn(List.of(snapshot));
+        when(stepSnapshots.findByCaseResultIdOrderByPositionAsc(caseResult.getId())).thenReturn(List.of());
         when(variableCrypto.decrypt(execution.getProject().getId().toString(), "PASSWORD", new byte[] { 9 }, new byte[] { 8 }, 1)).thenReturn("super-secret");
         when(runner.run(any(), any(), any(), any(), any(), any())).thenReturn(outcome);
         when(queueGuard.lockGuard()).thenReturn(Optional.empty());

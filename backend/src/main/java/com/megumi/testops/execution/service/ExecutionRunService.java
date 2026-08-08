@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.megumi.testops.execution.domain.ExecutionEntity;
 import com.megumi.testops.execution.domain.ExecutionStatus;
 import com.megumi.testops.execution.domain.ExecutionVariableSnapshotEntity;
+import com.megumi.testops.execution.repository.ExecutionStepSnapshotRepository;
 import com.megumi.testops.execution.domain.TestCaseResultEntity;
 import com.megumi.testops.execution.repository.ExecutionRepository;
 import com.megumi.testops.execution.repository.TestCaseResultRepository;
@@ -16,8 +17,8 @@ import com.megumi.testops.execution.repository.ExecutionQueueGuardRepository;
 import com.megumi.testops.execution.repository.ExecutionVariableSnapshotRepository;
 import com.megumi.testops.execution.runner.ArtifactWriter;
 import com.megumi.testops.execution.runner.PlaywrightCaseRunner;
-import com.megumi.testops.project.repository.TestStepRepository;
 import com.megumi.testops.project.service.ProjectVariableCrypto;
+import com.megumi.testops.execution.runner.PlaywrightCaseRunner.StepDefinition;
 
 @Service
 public class ExecutionRunService {
@@ -25,12 +26,12 @@ public class ExecutionRunService {
     private final TestCaseResultRepository results;
     private final PlaywrightCaseRunner runner;
     private final ArtifactWriter artifacts;
-    private final TestStepRepository stepDefinitions;
     private final TestStepResultRepository stepResults;
     private final ExecutionQueueGuardRepository queueGuard;
     private final ExecutionVariableSnapshotRepository variableSnapshots;
     private final ProjectVariableCrypto variableCrypto;
-    public ExecutionRunService(ExecutionRepository executions, TestCaseResultRepository results, PlaywrightCaseRunner runner, ArtifactWriter artifacts, TestStepRepository stepDefinitions, TestStepResultRepository stepResults, ExecutionQueueGuardRepository queueGuard, ExecutionVariableSnapshotRepository variableSnapshots, ProjectVariableCrypto variableCrypto) { this.executions = executions; this.results = results; this.runner = runner; this.artifacts = artifacts; this.stepDefinitions = stepDefinitions; this.stepResults = stepResults; this.queueGuard = queueGuard; this.variableSnapshots = variableSnapshots; this.variableCrypto = variableCrypto; }
+    private final ExecutionStepSnapshotRepository stepSnapshots;
+    public ExecutionRunService(ExecutionRepository executions, TestCaseResultRepository results, PlaywrightCaseRunner runner, ArtifactWriter artifacts, TestStepResultRepository stepResults, ExecutionQueueGuardRepository queueGuard, ExecutionVariableSnapshotRepository variableSnapshots, ProjectVariableCrypto variableCrypto, ExecutionStepSnapshotRepository stepSnapshots) { this.executions = executions; this.results = results; this.runner = runner; this.artifacts = artifacts; this.stepResults = stepResults; this.queueGuard = queueGuard; this.variableSnapshots = variableSnapshots; this.variableCrypto = variableCrypto; this.stepSnapshots = stepSnapshots; }
     @Transactional
     public void run(UUID executionId) {
         ExecutionEntity execution = executions.findById(executionId).orElse(null); if (execution == null) return;
@@ -62,13 +63,13 @@ public class ExecutionRunService {
             }
         }
         PlaywrightCaseRunner.Result outcome = null;
-        int maxAttempts = Math.max(1, result.getTestCase().getRetryCount() + 1);
-        for (int attempt = 0; attempt < maxAttempts; attempt++) { result.start(Instant.now()); results.save(result); outcome = runner.run(result.getTestCase(), execution.getTargetOriginSnapshot(), execution.getId().toString(), result.getId().toString(), resolvedVariables, secretKeys); if (!outcome.infrastructureError() || attempt + 1 >= maxAttempts) break; }
+        int maxAttempts = Math.max(1, result.getRetryCountSnapshot() + 1);
+        var definitions = stepSnapshots.findByCaseResultIdOrderByPositionAsc(result.getId()).stream().map(StepDefinition::from).toList();
+        for (int attempt = 0; attempt < maxAttempts; attempt++) { result.start(Instant.now()); results.save(result); outcome = runner.run(definitions, execution.getTargetOriginSnapshot(), execution.getId().toString(), result.getId().toString(), resolvedVariables, secretKeys); if (!outcome.infrastructureError() || attempt + 1 >= maxAttempts) break; }
         ExecutionStatus status = outcome.passed() ? ExecutionStatus.PASSED : outcome.infrastructureError() ? ExecutionStatus.ERROR : ExecutionStatus.FAILED;
         var outcomes = outcome.stepOutcomes();
         if (outcomes.isEmpty()) {
-            var definitions = stepDefinitions.findByTestCaseIdOrderByPositionAsc(result.getTestCase().getId());
-            for (var definition : definitions) stepResults.save(new com.megumi.testops.execution.domain.TestStepResultEntity(result, definition.getPosition(), definition.getAction(), "ERROR", null, outcome.errorMessage()));
+            for (var definition : definitions) stepResults.save(new com.megumi.testops.execution.domain.TestStepResultEntity(result, definition.position(), definition.action(), "ERROR", null, outcome.errorMessage()));
         } else {
             for (var step : outcomes) stepResults.save(new com.megumi.testops.execution.domain.TestStepResultEntity(result, step.position(), step.action(), step.status(), step.durationMs(), step.errorMessage()));
         }

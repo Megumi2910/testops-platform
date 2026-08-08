@@ -45,6 +45,18 @@ Secret values are deliberately not decrypted in the HTTP request. The API can en
 - Unit/packaging gate: `backend/.\mvnw.cmd -q -DskipITs verify` passes.
 - The full `verify` command was attempted. `ApplicationContextIT` and `MigrationUpgradeIT` could not start because Testcontainers reported no valid Docker server; this is an environment blocker, not a test assertion failure. Re-run `backend/.\mvnw.cmd -q verify` after Docker Desktop exposes a healthy engine.
 
+## Immutable case-definition snapshot
+
+The follow-up slice closes the second queue consistency gap. `ExecutionService.queue(...)` now copies each selected case’s ordered steps into `execution_step_snapshots` and records `retry_count_snapshot` on the case result. The worker converts those rows into `PlaywrightCaseRunner.StepDefinition` records; it no longer queries the mutable `test_steps` table when execution starts. Editing a case, changing a locator, reordering steps, or changing retry count after queueing therefore cannot alter the queued run.
+
+The snapshot deliberately keeps the original case relationship for reporting while using the copied definition for execution. That preserves traceability (“which case was requested?”) without coupling execution behavior to live authoring state.
+
+## Verification for the immutable-definition slice
+
+- Focused execution tests pass, including queue-time step copying, retry snapshot use, worker execution from snapshot definitions, variable decryption, and evidence policy.
+- `backend/.\\mvnw.cmd -q -DskipITs verify` passes.
+- Compose rebuild passes: Flyway validated 18 migrations, applied V018, JPA discovered 20 repository interfaces, and the backend reported healthy.
+
 ## Next Phase 6 slice
 
-Case definitions still resolve live `TestStepEntity` rows when a worker starts. The next slice should snapshot ordered step definitions at queue time, then execute that immutable representation so editing a case after queueing cannot change the queued run.
+The remaining execution-correctness work is browser safety after user-driven navigation: validate main-frame redirects, form submissions, popups, and script navigation against the approved target origin, then classify blocked navigation separately from generic browser failures.
