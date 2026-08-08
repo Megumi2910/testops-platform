@@ -547,9 +547,21 @@ The ecommerce frontend image rebuilt successfully for the CategoryProductsPage s
 
 Post-rebuild Compose health passed for `postgres_db`, `springboot_backend`, and `react_frontend`.
 
+The ecommerce Playwright contract passed against the ProductInfo rebuild on 2026-08-08: 9 tests in 22.7 seconds; all existing checks remained green.
+
 The ecommerce Playwright contract passed against the ShopPage rebuild on 2026-08-08: 9 tests in 22.9 seconds; all existing checks remained green.
 
 Publication: matching TestOps verification and architecture notes were committed as `4ff95a2` and pushed to `codex/milestone-9-release-candidate`; `.agents/` and `skills-lock.json` remain untouched.
+
+The next Phase 5 slice hardens ProductInfo variant and quantity controls for keyboard and assistive-technology use, and removes its unused wishlist handler. Verification is pending.
+
+The ecommerce frontend unit gate passed for ProductInfo: 3 suites and 10 tests on 2026-08-08; only the stale browser-data advisory remains.
+
+The ProductInfo production build passed with no product-info warning; remaining warnings are pre-existing outside this slice.
+
+The ecommerce frontend image rebuilt successfully with ProductInfo, retaining PostgreSQL data and waiting for backend/database health before startup.
+
+Post-rebuild Compose health passed for `postgres_db`, `springboot_backend`, and `react_frontend`.
 
 The ecommerce Playwright contract passed against the CategoryProductsPage rebuild on 2026-08-08: 9 tests in 25.4 seconds; all existing checks remained green.
 

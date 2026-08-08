@@ -424,6 +424,8 @@
   <h3>ShopPage slice</h3>
   <p>The shop route now owns a stable seller/page fetch callback, derives card shop names from the current seller response, announces loading and failures semantically, keeps add-to-cart errors in the toast system, and removes debug-only wishlist/logging paths. Its unit gate passed with three suites and ten tests, the production build has no ShopPage-specific warning, its frontend image rebuilt successfully with health gating, all three services are healthy, and the 9-test ecommerce Playwright contract remains green.</p>
   <p>Publication commits: ecommerce `b70a3f9`; TestOps documentation `4ff95a2`. Both branches were pushed after verification.</p>
+  <h3>ProductInfo accessibility slice</h3>
+  <p>The product detail purchase panel now exposes variant selection state through `aria-pressed`, labels quantity controls, hides decorative icons, and removes a dead wishlist callback without changing cart or buy-now APIs. Its unit gate passed with three suites and ten tests, the production build has no ProductInfo-specific warning, its frontend image rebuilt successfully with health gating, all three services are healthy, and the 9-test ecommerce Playwright contract remains green.</p>
 </section>
 </body>
 </html>
