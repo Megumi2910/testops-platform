@@ -82,7 +82,22 @@
       "name": "20 — Authentication and Verification",
       "description": "Login, verification, reset, logout, and protected routes. [testops-key:20-auth-verification]",
       "cases": [
-        { "key": "login-valid", "name": "Valid login", "status": "DRAFT", "priority": "P0", "tags": "sync:ecommerce-login-valid,role:customer,state:seeded,runner:testops", "description": "Credentialed login uses E2E_CUSTOMER_EMAIL and E2E_CUSTOMER_PASSWORD.", "steps": [] },
+        {
+          "key": "login-valid",
+          "name": "Valid login",
+          "status": "READY",
+          "priority": "P0",
+          "tags": "sync:ecommerce-login-valid,role:customer,state:seeded,runner:testops",
+          "description": "Credentialed login uses the permanent verified mock customer fixture and does not mutate ecommerce state.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/login", "timeoutMs": 15000 },
+            { "position": 1, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Email", "inputValue": "${E2E_CUSTOMER_EMAIL}", "timeoutMs": 15000 },
+            { "position": 2, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Mật khẩu", "inputValue": "${E2E_CUSTOMER_PASSWORD}", "timeoutMs": 15000 },
+            { "position": 3, "action": "CLICK", "locatorType": "ROLE", "locatorRole": "BUTTON", "locatorValue": "Đăng nhập", "timeoutMs": 15000 },
+            { "position": 4, "action": "ASSERT_URL_EQUALS", "expectedValue": "/", "timeoutMs": 15000 },
+            { "position": 5, "action": "ASSERT_VISIBLE", "locatorType": "TEXT", "locatorValue": "Danh mục sản phẩm", "timeoutMs": 15000 }
+          ]
+        },
         { "key": "unverified-restriction", "name": "Unverified account restriction", "status": "DRAFT", "priority": "P1", "tags": "sync:ecommerce-unverified-restriction,role:unverified,state:seeded,runner:native", "description": "The native ecommerce suite owns Mailpit and verification state.", "steps": [] }
       ]
     },

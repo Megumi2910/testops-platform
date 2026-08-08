@@ -164,6 +164,26 @@ matches. Prefer a role, label, test id, or exact visible text over CSS/XPath.
 The first step may set viewport, locale, and timezone. Later steps inherit the
 same browser context and cannot redefine those settings.
 
+### Permanent local mock accounts
+
+The ecommerce `dev` profile enables a repeatable, idempotent `MockDataSeeder`.
+It creates these mock-only identities and reuses them on every restart:
+
+| Identity | Email | Default password | Intended use |
+| --- | --- | --- | --- |
+| Verified customer | `mock.customer@example.test` | `MockCustomer!123` | Login, cart review, checkout entry, order and review reads |
+| Unverified customer | `mock.unverified@example.test` | `MockUnverified!123` | Verification restriction and resend flows |
+| Seller | `mock.seller@example.test` | `MockSeller!123` | Seller dashboard and ownership checks |
+
+The seed also provides three categories, three approved products, a two-item
+customer cart, a completed order, a verified-purchase review, and a customer ↔
+seller message thread. These are development fixtures, not production
+credentials. Override them with `MOCK_*` environment variables when needed, or
+set `MOCK_DATA_ENABLED=false` to run against an intentionally empty database.
+The TestOps manifest references the verified customer through
+`TESTOPS_E2E_CUSTOMER_EMAIL` and `TESTOPS_E2E_CUSTOMER_PASSWORD`, so secret
+values stay outside Git.
+
 ## 6. Understand the action language
 
 The builder reads action descriptors from the platform options endpoint. The
@@ -401,7 +421,10 @@ ran with one worker against `http://localhost:3001` and passed all 9 tests,
 including login-to-checkout entry, keyboard-safe cart cancellation, mobile
 layout, shareable search state, retry behavior, pagination, and duplicate-submit
 protection. The TestOps catalog preflight then passed with 9 suites and 12
-cases, with no API calls during dry-run.
+cases, with no API calls during dry-run. Its READY set now includes the
+non-destructive verified-customer login; dry-run still skips the two variable
+values unless `TESTOPS_E2E_CUSTOMER_EMAIL` and
+`TESTOPS_E2E_CUSTOMER_PASSWORD` are provided.
 
 Related source walkthroughs:
 
