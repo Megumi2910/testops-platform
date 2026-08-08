@@ -7,14 +7,14 @@ The ecommerce catalog is source-controlled at `catalog/ecommerce-testops.json`. 
 The manifest gives every project, suite, and case a stable external key. The key is stored as a marker in the project/suite description or case tags, so a renamed display name does not create a duplicate on the next synchronization. Cases are first written as `DRAFT`; a manifest case marked `READY` is promoted only after the same API validation that the UI uses.
 
 The first catalog contains the nine ecommerce domains from Milestone 10. The
-current manifest has 38 cases: thirty-three safe single-browser cases are `READY`
+current manifest has 38 cases: thirty-four safe single-browser cases are `READY`
 (homepage, catalog entry, shareable search, no-results search, product detail,
 category browse, category directory, flash sale, about, contact, help,
 verified-customer login, customer dashboard, order history, profile, settings,
 and empty wishlist, order detail, plus mobile keyboard search, the guest cart
 route guard, invalid-login feedback, contact-form accessibility, logout-session
 protection, seeded order-detail, verified-review-visibility, and completed-order
-cancellation-guard, seller-dashboard, seller-store-profile, seller-analytics, seller-product-catalog, seller-order-management, seller-settings, seller-settings-tabs, and the guest admin-route guard journeys).
+cancellation-guard, seller-dashboard, seller-store-profile, seller-analytics, seller-product-catalog, seller-order-management, seller-settings, seller-settings-tabs, the guest admin-route guard, and unverified-account recovery journeys).
 Credentialed verification,
 transactional, Mailpit, two-user messaging, and destructive cases remain drafts
 until their native fixture/test harness is available; this prevents a catalog
@@ -113,7 +113,7 @@ docker volume rm testops-e2e_postgres18_data
 
 Do not run that command against the normal `testops-platform_postgres18_data` volume.
 
-The current catalog has 9 suites and 38 cases. Its 33-case READY set
+The current catalog has 9 suites and 38 cases. Its 34-case READY set
 includes the non-destructive verified-customer login, guest homepage/catalog
 checks, shareable/no-results search checks, a product-detail journey for
 `/product/1`, a category-browse journey for `/category/1`, a category-directory
@@ -121,7 +121,7 @@ journey for `/categories`, a flash-sale journey for `/flash-sale`, public
 about/contact/help journeys, seven authenticated customer journeys plus the
 mobile keyboard search, guest cart route-guard, invalid-login, contact-form
 accessibility, logout-session, seeded order-detail, verified-review-visibility,
-and completed-order cancellation-guard journeys plus the seller dashboard, seller store profile, seller analytics, and seller product catalog. The logout case verifies the account
+and completed-order cancellation-guard journeys plus the seller dashboard, seller store profile, seller analytics, seller product catalog, and unverified-account recovery. The logout case verifies the account
 menu changes to `Đăng nhập` and that `/customer/orders` redirects to `/login`
 after sign-out. Search uses
 `ASSERT_VALUE` with the unique `LABEL` locator for the page's
@@ -156,8 +156,8 @@ environment on 2026-08-08. It passed all four steps (`NAVIGATE`, `ASSERT_VALUE`,
 artifact.
 
 The complete READY catalog was then queued again after a clean backend restart.
-Target checking returned `REACHABLE` with HTTP 200; all 33 READY cases passed,
-with 268 total steps. Thirty-one definitions contain a screenshot step; the
+Target checking returned `REACHABLE` with HTTP 200; all 34 READY cases passed,
+with 280 total steps. Thirty-two definitions contain a screenshot step; the
 non-secret cases retain `SCREENSHOT` artifacts, while credentialed runs remain
 subject to evidence suppression. The valid-login case passed six steps without
 capturing credential evidence. Repeated disposable-stack logins can hit the
@@ -174,7 +174,7 @@ returned HTTP 200. The order-history case initially used exact `#MOCK-ORDER-001`
 text and timed out in managed Chromium; changing both the wait and assertion to
 the rendered `TEXT` substring made the case deterministic. The empty wishlist
 case uses `TEXT_EXACT` for the page title because the page also contains the
-similar empty-state heading. The final suite results were 1/1, 10/10, 9/9,
+similar empty-state heading. The final suite results were 1/1, 10/10, 10/10,
 and 3/3 for platform smoke, catalog/search, authentication/customer, and
 resilience/accessibility coverage. The mobile case uses the first-step
 390×844 viewport context, a `PLACEHOLDER` fill, `PRESS=Enter`, and an exact
@@ -234,6 +234,11 @@ artifact-list route. The seller-product-catalog case passed all 13 steps in
 execution `33687640-7680-4400-b0e9-a0090ff61888`, verifying the seeded inventory
 summary and three product cards; its screenshot was suppressed because its
 seller password is secret-backed.
+The unverified-account recovery case passed all 12 steps in execution
+`f5ff9cc1-de0a-41a6-ab72-dcf1b6039bf6`: it signs in with
+`${E2E_UNVERIFIED_EMAIL}`/`${E2E_UNVERIFIED_PASSWORD}`, verifies the persistent
+banner and **Xác thực ngay** link, then confirms `/verify-email/request`. Its
+secret-backed password intentionally suppresses the screenshot artifact.
 
 If the disposable auth limiter returns HTTP 429 during apply or polling,
 restart only `testops-e2e-backend-1`, wait for its health check, then obtain one

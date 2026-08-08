@@ -10,7 +10,9 @@
     { "key": "E2E_CUSTOMER_EMAIL", "secret": false, "valueFromEnv": "TESTOPS_E2E_CUSTOMER_EMAIL" },
     { "key": "E2E_CUSTOMER_PASSWORD", "secret": true, "valueFromEnv": "TESTOPS_E2E_CUSTOMER_PASSWORD" },
     { "key": "E2E_SELLER_EMAIL", "secret": false, "valueFromEnv": "TESTOPS_E2E_SELLER_EMAIL" },
-    { "key": "E2E_SELLER_PASSWORD", "secret": true, "valueFromEnv": "TESTOPS_E2E_SELLER_PASSWORD" }
+    { "key": "E2E_SELLER_PASSWORD", "secret": true, "valueFromEnv": "TESTOPS_E2E_SELLER_PASSWORD" },
+    { "key": "E2E_UNVERIFIED_EMAIL", "secret": false, "valueFromEnv": "TESTOPS_E2E_UNVERIFIED_EMAIL" },
+    { "key": "E2E_UNVERIFIED_PASSWORD", "secret": true, "valueFromEnv": "TESTOPS_E2E_UNVERIFIED_PASSWORD" }
   ],
   "suites": [
     {
@@ -362,7 +364,28 @@
             { "position": 8, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
           ]
         },
-        { "key": "unverified-restriction", "name": "Unverified account restriction", "status": "DRAFT", "priority": "P1", "tags": "sync:ecommerce-unverified-restriction,role:unverified,state:seeded,runner:native", "description": "The native ecommerce suite owns Mailpit and verification state.", "steps": [] }
+        {
+          "key": "unverified-restriction",
+          "name": "Recover an unverified account",
+          "status": "READY",
+          "priority": "P1",
+          "tags": "sync:ecommerce-unverified-restriction,role:unverified,state:seeded,runner:testops",
+          "description": "Sign in with the permanent unverified fixture, follow the persistent verification link, and confirm the recovery page is available.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/login", "timeoutMs": 15000 },
+            { "position": 1, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Email", "inputValue": "${E2E_UNVERIFIED_EMAIL}", "timeoutMs": 15000 },
+            { "position": 2, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Mật khẩu", "inputValue": "${E2E_UNVERIFIED_PASSWORD}", "timeoutMs": 15000 },
+            { "position": 3, "action": "CLICK", "locatorType": "ROLE", "locatorRole": "BUTTON", "locatorValue": "Đăng nhập", "timeoutMs": 15000 },
+            { "position": 4, "action": "ASSERT_URL_EQUALS", "expectedValue": "/", "timeoutMs": 15000 },
+            { "position": 5, "action": "ASSERT_VISIBLE", "locatorType": "TEXT_EXACT", "locatorValue": "Tài khoản của bạn chưa được xác thực", "locatorIndex": 0, "timeoutMs": 15000 },
+            { "position": 6, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "LINK", "locatorValue": "Xác thực ngay", "timeoutMs": 15000 },
+            { "position": 7, "action": "CLICK", "locatorType": "ROLE", "locatorRole": "LINK", "locatorValue": "Xác thực ngay", "timeoutMs": 15000 },
+            { "position": 8, "action": "ASSERT_URL_EQUALS", "expectedValue": "/verify-email/request", "timeoutMs": 15000 },
+            { "position": 9, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Xác thực email", "timeoutMs": 15000 },
+            { "position": 10, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "LINK", "locatorValue": "Về trang chủ", "timeoutMs": 15000 },
+            { "position": 11, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
+        }
       ]
     },
     {

@@ -508,9 +508,9 @@ The order-history case uses a substring locator for `MOCK-ORDER-001` because
 managed Chromium renders the order number with surrounding label text, while
 the wishlist case uses exact page-title text to avoid a strict-mode collision
 with `Chưa có sản phẩm yêu thích`. The current manifest totals are therefore
-38 cases, 33 `READY`, 268 steps, and 31 screenshot-bearing definitions. The
+38 cases, 34 `READY`, 280 steps, and 32 screenshot-bearing definitions. The
 complete READY acceptance is 1/1 platform smoke, 10/10 catalog-and-search,
-9/9 authentication/customer cases, 2/2 orders-and-reviews cases,
+10/10 authentication/customer cases, 2/2 orders-and-reviews cases,
 7/7 seller-workflows cases, and 4/4 resilience/accessibility cases.
 
 The mobile keyboard resilience case uses a 390×844 browser context, fills the unique storefront
@@ -585,6 +585,13 @@ The admin-route-guard case passed all 5 steps in execution
 request redirects to the usable login form; its screenshot artifact is
 available because the journey does not use credentials. A direct browser check
 also confirmed the redirect and no console errors.
+
+The unverified-account recovery case passed all 12 steps in execution
+`f5ff9cc1-de0a-41a6-ab72-dcf1b6039bf6`. It signs in with the permanent
+unverified fixture, waits for the delayed verification banner, follows
+**Xác thực ngay**, and verifies the `/verify-email/request` recovery page. The
+password is secret-backed, so the screenshot step completed but no image
+artifact was stored; this is expected secret-safe evidence behavior.
 
 Repeated scripted logins can exhaust the disposable E2E auth limiter and return
 HTTP 429. The verified recovery is to restart only `testops-e2e-backend-1`,

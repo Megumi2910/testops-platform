@@ -202,7 +202,7 @@ search-locator fixes, the current release-candidate evidence is:
 - authenticated catalog apply: 9 suites and 38 cases reconciled with
   redacted variables;
 - live target check: `REACHABLE`/HTTP 200;
-- all 33 current READY catalog cases: passed, 268 steps; thirty-one screenshot-bearing
+- all 34 current READY catalog cases: passed, 280 steps; thirty-two screenshot-bearing
   cases retained screenshot artifacts and traces.
 - final Compose inspection: normal, enabled E2E, and disabled E2E services all
   reported `running`.
@@ -221,7 +221,7 @@ Linux CI Testcontainers job.
 
 The authenticated customer expansion is now part of the release evidence. The
 platform-smoke, catalog/search, customer, orders/reviews, seller workflows,
-and resilience/accessibility suites passed 1/1, 10/10, 9/9, 2/2, 7/7, and 4/4
+and resilience/accessibility suites passed 1/1, 10/10, 10/10, 2/2, 7/7, and 4/4
 respectively. Customer coverage includes
 dashboard, order history, profile, settings, empty wishlist, and valid login.
 The resilience case also verifies mobile keyboard search at 390×844 and the
@@ -275,6 +275,10 @@ screenshot was suppressed because the seller password is secret-backed.
 The guest admin-route guard then passed all 5 steps in execution
 `dfa5e7be-b46f-4ee0-ade4-674cb868d697`, confirming `/admin` redirects to the
 usable login form; its screenshot was retained because no credential is used.
+The unverified-account recovery case passed all 12 steps in execution
+`f5ff9cc1-de0a-41a6-ab72-dcf1b6039bf6`, confirming the delayed verification
+banner, **Xác thực ngay**, and `/verify-email/request`; its screenshot was
+suppressed because the password is secret-backed.
 Dashboard exploration discovered a
 real ecommerce PostgreSQL query defect; commit `e738f2f` replaced the invalid
 `DISTINCT` address projection with a bounded recent-order lookup, and its

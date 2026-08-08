@@ -16,7 +16,7 @@ same checks without guessing which Compose profile or port is in use.
 | Disabled local-target Playwright | `E2E_DISABLED_BASE_URL=http://localhost:3101`, `MAILPIT_URL=http://127.0.0.1:8026` | PASS — 1 passed |
 | Catalog preflight | `scripts/sync-ecommerce-catalog.ps1 -Mode dry-run` | PASS — 9 suites, 38 cases, no API calls |
 | Catalog apply | `-Mode apply -BaseUrl http://localhost:8180` | PASS — 9 suites, 38 cases reconciled; variable values redacted in logs |
-| Live READY acceptance | target check + fourteen suite/case queue requests | PASS — target `REACHABLE`/HTTP 200, all 33 READY cases passed, 268 steps, 31 screenshot-bearing definitions; secret-bearing artifacts suppressed by policy |
+| Live READY acceptance | target check + fifteen suite/case queue requests | PASS — target `REACHABLE`/HTTP 200, all 34 READY cases passed, 280 steps, 32 screenshot-bearing definitions; secret-bearing artifacts suppressed by policy |
 
 The full backend command’s only errors were `ApplicationContextIT` and
 `MigrationUpgradeIT` failing before test execution because Testcontainers saw
@@ -40,7 +40,7 @@ Testcontainers job because this Windows shell cannot expose a usable Docker API
 to the Java client.
 
 The live acceptance now covers six runnable suites/case groups: platform smoke
-(1/1), catalog and search (10/10), authentication/customer routes (9/9),
+(1/1), catalog and search (10/10), authentication/customer routes (10/10),
 orders/reviews (2/2), seller workflows (6/6), and resilience/accessibility (3/3). The
 customer run includes dashboard, order history, profile, settings, empty
 wishlist, and valid login. The resilience case uses a 390×844 context, fills
@@ -101,6 +101,10 @@ its screenshot was suppressed because the seller password is secret-backed.
 The guest admin-route guard then passed all 5 steps in execution
 `dfa5e7be-b46f-4ee0-ade4-674cb868d697`, confirming `/admin` redirects to the
 usable login form; its screenshot was retained because no credential is used.
+The unverified-account recovery case passed all 12 steps in execution
+`f5ff9cc1-de0a-41a6-ab72-dcf1b6039bf6`, confirming the persistent verification
+banner, **Xác thực ngay**, and `/verify-email/request`. Its screenshot was
+suppressed because the unverified password is secret-backed.
 Dashboard exploration found and corrected the
 ecommerce PostgreSQL `DISTINCT`/`ORDER BY` defect in commit `e738f2f`; the
 focused service test and rebuilt `/api/orders/dashboard-statistics` endpoint
