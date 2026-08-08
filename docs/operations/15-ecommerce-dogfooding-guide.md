@@ -449,11 +449,11 @@ the Spring Boot backend, and the React frontend. The native Playwright contract
 ran with one worker against `http://localhost:3001` and passed all 9 tests,
 including login-to-checkout entry, keyboard-safe cart cancellation, mobile
 layout, shareable search state, retry behavior, pagination, and duplicate-submit
-protection. The TestOps catalog preflight then passed with 9 suites and 31
-cases, with no API calls during dry-run. Its 26-case READY set now includes
+protection. The TestOps catalog preflight then passed with 9 suites and 32
+cases, with no API calls during dry-run. Its 27-case READY set now includes
 the non-destructive verified-customer login, customer dashboard, order history,
 profile, settings, empty wishlist, order detail, product detail, category browse, category
-directory, flash-sale, about, contact, help, mobile keyboard search, guest cart route-guard, invalid-login, contact-form accessibility, logout-session, seeded order-detail, verified-review-visibility, completed-order-cancel-guard, and seller-dashboard journeys; dry-run still skips the four variable
+directory, flash-sale, about, contact, help, mobile keyboard search, guest cart route-guard, invalid-login, contact-form accessibility, logout-session, seeded order-detail, verified-review-visibility, completed-order-cancel-guard, seller-dashboard, and seller-store-profile journeys; dry-run still skips the four variable
 values unless `TESTOPS_E2E_CUSTOMER_EMAIL` and
 `TESTOPS_E2E_CUSTOMER_PASSWORD`, `TESTOPS_E2E_SELLER_EMAIL`, and
 `TESTOPS_E2E_SELLER_PASSWORD` are provided.
@@ -466,7 +466,7 @@ and project creation. Run the disabled profile separately when you need the
 negative local-bridge assertion.
 
 The catalog was applied successfully to the isolated E2E backend on 2026-08-08
-(port 8180): 9 suites and 31 cases were reconciled, including all READY
+(port 8180): 9 suites and 32 cases were reconciled, including all READY
 promotions and the secret-safe customer and seller variables. The normal development
 database was not used for this operation.
 
@@ -508,10 +508,10 @@ The order-history case uses a substring locator for `MOCK-ORDER-001` because
 managed Chromium renders the order number with surrounding label text, while
 the wishlist case uses exact page-title text to avoid a strict-mode collision
 with `Chưa có sản phẩm yêu thích`. The current manifest totals are therefore
-31 cases, 26 `READY`, 179 steps, and 24 screenshot-bearing definitions. The
+32 cases, 27 `READY`, 192 steps, and 25 screenshot-bearing definitions. The
 complete READY acceptance is 1/1 platform smoke, 10/10 catalog-and-search,
-9/9 authentication/customer cases, 2/2 orders-and-reviews cases, 1/1
-seller-workflows case, and 3/3 resilience/accessibility cases.
+9/9 authentication/customer cases, 2/2 orders-and-reviews cases, 2/2
+seller-workflows cases, and 3/3 resilience/accessibility cases.
 
 The mobile keyboard resilience case uses a 390×844 browser context, fills the unique storefront
 search placeholder with `shirt`, presses `Enter`, and asserts the shareable
@@ -547,6 +547,10 @@ the role-specific redirect to `/seller`, and verifies `Mock Local Store`, the
 dashboard summary, `Đơn hàng gần đây`, and `Sản phẩm bán chạy`. It passed all
 11 steps in execution `743d26d3-c620-4fd8-987a-b6d9844aed79`; its screenshot
 was suppressed because the seller password is secret-backed.
+The seller-store-profile case then passed all 13 steps in execution
+`68308019-b7ef-424e-b4ee-11ab108e9f69`, verifying the read-only store, contact,
+operating-hours, and policy sections without a save control; its screenshot was
+also suppressed by the secret-safe policy.
 
 Repeated scripted logins can exhaust the disposable E2E auth limiter and return
 HTTP 429. The verified recovery is to restart only `testops-e2e-backend-1`,

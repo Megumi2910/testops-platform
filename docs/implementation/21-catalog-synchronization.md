@@ -7,14 +7,14 @@ The ecommerce catalog is source-controlled at `catalog/ecommerce-testops.json`. 
 The manifest gives every project, suite, and case a stable external key. The key is stored as a marker in the project/suite description or case tags, so a renamed display name does not create a duplicate on the next synchronization. Cases are first written as `DRAFT`; a manifest case marked `READY` is promoted only after the same API validation that the UI uses.
 
 The first catalog contains the nine ecommerce domains from Milestone 10. The
-current manifest has 31 cases: twenty-six safe single-browser cases are `READY`
+current manifest has 32 cases: twenty-seven safe single-browser cases are `READY`
 (homepage, catalog entry, shareable search, no-results search, product detail,
 category browse, category directory, flash sale, about, contact, help,
 verified-customer login, customer dashboard, order history, profile, settings,
 and empty wishlist, order detail, plus mobile keyboard search, the guest cart
 route guard, invalid-login feedback, contact-form accessibility, logout-session
 protection, seeded order-detail, verified-review-visibility, and completed-order
-cancellation-guard, and seller-dashboard journeys).
+cancellation-guard, seller-dashboard, and seller-store-profile journeys).
 Credentialed verification,
 transactional, Mailpit, two-user messaging, and destructive cases remain drafts
 until their native fixture/test harness is available; this prevents a catalog
@@ -113,7 +113,7 @@ docker volume rm testops-e2e_postgres18_data
 
 Do not run that command against the normal `testops-platform_postgres18_data` volume.
 
-The current catalog has 9 suites and 31 cases. Its 26-case READY set
+The current catalog has 9 suites and 32 cases. Its 27-case READY set
 includes the non-destructive verified-customer login, guest homepage/catalog
 checks, shareable/no-results search checks, a product-detail journey for
 `/product/1`, a category-browse journey for `/category/1`, a category-directory
@@ -121,7 +121,7 @@ journey for `/categories`, a flash-sale journey for `/flash-sale`, public
 about/contact/help journeys, seven authenticated customer journeys plus the
 mobile keyboard search, guest cart route-guard, invalid-login, contact-form
 accessibility, logout-session, seeded order-detail, verified-review-visibility,
-and completed-order cancellation-guard journeys plus the seller dashboard. The logout case verifies the account
+and completed-order cancellation-guard journeys plus the seller dashboard and seller store profile. The logout case verifies the account
 menu changes to `Đăng nhập` and that `/customer/orders` redirects to `/login`
 after sign-out. Search uses
 `ASSERT_VALUE` with the unique `LABEL` locator for the page's
@@ -142,7 +142,7 @@ profile remains the required check for proving that the same localhost origin
 is blocked when `TARGET_LOCAL_DEV_ENABLED=false`.
 
 On 2026-08-08, an authenticated apply against the isolated E2E backend on
-port 8180 completed successfully for all 9 suites and 31 cases. The run
+port 8180 completed successfully for all 9 suites and 32 cases. The run
 exercised marker reconciliation, redacted variable updates, P0/P1 mapping,
 and READY promotion after the step-replacement flush fix.
 
@@ -156,8 +156,8 @@ environment on 2026-08-08. It passed all four steps (`NAVIGATE`, `ASSERT_VALUE`,
 artifact.
 
 The complete READY catalog was then queued again after a clean backend restart.
-Target checking returned `REACHABLE` with HTTP 200; all 26 READY cases passed,
-with 179 total steps. Twenty-four definitions contain a screenshot step; the
+Target checking returned `REACHABLE` with HTTP 200; all 27 READY cases passed,
+with 192 total steps. Twenty-five definitions contain a screenshot step; the
 non-secret cases retain `SCREENSHOT` artifacts, while credentialed runs remain
 subject to evidence suppression. The valid-login case passed six steps without
 capturing credential evidence. Repeated disposable-stack logins can hit the
@@ -202,6 +202,10 @@ by the same secret-safe evidence policy. The seller-dashboard case passed all
 11 steps in execution `743d26d3-c620-4fd8-987a-b6d9844aed79`, followed the
 seller-specific `/seller` redirect, and verified the seeded store and dashboard
 sections; its screenshot was suppressed because its seller password is secret-backed.
+The seller-store-profile case passed all 13 steps in execution
+`68308019-b7ef-424e-b4ee-11ab108e9f69`, verifying the read-only store, contact,
+operating-hours, and policy sections; its screenshot was suppressed because its
+seller password is secret-backed.
 
 If the disposable auth limiter returns HTTP 429 during apply or polling,
 restart only `testops-e2e-backend-1`, wait for its health check, then obtain one
