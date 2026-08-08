@@ -16,7 +16,7 @@ From the TestOps repository:
 .\scripts\sync-ecommerce-catalog.ps1 -Mode dry-run
 ```
 
-Dry run reads and validates the manifest, prints every planned API operation, and never needs a token. Use this before applying a reviewable change.
+Dry run reads and validates the manifest, prints every planned API operation, and never needs a token. Use this before applying a reviewable change. Validation is fail-closed: action names, locator types (including `TEXT_EXACT`), required values, non-negative `locatorIndex`, contiguous positions, first-step context settings, viewport bounds, locale/timezone shapes, READY ordering, and timeout bounds are checked before the first API call.
 
 ## Apply
 
@@ -39,6 +39,8 @@ The script creates or updates the `Ecommerce` project at `http://localhost:3001`
 4. Existing entities are updated with their optimistic-concurrency version.
 5. READY promotion is a second update so incomplete definitions cannot silently become runnable.
 6. No entities are deleted or archived automatically. Removing a manifest entry is therefore reversible and safe; archive it explicitly in the UI when the team agrees.
+
+The manifest can carry `viewportWidth`, `viewportHeight`, `locale`, and `timezoneId` on step 0. The synchronizer passes these fields through unchanged; the backend persists them in V020 and applies them while creating the isolated browser context. Keeping the preflight in PowerShell gives a catalog author a local, line-specific failure before a partial apply can create or update entities.
 
 ## What belongs in TestOps versus native ecommerce tests
 

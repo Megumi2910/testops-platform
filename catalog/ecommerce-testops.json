@@ -24,8 +24,8 @@
           "tags": "sync:ecommerce-homepage-smoke,role:guest,state:clean,runner:testops",
           "description": "Open the storefront homepage and verify its product category landmark.",
           "steps": [
-            { "position": 0, "action": "NAVIGATE", "inputValue": "/", "timeoutMs": 15000 },
-            { "position": 1, "action": "ASSERT_VISIBLE", "locatorType": "TEXT", "locatorValue": "Danh mục sản phẩm", "timeoutMs": 15000 },
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/", "timeoutMs": 15000, "viewportWidth": 1280, "viewportHeight": 720, "locale": "en-US", "timezoneId": "Asia/Ho_Chi_Minh" },
+            { "position": 1, "action": "ASSERT_VISIBLE", "locatorType": "TEXT_EXACT", "locatorValue": "Danh mục sản phẩm", "timeoutMs": 15000, "locatorIndex": 0 },
             { "position": 2, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
           ]
         }

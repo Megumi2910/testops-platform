@@ -11,6 +11,54 @@ $ErrorActionPreference = 'Stop'
 $manifest = Get-Content -Raw -LiteralPath $ManifestPath | ConvertFrom-Json
 if ($manifest.schemaVersion -ne 1) { throw "Unsupported catalog schema version: $($manifest.schemaVersion)" }
 
+$supportedActions = @('NAVIGATE', 'CLICK', 'FILL', 'CLEAR', 'SELECT_OPTION', 'CHECK', 'UNCHECK', 'WAIT', 'WAIT_VISIBLE', 'WAIT_HIDDEN', 'PRESS', 'HOVER', 'ASSERT_TEXT_EQUALS', 'ASSERT_TEXT_CONTAINS', 'ASSERT_VISIBLE', 'ASSERT_HIDDEN', 'ASSERT_VALUE', 'ASSERT_CHECKED', 'ASSERT_ENABLED', 'ASSERT_DISABLED', 'ASSERT_ATTRIBUTE', 'ASSERT_COUNT', 'ASSERT_URL_CONTAINS', 'ASSERT_URL_EQUALS', 'TAKE_SCREENSHOT')
+$locatorActions = @('CLICK', 'FILL', 'CLEAR', 'SELECT_OPTION', 'CHECK', 'UNCHECK', 'WAIT_VISIBLE', 'WAIT_HIDDEN', 'PRESS', 'HOVER', 'ASSERT_TEXT_EQUALS', 'ASSERT_TEXT_CONTAINS', 'ASSERT_VISIBLE', 'ASSERT_HIDDEN', 'ASSERT_VALUE', 'ASSERT_CHECKED', 'ASSERT_ENABLED', 'ASSERT_DISABLED', 'ASSERT_ATTRIBUTE', 'ASSERT_COUNT')
+$locatorTypes = @('ROLE', 'LABEL', 'TEST_ID', 'TEXT', 'TEXT_EXACT', 'PLACEHOLDER', 'ALT_TEXT', 'TITLE', 'CSS', 'XPATH')
+$expectedActions = @('ASSERT_TEXT_EQUALS', 'ASSERT_TEXT_CONTAINS', 'ASSERT_VALUE', 'ASSERT_ATTRIBUTE', 'ASSERT_COUNT', 'ASSERT_URL_CONTAINS', 'ASSERT_URL_EQUALS')
+
+function Has-Text([object]$value) { return $null -ne $value -and -not [string]::IsNullOrWhiteSpace([string]$value) }
+
+function Validate-Step([object]$step, [string]$suiteKey, [string]$caseKey, [int]$expectedPosition) {
+    if ($null -eq $step) { throw "Case '$caseKey' in suite '$suiteKey' contains a null step." }
+    if ($step.position -ne $expectedPosition) { throw "Case '$caseKey' in suite '$suiteKey' must use contiguous step positions starting at 0." }
+    $action = ([string]$step.action).Trim().ToUpperInvariant()
+    if ($supportedActions -notcontains $action) { throw "Case '$caseKey' in suite '$suiteKey' uses unsupported action '$($step.action)'." }
+    $hasLocator = Has-Text $step.locatorType -or Has-Text $step.locatorValue
+    if ($locatorActions -contains $action -and (-not (Has-Text $step.locatorType) -or -not (Has-Text $step.locatorValue))) { throw "Case '$caseKey' step $expectedPosition requires locatorType and locatorValue." }
+    if ((Has-Text $step.locatorType) -and $locatorTypes -notcontains ([string]$step.locatorType).Trim().ToUpperInvariant()) { throw "Case '$caseKey' step $expectedPosition uses unsupported locator type '$($step.locatorType)'." }
+    if ($null -ne $step.locatorIndex) {
+        $index = 0
+        if (-not [int]::TryParse([string]$step.locatorIndex, [ref]$index) -or $index -lt 0 -or -not $hasLocator) { throw "Case '$caseKey' step $expectedPosition has an invalid locatorIndex; use a non-negative integer with a locator." }
+    }
+    if ($action -in @('NAVIGATE', 'PRESS') -and -not (Has-Text $step.inputValue)) { throw "Case '$caseKey' step $expectedPosition requires inputValue." }
+    if ($expectedActions -contains $action -and -not (Has-Text $step.expectedValue)) { throw "Case '$caseKey' step $expectedPosition requires expectedValue." }
+    if ($action -eq 'ASSERT_ATTRIBUTE' -and -not (Has-Text $step.inputValue)) { throw "Case '$caseKey' step $expectedPosition requires an attribute name in inputValue." }
+    if ($action -eq 'ASSERT_COUNT') { $count = 0; if (-not [int]::TryParse([string]$step.expectedValue, [ref]$count) -or $count -lt 0) { throw "Case '$caseKey' step $expectedPosition requires a non-negative integer expectedValue." } }
+    if ($null -ne $step.timeoutMs -and ([int]$step.timeoutMs -lt 100 -or [int]$step.timeoutMs -gt 120000)) { throw "Case '$caseKey' step $expectedPosition timeoutMs must be between 100 and 120000." }
+    $hasWidth = $null -ne $step.viewportWidth
+    $hasHeight = $null -ne $step.viewportHeight
+    if ($hasWidth -or $hasHeight -or (Has-Text $step.locale) -or (Has-Text $step.timezoneId)) {
+        if ($expectedPosition -ne 0) { throw "Case '$caseKey' browser context settings must be on step 0." }
+        if ($hasWidth -ne $hasHeight) { throw "Case '$caseKey' viewportWidth and viewportHeight must be supplied together." }
+        if ($hasWidth -and ([int]$step.viewportWidth -lt 320 -or [int]$step.viewportWidth -gt 3840 -or [int]$step.viewportHeight -lt 240 -or [int]$step.viewportHeight -gt 2160)) { throw "Case '$caseKey' viewport must be between 320x240 and 3840x2160." }
+        if ((Has-Text $step.locale) -and ([string]$step.locale -notmatch '^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$')) { throw "Case '$caseKey' locale must be a BCP-47 language tag." }
+        if ((Has-Text $step.timezoneId) -and ([string]$step.timezoneId -notmatch '^[A-Za-z_]+(?:/[A-Za-z0-9_+\-]+)+$')) { throw "Case '$caseKey' timezoneId must be an IANA timezone id." }
+    }
+}
+
+foreach ($suiteDefinition in @($manifest.suites)) {
+    foreach ($caseDefinition in @($suiteDefinition.cases)) {
+        $caseSteps = @($caseDefinition.steps)
+        if ($caseSteps.Count -eq 1 -and $null -eq $caseSteps[0]) { $caseSteps = @() }
+        for ($position = 0; $position -lt $caseSteps.Count; $position++) { Validate-Step $caseSteps[$position] ([string]$suiteDefinition.key) ([string]$caseDefinition.key) $position }
+        if ([string]$caseDefinition.status -eq 'READY') {
+            if ($caseSteps.Count -eq 0) { throw "READY case '$($caseDefinition.key)' must contain at least one step." }
+            if (([string]$caseSteps[0].action).Trim().ToUpperInvariant() -ne 'NAVIGATE') { throw "READY case '$($caseDefinition.key)' must start with NAVIGATE." }
+        }
+    }
+}
+Write-Host "Manifest validation passed: $($manifest.suites.Count) suites, $((@($manifest.suites | ForEach-Object { @($_.cases) })).Count) cases."
+
 function Write-Plan([string]$method, [string]$path, [object]$body) {
     $summary = if ($null -eq $body) { '' } else { " body=$($body | ConvertTo-Json -Compress -Depth 20)" }
     Write-Host "[$Mode] $method $path$summary"
