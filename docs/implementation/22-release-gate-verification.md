@@ -122,3 +122,6 @@ to work around a local pipe problem.
 
 The documentation manifest check also passed with 22 registered documents and
 no missing paths after this guide was added.
+
+The final Compose health inspection also reported all services running in the
+normal, enabled E2E, and disabled E2E projects.

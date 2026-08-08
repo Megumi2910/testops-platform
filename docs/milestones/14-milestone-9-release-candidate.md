@@ -188,6 +188,31 @@ by the Docker Desktop/Testcontainers socket response described above. The
 Compose acceptance stack exercises the built backend, PostgreSQL migrations,
 managed Chromium, frontend, and mail service without that socket path.
 
+### Supplemental verification on 2026-08-08
+
+After the catalog priority, marker-reconciliation, step-replacement, and
+search-locator fixes, the current release-candidate evidence is:
+
+- backend `verify -DskipITs`: 55 unit tests passed and packaging succeeded;
+- frontend lint, typecheck, 12 Vitest tests, and production build passed;
+- enabled Playwright with the live ecommerce origin: 18 passed and 1
+  intentionally skipped disabled-profile case;
+- disabled-local-target Playwright: 1 passed independently;
+- catalog dry-run: 9 suites and 12 cases with no API calls;
+- authenticated catalog apply: 9 suites and 12 cases reconciled with
+  redacted variables;
+- live target check: `REACHABLE`/HTTP 200;
+- all 5 current READY catalog cases: passed, 18 steps, one screenshot artifact
+  per case.
+- final Compose inspection: normal, enabled E2E, and disabled E2E services all
+  reported `running`.
+
+The full Maven `verify` command was also rerun. Its 55 unit tests passed, while
+`ApplicationContextIT` and `MigrationUpgradeIT` remained blocked before test
+execution by the local Docker Desktop/Testcontainers named-pipe response. See
+the [release-gate verification guide](../implementation/22-release-gate-verification.md)
+for exact reproduction commands and CI guidance.
+
 ## Publication boundary
 
 Local commits may be prepared as:
