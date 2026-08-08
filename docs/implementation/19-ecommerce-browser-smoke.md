@@ -549,6 +549,8 @@ Post-rebuild Compose health passed for `postgres_db`, `springboot_backend`, and 
 
 The ecommerce Playwright contract passed against the CategoryProductsPage rebuild on 2026-08-08: 9 tests in 25.4 seconds; all existing checks remained green.
 
+Publication: matching TestOps verification and architecture notes were committed as `60f1696` and pushed to `codex/milestone-9-release-candidate`; `.agents/` and `skills-lock.json` remain untouched.
+
 The frontend image was rebuilt with the accessible cart dialog and the existing PostgreSQL volume was retained. The backend image remained unchanged and reached a healthy state before the frontend restarted.
 
 After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy; PgAdmin remained available on port `5051`.
