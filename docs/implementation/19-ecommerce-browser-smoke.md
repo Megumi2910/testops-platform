@@ -547,6 +547,8 @@ The ecommerce frontend image rebuilt successfully for the CategoryProductsPage s
 
 Post-rebuild Compose health passed for `postgres_db`, `springboot_backend`, and `react_frontend`.
 
+The ecommerce Playwright contract passed against the seller cleanup rebuild on 2026-08-08: 9 tests in 25.8 seconds; all existing checks remained green.
+
 The ecommerce Playwright contract passed against the admin import rebuild on 2026-08-08: 9 tests in 22.3 seconds; all existing checks remained green.
 
 Publication: matching TestOps verification and architecture notes were committed as `364f5fc` and pushed to `codex/milestone-9-release-candidate`; `.agents/` and `skills-lock.json` remain untouched.
@@ -556,6 +558,16 @@ The ecommerce Playwright contract passed against the message-navigation rebuild 
 Publication: matching TestOps verification and architecture notes were committed as `5a38faa` and pushed to `codex/milestone-9-release-candidate`; `.agents/` and `skills-lock.json` remain untouched.
 
 The next Phase 5 slice removes two unused admin icon imports without changing admin behavior. Verification is pending.
+
+During the following seller cleanup audit, SellerAnalytics was found to render `Eye`; that import was restored before the next build. Seller dashboard/analytics debug logs were removed without changing their data or error-state flows.
+
+The seller import/logging hygiene slice now covers SellerAnalytics, SellerDashboard, and SellerLayout. Verification is pending.
+
+The seller cleanup production build passed with no seller warning; only the pre-existing WebSocket export advisory remains.
+
+The ecommerce frontend image rebuilt successfully for the seller cleanup with PostgreSQL data retained and backend/database health gating intact.
+
+Post-rebuild Compose health passed for `postgres_db`, `springboot_backend`, and `react_frontend`.
 
 The ecommerce frontend unit gate passed for the admin import cleanup: 3 suites and 10 tests on 2026-08-08; only the stale browser-data advisory remains.
 
