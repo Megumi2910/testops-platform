@@ -7,14 +7,14 @@ The ecommerce catalog is source-controlled at `catalog/ecommerce-testops.json`. 
 The manifest gives every project, suite, and case a stable external key. The key is stored as a marker in the project/suite description or case tags, so a renamed display name does not create a duplicate on the next synchronization. Cases are first written as `DRAFT`; a manifest case marked `READY` is promoted only after the same API validation that the UI uses.
 
 The first catalog contains the nine ecommerce domains from Milestone 10. The
-current manifest has 36 cases: thirty-one safe single-browser cases are `READY`
+current manifest has 37 cases: thirty-two safe single-browser cases are `READY`
 (homepage, catalog entry, shareable search, no-results search, product detail,
 category browse, category directory, flash sale, about, contact, help,
 verified-customer login, customer dashboard, order history, profile, settings,
 and empty wishlist, order detail, plus mobile keyboard search, the guest cart
 route guard, invalid-login feedback, contact-form accessibility, logout-session
 protection, seeded order-detail, verified-review-visibility, and completed-order
-cancellation-guard, seller-dashboard, seller-store-profile, seller-analytics, seller-product-catalog, seller-order-management, and seller-settings journeys).
+cancellation-guard, seller-dashboard, seller-store-profile, seller-analytics, seller-product-catalog, seller-order-management, seller-settings, and seller-settings-tabs journeys).
 Credentialed verification,
 transactional, Mailpit, two-user messaging, and destructive cases remain drafts
 until their native fixture/test harness is available; this prevents a catalog
@@ -113,7 +113,7 @@ docker volume rm testops-e2e_postgres18_data
 
 Do not run that command against the normal `testops-platform_postgres18_data` volume.
 
-The current catalog has 9 suites and 36 cases. Its 31-case READY set
+The current catalog has 9 suites and 37 cases. Its 32-case READY set
 includes the non-destructive verified-customer login, guest homepage/catalog
 checks, shareable/no-results search checks, a product-detail journey for
 `/product/1`, a category-browse journey for `/category/1`, a category-directory
@@ -142,7 +142,7 @@ profile remains the required check for proving that the same localhost origin
 is blocked when `TARGET_LOCAL_DEV_ENABLED=false`.
 
 On 2026-08-08, an authenticated apply against the isolated E2E backend on
-port 8180 completed successfully for all 9 suites and 36 cases. The run
+port 8180 completed successfully for all 9 suites and 37 cases. The run
 exercised marker reconciliation, redacted variable updates, P0/P1 mapping,
 and READY promotion after the step-replacement flush fix.
 
@@ -156,8 +156,8 @@ environment on 2026-08-08. It passed all four steps (`NAVIGATE`, `ASSERT_VALUE`,
 artifact.
 
 The complete READY catalog was then queued again after a clean backend restart.
-Target checking returned `REACHABLE` with HTTP 200; all 31 READY cases passed,
-with 247 total steps. Twenty-nine definitions contain a screenshot step; the
+Target checking returned `REACHABLE` with HTTP 200; all 32 READY cases passed,
+with 263 total steps. Thirty definitions contain a screenshot step; the
 non-secret cases retain `SCREENSHOT` artifacts, while credentialed runs remain
 subject to evidence suppression. The valid-login case passed six steps without
 capturing credential evidence. Repeated disposable-stack logins can hit the
@@ -217,6 +217,10 @@ set. Replacing the four tab assertions with exact visible text made the
 definition compatible; the corrected case passed all 14 steps in execution
 `a2ea07d4-f539-4c04-9765-5a10a44ffae6` and retained no screenshot because the
 seller password is secret-backed.
+The seller-settings-tabs case passed all 16 steps in execution
+`b78fa6c9-a95b-4c37-82a4-59887c51ef13`, switching notification and payment
+tabs and verifying seeded controls without saving changes. Its screenshot was
+suppressed because the seller password is secret-backed.
 The seller-analytics case passed all 15 steps in execution
 `21747642-8c8d-46a7-bf13-bc8ad8eaab8e`, verifying the reporting, customer,
 performance, search-trend, and operating-hours sections. Its screenshot was

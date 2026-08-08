@@ -198,11 +198,11 @@ search-locator fixes, the current release-candidate evidence is:
 - enabled Playwright with the live ecommerce origin: 18 passed and 1
   intentionally skipped disabled-profile case;
 - disabled-local-target Playwright: 1 passed independently;
-- catalog dry-run: 9 suites and 36 cases with no API calls;
-- authenticated catalog apply: 9 suites and 36 cases reconciled with
+- catalog dry-run: 9 suites and 37 cases with no API calls;
+- authenticated catalog apply: 9 suites and 37 cases reconciled with
   redacted variables;
 - live target check: `REACHABLE`/HTTP 200;
-- all 31 current READY catalog cases: passed, 247 steps; twenty-nine screenshot-bearing
+- all 32 current READY catalog cases: passed, 263 steps; thirty screenshot-bearing
   cases retained screenshot artifacts and traces.
 - final Compose inspection: normal, enabled E2E, and disabled E2E services all
   reported `running`.
@@ -221,7 +221,7 @@ Linux CI Testcontainers job.
 
 The authenticated customer expansion is now part of the release evidence. The
 platform-smoke, catalog/search, customer, orders/reviews, seller workflows,
-and resilience/accessibility suites passed 1/1, 10/10, 9/9, 2/2, 6/6, and 3/3
+and resilience/accessibility suites passed 1/1, 10/10, 9/9, 2/2, 7/7, and 3/3
 respectively. Customer coverage includes
 dashboard, order history, profile, settings, empty wishlist, and valid login.
 The resilience case also verifies mobile keyboard search at 390×844 and the
@@ -268,6 +268,10 @@ The seller-settings case first failed with `INVALID_DEFINITION` because the
 backend does not support the `TAB` ARIA role; exact text locators corrected the
 definition. It then passed all 14 steps in execution
 `a2ea07d4-f539-4c04-9765-5a10a44ffae6`, with secret-safe screenshot suppression.
+The seller-settings-tabs case then passed all 16 steps in execution
+`b78fa6c9-a95b-4c37-82a4-59887c51ef13`, switching between notification and
+payment tabs and verifying seeded controls without saving changes. Its
+screenshot was suppressed because the seller password is secret-backed.
 Dashboard exploration discovered a
 real ecommerce PostgreSQL query defect; commit `e738f2f` replaced the invalid
 `DISTINCT` address projection with a bounded recent-order lookup, and its

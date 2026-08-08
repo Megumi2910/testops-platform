@@ -466,7 +466,7 @@ and project creation. Run the disabled profile separately when you need the
 negative local-bridge assertion.
 
 The catalog was applied successfully to the isolated E2E backend on 2026-08-08
-(port 8180): 9 suites and 36 cases were reconciled, including all READY
+(port 8180): 9 suites and 37 cases were reconciled, including all READY
 promotions and the secret-safe customer and seller variables. The normal development
 database was not used for this operation.
 
@@ -508,10 +508,10 @@ The order-history case uses a substring locator for `MOCK-ORDER-001` because
 managed Chromium renders the order number with surrounding label text, while
 the wishlist case uses exact page-title text to avoid a strict-mode collision
 with `Chưa có sản phẩm yêu thích`. The current manifest totals are therefore
-36 cases, 31 `READY`, 247 steps, and 29 screenshot-bearing definitions. The
+37 cases, 32 `READY`, 263 steps, and 30 screenshot-bearing definitions. The
 complete READY acceptance is 1/1 platform smoke, 10/10 catalog-and-search,
-9/9 authentication/customer cases, 2/2 orders-and-reviews cases, 2/2
-6/6 seller-workflows cases, and 3/3 resilience/accessibility cases.
+9/9 authentication/customer cases, 2/2 orders-and-reviews cases,
+7/7 seller-workflows cases, and 3/3 resilience/accessibility cases.
 
 The mobile keyboard resilience case uses a 390×844 browser context, fills the unique storefront
 search placeholder with `shirt`, presses `Enter`, and asserts the shareable
@@ -574,6 +574,12 @@ manifest now uses exact visible text for those four tabs. The corrected case
 passed all 14 steps in execution `a2ea07d4-f539-4c04-9765-5a10a44ffae6`,
 verified the seeded `Mock Local Store` value, and retained no screenshot
 because the seller password is secret-backed.
+The seller-settings-tabs case then passed all 16 steps in execution
+`b78fa6c9-a95b-4c37-82a4-59887c51ef13`, switching between notification and
+payment tabs and verifying the seeded email-alert, low-stock, bank-account,
+Vietcombank, and Stripe controls without saving changes. Its screenshot was
+suppressed because the seller password is secret-backed. A direct browser
+check also confirmed the same tabs render without console errors.
 
 Repeated scripted logins can exhaust the disposable E2E auth limiter and return
 HTTP 429. The verified recovery is to restart only `testops-e2e-backend-1`,
