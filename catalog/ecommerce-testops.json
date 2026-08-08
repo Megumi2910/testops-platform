@@ -504,6 +504,29 @@
             { "position": 13, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Thời gian hoạt động", "timeoutMs": 15000 },
             { "position": 14, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
           ]
+        },
+        {
+          "key": "seller-product-catalog",
+          "name": "View seller product catalog",
+          "status": "READY",
+          "priority": "P2",
+          "tags": "sync:ecommerce-seller-product-catalog,role:seller,state:seeded,runner:testops",
+          "description": "Open the seller product catalog and verify the seeded inventory summary and product cards without changing data.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/login", "timeoutMs": 15000 },
+            { "position": 1, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Email", "inputValue": "${E2E_SELLER_EMAIL}", "timeoutMs": 15000 },
+            { "position": 2, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Mật khẩu", "inputValue": "${E2E_SELLER_PASSWORD}", "timeoutMs": 15000 },
+            { "position": 3, "action": "CLICK", "locatorType": "ROLE", "locatorRole": "BUTTON", "locatorValue": "Đăng nhập", "timeoutMs": 15000 },
+            { "position": 4, "action": "ASSERT_URL_EQUALS", "expectedValue": "/seller", "timeoutMs": 15000 },
+            { "position": 5, "action": "NAVIGATE", "inputValue": "/seller/products", "timeoutMs": 15000 },
+            { "position": 6, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Quản lý sản phẩm", "timeoutMs": 15000 },
+            { "position": 7, "action": "ASSERT_VISIBLE", "locatorType": "TEXT_EXACT", "locatorValue": "Tổng sản phẩm", "locatorIndex": 0, "timeoutMs": 15000 },
+            { "position": 8, "action": "ASSERT_VISIBLE", "locatorType": "TEXT_EXACT", "locatorValue": "Đang bán", "locatorIndex": 0, "timeoutMs": 15000 },
+            { "position": 9, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Áo thun basic cotton", "timeoutMs": 15000 },
+            { "position": 10, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Tai nghe Bluetooth Pro", "timeoutMs": 15000 },
+            { "position": 11, "action": "ASSERT_VISIBLE", "locatorType": "ROLE", "locatorRole": "HEADING", "locatorValue": "Bình giữ nhiệt inox", "timeoutMs": 15000 },
+            { "position": 12, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
         }
       ]
     },
