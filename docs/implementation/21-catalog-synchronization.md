@@ -82,8 +82,9 @@ the transaction-ordering fix.
 2. Suites are matched by `[testops-key:<suite-key>]`, then by exact name.
 3. Cases are matched by `sync:<case-key>` in tags, then by exact name.
 4. Existing entities are updated with their optimistic-concurrency version.
-5. READY promotion is a second update so incomplete definitions cannot silently become runnable.
-6. No entities are deleted or archived automatically. Removing a manifest entry is therefore reversible and safe; archive it explicitly in the UI when the team agrees.
+5. If a stale database contains more than one entity with the same marker, `Resolve-CatalogMatch` selects `READY` over non-ready definitions and then the highest version, and emits every matching ID as a warning. It never silently lets a zero-step draft win.
+6. READY promotion is a second update so incomplete definitions cannot silently become runnable.
+7. No entities are deleted or archived automatically. Removing a manifest entry is therefore reversible and safe; archive it explicitly in the UI when the team agrees.
 
 The manifest can carry `viewportWidth`, `viewportHeight`, `locale`, and `timezoneId` on step 0. The synchronizer passes these fields through unchanged; the backend persists them in V020 and applies them while creating the isolated browser context. Keeping the preflight in PowerShell gives a catalog author a local, line-specific failure before a partial apply can create or update entities.
 
@@ -98,6 +99,7 @@ TestOps is the reusable single-browser journey layer: navigation, locators, inte
 - `case cannot become READY`: inspect the API response; READY cases need at least one step beginning with `NAVIGATE`, and each action must satisfy its descriptor fields.
 - `internal_error` mentioning `test_steps_case_position_unique`: rebuild the TestOps backend so the step-replacement flush fix is running, then rerun apply; do not manually edit the database.
 - Duplicate project or suite: check that the marker is still present in its description. Restore the marker before running apply again.
+- Duplicate case marker warning: review the IDs printed by `Resolve-CatalogMatch`; the synchronizer deliberately prefers the `READY`/newest definition, but stale duplicates are not deleted automatically. Archive or remove the obsolete record through an approved API/UI workflow before treating the warning as resolved.
 - `Project name is already in use` after a fresh disposable login: project
   listing is owner-scoped. Reuse the owner that created the existing E2E
   project, or reset only `testops-e2e_postgres18_data` and apply again. Do not

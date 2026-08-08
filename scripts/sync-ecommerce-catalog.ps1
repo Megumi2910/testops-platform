@@ -93,6 +93,21 @@ function Has-Marker([object]$value, [string]$marker) {
     return $null -ne $value -and ([string]$value).Contains($marker)
 }
 
+function Resolve-CatalogMatch([object[]]$matches, [string]$entity, [string]$marker) {
+    $items = @($matches)
+    if ($items.Count -eq 0) { return $null }
+    if ($items.Count -gt 1) {
+        $ordered = $items | Sort-Object `
+            @{ Expression = { if ([string]$_.status -eq 'READY') { 0 } else { 1 } } }, `
+            @{ Expression = { try { [int]$_.version } catch { 0 } }; Descending = $true }
+        $selected = $ordered | Select-Object -First 1
+        $ids = ($items | ForEach-Object { [string]$_.id }) -join ', '
+        Write-Warning "Duplicate $entity marker '$marker' matched [$ids]; using $($selected.id) ($($selected.status), version $($selected.version)). Remove stale duplicates when the API supports deletion."
+        return $selected
+    }
+    return $items[0]
+}
+
 function Find-Project {
     $page = Invoke-TestOps GET '/api/v1/projects?page=0&size=100'
     if ($Mode -eq 'dry-run') { return $null }
@@ -125,7 +140,8 @@ foreach ($variable in @($manifest.variables)) {
 $suites = if ($Mode -eq 'dry-run') { @() } else { @(Invoke-TestOps GET "/api/v1/projects/$projectId/suites") }
 foreach ($suiteDefinition in @($manifest.suites)) {
     $suiteMarker = Marker $suiteDefinition.key
-    $suite = $suites | Where-Object { (Has-Marker $_.description $suiteMarker) -or $_.name -eq $suiteDefinition.name } | Select-Object -First 1
+    $suiteMatches = @($suites | Where-Object { (Has-Marker $_.description $suiteMarker) -or $_.name -eq $suiteDefinition.name })
+    $suite = Resolve-CatalogMatch $suiteMatches 'suite' $suiteMarker
     $suitePayload = @{ name = $suiteDefinition.name; description = $suiteDefinition.description; projectVersion = $null }
     if ($null -eq $suite) { $suite = Invoke-TestOps POST "/api/v1/projects/$projectId/suites" $suitePayload }
     elseif ($Mode -eq 'apply') { $suite = Invoke-TestOps PUT "/api/v1/projects/$projectId/suites/$($suite.id)" @{ name = $suiteDefinition.name; description = $suiteDefinition.description; projectVersion = $suite.version } }
@@ -133,7 +149,8 @@ foreach ($suiteDefinition in @($manifest.suites)) {
     $cases = if ($Mode -eq 'dry-run') { @() } else { @(Invoke-TestOps GET "/api/v1/projects/$projectId/suites/$suiteId/cases") }
     foreach ($caseDefinition in @($suiteDefinition.cases)) {
         $caseMarker = "sync:$($caseDefinition.key)"
-        $case = $cases | Where-Object { (Has-Marker (CaseTags $_) $caseMarker) -or $_.name -eq $caseDefinition.name } | Select-Object -First 1
+        $caseMatches = @($cases | Where-Object { (Has-Marker (CaseTags $_) $caseMarker) -or $_.name -eq $caseDefinition.name })
+        $case = Resolve-CatalogMatch $caseMatches 'case' $caseMarker
         $payload = @{ name = $caseDefinition.name; description = $caseDefinition.description; status = 'DRAFT'; priority = (Api-Priority $caseDefinition.priority); tags = $caseDefinition.tags; retryCount = 0; dataIsolation = $true; projectVersion = if ($case) { $case.version } else { $null }; steps = @($caseDefinition.steps) }
         if ($null -eq $case) { $case = Invoke-TestOps POST "/api/v1/projects/$projectId/suites/$suiteId/cases" $payload }
         else { $case = Invoke-TestOps PUT "/api/v1/projects/$projectId/suites/$suiteId/cases/$($case.id)" $payload }

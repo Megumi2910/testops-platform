@@ -296,7 +296,10 @@ the preflight passed with 9 suites and 24 cases and the values did not appear
 in captured output.
 Stable project, suite, and case markers are matched literally during apply, so
 rerunning the command updates existing catalog entities instead of creating
-duplicates.
+duplicates. If a legacy database already contains duplicate markers, the
+script warns with every matching ID and deterministically prefers a `READY`
+definition, then the newest version; it never allows an old zero-step draft to
+replace a runnable case. Duplicate records are not deleted automatically.
 The manifest uses `P0`/`P1`/`P2` labels for humans; the apply script translates
 them to the backend’s `CRITICAL`/`HIGH`/`MEDIUM` enum before sending case
 payloads, preventing the API’s “Priority is invalid” response.
