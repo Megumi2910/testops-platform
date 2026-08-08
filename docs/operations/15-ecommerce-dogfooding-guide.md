@@ -466,7 +466,7 @@ and project creation. Run the disabled profile separately when you need the
 negative local-bridge assertion.
 
 The catalog was applied successfully to the isolated E2E backend on 2026-08-08
-(port 8180): 9 suites and 35 cases were reconciled, including all READY
+(port 8180): 9 suites and 36 cases were reconciled, including all READY
 promotions and the secret-safe customer and seller variables. The normal development
 database was not used for this operation.
 
@@ -508,10 +508,10 @@ The order-history case uses a substring locator for `MOCK-ORDER-001` because
 managed Chromium renders the order number with surrounding label text, while
 the wishlist case uses exact page-title text to avoid a strict-mode collision
 with `Chưa có sản phẩm yêu thích`. The current manifest totals are therefore
-35 cases, 30 `READY`, 233 steps, and 28 screenshot-bearing definitions. The
+36 cases, 31 `READY`, 247 steps, and 29 screenshot-bearing definitions. The
 complete READY acceptance is 1/1 platform smoke, 10/10 catalog-and-search,
 9/9 authentication/customer cases, 2/2 orders-and-reviews cases, 2/2
-5/5 seller-workflows cases, and 3/3 resilience/accessibility cases.
+6/6 seller-workflows cases, and 3/3 resilience/accessibility cases.
 
 The mobile keyboard resilience case uses a 390×844 browser context, fills the unique storefront
 search placeholder with `shirt`, presses `Enter`, and asserts the shareable
@@ -566,6 +566,14 @@ The seller-order-management case then passed all 13 steps in execution
 heading, the seeded completed `MOCK-ORDER-001`, customer, total, and fixture
 note without changing order state. Its screenshot was suppressed because the
 seller password is secret-backed.
+The seller-settings case initially stopped at step 9 with the classified
+`INVALID_DEFINITION` error `Unsupported ARIA role` in execution
+`6f431127-0433-486a-b5fe-1fd508a049d6`; the backend's supported role set does
+not include `TAB`, even though the rendered buttons expose tab semantics. The
+manifest now uses exact visible text for those four tabs. The corrected case
+passed all 14 steps in execution `a2ea07d4-f539-4c04-9765-5a10a44ffae6`,
+verified the seeded `Mock Local Store` value, and retained no screenshot
+because the seller password is secret-backed.
 
 Repeated scripted logins can exhaust the disposable E2E auth limiter and return
 HTTP 429. The verified recovery is to restart only `testops-e2e-backend-1`,
