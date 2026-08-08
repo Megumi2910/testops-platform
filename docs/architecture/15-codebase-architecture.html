@@ -433,6 +433,8 @@
   <h3>Message navigation helper cleanup</h3>
   <p>The shared message-navigation hook now contains only its exported deep-link functions. Unused inline examples were removed to reduce dead bundle code and misleading non-semantic markup without changing the hook contract; its unit gate passed with three suites and ten tests, the production build has no helper warning, its frontend image rebuilt successfully with health gating, all three services are healthy, and the 9-test ecommerce Playwright contract remains green.</p>
   <p>Publication commits: ecommerce `fbb6298`; TestOps documentation `5a38faa`. Both branches were pushed after verification.</p>
+  <h3>Admin import hygiene slice</h3>
+  <p>ProductForm and AdminCategories now import only rendered icons. The cleanup reduces dead references while preserving existing admin form, validation, and category API flows; its unit gate passed with three suites and ten tests, the production build has no targeted warning, its frontend image rebuilt successfully with health gating, all three services are healthy, and the 9-test ecommerce Playwright contract remains green.</p>
 </section>
 </body>
 </html>

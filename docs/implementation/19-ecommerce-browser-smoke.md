@@ -547,9 +547,21 @@ The ecommerce frontend image rebuilt successfully for the CategoryProductsPage s
 
 Post-rebuild Compose health passed for `postgres_db`, `springboot_backend`, and `react_frontend`.
 
+The ecommerce Playwright contract passed against the admin import rebuild on 2026-08-08: 9 tests in 22.3 seconds; all existing checks remained green.
+
 The ecommerce Playwright contract passed against the message-navigation rebuild on 2026-08-08: 9 tests in 25.4 seconds; all existing checks remained green.
 
 Publication: matching TestOps verification and architecture notes were committed as `5a38faa` and pushed to `codex/milestone-9-release-candidate`; `.agents/` and `skills-lock.json` remain untouched.
+
+The next Phase 5 slice removes two unused admin icon imports without changing admin behavior. Verification is pending.
+
+The ecommerce frontend unit gate passed for the admin import cleanup: 3 suites and 10 tests on 2026-08-08; only the stale browser-data advisory remains.
+
+The admin import cleanup production build passed with no targeted warning; remaining warnings are pre-existing seller/WebSocket issues outside this slice.
+
+The ecommerce frontend image rebuilt successfully for the admin import cleanup with PostgreSQL data retained and backend/database health gating intact.
+
+Post-rebuild Compose health passed for `postgres_db`, `springboot_backend`, and `react_frontend`.
 
 The ecommerce Playwright contract passed against the ProductReviews rebuild on 2026-08-08: 9 tests in 22.8 seconds; all existing checks remained green.
 
