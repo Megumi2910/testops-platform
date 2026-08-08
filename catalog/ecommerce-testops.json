@@ -201,6 +201,22 @@
           ]
         },
         {
+          "key": "login-invalid",
+          "name": "Reject invalid login",
+          "status": "READY",
+          "priority": "P1",
+          "tags": "sync:ecommerce-login-invalid,role:guest,state:clean,runner:testops",
+          "description": "Reject an unknown account with a structured authentication message while keeping the user on the login page.",
+          "steps": [
+            { "position": 0, "action": "NAVIGATE", "inputValue": "/login", "timeoutMs": 15000 },
+            { "position": 1, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Email", "inputValue": "missing-user@example.test", "timeoutMs": 15000 },
+            { "position": 2, "action": "FILL", "locatorType": "ROLE", "locatorRole": "TEXTBOX", "locatorValue": "Mật khẩu", "inputValue": "WrongPassword!123", "timeoutMs": 15000 },
+            { "position": 3, "action": "CLICK", "locatorType": "ROLE", "locatorRole": "BUTTON", "locatorValue": "Đăng nhập", "timeoutMs": 15000 },
+            { "position": 4, "action": "ASSERT_VISIBLE", "locatorType": "TEXT_EXACT", "locatorValue": "Invalid email or password", "locatorIndex": 0, "timeoutMs": 15000 },
+            { "position": 5, "action": "TAKE_SCREENSHOT", "timeoutMs": 15000 }
+          ]
+        },
+        {
           "key": "customer-dashboard",
           "name": "Open customer dashboard",
           "status": "READY",

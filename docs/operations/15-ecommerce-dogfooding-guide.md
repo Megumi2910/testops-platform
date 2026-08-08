@@ -449,11 +449,11 @@ the Spring Boot backend, and the React frontend. The native Playwright contract
 ran with one worker against `http://localhost:3001` and passed all 9 tests,
 including login-to-checkout entry, keyboard-safe cart cancellation, mobile
 layout, shareable search state, retry behavior, pagination, and duplicate-submit
-protection. The TestOps catalog preflight then passed with 9 suites and 24
-cases, with no API calls during dry-run. Its 19-case READY set now includes
+protection. The TestOps catalog preflight then passed with 9 suites and 26
+cases, with no API calls during dry-run. Its 20-case READY set now includes
 the non-destructive verified-customer login, customer dashboard, order history,
 profile, settings, empty wishlist, product detail, category browse, category
-directory, flash-sale, about, contact, help, mobile keyboard search, and guest cart route-guard journeys; dry-run still skips the two variable
+directory, flash-sale, about, contact, help, mobile keyboard search, guest cart route-guard, and invalid-login journeys; dry-run still skips the two variable
 values unless `TESTOPS_E2E_CUSTOMER_EMAIL` and
 `TESTOPS_E2E_CUSTOMER_PASSWORD` are provided.
 
@@ -465,7 +465,7 @@ and project creation. Run the disabled profile separately when you need the
 negative local-bridge assertion.
 
 The catalog was applied successfully to the isolated E2E backend on 2026-08-08
-(port 8180): 9 suites and 24 cases were reconciled, including all READY
+(port 8180): 9 suites and 26 cases were reconciled, including all READY
 promotions and the secret-safe customer variables. The normal development
 database was not used for this operation.
 
@@ -507,16 +507,19 @@ The order-history case uses a substring locator for `MOCK-ORDER-001` because
 managed Chromium renders the order number with surrounding label text, while
 the wishlist case uses exact page-title text to avoid a strict-mode collision
 with `Chưa có sản phẩm yêu thích`. The current manifest totals are therefore
-25 cases, 19 `READY`, 107 steps, and 17 screenshot-bearing cases. The complete
-READY acceptance is 1/1 platform smoke, 10/10 catalog-and-search, 6/6
-authenticated customer cases, and 2/2 resilience/accessibility cases.
+26 cases, 20 `READY`, 113 steps, and 18 screenshot-bearing cases. The complete
+READY acceptance is 1/1 platform smoke, 10/10 catalog-and-search, 7/7
+authentication/customer cases, and 2/2 resilience/accessibility cases.
 
 The mobile keyboard resilience case uses a 390×844 browser context, fills the unique storefront
 search placeholder with `shirt`, presses `Enter`, and asserts the shareable
 `/search?q=shirt` URL. It retains a screenshot so the mobile layout and URL state
 can be reviewed from the run detail page. The guest cart route-guard case opens
 `/cart` without a session, verifies the redirect to `/login`, checks the login
-heading and email field, and retains a screenshot.
+heading and email field, and retains a screenshot. The invalid-login case
+submits a non-existent account, confirms the URL remains `/login`, checks the
+exact `Invalid email or password` message, and retains a screenshot without
+using a real credential.
 
 Repeated scripted logins can exhaust the disposable E2E auth limiter and return
 HTTP 429. The verified recovery is to restart only `testops-e2e-backend-1`,
