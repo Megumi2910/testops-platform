@@ -223,6 +223,8 @@ The matching ecommerce CustomerLayout implementation commit is `53eb83c`; the Te
 
 The CustomerLayout browser verification and architecture updates were committed as `43a1cb9`.
 
+Matching TestOps CustomerLayout documentation commits through `14c2aec` were pushed successfully to `codex/milestone-9-release-candidate`.
+
 Post-rebuild `docker compose ps` confirmed `postgres_db`, `springboot_backend`, and `react_frontend` are healthy; ecommerce ports remain `3001`, `8081`, `5433`, and `5051`.
 
 The next Phase 5 slice hardens ecommerce `CustomerSettings`: semantic tablist/tab/tabpanel relationships, stable IDs, keyboard arrow/Home/End navigation, focus-visible controls, and honest payment-feature messaging are being added. Verification is pending.
