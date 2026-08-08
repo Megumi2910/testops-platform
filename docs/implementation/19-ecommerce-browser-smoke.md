@@ -329,9 +329,9 @@ The matching TestOps documentation diff was inspected before publication; only t
 
 The ecommerce SellerStore implementation commit `19d3efd` was created successfully; the matching TestOps documentation commit is next.
 
-The matching TestOps SellerStore verification documentation was committed on `codex/milestone-9-release-candidate` as `c52675b`; the branch is ready to publish.
+The matching TestOps SellerStore verification documentation was committed on `codex/milestone-9-release-candidate` as `c52675b`; the documentation branch is now published through `cc760fc`.
 
-The ecommerce SellerStore commits through `de756b5` were pushed successfully; the TestOps documentation branch remains ready to publish.
+The ecommerce SellerStore commits through `de756b5` were pushed successfully; the TestOps documentation branch was also pushed through `cc760fc`.
 
 Final ecommerce diff inspection passed with `git diff --check`; the TestOps workspace has only the corresponding documentation updates.
 
