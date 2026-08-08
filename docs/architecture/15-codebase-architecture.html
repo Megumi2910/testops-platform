@@ -452,6 +452,7 @@
   <p>The ecommerce catalog is now source-controlled in <code>catalog/ecommerce-testops.json</code> and synchronized by <code>scripts/sync-ecommerce-catalog.ps1</code>. Stable markers make project, suite, case, and variable updates idempotent; dry-run/apply modes keep secrets out of Git and promote only API-valid cases to READY.</p>
   <p>Execution interpolation also exposes immutable generated values: <code>RUN_ID</code>, <code>CASE_RESULT_ID</code>, and <code>RUN_TIMESTAMP</code>. They are inserted by <code>ExecutionRunService</code> after queue-time snapshots, so retries are reproducible and ordinary evidence remains available.</p>
   <p>The E2E topology includes a second isolated disabled-local-target project on frontend <code>:3101</code>, Mailpit <code>:8026</code>, and a separate PostgreSQL volume. Its negative test confirms the same allowlisted localhost origin is visibly blocked when <code>TARGET_LOCAL_DEV_ENABLED=false</code>.</p>
+  <p><code>PlaywrightCaseRunner</code> now resolves variables across locator, input, expected, and navigation fields as one immutable action payload. Missing variables fail closed before Playwright receives the action, while generated run values remain evidence-safe.</p>
 </section>
 </body>
 </html>

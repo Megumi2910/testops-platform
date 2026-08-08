@@ -51,33 +51,34 @@ public class PlaywrightCaseRunner {
     }
 
     private void execute(Page page, StepDefinition step, String origin, Map<String, String> variables, List<CapturedScreenshot> screenshots, boolean suppressEvidence) {
-        String action = step.action().toUpperCase(Locale.ROOT); Locator locator = locator(page, step);
-        int timeout = step.timeoutMs() == null ? (int) properties.execution().defaultStepTimeout().toMillis() : step.timeoutMs();
+        StepDefinition resolved = interpolateStep(step, variables);
+        String action = resolved.action().toUpperCase(Locale.ROOT); Locator locator = locator(page, resolved);
+        int timeout = resolved.timeoutMs() == null ? (int) properties.execution().defaultStepTimeout().toMillis() : resolved.timeoutMs();
         switch (action) {
-            case "NAVIGATE" -> page.navigate(targetGuard.resolve(origin, interpolate(step.inputValue(), variables)), new Page.NavigateOptions().setTimeout(timeout));
+            case "NAVIGATE" -> page.navigate(targetGuard.resolve(origin, resolved.inputValue()), new Page.NavigateOptions().setTimeout(timeout));
             case "CLICK" -> locator.click(new Locator.ClickOptions().setTimeout(timeout));
-            case "FILL" -> locator.fill(interpolate(step.inputValue(), variables), new Locator.FillOptions().setTimeout(timeout));
+            case "FILL" -> locator.fill(resolved.inputValue(), new Locator.FillOptions().setTimeout(timeout));
             case "CLEAR" -> locator.fill("", new Locator.FillOptions().setTimeout(timeout));
-            case "SELECT_OPTION" -> locator.selectOption(interpolate(step.inputValue(), variables), new Locator.SelectOptionOptions().setTimeout(timeout));
+            case "SELECT_OPTION" -> locator.selectOption(resolved.inputValue(), new Locator.SelectOptionOptions().setTimeout(timeout));
             case "CHECK" -> locator.check(new Locator.CheckOptions().setTimeout(timeout));
             case "UNCHECK" -> locator.uncheck(new Locator.UncheckOptions().setTimeout(timeout));
-            case "PRESS" -> locator.press(interpolate(step.inputValue(), variables), new Locator.PressOptions().setTimeout(timeout));
+            case "PRESS" -> locator.press(resolved.inputValue(), new Locator.PressOptions().setTimeout(timeout));
             case "HOVER" -> locator.hover(new Locator.HoverOptions().setTimeout(timeout));
-            case "WAIT" -> page.waitForTimeout(parseWaitMillis(step.inputValue(), timeout));
+            case "WAIT" -> page.waitForTimeout(parseWaitMillis(resolved.inputValue(), timeout));
             case "WAIT_VISIBLE" -> locator.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.VISIBLE).setTimeout(timeout));
             case "WAIT_HIDDEN" -> locator.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.HIDDEN).setTimeout(timeout));
-            case "ASSERT_TEXT_EQUALS" -> PlaywrightAssertions.assertThat(locator).hasText(step.expectedValue(), new com.microsoft.playwright.assertions.LocatorAssertions.HasTextOptions().setTimeout(timeout));
-            case "ASSERT_TEXT_CONTAINS" -> PlaywrightAssertions.assertThat(locator).containsText(step.expectedValue(), new com.microsoft.playwright.assertions.LocatorAssertions.ContainsTextOptions().setTimeout(timeout));
+            case "ASSERT_TEXT_EQUALS" -> PlaywrightAssertions.assertThat(locator).hasText(resolved.expectedValue(), new com.microsoft.playwright.assertions.LocatorAssertions.HasTextOptions().setTimeout(timeout));
+            case "ASSERT_TEXT_CONTAINS" -> PlaywrightAssertions.assertThat(locator).containsText(resolved.expectedValue(), new com.microsoft.playwright.assertions.LocatorAssertions.ContainsTextOptions().setTimeout(timeout));
             case "ASSERT_VISIBLE" -> PlaywrightAssertions.assertThat(locator).isVisible(new com.microsoft.playwright.assertions.LocatorAssertions.IsVisibleOptions().setTimeout(timeout));
             case "ASSERT_HIDDEN" -> PlaywrightAssertions.assertThat(locator).isHidden(new com.microsoft.playwright.assertions.LocatorAssertions.IsHiddenOptions().setTimeout(timeout));
-            case "ASSERT_VALUE" -> PlaywrightAssertions.assertThat(locator).hasValue(interpolate(step.expectedValue(), variables), new com.microsoft.playwright.assertions.LocatorAssertions.HasValueOptions().setTimeout(timeout));
+            case "ASSERT_VALUE" -> PlaywrightAssertions.assertThat(locator).hasValue(resolved.expectedValue(), new com.microsoft.playwright.assertions.LocatorAssertions.HasValueOptions().setTimeout(timeout));
             case "ASSERT_CHECKED" -> PlaywrightAssertions.assertThat(locator).isChecked(new com.microsoft.playwright.assertions.LocatorAssertions.IsCheckedOptions().setTimeout(timeout));
             case "ASSERT_ENABLED" -> PlaywrightAssertions.assertThat(locator).isEnabled(new com.microsoft.playwright.assertions.LocatorAssertions.IsEnabledOptions().setTimeout(timeout));
             case "ASSERT_DISABLED" -> PlaywrightAssertions.assertThat(locator).isDisabled(new com.microsoft.playwright.assertions.LocatorAssertions.IsDisabledOptions().setTimeout(timeout));
-            case "ASSERT_ATTRIBUTE" -> PlaywrightAssertions.assertThat(locator).hasAttribute(interpolate(step.inputValue(), variables), interpolate(step.expectedValue(), variables), new com.microsoft.playwright.assertions.LocatorAssertions.HasAttributeOptions().setTimeout(timeout));
-            case "ASSERT_COUNT" -> PlaywrightAssertions.assertThat(locator).hasCount(parseExpectedCount(step.expectedValue()), new com.microsoft.playwright.assertions.LocatorAssertions.HasCountOptions().setTimeout(timeout));
-            case "ASSERT_URL_CONTAINS" -> PlaywrightAssertions.assertThat(page).hasURL(java.util.regex.Pattern.compile(".*" + java.util.regex.Pattern.quote(step.expectedValue()) + ".*"));
-            case "ASSERT_URL_EQUALS" -> PlaywrightAssertions.assertThat(page).hasURL(targetGuard.resolve(origin, interpolate(step.expectedValue(), variables)), new com.microsoft.playwright.assertions.PageAssertions.HasURLOptions().setTimeout(timeout));
+            case "ASSERT_ATTRIBUTE" -> PlaywrightAssertions.assertThat(locator).hasAttribute(resolved.inputValue(), resolved.expectedValue(), new com.microsoft.playwright.assertions.LocatorAssertions.HasAttributeOptions().setTimeout(timeout));
+            case "ASSERT_COUNT" -> PlaywrightAssertions.assertThat(locator).hasCount(parseExpectedCount(resolved.expectedValue()), new com.microsoft.playwright.assertions.LocatorAssertions.HasCountOptions().setTimeout(timeout));
+            case "ASSERT_URL_CONTAINS" -> PlaywrightAssertions.assertThat(page).hasURL(java.util.regex.Pattern.compile(".*" + java.util.regex.Pattern.quote(resolved.expectedValue()) + ".*"), new com.microsoft.playwright.assertions.PageAssertions.HasURLOptions().setTimeout(timeout));
+            case "ASSERT_URL_EQUALS" -> PlaywrightAssertions.assertThat(page).hasURL(targetGuard.resolve(origin, resolved.expectedValue()), new com.microsoft.playwright.assertions.PageAssertions.HasURLOptions().setTimeout(timeout));
             case "TAKE_SCREENSHOT" -> { if (!suppressEvidence) screenshots.add(new CapturedScreenshot(step.position(), page.screenshot(new Page.ScreenshotOptions().setFullPage(true)))); }
             default -> throw new IllegalArgumentException("Unsupported action " + action);
         }
@@ -88,6 +89,11 @@ public class PlaywrightCaseRunner {
         return referencesSecret(step.inputValue(), secretKeys)
                 || referencesSecret(step.expectedValue(), secretKeys)
                 || referencesSecret(step.locatorValue(), secretKeys);
+    }
+
+    static StepDefinition interpolateStep(StepDefinition step, Map<String, String> variables) {
+        return new StepDefinition(step.position(), step.action(), step.locatorType(), interpolate(step.locatorValue(), variables),
+                step.locatorRole(), interpolate(step.inputValue(), variables), interpolate(step.expectedValue(), variables), step.timeoutMs());
     }
 
     private static boolean referencesSecret(String value, Set<String> secretKeys) {

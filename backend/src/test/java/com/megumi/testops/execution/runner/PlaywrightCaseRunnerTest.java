@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
+import java.util.Map;
 
 
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,17 @@ class PlaywrightCaseRunnerTest {
 
         assertTrue(PlaywrightCaseRunner.referencesSecret(secretStep, Set.of("PASSWORD")));
         assertFalse(PlaywrightCaseRunner.referencesSecret(ordinaryStep, Set.of("PASSWORD")));
+    }
+
+    @Test
+    void interpolatesLocatorInputAndExpectedFieldsTogether() {
+        var step = new PlaywrightCaseRunner.StepDefinition(1, "ASSERT_TEXT_CONTAINS", "TEXT", "${LABEL}", null, "${INPUT}", "${EXPECTED}", 5000);
+
+        var resolved = PlaywrightCaseRunner.interpolateStep(step, Map.of("LABEL", "Cart", "INPUT", "unused", "EXPECTED", "Products"));
+
+        assertEquals("Cart", resolved.locatorValue());
+        assertEquals("unused", resolved.inputValue());
+        assertEquals("Products", resolved.expectedValue());
     }
 
     @Test

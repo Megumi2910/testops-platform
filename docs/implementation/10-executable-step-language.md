@@ -192,7 +192,7 @@ This prevents a test definition from being used as a general-purpose server-side
 
 ## 8. Variable interpolation
 
-Input values can contain placeholders matching:
+Input, expected, locator, and navigation values can contain placeholders matching:
 
 ```text
 ${VARIABLE_NAME}
@@ -209,7 +209,7 @@ The variable name must start with a letter and contain letters, digits, or under
 }
 ```
 
-At present, the execution service supplies only non-secret variables to the runner. If a placeholder is unavailable, execution fails rather than substituting an empty value. This is an intentional fail-closed behavior.
+The runner resolves all four fields into one step definition before calling Playwright. If a placeholder is unavailable, execution fails rather than substituting an empty value. This is an intentional fail-closed behavior.
 
 Each queued case also receives immutable, non-secret generated values:
 
