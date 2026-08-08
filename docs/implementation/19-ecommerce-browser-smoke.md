@@ -227,6 +227,8 @@ The matching ecommerce CustomerOrders implementation commit is `441e2a1`; the Te
 
 The CustomerOrders browser verification and architecture updates were committed as `ee78f64`.
 
+Matching TestOps CustomerOrders documentation commits through `7ed191f` were pushed successfully to `codex/milestone-9-release-candidate`.
+
 The ecommerce frontend unit gate passed after CustomerLayout changes on 2026-08-08: 3 suites and 10 tests. The production build also passed; existing CRA and browser-data advisories remain non-blocking.
 
 The ecommerce frontend image was rebuilt successfully with CustomerLayout on 2026-08-08; PostgreSQL data was retained and backend health gating completed before frontend startup.
