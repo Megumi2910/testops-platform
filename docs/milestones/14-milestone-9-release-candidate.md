@@ -198,11 +198,11 @@ search-locator fixes, the current release-candidate evidence is:
 - enabled Playwright with the live ecommerce origin: 18 passed and 1
   intentionally skipped disabled-profile case;
 - disabled-local-target Playwright: 1 passed independently;
-- catalog dry-run: 9 suites and 34 cases with no API calls;
-- authenticated catalog apply: 9 suites and 34 cases reconciled with
+- catalog dry-run: 9 suites and 35 cases with no API calls;
+- authenticated catalog apply: 9 suites and 35 cases reconciled with
   redacted variables;
 - live target check: `REACHABLE`/HTTP 200;
-- all 29 current READY catalog cases: passed, 220 steps; twenty-seven screenshot-bearing
+- all 30 current READY catalog cases: passed, 233 steps; twenty-eight screenshot-bearing
   cases retained screenshot artifacts and traces.
 - final Compose inspection: normal, enabled E2E, and disabled E2E services all
   reported `running`.
@@ -221,7 +221,7 @@ Linux CI Testcontainers job.
 
 The authenticated customer expansion is now part of the release evidence. The
 platform-smoke, catalog/search, customer, orders/reviews, seller workflows,
-and resilience/accessibility suites passed 1/1, 10/10, 9/9, 2/2, 4/4, and 3/3
+and resilience/accessibility suites passed 1/1, 10/10, 9/9, 2/2, 5/5, and 3/3
 respectively. Customer coverage includes
 dashboard, order history, profile, settings, empty wishlist, and valid login.
 The resilience case also verifies mobile keyboard search at 390×844 and the
@@ -260,6 +260,10 @@ The seller-analytics case passed 15 steps, verified the reporting, customer,
 performance, search-trend, and operating-hours sections in execution
 `21747642-8c8d-46a7-bf13-bc8ad8eaab8e`, and suppressed its screenshot because the
 seller password is secret-backed.
+The seller-order-management case passed 13 steps, verified the seeded completed
+order on `/seller/orders`, and suppressed its screenshot because the seller
+password is secret-backed. Its execution is
+`02125828-c2c5-44d6-9053-7c8b8e344184`.
 Dashboard exploration discovered a
 real ecommerce PostgreSQL query defect; commit `e738f2f` replaced the invalid
 `DISTINCT` address projection with a bounded recent-order lookup, and its
