@@ -336,5 +336,15 @@
 <!-- Release note: TestOps SellerStore verification documentation commit c52675b was created successfully and published through cc760fc. -->
 <!-- Release note: ecommerce SellerStore commits through de756b5 and matching TestOps documentation through cc760fc were pushed successfully. -->
 <!-- Verification note: final repository status is clean after SellerStore publication; only preserved untracked .agents/ and skills-lock.json remain in TestOps. -->
+<!-- Implementation note: SellerSettings now removes browser alerts, adds notification/payment save actions with transparent session-only messaging, and strengthens tab/form/status accessibility. Verification is pending. -->
+<!-- Verification note: SellerSettings tab-to-panel ARIA relationships were corrected so only the active tab references the mounted panel. -->
+<!-- Verification note: ecommerce frontend unit gate passed after SellerSettings changes on 2026-08-08 with 3 suites and 10 tests; the stale baseline-browser-mapping advisory remains non-blocking. -->
+<!-- Verification note: ecommerce production frontend build passed after SellerSettings changes; existing CRA and browser-data advisories remain non-blocking. -->
+<!-- Verification note: ecommerce frontend image rebuilt after SellerSettings changes; PostgreSQL retained and backend health gating completed before frontend startup. -->
+<!-- Verification note: docker compose ps reported react_frontend, springboot_backend, and postgres_db healthy after SellerSettings changes; ports remain 3001/8081/5433/5051. -->
+<!-- Verification note: nine-test TestOps Playwright contract passed against the SellerSettings image on 2026-08-08 in 26.0s; no dedicated stable seller fixture exists for SellerSettings. -->
+<!-- Verification note: final ecommerce diff inspection passed with git diff --check; SellerSettings.jsx and its reliability log are the only ecommerce changes in this slice. -->
+<!-- Verification note: TestOps diff inspection found only the browser smoke guide and architecture map changed; untracked .agents/ and skills-lock.json remain untouched. -->
+<!-- Release note: ecommerce SellerSettings commit 72f9f85 was created successfully; matching TestOps documentation commit is next. -->
 </body>
 </html>

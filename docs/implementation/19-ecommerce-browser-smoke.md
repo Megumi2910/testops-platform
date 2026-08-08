@@ -207,6 +207,16 @@ The ecommerce frontend image was rebuilt with the CustomerProfile changes; Postg
 
 After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy. Ecommerce ports remain `3001`/`8081`, PostgreSQL `5433`, and PgAdmin `5051`.
 
+The nine-test TestOps Playwright contract passed against the SellerSettings image on 2026-08-08 in 26.0 seconds. Seeded-cart checkout, cart-dialog keyboard behavior, profile controls, wishlist empty state, mobile layout, URL-driven search/pagination, outage retry, and duplicate-submit protection remained green. SellerSettings has no dedicated stable seller fixture in this contract, so its verification remains build- and source-review based.
+
+Final ecommerce diff inspection passed with `git diff --check`; only `SellerSettings.jsx` and the reliability log are changed for this implementation slice.
+
+The matching TestOps documentation diff was inspected before publication; only this browser smoke guide and the architecture map are intended changes. Existing untracked `.agents/` and `skills-lock.json` remain untouched.
+
+The ecommerce SellerSettings implementation commit `72f9f85` was created successfully; the matching TestOps documentation commit is next.
+
+Final ecommerce diff inspection passed with `git diff --check`; only `SellerSettings.jsx` and the reliability log are changed for this implementation slice.
+
 The nine-test ecommerce Playwright contract passed against the ShopPage image on 2026-08-01 in 26.1 seconds. Existing checkout, cart-dialog, profile, wishlist, mobile, search, outage-retry, pagination, and duplicate-submit coverage remained green.
 
 Final diff inspection passed with `git diff --check`. The TestOps working tree contains only the ShopPage verification documentation; unrelated `.agents/` and `skills-lock.json` remain untouched.
@@ -332,6 +342,18 @@ The ecommerce SellerStore implementation commit `19d3efd` was created successful
 The matching TestOps SellerStore verification documentation was committed on `codex/milestone-9-release-candidate` as `c52675b`; the documentation branch is now published through `cc760fc`.
 
 The ecommerce SellerStore commits through `de756b5` were pushed successfully; the TestOps documentation branch was also pushed through `cc760fc`.
+
+The next Phase 5 slice updates `SellerSettings`: browser alerts are removed, notification and payment settings now have explicit save actions with honest session-only messaging, shop saves retain inline success/error feedback, loading text uses accessible ellipses, and tabs, checkboxes, form fields, icons, and status messages expose semantic labels, roles, focus states, and live announcements. Verification is pending.
+
+The SellerSettings review also corrected tab-to-panel ARIA relationships: each tab has a stable ID and only the active tab references the mounted panel.
+
+The ecommerce frontend unit gate passed after the SellerSettings changes on 2026-08-08: 3 suites and 10 tests. The existing stale `baseline-browser-mapping` advisory remains non-blocking.
+
+The ecommerce production frontend build passed after the SellerSettings changes. Existing CRA unused-import, hook-dependency, WebSocket export, and browser-data advisories remain non-blocking; the optimized bundle was generated successfully.
+
+The ecommerce frontend image was rebuilt with the SellerSettings changes; PostgreSQL data was retained and backend health gating completed before frontend startup.
+
+After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy. Ecommerce ports remain `3001`/`8081`, PostgreSQL `5433`, and PgAdmin `5051`.
 
 Final TestOps repository status is clean aside from the preserved untracked `.agents/` and `skills-lock.json`; the latest SellerStore documentation commit is `6206bc5`.
 
