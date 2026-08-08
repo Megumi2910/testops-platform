@@ -175,6 +175,8 @@ The SellerOrders browser verification and architecture updates were committed as
 
 The TestOps SellerOrders release-note commit is `a5b5b38`; the documentation history is ready to publish.
 
+The matching TestOps SellerOrders documentation commits through `11d6498` were pushed successfully to `codex/milestone-9-release-candidate`.
+
 The next Phase 5 slice hardens customer order cancellation. `CancelOrderModal` now has dialog semantics, an associated reason field, Escape handling, focus trapping/restoration, and submit locking. Customer order list/detail cancellation feedback now uses the shared Toast component for success and API failures rather than browser-blocking alerts. Verification is pending.
 
 The targeted ecommerce scan found no `alert(...)` calls in the order cancellation files, and `git diff --check` passed. Git emitted only its normal line-ending normalization warning for edited files.
