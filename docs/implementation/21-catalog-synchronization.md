@@ -51,3 +51,12 @@ TestOps is the reusable single-browser journey layer: navigation, locators, inte
 - `case cannot become READY`: inspect the API response; READY cases need at least one step beginning with `NAVIGATE`, and each action must satisfy its descriptor fields.
 - Duplicate project or suite: check that the marker is still present in its description. Restore the marker before running apply again.
 - Secret variable skipped: set the environment variable named by `valueFromEnv`; the script intentionally refuses to invent a secret value.
+
+The E2E Compose project intentionally keeps its named volume so a restart is fast and repeatable. Acceptance fixtures that create projects use a timestamped display name to remain repeatable across runs. If you need a completely empty E2E database, stop the isolated project and remove only its named volume:
+
+```powershell
+docker compose -p testops-e2e -f docker-compose.yml -f docker-compose.e2e.yml down
+docker volume rm testops-e2e_postgres18_data
+```
+
+Do not run that command against the normal `testops-platform_postgres18_data` volume.

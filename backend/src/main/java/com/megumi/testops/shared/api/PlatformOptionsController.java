@@ -52,7 +52,7 @@ public class PlatformOptionsController {
                 action("WAIT_HIDDEN", "Wait until hidden", "REQUIRED", "NOT_APPLICABLE", "NOT_APPLICABLE", "Control that must disappear"),
                 action("ASSERT_VISIBLE", "Assert visible", "REQUIRED", "NOT_APPLICABLE", "NOT_APPLICABLE", "Visible text or control"),
                 action("ASSERT_HIDDEN", "Assert hidden", "REQUIRED", "NOT_APPLICABLE", "NOT_APPLICABLE", "Hidden text or control"),
-                action("ASSERT_VALUE", "Assert input value", "REQUIRED", "NOT_APPLICABLE", "REQUIRED", "Expected value of an input, select, or textarea"),
+                action("ASSERT_VALUE", "Assert value", "REQUIRED", "NOT_APPLICABLE", "REQUIRED", "Expected value of an input, select, or textarea"),
                 action("ASSERT_CHECKED", "Assert checked", "REQUIRED", "NOT_APPLICABLE", "NOT_APPLICABLE", "Checkbox or radio control that must be checked"),
                 action("ASSERT_ENABLED", "Assert enabled", "REQUIRED", "NOT_APPLICABLE", "NOT_APPLICABLE", "Control that must accept interaction"),
                 action("ASSERT_DISABLED", "Assert disabled", "REQUIRED", "NOT_APPLICABLE", "NOT_APPLICABLE", "Control that must reject interaction"),

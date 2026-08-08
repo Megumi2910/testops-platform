@@ -27,19 +27,20 @@ async function registerAndVerify(page: Page, email: string) {
 
 test('verified users can create and find a project', async ({ page }) => {
   const email = `project-${Date.now()}@example.test`
+  const projectName = `Checkout regression ${Date.now()}`
   await registerAndVerify(page, email)
 
   await page.getByRole('link', { name: 'Projects', exact: true }).click()
   await page.getByRole('link', { name: 'New project', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Create project' })).toBeVisible()
-  await page.getByLabel('Name').fill('Checkout regression')
+  await page.getByLabel('Name').fill(projectName)
   await page.getByLabel('Description').fill('Project created through the managed workspace.')
   await page.getByLabel('Target origin').selectOption({ label: 'http://frontend:8080' })
   await page.getByRole('button', { name: 'Create project', exact: true }).click()
 
   await expect(page).toHaveURL(/\/projects\/[0-9a-f-]+$/)
-  await expect(page.getByRole('heading', { name: 'Checkout regression' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: projectName })).toBeVisible()
   await page.getByRole('link', { name: 'All projects', exact: true }).click()
-  await page.getByLabel('Filter projects').fill('Checkout regression')
-  await expect(page.getByRole('link', { name: /Checkout regression/ })).toBeVisible()
+  await page.getByLabel('Filter projects').fill(projectName)
+  await expect(page.getByRole('link', { name: projectName })).toBeVisible()
 })
