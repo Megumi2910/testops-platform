@@ -413,5 +413,10 @@
 <!-- Verification note: ecommerce production frontend build passed after CustomerDashboard changes; existing CRA and browser-data advisories remain non-blocking and no CustomerDashboard compile error occurred. -->
 <!-- Verification note: ecommerce frontend image rebuilt successfully with CustomerDashboard changes on 2026-08-08; PostgreSQL data was retained and backend health gating completed before frontend startup. -->
 <!-- Verification note: post-rebuild compose health passed for postgres_db, springboot_backend, and react_frontend; ports remain 3001, 8081, 5433, and 5051. -->
+<section aria-labelledby="messages-page-slice">
+  <h2 id="messages-page-slice">MessagesPage reliability slice (2026-08-08)</h2>
+  <p>The ecommerce message workspace keeps its existing REST and WebSocket services but now exposes failure state in the UI instead of relying on debug output. Thread, message, support-thread, and send failures render inline retry guidance; the socket can reconnect while REST remains the fallback transport. Conversation filters use a roving keyboard tab pattern, and the composer is labelled and locked while a send is pending. The order shortcut is disabled and labelled as a future feature because no navigation contract exists yet.</p>
+  <p>The source audit and ecommerce frontend unit gate passed with three suites and ten tests. The first production-build attempt exposed two missing closing elements in the new error branches; both were corrected before retry. The successful build then exposed three messaging hook dependency/order warnings, which were corrected before the next verification run; the follow-up build has no MessagesPage-specific warnings. The Docker Compose frontend image then rebuilt successfully with PostgreSQL data retained, and all three application services reported healthy. The 9-test ecommerce Playwright contract passed against the rebuilt storefront in 25.5 seconds with no legacy port request. Build and browser-contract evidence are recorded in the implementation smoke guide after each gate completes.</p>
+</section>
 </body>
 </html>

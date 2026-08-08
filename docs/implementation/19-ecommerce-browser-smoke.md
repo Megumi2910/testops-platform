@@ -161,6 +161,10 @@ The frontend image was rebuilt with the catalog/product toast changes and the ex
 
 After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy; PgAdmin remained available on port `5051`.
 
+## MessagesPage reliability slice — 2026-08-08
+
+The ecommerce message workspace now keeps WebSocket/REST fallback behavior visible and actionable: thread, message, support-thread, and send failures render inline retry guidance; debug logging was removed; conversation filters use a keyboard-operable tab pattern; the composer is labelled and locked during sends; and the unfinished order shortcut is disabled and labelled honestly. The focused source audit passed with `git diff --check`, and the ecommerce frontend unit gate passed with 3 suites and 10 tests. Build, Compose health, and the 9-test Playwright contract are the next verification records for this slice.
+
 The SellerOrders ecommerce image was rebuilt successfully on 2026-08-08. Docker completed the React production build, retained PostgreSQL data, recreated the backend and frontend containers, and gated frontend startup on healthy database/backend services. Existing CRA lint and browser-data advisories remain non-blocking; no SellerOrders compile error occurred.
 
 Post-rebuild `docker compose ps` confirmed `postgres_db`, `springboot_backend`, and `react_frontend` are healthy. The expected ecommerce ports remain `3001`, `8081`, `5433`, and `5051`.
@@ -518,6 +522,18 @@ Final ecommerce diff inspection passed with `git diff --check`; the TestOps work
 The next Phase 5 slice replaces the cart’s native `window.confirm` removal prompt with a focus-managed, keyboard-operable dialog. It keeps the destructive action explicit, traps Tab focus while open, closes on Escape, restores focus to the triggering delete control, and uses the existing `Button` styles. The frontend unit gate passed on 2026-08-01: 3 suites and 10 tests; only the existing stale browser-data advisory remains.
 
 The ecommerce production frontend build passed after the cart dialog changes. Existing CRA unused-import, hook-dependency, WebSocket export, and browser-data advisories remain non-blocking; the optimized bundle was generated successfully.
+
+The first MessagesPage production-build attempt failed on two missing closing elements in newly added error branches. The source was corrected immediately; this transient compile failure is retained here so the next successful build can be distinguished from the failed attempt.
+
+The corrected MessagesPage production build passed and generated the optimized bundle. It reported the repository's existing unused-import and hook-dependency warnings plus three new MessagesPage dependency/order warnings; those three messaging warnings were corrected before the next verification run.
+
+The follow-up production build passed with no MessagesPage-specific warnings. Remaining warnings are pre-existing outside this slice.
+
+The Docker Compose frontend rebuild passed on 2026-08-08 with the existing PostgreSQL volume retained; backend and frontend health gating completed before the frontend restarted.
+
+Post-rebuild Compose health passed: `postgres_db`, `springboot_backend`, and `react_frontend` are healthy on the documented local ports.
+
+The ecommerce Playwright contract passed against `http://localhost:3001` on 2026-08-08: 9 tests in 25.5 seconds. Checkout reachability, keyboard-safe cart removal, profile controls, wishlist empty state, mobile layout, URL-driven search, outage retry, pagination, and duplicate-submit locking remained green; no request to `localhost:8080` was observed.
 
 The frontend image was rebuilt with the accessible cart dialog and the existing PostgreSQL volume was retained. The backend image remained unchanged and reached a healthy state before the frontend restarted.
 
