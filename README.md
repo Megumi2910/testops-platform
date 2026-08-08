@@ -11,6 +11,7 @@ The difficult part is not opening a browser. The platform must preserve a trustw
 The existing e-commerce site is an **external system under test**. TestOps owns test definitions, execution state, results, screenshots, traces, users, permissions, and audit data. It does not own the target website’s deployment, database, inventory, accounts, selectors, or availability.
 
 New to the local workflow? Start with the [Ecommerce dogfooding guide](docs/operations/15-ecommerce-dogfooding-guide.md). It explains the two Docker networks, exact ports and environment variables, target checks, the guided case builder, catalog synchronization, evidence, and safe E2E resets.
+For the exact release-candidate verification commands and current gate evidence, see the [release-gate verification guide](docs/implementation/22-release-gate-verification.md).
 
 ## Product status
 

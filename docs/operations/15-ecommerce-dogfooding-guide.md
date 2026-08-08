@@ -476,6 +476,7 @@ profile does not weaken the existing static-fixture or cross-origin checks.
 
 Related source walkthroughs:
 
+- [Release-gate verification](../implementation/22-release-gate-verification.md)
 - [UI-to-execution workflow](../implementation/17-ui-to-execution-workflow.md)
 - [Feature implementation handbook](../implementation/18-feature-implementation-handbook.md)
 - [Executable step language](../implementation/10-executable-step-language.md)

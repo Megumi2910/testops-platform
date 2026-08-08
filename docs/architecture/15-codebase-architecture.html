@@ -473,6 +473,8 @@
   <p>The post-correction catalog dry run passed with 9 suites and 12 cases and made no API calls.</p>
   <p>The corrected search-state run passed in the isolated E2E environment with four successful steps and one screenshot artifact.</p>
   <p>The post-fix READY acceptance pass checked target health as <code>REACHABLE</code>/HTTP 200 and passed all 5 currently runnable cases (18 steps total), retaining one screenshot artifact for each case.</p>
+  <h3>Release-gate verification</h3>
+  <p>The release-gate record in <a href="../implementation/22-release-gate-verification.md"><code>docs/implementation/22-release-gate-verification.md</code></a> is the reproducible handoff for this architecture. It records the 55-test backend unit/package gate, frontend lint/typecheck/unit/build gate, enabled and disabled Playwright profiles, catalog dry-run/apply, and the live READY acceptance pass. The only local PARTIAL is Maven's Testcontainers integration phase, which cannot use the Docker Desktop <code>docker_cli</code> named pipe in this shell; CI remains responsible for that full integration gate.</p>
 </section>
 </body>
 </html>
