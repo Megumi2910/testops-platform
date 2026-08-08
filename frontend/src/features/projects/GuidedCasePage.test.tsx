@@ -6,6 +6,7 @@ import type { ActionDefinition } from './api'
 const definitions: ActionDefinition[] = [
   { action: 'NAVIGATE', label: 'Navigate', locator: false, input: true, expected: false, role: false, help: '/', inputRequirement: 'REQUIRED' },
   { action: 'ASSERT_VISIBLE', label: 'Assert visible', locator: true, input: false, expected: false, role: true, help: 'Heading', locatorRequirement: 'REQUIRED' },
+  { action: 'ASSERT_COUNT', label: 'Assert count', locator: true, input: false, expected: true, role: true, help: 'Matching elements', locatorRequirement: 'REQUIRED', expectedRequirement: 'REQUIRED' },
 ]
 
 describe('guided case validation', () => {
@@ -40,5 +41,14 @@ describe('guided case validation', () => {
 
     expect(serialized.map(step => step.position)).toEqual([0, 1])
     expect(serialized).not.toEqual(expect.arrayContaining([expect.objectContaining({ clientId: expect.anything() })]))
+  })
+
+  it('rejects malformed count assertions before a READY case is sent', () => {
+    const result = validateSteps([
+      { clientId: 'navigate', position: 0, action: 'NAVIGATE', inputValue: '/' },
+      { clientId: 'count', position: 1, action: 'ASSERT_COUNT', locatorType: 'TEXT', locatorValue: 'Product', expectedValue: 'many' },
+    ], definitions)
+
+    expect(result.errors.count).toContain('non-negative integer')
   })
 })

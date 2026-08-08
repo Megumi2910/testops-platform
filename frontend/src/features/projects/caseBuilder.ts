@@ -36,6 +36,7 @@ export function validateSteps(steps: EditableStep[], definitions: ActionDefiniti
     if (requirement(definition, 'locator') === 'REQUIRED' && (!step.locatorType || !step.locatorValue?.trim())) setError('Choose a locator type and enter its value.')
     if (requirement(definition, 'input') === 'REQUIRED' && !step.inputValue?.trim()) setError('Enter an input value for this action.')
     if (requirement(definition, 'expected') === 'REQUIRED' && !step.expectedValue?.trim()) setError('Enter the expected value for this assertion.')
+    if (step.action === 'ASSERT_COUNT' && step.expectedValue?.trim() && !/^\d+$/.test(step.expectedValue.trim())) setError('Expected count must be a non-negative integer.')
     if (step.locatorType === 'ROLE' && !step.locatorRole) setError('Choose an ARIA role when using ROLE.')
     if (step.timeoutMs !== undefined && (step.timeoutMs < 100 || step.timeoutMs > 120000)) setError('Timeout must be between 100 and 120000 milliseconds.')
   })

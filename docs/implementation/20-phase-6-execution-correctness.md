@@ -83,3 +83,15 @@ Runner failures now retain a stable category for the case result instead of leav
 | `WORKER_INFRASTRUCTURE` | An uncategorized failure occurred outside the action definition | Infrastructure error |
 
 The case result stores the category for both test and infrastructure failures. The execution-level infrastructure category is set only for infrastructure rows, so dashboards can distinguish a failing assertion from an unavailable worker without losing the detailed case diagnosis.
+
+## Step language expansion
+
+The execution snapshot now supports interaction and state assertions needed by ecommerce journeys:
+
+- `PRESS` and `HOVER` provide keyboard and pointer interactions without embedding browser code in a case.
+- `ASSERT_VALUE`, `ASSERT_CHECKED`, `ASSERT_ENABLED`, and `ASSERT_DISABLED` cover form and control state.
+- `ASSERT_ATTRIBUTE` uses `inputValue` for the attribute name and `expectedValue` for the expected value.
+- `ASSERT_COUNT` validates a non-negative integer and checks the number of matching elements.
+- `ASSERT_URL_EQUALS` resolves a path through the project target guard before comparing the full URL.
+
+These actions are declared once by `DefinitionService` and exposed through platform action descriptors. The guided frontend builder uses those descriptors to show only applicable fields and action-specific examples, keeping authoring and execution semantics aligned.

@@ -93,13 +93,22 @@ The supported action set is declared in [`DefinitionService`](../backend/src/mai
 | `SELECT_OPTION` | locator + `inputValue` | Selects an option value. |
 | `CHECK` | locator | Checks a checkbox. |
 | `UNCHECK` | locator | Unchecks a checkbox. |
+| `PRESS` | locator + `inputValue` | Sends a keyboard key such as `Enter`, `Tab`, or `ArrowDown` to the locator. |
+| `HOVER` | locator | Hovers the pointer over a control so menus and tooltips can appear. |
 | `WAIT_VISIBLE` | locator | Waits for `VISIBLE`. |
 | `WAIT_HIDDEN` | locator | Waits for `HIDDEN`. |
 | `ASSERT_TEXT_EQUALS` | locator + `expectedValue` | Asserts exact text. |
 | `ASSERT_TEXT_CONTAINS` | locator + `expectedValue` | Asserts contained text. |
 | `ASSERT_VISIBLE` | locator | Asserts visibility. |
 | `ASSERT_HIDDEN` | locator | Asserts hidden state. |
+| `ASSERT_VALUE` | locator + `expectedValue` | Asserts the value of an input, select, or textarea. |
+| `ASSERT_CHECKED` | locator | Asserts that a checkbox or radio control is checked. |
+| `ASSERT_ENABLED` | locator | Asserts that a control accepts interaction. |
+| `ASSERT_DISABLED` | locator | Asserts that a control is disabled. |
+| `ASSERT_ATTRIBUTE` | locator + `inputValue` + `expectedValue` | Treats `inputValue` as the attribute name and asserts its value equals `expectedValue`. |
+| `ASSERT_COUNT` | locator + non-negative integer `expectedValue` | Asserts the number of matching elements. |
 | `ASSERT_URL_CONTAINS` | `expectedValue` | Asserts the page URL contains the expected fragment. |
+| `ASSERT_URL_EQUALS` | `expectedValue` | Resolves a path against the project target and asserts the complete URL equals it. |
 | `TAKE_SCREENSHOT` | none | Captures a page screenshot in memory. |
 
 The current source also accepts legacy aliases and normalizes them:
@@ -152,10 +161,11 @@ Before a case is saved, `DefinitionService` checks:
 2. Locator action has both locator type and locator value.
 3. Locator type is supported.
 4. `NAVIGATE` has `inputValue`.
-5. Text/URL assertions have `expectedValue`.
-6. Step count is at most 100.
-7. Positions are `[0, 1, 2, ...]` with no duplicates.
-8. `READY` cases do not contain legacy unqualified `WAIT`.
+5. Text/URL/state assertions have `expectedValue` where their descriptor says it is required.
+6. `PRESS` has a keyboard input; `ASSERT_ATTRIBUTE` has an attribute name in `inputValue` and an expected value; `ASSERT_COUNT` is a non-negative integer.
+7. Step count is at most 100.
+8. Positions are `[0, 1, 2, ...]` with no duplicates.
+9. `READY` cases do not contain legacy unqualified `WAIT`.
 
 This is aggregate validation: the service validates the whole case before committing its replacement step list.
 
@@ -283,7 +293,7 @@ If you add or change an action, inspect and update all of these locations:
 1. `DefinitionService.ACTIONS` and validation rules.
 2. `PlatformOptionsController` supported-action response.
 3. `PlaywrightCaseRunner.execute`.
-4. Frontend step editor options and types.
+4. Frontend step editor options and types. The editor reads action descriptors from `/api/v1/platform/options`; labels and placeholders for key, attribute, count, value, and URL assertions are action-specific.
 5. Backend tests for accepted/rejected definitions.
 6. Frontend tests for the authoring UI.
 7. This reference and the API/data documentation.
