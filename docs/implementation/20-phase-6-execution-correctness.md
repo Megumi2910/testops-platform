@@ -59,4 +59,10 @@ The snapshot deliberately keeps the original case relationship for reporting whi
 
 ## Next Phase 6 slice
 
-The remaining execution-correctness work is browser safety after user-driven navigation: validate main-frame redirects, form submissions, popups, and script navigation against the approved target origin, then classify blocked navigation separately from generic browser failures.
+## Browser-driven navigation safety
+
+The runner now attaches a main-frame navigation monitor to every isolated page. After a click, form submission, redirect, or script navigation, the resulting URL is checked with the same `ExecutionTargetGuard` used by explicit `NAVIGATE` steps. New popups receive the same monitor; a popup that is outside the approved origin is closed and marks the run as blocked. `about:blank` is ignored during page creation so a normal popup lifecycle does not fail before it navigates.
+
+Blocked navigation is classified as infrastructure category `BLOCKED_NAVIGATION`, and its failure text deliberately omits the untrusted URL. This keeps the run actionable without allowing query strings or redirect URLs to become an evidence or log leak. Same-origin redirects and the configured localhost bridge remain valid because they pass the existing origin and local-target policy.
+
+Focused target-guard and runner tests pass after this change. The next Phase 6 slice is to add explicit browser-level regression coverage for click redirects, form submissions, popup escapes, and same-origin redirects.

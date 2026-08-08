@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.stereotype.Component;
 
@@ -31,11 +32,20 @@ public class PlaywrightCaseRunner {
         boolean[] secretUsed = { false };
         try (BrowserContext context = chromium.newContext(); Page page = context.newPage()) {
             context.setDefaultTimeout(properties.execution().defaultStepTimeout().toMillis());
+            AtomicReference<NavigationViolation> navigationViolation = new AtomicReference<>();
+            monitorNavigation(page, targetOrigin, navigationViolation);
+            page.onPopup(popup -> {
+                monitorNavigation(popup, targetOrigin, navigationViolation);
+                if (!isBlankPage(popup.url())) {
+                    try { targetGuard.resolve(targetOrigin, popup.url()); }
+                    catch (RuntimeException ex) { navigationViolation.compareAndSet(null, new NavigationViolation()); try { popup.close(); } catch (Exception ignored) { } }
+                }
+            });
             Path trace = Files.createTempFile("testops-trace-", ".zip"); context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true));
             long deadline = System.nanoTime() + properties.execution().maxDuration().toNanos();
             int failedStepPosition = -1;
-            try { for (StepDefinition step : definitions) { failedStepPosition = step.position(); if (System.nanoTime() > deadline) throw new TimeoutError("Execution duration exceeded"); long started = System.nanoTime(); boolean stepUsesSecret = referencesSecret(step, secretKeys); secretUsed[0] |= stepUsesSecret; try { execute(page, step, targetOrigin, variables, screenshots, secretUsed[0]); outcomes.add(new StepOutcome(step.position(), step.action(), "PASSED", (System.nanoTime() - started) / 1_000_000, null)); } catch (Throwable stepError) { outcomes.add(new StepOutcome(step.position(), step.action(), "FAILED", (System.nanoTime() - started) / 1_000_000, sanitizeMessage(stepError))); if (stepError instanceof RuntimeException runtime) throw runtime; if (stepError instanceof Error error) throw error; throw new RuntimeException(stepError); } } return new Result(true, null, null, secretUsed[0], false, null, null, trace, outcomes, screenshots); }
-            catch (Throwable ex) { byte[] screenshot = secretUsed[0] ? null : page.screenshot(new Page.ScreenshotOptions().setFullPage(true)); boolean infrastructure = ex instanceof com.microsoft.playwright.PlaywrightException || ex instanceof com.megumi.testops.shared.api.ApiException || ex instanceof TimeoutError; return new Result(false, sanitizeMessage(ex), screenshot, secretUsed[0], infrastructure, infrastructure ? category(ex) : null, failedStepPosition < 0 ? null : failedStepPosition, trace, outcomes, screenshots); }
+            try { for (StepDefinition step : definitions) { failedStepPosition = step.position(); if (System.nanoTime() > deadline) throw new TimeoutError("Execution duration exceeded"); long started = System.nanoTime(); boolean stepUsesSecret = referencesSecret(step, secretKeys); secretUsed[0] |= stepUsesSecret; try { execute(page, step, targetOrigin, variables, screenshots, secretUsed[0]); assertNavigationAllowed(navigationViolation); outcomes.add(new StepOutcome(step.position(), step.action(), "PASSED", (System.nanoTime() - started) / 1_000_000, null)); } catch (Throwable stepError) { outcomes.add(new StepOutcome(step.position(), step.action(), "FAILED", (System.nanoTime() - started) / 1_000_000, sanitizeMessage(stepError))); if (stepError instanceof RuntimeException runtime) throw runtime; if (stepError instanceof Error error) throw error; throw new RuntimeException(stepError); } } return new Result(true, null, null, secretUsed[0], false, null, null, trace, outcomes, screenshots); }
+            catch (Throwable ex) { byte[] screenshot = secretUsed[0] ? null : page.screenshot(new Page.ScreenshotOptions().setFullPage(true)); boolean infrastructure = ex instanceof com.microsoft.playwright.PlaywrightException || ex instanceof com.megumi.testops.shared.api.ApiException || ex instanceof TimeoutError || ex instanceof NavigationViolation; return new Result(false, sanitizeMessage(ex), screenshot, secretUsed[0], infrastructure, infrastructure ? category(ex) : null, failedStepPosition < 0 ? null : failedStepPosition, trace, outcomes, screenshots); }
             finally { try { context.tracing().stop(new Tracing.StopOptions().setPath(trace)); } catch (Exception ignored) { } if (secretUsed[0]) { try { Files.deleteIfExists(trace); } catch (Exception ignored) { } } }
         } catch (Exception ex) { return new Result(false, sanitizeMessage(ex), null, secretUsed[0], true, category(ex), null, null); }
     }
@@ -96,8 +106,18 @@ public class PlaywrightCaseRunner {
     private static String interpolate(String value, Map<String, String> variables) { if (value == null) return ""; java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("\\$\\{([A-Za-z][A-Za-z0-9_]{1,63})}").matcher(value); StringBuffer output = new StringBuffer(); while (matcher.find()) { String replacement = variables.get(matcher.group(1).toUpperCase(Locale.ROOT)); if (replacement == null) throw new IllegalArgumentException("Variable is unavailable or secret values are not allowed in this action"); matcher.appendReplacement(output, java.util.regex.Matcher.quoteReplacement(replacement)); } matcher.appendTail(output); return output.toString(); }
     private static int parseWaitMillis(String value, int fallback) { try { int millis = Integer.parseInt(value == null || value.isBlank() ? String.valueOf(fallback) : value.trim()); return Math.max(0, Math.min(millis, 120_000)); } catch (NumberFormatException ex) { throw new IllegalArgumentException("WAIT requires milliseconds"); } }
     static String sanitizeMessage(Throwable ex) { String value = ex.getMessage(); return value == null ? ex.getClass().getSimpleName() : value.replaceAll("(?i)(password|token|secret)=\\S+", "$1=[REDACTED]"); }
-    private static String category(Throwable ex) { String name = ex.getClass().getSimpleName().toLowerCase(Locale.ROOT); if (name.contains("timeout")) return "WORKER_TIMEOUT"; if (name.contains("connect") || name.contains("network")) return "NETWORK"; if (name.contains("dns") || name.contains("host")) return "DNS_POLICY"; if (name.contains("browser")) return "BROWSER_STARTUP"; if (name.contains("playwright")) return "BROWSER_CRASH"; if (name.contains("api")) return "TARGET_UNREACHABLE"; return "UNKNOWN"; }
+    private static String category(Throwable ex) { if (ex instanceof NavigationViolation) return "BLOCKED_NAVIGATION"; String name = ex.getClass().getSimpleName().toLowerCase(Locale.ROOT); if (name.contains("timeout")) return "WORKER_TIMEOUT"; if (name.contains("connect") || name.contains("network")) return "NETWORK"; if (name.contains("dns") || name.contains("host")) return "DNS_POLICY"; if (name.contains("browser")) return "BROWSER_STARTUP"; if (name.contains("playwright")) return "BROWSER_CRASH"; if (name.contains("api")) return "TARGET_UNREACHABLE"; return "UNKNOWN"; }
+    private void monitorNavigation(Page page, String origin, AtomicReference<NavigationViolation> violation) {
+        page.onFrameNavigated(frame -> {
+            if (frame.parentFrame() != null || isBlankPage(frame.url())) return;
+            try { targetGuard.resolve(origin, frame.url()); }
+            catch (RuntimeException ex) { violation.compareAndSet(null, new NavigationViolation()); }
+        });
+    }
+    private static boolean isBlankPage(String url) { return url == null || url.isBlank() || "about:blank".equalsIgnoreCase(url); }
+    private static void assertNavigationAllowed(AtomicReference<NavigationViolation> violation) { NavigationViolation failure = violation.get(); if (failure != null) throw failure; }
     private static final class TimeoutError extends RuntimeException { TimeoutError(String message) { super(message); } }
+    static final class NavigationViolation extends RuntimeException { NavigationViolation() { super("Browser navigation left the approved project target"); } }
     public record Result(boolean passed, String errorMessage, byte[] screenshot, boolean secretBearing, boolean infrastructureError, String infrastructureCategory, Integer failedStepPosition, Path trace, List<StepOutcome> stepOutcomes, List<CapturedScreenshot> screenshots) {
         public Result(boolean passed, String errorMessage, byte[] screenshot, boolean secretBearing, boolean infrastructureError, String infrastructureCategory, Integer failedStepPosition, Path trace) { this(passed, errorMessage, screenshot, secretBearing, infrastructureError, infrastructureCategory, failedStepPosition, trace, List.of(), List.of()); }
     }

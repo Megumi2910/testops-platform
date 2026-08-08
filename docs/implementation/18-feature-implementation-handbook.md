@@ -351,3 +351,5 @@ When adding a feature:
 ## 8. Phase 6 execution correctness
 
 Execution variables are copied at queue time into `execution_variable_snapshots`, and ordered case steps plus retry count are copied into `execution_step_snapshots` and `test_case_results.retry_count_snapshot`. Plain values remain readable only to the worker path; secret values retain AES-GCM ciphertext, nonce, and key version. `ExecutionRunService` decrypts secrets immediately before invoking `PlaywrightCaseRunner`, and no controller or response DTO exposes the resolved map. The runner receives immutable step definitions plus the secret-key set, so `${NON_SECRET}` does not disable evidence while a genuine secret reference suppresses screenshots and removes the trace after the run. See `20-phase-6-execution-correctness.md` for the data flow, failure policy, and verification evidence.
+
+The same runner monitors main-frame and popup navigation, not just explicit `NAVIGATE` actions. Redirects, form submissions, click handlers, and script-driven URL changes must remain on the approved project origin; an escape becomes the sanitized `BLOCKED_NAVIGATION` infrastructure category.
