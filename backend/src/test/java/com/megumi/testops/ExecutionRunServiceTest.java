@@ -97,6 +97,27 @@ class ExecutionRunServiceTest {
     }
 
     @Test
+    void suppliesStableGeneratedValuesWithoutMarkingThemSecret() {
+        PlaywrightCaseRunner.Result outcome = new PlaywrightCaseRunner.Result(
+                true, null, null, false, false, null, null, null, List.of(), List.of());
+        when(executions.findById(execution.getId())).thenReturn(Optional.of(execution));
+        when(results.findByExecutionIdOrderByTestCase_NameAsc(execution.getId())).thenReturn(List.of(caseResult));
+        when(variableSnapshots.findByExecutionIdOrderByKeyAsc(execution.getId())).thenReturn(List.of());
+        when(stepSnapshots.findByCaseResultIdOrderByPositionAsc(caseResult.getId())).thenReturn(List.of());
+        when(runner.run(any(), any(), any(), any(), any(), any())).thenReturn(outcome);
+        when(queueGuard.lockGuard()).thenReturn(Optional.empty());
+
+        service.run(execution.getId());
+
+        var captured = org.mockito.ArgumentCaptor.forClass(java.util.Map.class);
+        verify(runner).run(any(), any(), any(), any(), captured.capture(), any());
+        @SuppressWarnings("unchecked") var values = (java.util.Map<String, String>) captured.getValue();
+        assertEquals(execution.getId().toString(), values.get("RUN_ID"));
+        assertEquals(execution.getCreatedAt().toString(), values.get("RUN_TIMESTAMP"));
+        assertEquals(caseResult.getId().toString(), values.get("CASE_RESULT_ID"));
+    }
+
+    @Test
     void decryptsSecretSnapshotInsideWorkerBeforeRunningCase() {
         var now = Instant.now();
         var secret = com.megumi.testops.project.domain.ProjectVariableEntity.encrypted(execution.getProject(), "PASSWORD", new byte[] { 9 }, new byte[] { 8 }, 1, now);

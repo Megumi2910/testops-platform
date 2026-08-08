@@ -95,3 +95,5 @@ The execution snapshot now supports interaction and state assertions needed by e
 - `ASSERT_URL_EQUALS` resolves a path through the project target guard before comparing the full URL.
 
 These actions are declared once by `DefinitionService` and exposed through platform action descriptors. The guided frontend builder uses those descriptors to show only applicable fields and action-specific examples, keeping authoring and execution semantics aligned.
+
+The worker also injects `RUN_ID`, `CASE_RESULT_ID`, and `RUN_TIMESTAMP` after reading the execution-owned variable snapshots. These values are generated from immutable queue records, are available to every interpolation field, and are intentionally classified as non-secret evidence-safe data.

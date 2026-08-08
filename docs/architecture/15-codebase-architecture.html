@@ -450,6 +450,7 @@
   <p>Execution failures now retain stable categories for assertion mismatches, invalid definitions, locator timeouts, blocked navigation, unreachable targets, browser crashes, and worker timeouts. Case results preserve the category for both test and infrastructure failures while execution-level infrastructure reporting remains limited to worker/target failures.</p>
   <p>The step catalog now also covers keyboard and UI state behavior: <code>PRESS</code>, <code>HOVER</code>, value/checked/enabled/disabled assertions, attribute and count assertions, and exact target-guarded URL assertions. The platform options endpoint is the single metadata source; the guided builder renders only applicable fields and action-specific examples before the same backend validation runs.</p>
   <p>The ecommerce catalog is now source-controlled in <code>catalog/ecommerce-testops.json</code> and synchronized by <code>scripts/sync-ecommerce-catalog.ps1</code>. Stable markers make project, suite, case, and variable updates idempotent; dry-run/apply modes keep secrets out of Git and promote only API-valid cases to READY.</p>
+  <p>Execution interpolation also exposes immutable generated values: <code>RUN_ID</code>, <code>CASE_RESULT_ID</code>, and <code>RUN_TIMESTAMP</code>. They are inserted by <code>ExecutionRunService</code> after queue-time snapshots, so retries are reproducible and ordinary evidence remains available.</p>
 </section>
 </body>
 </html>

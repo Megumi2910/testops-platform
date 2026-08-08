@@ -62,6 +62,12 @@ public class ExecutionRunService {
                 resolvedVariables.put(key, snapshot.getValue());
             }
         }
+        // Built-ins are derived from the immutable execution record, never from
+        // mutable project variables. They are non-secret and therefore do not
+        // suppress screenshots or traces.
+        resolvedVariables.put("RUN_ID", execution.getId().toString());
+        resolvedVariables.put("RUN_TIMESTAMP", execution.getCreatedAt().toString());
+        resolvedVariables.put("CASE_RESULT_ID", result.getId().toString());
         PlaywrightCaseRunner.Result outcome = null;
         int maxAttempts = Math.max(1, result.getRetryCountSnapshot() + 1);
         var definitions = stepSnapshots.findByCaseResultIdOrderByPositionAsc(result.getId()).stream().map(StepDefinition::from).toList();

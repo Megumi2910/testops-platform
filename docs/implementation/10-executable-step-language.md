@@ -211,6 +211,16 @@ The variable name must start with a letter and contain letters, digits, or under
 
 At present, the execution service supplies only non-secret variables to the runner. If a placeholder is unavailable, execution fails rather than substituting an empty value. This is an intentional fail-closed behavior.
 
+Each queued case also receives immutable, non-secret generated values:
+
+| Placeholder | Value | Stability |
+| --- | --- | --- |
+| `${RUN_ID}` | Execution UUID | Same for every case and retry in one run. |
+| `${CASE_RESULT_ID}` | Case-result UUID | Same for every retry of that case. |
+| `${RUN_TIMESTAMP}` | Queue-time execution timestamp in ISO-8601 format | Same for every case and retry in one run. |
+
+Generated values are derived inside `ExecutionRunService`, override any conflicting project-variable key, and do not suppress screenshots or traces. They can be used in input, expected value, locator value, and navigation URL fields just like ordinary variables.
+
 ## 9. Timeout behavior
 
 There are two timeout layers:
