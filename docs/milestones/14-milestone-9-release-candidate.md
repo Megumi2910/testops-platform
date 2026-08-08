@@ -198,11 +198,11 @@ search-locator fixes, the current release-candidate evidence is:
 - enabled Playwright with the live ecommerce origin: 18 passed and 1
   intentionally skipped disabled-profile case;
 - disabled-local-target Playwright: 1 passed independently;
-- catalog dry-run: 9 suites and 28 cases with no API calls;
-- authenticated catalog apply: 9 suites and 28 cases reconciled with
+- catalog dry-run: 9 suites and 29 cases with no API calls;
+- authenticated catalog apply: 9 suites and 29 cases reconciled with
   redacted variables;
 - live target check: `REACHABLE`/HTTP 200;
-- all 22 current READY catalog cases: passed, 132 steps; twenty screenshot-bearing
+- all 23 current READY catalog cases: passed, 146 steps; twenty-one screenshot-bearing
   cases retained screenshot artifacts and traces.
 - final Compose inspection: normal, enabled E2E, and disabled E2E services all
   reported `running`.
@@ -221,7 +221,7 @@ Linux CI Testcontainers job.
 
 The authenticated customer expansion is now part of the release evidence. The
 platform-smoke, catalog/search, customer, and resilience/accessibility suites
-passed 1/1, 10/10, 8/8, and 3/3 respectively. Customer coverage includes
+passed 1/1, 10/10, 9/9, and 3/3 respectively. Customer coverage includes
 dashboard, order history, profile, settings, empty wishlist, and valid login.
 The resilience case also verifies mobile keyboard search at 390×844 and the
 shareable `/search?q=shirt` URL. The guest cart route guard also confirms an
@@ -231,7 +231,10 @@ Invalid credentials remain on `/login` and expose the structured
 the three core placeholders and enabled submit control without sending a message.
 The logout-session case signs in, signs out from the account menu, confirms the
 public home state, and verifies the protected order route redirects to `/login`;
-its screenshot is taken only after the session is cleared.
+its screenshot is taken only after the session is cleared. The seeded order-detail
+case passed fourteen steps after clicking `Đơn hàng #MOCK-ORDER-001`, verifying
+both products, COD payment, and `MOCK-TXN-001`; its screenshot was suppressed by
+the secret-safe evidence policy.
 Dashboard exploration discovered a
 real ecommerce PostgreSQL query defect; commit `e738f2f` replaced the invalid
 `DISTINCT` address projection with a bounded recent-order lookup, and its

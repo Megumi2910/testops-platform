@@ -7,12 +7,13 @@ The ecommerce catalog is source-controlled at `catalog/ecommerce-testops.json`. 
 The manifest gives every project, suite, and case a stable external key. The key is stored as a marker in the project/suite description or case tags, so a renamed display name does not create a duplicate on the next synchronization. Cases are first written as `DRAFT`; a manifest case marked `READY` is promoted only after the same API validation that the UI uses.
 
 The first catalog contains the nine ecommerce domains from Milestone 10. The
-current manifest has 28 cases: twenty-two safe single-browser cases are `READY`
+current manifest has 29 cases: twenty-three safe single-browser cases are `READY`
 (homepage, catalog entry, shareable search, no-results search, product detail,
 category browse, category directory, flash sale, about, contact, help,
 verified-customer login, customer dashboard, order history, profile, settings,
-and empty wishlist, plus mobile keyboard search, the guest cart route guard, and
-invalid-login feedback, contact-form accessibility, and logout-session protection).
+and empty wishlist, order detail, plus mobile keyboard search, the guest cart
+route guard, invalid-login feedback, contact-form accessibility, and logout-session
+protection).
 Credentialed verification,
 transactional, Mailpit, two-user messaging, and destructive cases remain drafts
 until their native fixture/test harness is available; this prevents a catalog
@@ -107,14 +108,14 @@ docker volume rm testops-e2e_postgres18_data
 
 Do not run that command against the normal `testops-platform_postgres18_data` volume.
 
-The current catalog has 9 suites and 28 cases. Its 22-case READY set
+The current catalog has 9 suites and 29 cases. Its 23-case READY set
 includes the non-destructive verified-customer login, guest homepage/catalog
 checks, shareable/no-results search checks, a product-detail journey for
 `/product/1`, a category-browse journey for `/category/1`, a category-directory
 journey for `/categories`, a flash-sale journey for `/flash-sale`, public
-about/contact/help journeys, six authenticated customer journeys, and the
+about/contact/help journeys, seven authenticated customer journeys plus the
 mobile keyboard search, guest cart route-guard, invalid-login, contact-form
-accessibility, and logout-session journeys. The logout case verifies the account
+accessibility, logout-session, and seeded order-detail journeys. The logout case verifies the account
 menu changes to `Đăng nhập` and that `/customer/orders` redirects to `/login`
 after sign-out. Search uses
 `ASSERT_VALUE` with the unique `LABEL` locator for the page's
@@ -135,7 +136,7 @@ profile remains the required check for proving that the same localhost origin
 is blocked when `TARGET_LOCAL_DEV_ENABLED=false`.
 
 On 2026-08-08, an authenticated apply against the isolated E2E backend on
-port 8180 completed successfully for all 9 suites and 24 cases. The run
+port 8180 completed successfully for all 9 suites and 29 cases. The run
 exercised marker reconciliation, redacted variable updates, P0/P1 mapping,
 and READY promotion after the step-replacement flush fix.
 
@@ -149,9 +150,10 @@ environment on 2026-08-08. It passed all four steps (`NAVIGATE`, `ASSERT_VALUE`,
 artifact.
 
 The complete READY catalog was then queued again after a clean backend restart.
-Target checking returned `REACHABLE` with HTTP 200; all 22 READY cases passed,
-with 132 total steps. Twenty screenshot-bearing cases each retained a
-`SCREENSHOT` artifact, while the valid-login case passed six steps without
+Target checking returned `REACHABLE` with HTTP 200; all 23 READY cases passed,
+with 146 total steps. Twenty-one definitions contain a screenshot step; the
+non-secret cases retain `SCREENSHOT` artifacts, while credentialed runs remain
+subject to evidence suppression. The valid-login case passed six steps without
 capturing credential evidence. Repeated disposable-stack logins can hit the
 auth rate limiter; recreating only the E2E backend is safe when diagnosing that
 condition.
@@ -166,7 +168,7 @@ returned HTTP 200. The order-history case initially used exact `#MOCK-ORDER-001`
 text and timed out in managed Chromium; changing both the wait and assertion to
 the rendered `TEXT` substring made the case deterministic. The empty wishlist
 case uses `TEXT_EXACT` for the page title because the page also contains the
-similar empty-state heading. The final suite results were 1/1, 10/10, 8/8,
+similar empty-state heading. The final suite results were 1/1, 10/10, 9/9,
 and 3/3 for platform smoke, catalog/search, authentication/customer, and
 resilience/accessibility coverage. The mobile case uses the first-step
 390×844 viewport context, a `PLACEHOLDER` fill, `PRESS=Enter`, and an exact
@@ -178,7 +180,11 @@ remained on `/login`, and retained its screenshot. The contact-form case
 verified the three core placeholders and enabled `Gửi tin nhắn` without submit.
 The logout case passed thirteen steps: it signs in, signs out from the account
 menu, confirms the public home state, and proves the protected order route
-returns to the login form. Its screenshot is captured only after logout.
+returns to the login form. Its screenshot is captured only after logout. The
+order-detail case passed fourteen steps after clicking the stable mock-order
+link, verifying both products, COD payment, and `MOCK-TXN-001`. Its screenshot
+step was correctly suppressed because the same run used the secret customer
+password.
 
 If the disposable auth limiter returns HTTP 429 during apply or polling,
 restart only `testops-e2e-backend-1`, wait for its health check, then obtain one
