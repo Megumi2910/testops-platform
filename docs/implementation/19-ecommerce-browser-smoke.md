@@ -331,6 +331,8 @@ The ecommerce SellerStore implementation commit `19d3efd` was created successful
 
 The matching TestOps SellerStore verification documentation was committed on `codex/milestone-9-release-candidate` as `c52675b`; the branch is ready to publish.
 
+The ecommerce SellerStore commits through `de756b5` were pushed successfully; the TestOps documentation branch remains ready to publish.
+
 Final ecommerce diff inspection passed with `git diff --check`; the TestOps workspace has only the corresponding documentation updates.
 
 The Playwright ecommerce contract now includes a direct cart-confirmation regression: it verifies the dialog opens without deleting the seeded item, focuses the cancel action, cycles to the destructive action with Tab, closes on Escape, and restores focus after Escape and Cancel. The expanded contract passed on 2026-08-01: 7 tests in 18.5 seconds.
