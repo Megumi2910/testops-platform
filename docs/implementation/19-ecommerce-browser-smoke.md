@@ -537,6 +537,18 @@ The ecommerce Playwright contract passed against `http://localhost:3001` on 2026
 
 Publication: the matching TestOps smoke and architecture notes were committed as `8b82db6` and pushed to `codex/milestone-9-release-candidate`; untracked `.agents/` and `skills-lock.json` remain preserved.
 
+The next Phase 5 slice hardens the ecommerce CategoryProductsPage fetch lifecycle, loading/error semantics, and unfinished wishlist affordance. Verification is pending.
+
+The ecommerce frontend unit gate passed for the CategoryProductsPage slice: 3 suites and 10 tests on 2026-08-08; only the stale browser-data advisory remains.
+
+The CategoryProductsPage production build passed with no category-page warning; remaining warnings are pre-existing outside this slice.
+
+The ecommerce frontend image rebuilt successfully for the CategoryProductsPage slice with PostgreSQL data retained and backend/database health gating intact.
+
+Post-rebuild Compose health passed for `postgres_db`, `springboot_backend`, and `react_frontend`.
+
+The ecommerce Playwright contract passed against the CategoryProductsPage rebuild on 2026-08-08: 9 tests in 25.4 seconds; all existing checks remained green.
+
 The frontend image was rebuilt with the accessible cart dialog and the existing PostgreSQL volume was retained. The backend image remained unchanged and reached a healthy state before the frontend restarted.
 
 After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy; PgAdmin remained available on port `5051`.
