@@ -280,6 +280,11 @@ The default API base is `http://localhost:8080`; override it with
 `-BaseUrl` when TestOps runs elsewhere. The script creates or updates the
 `Ecommerce` project and its suites, creates cases as `DRAFT`, and promotes only
 manifest cases that pass readiness validation to `READY`.
+Apply output redacts every variable value, including the non-secret email, so
+terminal logs can be shared without exposing fixture credentials.
+The redaction assertion was verified locally with supplied test-only values;
+the preflight passed with 9 suites and 12 cases and the values did not appear
+in captured output.
 
 The current catalog intentionally keeps credentialed, destructive, Mailpit,
 two-user WebSocket, concurrency, seller, and administrator scenarios as

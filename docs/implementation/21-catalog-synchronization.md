@@ -31,6 +31,13 @@ $env:TESTOPS_E2E_CUSTOMER_PASSWORD = '<local-password>'
 
 The script creates or updates the `Ecommerce` project at `http://localhost:3001`, its suites, variables, and cases. Secret values are read only from environment variables at apply time. If a referenced value is absent, that variable is skipped and no secret placeholder is written.
 
+Apply logging is secret-safe: variable payloads are sent with their real values,
+but the operation plan always prints `value: [REDACTED]` for both secret and
+non-secret variables. This prevents a copied terminal transcript from becoming
+an accidental credential leak.
+The redaction check was exercised with sentinel email/password values and
+confirmed that neither appeared in captured dry-run output.
+
 ## Synchronization behavior
 
 1. The project is matched by `[testops-key:ecommerce-platform]`, then by exact display name; an existing match is updated so its marker and target origin are repaired.

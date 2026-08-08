@@ -64,8 +64,8 @@ function Write-Plan([string]$method, [string]$path, [object]$body) {
     Write-Host "[$Mode] $method $path$summary"
 }
 
-function Invoke-TestOps([string]$method, [string]$path, [object]$body = $null) {
-    Write-Plan $method $path $body
+function Invoke-TestOps([string]$method, [string]$path, [object]$body = $null, [object]$logBody = $null) {
+    Write-Plan $method $path $(if ($null -eq $logBody) { $body } else { $logBody })
     if ($Mode -eq 'dry-run') { return $null }
     if ([string]::IsNullOrWhiteSpace($Token)) { throw 'Apply mode requires TESTOPS_TOKEN or -Token.' }
     $headers = @{ Authorization = "Bearer $Token" }
@@ -101,8 +101,9 @@ foreach ($variable in @($manifest.variables)) {
     $existingVariables = if ($Mode -eq 'dry-run') { @() } else { @(Invoke-TestOps GET "/api/v1/projects/$projectId/variables") }
     $existing = $existingVariables | Where-Object { $_.key -eq $variable.key } | Select-Object -First 1
     $payload = @{ key = $variable.key; secret = [bool]$variable.secret; value = $value }
-    if ($null -eq $existing) { Invoke-TestOps POST "/api/v1/projects/$projectId/variables" $payload }
-    else { Invoke-TestOps PUT "/api/v1/projects/$projectId/variables/$([uri]::EscapeDataString($variable.key))" $payload }
+    $safeLogPayload = @{ key = $variable.key; secret = [bool]$variable.secret; value = '[REDACTED]' }
+    if ($null -eq $existing) { Invoke-TestOps POST "/api/v1/projects/$projectId/variables" $payload $safeLogPayload }
+    else { Invoke-TestOps PUT "/api/v1/projects/$projectId/variables/$([uri]::EscapeDataString($variable.key))" $payload $safeLogPayload }
 }
 
 $suites = if ($Mode -eq 'dry-run') { @() } else { @(Invoke-TestOps GET "/api/v1/projects/$projectId/suites") }
