@@ -179,6 +179,24 @@ The matching TestOps SellerOrders documentation commits through `11d6498` were p
 
 Final publication confirmation: branch `codex/milestone-9-release-candidate` is synchronized with origin at `d8bd73c`; the existing untracked `.agents/` and `skills-lock.json` remain intentionally preserved.
 
+The next Phase 5 slice hardens the ecommerce `CustomerDashboard`: independent requests are parallelized, authentication and retry effects are stable, failures expose an actionable retry, dashboard actions navigate to real routes, unfinished wallet/voucher capabilities are labelled, and order/product cards use keyboard-operable controls. Verification is pending.
+
+The focused CustomerDashboard audit found no browser alerts, debug logs, stale clickable-card classes, unused dashboard state, or full-page product links; `git diff --check` passed.
+
+The ecommerce frontend unit gate passed after the CustomerDashboard changes on 2026-08-08: 3 suites and 10 tests; the stale `baseline-browser-mapping` advisory remains non-blocking.
+
+The ecommerce production frontend build passed after the CustomerDashboard changes. Existing CRA unused-import, hook-dependency, WebSocket-export, and browser-data advisories remain non-blocking; no CustomerDashboard compile error occurred.
+
+The ecommerce frontend image was rebuilt successfully with the CustomerDashboard changes on 2026-08-08; PostgreSQL data was retained and backend health gating completed before frontend startup.
+
+Post-rebuild `docker compose ps` confirmed `postgres_db`, `springboot_backend`, and `react_frontend` are healthy. Ecommerce ports remain `3001`, `8081`, `5433`, and `5051`.
+
+The TestOps Playwright ecommerce contract passed against the rebuilt CustomerDashboard image on 2026-08-08: all 9 tests passed in 25.7 seconds. The contract continues to cover seeded checkout, cart-dialog keyboard behavior, profile controls, wishlist empty state, mobile layout, URL-driven search/pagination, outage retry, and duplicate-submit locking; CustomerDashboard has no dedicated stable fixture yet.
+
+Final TestOps diff inspection passed with `git diff --check`; only the browser smoke guide and architecture map changed. Existing untracked `.agents/` and `skills-lock.json` remain untouched.
+
+The matching ecommerce CustomerDashboard implementation commit is `1c56887`; the TestOps verification documentation is being committed separately.
+
 The next Phase 5 slice hardens customer order cancellation. `CancelOrderModal` now has dialog semantics, an associated reason field, Escape handling, focus trapping/restoration, and submit locking. Customer order list/detail cancellation feedback now uses the shared Toast component for success and API failures rather than browser-blocking alerts. Verification is pending.
 
 The targeted ecommerce scan found no `alert(...)` calls in the order cancellation files, and `git diff --check` passed. Git emitted only its normal line-ending normalization warning for edited files.
