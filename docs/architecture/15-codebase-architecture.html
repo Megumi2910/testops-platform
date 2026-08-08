@@ -348,5 +348,17 @@
 <!-- Release note: ecommerce SellerSettings commit 72f9f85 was created successfully; matching TestOps documentation commit is next. -->
 <!-- Release note: TestOps SellerSettings verification documentation commit bddd3c8 was created successfully and published through 505838b. -->
 <!-- Release note: ecommerce SellerSettings commits through 56879e7 and matching TestOps documentation through 505838b were pushed successfully. -->
+<!-- Implementation note: SellerOrders is being hardened with centralized status mapping, accessible order controls, and Toast-backed status-update feedback. Verification is pending. -->
+<!-- Implementation note: SellerOrders now centralizes fetch/mapping logic, normalizes status values, refreshes through one callback, and reports status updates through Toast feedback. -->
+<!-- Implementation note: SellerOrders now separates fetch/update errors, adds retry and loading states, and labels search/filter/cancellation UI. -->
+<!-- Implementation note: SellerOrders dialogs now expose semantic metadata, Escape handling, overscroll containment, labelled controls, and live update errors. -->
+<!-- Verification note: SellerOrders alert/error audit found no browser alerts or stale status-modal setError path; git diff --check passed. -->
+<!-- Verification note: ecommerce frontend unit gate passed after SellerOrders changes on 2026-08-08 with 3 suites and 10 tests; the stale baseline-browser-mapping advisory remains non-blocking. -->
+<!-- Verification note: ecommerce production frontend build passed after SellerOrders changes; existing CRA and browser-data advisories remain non-blocking. -->
+<!-- Verification note: SellerOrders ecommerce image rebuilt successfully on 2026-08-08; Docker retained PostgreSQL data, rebuilt the React bundle, and waited for healthy database/backend services before frontend startup. -->
+<!-- Verification note: post-rebuild compose health passed for postgres_db, springboot_backend, and react_frontend; ports remain 3001, 8081, 5433, and 5051. -->
+<!-- Verification note: TestOps Playwright ecommerce contract passed against the rebuilt SellerOrders image on 2026-08-08: 9 tests in 25.8s; no dedicated stable seller fixture exists for SellerOrders. -->
+<!-- Verification note: final TestOps documentation diff passed with git diff --check; only browser smoke and architecture documentation changed, with .agents/ and skills-lock.json intentionally preserved untracked. -->
+<!-- Release note: ecommerce SellerOrders implementation and reliability documentation commit is 3568210; the matching TestOps documentation commit is next. -->
 </body>
 </html>

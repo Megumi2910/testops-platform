@@ -161,6 +161,16 @@ The frontend image was rebuilt with the catalog/product toast changes and the ex
 
 After the rebuild, `docker compose ps` reported `react_frontend`, `springboot_backend`, and `postgres_db` healthy; PgAdmin remained available on port `5051`.
 
+The SellerOrders ecommerce image was rebuilt successfully on 2026-08-08. Docker completed the React production build, retained PostgreSQL data, recreated the backend and frontend containers, and gated frontend startup on healthy database/backend services. Existing CRA lint and browser-data advisories remain non-blocking; no SellerOrders compile error occurred.
+
+Post-rebuild `docker compose ps` confirmed `postgres_db`, `springboot_backend`, and `react_frontend` are healthy. The expected ecommerce ports remain `3001`, `8081`, `5433`, and `5051`.
+
+The TestOps Playwright ecommerce contract passed against the rebuilt SellerOrders image on 2026-08-08: all 9 tests passed in 25.8 seconds. The contract continues to cover seeded checkout reachability, accessible cart removal, profile controls, wishlist empty state, mobile layout, URL-driven search/pagination, outage retry, and duplicate-submit locking; no dedicated stable seller fixture exists for SellerOrders.
+
+Final TestOps documentation diff inspection passed with `git diff --check`; only the browser smoke guide and architecture map are changed. Existing untracked `.agents/` and `skills-lock.json` remain untouched.
+
+The matching ecommerce SellerOrders implementation commit is `3568210`; this TestOps documentation is being committed separately to preserve repository ownership boundaries.
+
 The next Phase 5 slice hardens customer order cancellation. `CancelOrderModal` now has dialog semantics, an associated reason field, Escape handling, focus trapping/restoration, and submit locking. Customer order list/detail cancellation feedback now uses the shared Toast component for success and API failures rather than browser-blocking alerts. Verification is pending.
 
 The targeted ecommerce scan found no `alert(...)` calls in the order cancellation files, and `git diff --check` passed. Git emitted only its normal line-ending normalization warning for edited files.
@@ -218,6 +228,20 @@ The ecommerce SellerSettings implementation commit `72f9f85` was created success
 The matching TestOps SellerSettings verification documentation was committed on `codex/milestone-9-release-candidate` as `bddd3c8`; the documentation branch is now published through `505838b`.
 
 The ecommerce SellerSettings commits through `56879e7` were pushed successfully; the TestOps documentation branch was also pushed through `505838b`.
+
+The next Phase 5 slice updates `SellerOrders`: order data mapping is centralized, status labels now normalize backend values consistently, status updates will use Toast feedback and request locking, and order actions, filters, modal controls, icons, and error states are being made keyboard- and screen-reader-friendly. Verification is pending.
+
+SellerOrders now fetches through a reusable callback, maps backend status and delivery values once, refreshes through the same path after a status update, and exposes success/error Toast feedback while preserving the existing `updating` lock.
+
+SellerOrders now also exposes loading-safe statistics, a labelled search and status filter, actionable retry feedback, normalized cancellation rendering, and hidden decorative icons. Fetch failures remain separate from status-update failures so an update error does not replace the order list underneath its modal.
+
+SellerOrders detail and status dialogs now have semantic dialog metadata, Escape handling, overscroll containment, labelled close/status controls, live update errors, focus-visible buttons, and explicit Toast rendering for successful or failed status changes.
+
+The targeted SellerOrders audit found no browser `alert(...)` calls, no stale `setError` path inside the status dialog, and `git diff --check` passed. Only normal line-ending normalization warnings were emitted.
+
+The ecommerce frontend unit gate passed after the SellerOrders changes on 2026-08-08: 3 suites and 10 tests. The existing stale `baseline-browser-mapping` advisory remains non-blocking.
+
+The ecommerce production frontend build passed after the SellerOrders changes. Existing CRA unused-import, hook-dependency, WebSocket export, and browser-data advisories remain non-blocking; the optimized bundle was generated successfully.
 
 Final ecommerce diff inspection passed with `git diff --check`; only `SellerSettings.jsx` and the reliability log are changed for this implementation slice.
 
