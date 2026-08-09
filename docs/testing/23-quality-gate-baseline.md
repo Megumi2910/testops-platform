@@ -38,14 +38,14 @@ Ecommerce already has idempotent development fixtures for one verified customer,
 | Account/sessions | Authenticated account navigation is reachable | BLOCKED | `QG-B02` Password/Google identity and revoke variants require provider/session fixtures |
 | Projects | Two fixture projects render; target project opens; project archive control is present | PARTIAL | `QG-B03` Edit/restore, duplicate, stale-version, and full permission matrix are not exposed as one safe QA flow |
 | Target connectivity | Exact `localhost:3001` check returned `REACHABLE` and `POST 200` | PARTIAL | `QG-B04` Disabled-local and unreachable variants require isolated profiles to avoid mutating the normal stack |
-| Suites | Backend supports lifecycle filters, detail, versioned archive, restore, active-name reuse, and read-only archived state | PARTIAL | `QG-003` frontend identity/edit/trash/restore controls remain |
-| Cases/steps | Backend uses explicit archive/restore, preserves steps/history, restores to DRAFT, and rejects ARCHIVED as an editor status | PARTIAL | `QG-004` frontend still needs dialogs, trash view, and read-only archived rendering |
+| Suites | Backend lifecycle plus visible identity/edit/Trash/direct read-only/restore UI; QA suite archive and restore returned `200` | PASS | `QG-003` resolved; expanded role automation remains in Phase 5 |
+| Cases/steps | Explicit archive/Trash/direct static steps/restore-to-DRAFT; QA case archive and restore returned `200` | PARTIAL | `QG-004` resolved; Phase 4 guided authoring and Phase 5 role automation remain |
 | Variables | Listing now requires advertised `VARIABLE_VIEW`; secret values remain masked for every API consumer | PARTIAL | `QG-B05` browser artifact redaction assertions remain |
 | Members | Fixture roles were created and project membership rendered | BLOCKED | `QG-B07` add/change/remove/final-manager/cross-project substitutions await security regression coverage |
 | Executions | Archived suites are blocked from queueing; cancellation is requester-or-project-manager only | PARTIAL | `QG-B08` retry/worker/target-escape and full browser matrix remain |
 | Dashboard | Route is present for authenticated manager | BLOCKED | `QG-B09` populated ranges, tenant boundaries, date edges, and bounded queries await aggregate fixtures |
 | Administration | Frontend route requires `USER_ADMINISTER`; transactional last-active-admin protection has focused coverage; direct PM navigation redirected to dashboard with no console/network failure | PARTIAL | `QG-B10` complete Chrome DevTools role matrix remains |
-| Responsive/accessibility | Desktop builder accessibility tree inspected; form-name issue reported by Chrome | FAIL | `QG-005` missing autocomplete; complete keyboard/mobile matrix follows lifecycle implementation |
+| Responsive/accessibility | Lifecycle dialogs expose modal semantics, initial focus, focus trap and restoration; Trash at `320×800` has no horizontal overflow | PARTIAL | `QG-005` existing case-step form metadata remains; complete keyboard/mobile matrix continues in Phase 4/5 |
 
 ## Ecommerce matrix
 

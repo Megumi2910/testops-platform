@@ -99,6 +99,10 @@
       "role": "V021 archive metadata, active-only uniqueness, suite/case lifecycle APIs, restore conflicts, and history retention"
     },
     {
+      "path": "docs/implementation/27-definition-trash-ui.md",
+      "role": "Suite/case Trash UI, archived read-only views, accessible restore conflicts, project restoration, and browser evidence"
+    },
+    {
       "path": "docs/testing/23-quality-gate-baseline.md",
       "role": "Revision-verified Chrome DevTools and Playwright baseline matrix for TestOps and ecommerce"
     },

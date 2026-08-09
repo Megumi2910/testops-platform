@@ -183,6 +183,8 @@ h2, h3 { text-wrap: balance; }
 .dialog-header { align-items: center; display: flex; gap: .75rem; justify-content: space-between; }
 .dialog-header h2 { margin: 0; }
 .dialog > p { color: var(--ink-soft); line-height: 1.55; }
+.dialog-field { display: grid; gap: .35rem; margin: 1rem 0; }
+.dialog-field input { min-height: 2.65rem; }
 .dialog-actions { display: flex; flex-wrap: wrap; gap: .65rem; justify-content: flex-end; }
 .status-badge { align-items: center; border: 1px solid currentColor; border-radius: 999px; display: inline-flex; font-size: .78rem; font-weight: 750; gap: .35rem; padding: .25rem .55rem; white-space: nowrap; }
 .status-badge-dot { background: currentColor; border-radius: 999px; height: .42rem; width: .42rem; }
@@ -196,6 +198,11 @@ h2, h3 { text-wrap: balance; }
 .form-stack input::placeholder, .form-stack textarea::placeholder, .search-field input::placeholder { color: #78839a; }
 .resource-list li { min-width: 0; }
 .resource-list a { color: var(--brand); }
+.definition-edit { background: #f7f9fc; border: 1px solid var(--line); border-radius: .8rem; margin-bottom: 1.25rem; padding: 1rem; }
+.static-steps { border-top: 1px solid var(--line); margin-top: 1.5rem; padding-top: 1rem; }
+.static-steps ol { display: grid; gap: .65rem; list-style: none; margin: 0; padding: 0; }
+.static-steps li { background: #f7f9fc; border: 1px solid var(--line); border-radius: .65rem; display: grid; gap: .25rem; padding: .8rem; }
+.static-steps li span { color: var(--ink-soft); overflow-wrap: anywhere; }
 .break-words { overflow-wrap: anywhere; }
 .sr-only { clip: rect(0, 0, 0, 0); clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px; }
 .table-status { text-decoration: none; }

@@ -1,12 +1,15 @@
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 
-import { Alert, Button, Card, EmptyState, LoadingState, StatusBadge } from '../../components/ui'
+import { Alert, Button, Card, ConfirmDialog, EmptyState, LoadingState, StatusBadge } from '../../components/ui'
+import { ApiError } from '../../lib/api'
 import { projectKeys, projectsApi, type Suite } from './api'
 import { useProjectWorkspace } from './ProjectWorkspaceContext'
+import { RestoreDefinitionDialog } from './DefinitionLifecycle'
 
 const suiteSchema = z.object({
   name: z.string().trim().min(2).max(160),
@@ -68,9 +71,30 @@ export function SuitePage() {
   const { project } = useProjectWorkspace()
   const navigate = useNavigate()
   const client = useQueryClient()
-  const canManage = project.permissions.includes('DEFINITION_MANAGE') && project.status === 'ACTIVE'
-  const canRun = project.permissions.includes('EXECUTION_START') && project.status === 'ACTIVE'
-  const query = useQuery({ queryKey: projectKeys.cases(projectId, suiteId), queryFn: () => projectsApi.cases(projectId, suiteId) })
+  const [editing, setEditing] = useState(false)
+  const [trashOpen, setTrashOpen] = useState(false)
+  const [restoreOpen, setRestoreOpen] = useState(false)
+  const suiteQuery = useQuery({ queryKey: projectKeys.suite(projectId, suiteId), queryFn: () => projectsApi.getSuite(projectId, suiteId) })
+  const suite = suiteQuery.data
+  const archived = suite?.status === 'ARCHIVED'
+  const caseLifecycle = archived ? 'ALL' : 'ACTIVE'
+  const casesQuery = useQuery({ queryKey: [...projectKeys.cases(projectId, suiteId), caseLifecycle], queryFn: () => projectsApi.cases(projectId, suiteId, caseLifecycle), enabled: Boolean(suite) })
+  const canManage = project.permissions.includes('DEFINITION_MANAGE') && project.status === 'ACTIVE' && !archived
+  const canRun = project.permissions.includes('EXECUTION_START') && project.status === 'ACTIVE' && !archived
+  const form = useForm<SuiteForm>({ resolver: zodResolver(suiteSchema), defaultValues: { name: '', description: '' } })
+  useEffect(() => { if (suite) form.reset({ name: suite.name, description: suite.description ?? '' }) }, [form, suite])
+  const update = useMutation({
+    mutationFn: (values: SuiteForm) => projectsApi.updateSuite(projectId, suiteId, { ...values, projectVersion: suite?.version ?? 0 }),
+    onSuccess: saved => { client.setQueryData(projectKeys.suite(projectId, suiteId), saved); void client.invalidateQueries({ queryKey: projectKeys.suites(projectId) }); setEditing(false) },
+  })
+  const archive = useMutation({
+    mutationFn: () => projectsApi.archiveSuite(projectId, suiteId, suite?.version ?? 0),
+    onSuccess: saved => { client.setQueryData(projectKeys.suite(projectId, suiteId), saved); void client.invalidateQueries({ queryKey: projectKeys.suites(projectId) }); void client.invalidateQueries({ queryKey: projectKeys.trash(projectId) }); navigate(`/projects/${projectId}/trash`) },
+  })
+  const restore = useMutation({
+    mutationFn: (name?: string) => projectsApi.restoreSuite(projectId, suiteId, { version: suite?.version ?? 0, name }),
+    onSuccess: saved => { client.setQueryData(projectKeys.suite(projectId, suiteId), saved); void client.invalidateQueries({ queryKey: projectKeys.suites(projectId) }); void client.invalidateQueries({ queryKey: projectKeys.trash(projectId) }); setRestoreOpen(false) },
+  })
   const run = useMutation({
     mutationFn: () => projectsApi.queueSuite(projectId, suiteId),
     onSuccess: result => {
@@ -79,26 +103,42 @@ export function SuitePage() {
     },
   })
 
+  if (suiteQuery.isPending) return <Card><LoadingState label="Loading suite…" /></Card>
+  if (suiteQuery.isError || !suite) return <Alert tone="danger" title="Unable to load this suite.">The suite may not exist in this project.</Alert>
+
   return <Card>
-    <p className="eyebrow">Suite</p>
+    {archived && <Alert tone="warning" title="This suite is in Trash.">Its cases and run history remain available, but the suite is read-only until restored.</Alert>}
     <div className="page-heading compact">
-      <div><h2>Test cases</h2><p className="muted">Only READY cases are included when you run a suite.</p></div>
+      <div><p className="eyebrow">Suite</p><h1>{suite.name}</h1><p className="muted">{suite.description || 'No description yet.'}</p></div>
       <div className="inline-actions">
         {canRun && <Button onClick={() => run.mutate()} busy={run.isPending}>Run ready cases</Button>}
         <Link className="button button-secondary" to={`/projects/${projectId}/executions`}>Runs</Link>
         {canManage && <Link className="button button-secondary" to={`/projects/${projectId}/suites/${suiteId}/cases/new`}>New case</Link>}
+        {canManage && <Button variant="secondary" onClick={() => setEditing(value => !value)}>{editing ? 'Cancel edit' : 'Edit suite'}</Button>}
+        {canManage && <Button variant="danger" onClick={() => setTrashOpen(true)}>Move to trash</Button>}
+        {project.permissions.includes('DEFINITION_MANAGE') && project.status === 'ACTIVE' && archived && <Button onClick={() => setRestoreOpen(true)}>Restore suite</Button>}
       </div>
     </div>
+    {editing && <form className="form-stack definition-edit" onSubmit={form.handleSubmit(values => update.mutate(values))}>
+      <label>Suite name<input autoFocus {...form.register('name')} /></label>
+      <label>Description<textarea rows={4} {...form.register('description')} /></label>
+      {form.formState.errors.name && <p className="form-error" role="alert">{form.formState.errors.name.message}</p>}
+      {update.isError && <p className="form-error" role="alert">{update.error instanceof ApiError ? update.error.message : 'Unable to update this suite.'}</p>}
+      <Button type="submit" busy={update.isPending}>Save suite</Button>
+    </form>}
+    <div className="section-heading"><div><h2>Test cases</h2><p className="muted">Only READY cases are included when you run a suite.</p></div></div>
     {run.isError && <Alert tone="danger" title="Unable to queue this suite run.">Make sure the suite contains at least one READY case.</Alert>}
-    {query.isPending && <LoadingState label="Loading test cases…" />}
-    {query.isError && <Alert tone="danger" title="Unable to load test cases.">Try again after the backend is ready.</Alert>}
-    {query.data?.length
-      ? <ul className="resource-list">{query.data.map(testCase => <li key={testCase.id}>
+    {casesQuery.isPending && <LoadingState label="Loading test cases…" />}
+    {casesQuery.isError && <Alert tone="danger" title="Unable to load test cases.">Try again after the backend is ready.</Alert>}
+    {casesQuery.data?.length
+      ? <ul className="resource-list">{casesQuery.data.map(testCase => <li key={testCase.id}>
           <Link to={`/projects/${projectId}/suites/${suiteId}/cases/${testCase.id}`}>{testCase.name}</Link>
           <StatusBadge status={testCase.status === 'READY' ? 'success' : 'neutral'}>{testCase.status} · {testCase.priority}</StatusBadge>
         </li>)}</ul>
-      : query.data
+      : casesQuery.data
         ? <EmptyState title="No cases yet" description={canManage ? 'Create a case from a template or start with a blank case.' : 'A test manager can create the first case.'} action={canManage && <Link className="button" to={`/projects/${projectId}/suites/${suiteId}/cases/new`}>Create first case</Link>} />
         : null}
+    <ConfirmDialog open={trashOpen} title={`Move ${suite.name} to Trash?`} description="The suite and its cases become read-only and cannot run. Existing execution history remains available." confirmLabel="Move to trash" busy={archive.isPending} onClose={() => setTrashOpen(false)} onConfirm={() => archive.mutate()} />
+    <RestoreDefinitionDialog open={restoreOpen} kind="suite" currentName={suite.name} busy={restore.isPending} error={restore.error} onClose={() => { setRestoreOpen(false); restore.reset() }} onRestore={name => restore.mutate(name)} />
   </Card>
 }

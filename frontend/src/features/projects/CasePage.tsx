@@ -3,12 +3,13 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 
-import { Alert, Button, Card, LoadingState, StatusBadge } from '../../components/ui'
+import { Alert, Button, Card, ConfirmDialog, LoadingState, StatusBadge } from '../../components/ui'
 import { ApiError } from '../../lib/api'
 import { GuidedStepEditor } from './GuidedCasePage'
 import { serializeSteps, toEditableSteps, validateSteps, type EditableStep } from './caseBuilder'
 import { platformApi, projectKeys, projectsApi } from './api'
 import { useProjectWorkspace } from './ProjectWorkspaceContext'
+import { RestoreDefinitionDialog } from './DefinitionLifecycle'
 
 type CaseForm = {
   name: string
@@ -31,10 +32,14 @@ export function CasePage() {
   const [steps, setSteps] = useState<EditableStep[]>([])
   const [stepErrors, setStepErrors] = useState<Record<string, string>>({})
   const [successMessage, setSuccessMessage] = useState<string>()
+  const [trashOpen, setTrashOpen] = useState(false)
+  const [restoreOpen, setRestoreOpen] = useState(false)
   const form = useForm<CaseForm>()
   const definitions = useMemo(() => options.data?.stepActions ?? [], [options.data?.stepActions])
-  const canEdit = project.permissions.includes('DEFINITION_MANAGE') && project.status === 'ACTIVE'
-  const canRun = project.permissions.includes('EXECUTION_START') && project.status === 'ACTIVE'
+  const archived = query.data?.status === 'ARCHIVED'
+  const canManage = project.permissions.includes('DEFINITION_MANAGE') && project.status === 'ACTIVE'
+  const canEdit = canManage && !archived
+  const canRun = project.permissions.includes('EXECUTION_START') && project.status === 'ACTIVE' && !archived
 
   useEffect(() => {
     if (!query.data) return
@@ -77,6 +82,25 @@ export function CasePage() {
       navigate(`/projects/${projectId}/executions/${result.executionId}`)
     },
   })
+  const archive = useMutation({
+    mutationFn: () => projectsApi.archiveCase(projectId, suiteId, caseId, query.data?.version ?? 0),
+    onSuccess: saved => {
+      client.setQueryData(queryKey, saved)
+      void client.invalidateQueries({ queryKey: projectKeys.cases(projectId, suiteId) })
+      void client.invalidateQueries({ queryKey: projectKeys.trash(projectId) })
+      setTrashOpen(false)
+      navigate(`/projects/${projectId}/trash`)
+    },
+  })
+  const restore = useMutation({
+    mutationFn: (name?: string) => projectsApi.restoreCase(projectId, suiteId, caseId, { version: query.data?.version ?? 0, name }),
+    onSuccess: saved => {
+      client.setQueryData(queryKey, saved)
+      void client.invalidateQueries({ queryKey: projectKeys.cases(projectId, suiteId) })
+      void client.invalidateQueries({ queryKey: projectKeys.trash(projectId) })
+      setRestoreOpen(false)
+    },
+  })
 
   if (query.isPending || options.isPending) return <Card><LoadingState label="Loading case editor…" /></Card>
   if (query.isError || !query.data || options.isError) {
@@ -84,6 +108,7 @@ export function CasePage() {
   }
 
   return <Card>
+    {archived && <Alert tone="warning" title="This case is in Trash.">Its steps and execution history are read-only. Restore it to DRAFT before editing or running it.</Alert>}
     <div className="page-heading compact">
       <div>
         <p className="eyebrow">Test case editor</p>
@@ -93,6 +118,8 @@ export function CasePage() {
       <div className="inline-actions">
         {canRun && <Button onClick={() => run.mutate()} busy={run.isPending} disabled={query.data.status !== 'READY'}>Run case</Button>}
         <Link className="button button-secondary" to={`/projects/${projectId}/executions`}>Runs</Link>
+        {canEdit && <Button variant="danger" onClick={() => setTrashOpen(true)}>Move to trash</Button>}
+        {canManage && archived && <Button onClick={() => setRestoreOpen(true)}>Restore case</Button>}
       </div>
     </div>
     {!canEdit && <Alert tone="warning" title="Read-only case.">Your project role does not allow definition changes.</Alert>}
@@ -102,19 +129,22 @@ export function CasePage() {
       <label>Name<input disabled={!canEdit} {...form.register('name', { required: true })} /></label>
       <label>Description<textarea disabled={!canEdit} rows={4} {...form.register('description')} /></label>
       <div className="inline-form">
-        <label>Status<select disabled={!canEdit} {...form.register('status')}><option>DRAFT</option><option>READY</option><option>ARCHIVED</option></select></label>
+        <label>Status<select disabled={!canEdit} {...form.register('status')}><option>DRAFT</option><option>READY</option></select></label>
         <label>Priority<select disabled={!canEdit} {...form.register('priority')}><option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select></label>
       </div>
       {save.isError && <p className="form-error" role="alert">{save.error instanceof ApiError ? save.error.message : save.error.message || 'Unable to save this case.'}</p>}
       {canEdit && <Button type="submit" busy={save.isPending}>Save case and steps</Button>}
     </form>
-    <GuidedStepEditor
-      steps={steps}
-      onChange={canEdit ? setSteps : () => undefined}
-      definitions={definitions}
-      locatorTypes={options.data.supportedLocatorTypes}
-      roles={options.data.supportedLocatorRoles ?? []}
-      errors={stepErrors}
-    />
+    {canEdit
+      ? <GuidedStepEditor steps={steps} onChange={setSteps} definitions={definitions} locatorTypes={options.data.supportedLocatorTypes} roles={options.data.supportedLocatorRoles ?? []} errors={stepErrors} />
+      : <StaticStepList steps={query.data.steps} />}
+    <ConfirmDialog open={trashOpen} title={`Move ${query.data.name} to Trash?`} description="The case becomes read-only and cannot run. Its steps and execution history remain available." confirmLabel="Move to trash" busy={archive.isPending} onClose={() => setTrashOpen(false)} onConfirm={() => archive.mutate()} />
+    <RestoreDefinitionDialog open={restoreOpen} kind="case" currentName={query.data.name} busy={restore.isPending} error={restore.error} onClose={() => { setRestoreOpen(false); restore.reset() }} onRestore={name => restore.mutate(name)} />
   </Card>
+}
+
+function StaticStepList({ steps }: { steps: import('./api').Step[] }) {
+  return <section className="static-steps" aria-labelledby="case-steps-title"><h2 id="case-steps-title">Steps</h2>{steps.length === 0
+    ? <p className="muted">No steps have been defined.</p>
+    : <ol>{steps.map(step => <li key={step.id ?? step.position}><strong>{step.position + 1}. {step.action}</strong><span>{[step.locatorType, step.locatorRole, step.locatorValue, step.inputValue, step.expectedValue].filter(Boolean).join(' · ') || 'No additional values'}</span></li>)}</ol>}</section>
 }

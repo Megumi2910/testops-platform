@@ -29,6 +29,7 @@ The root [README](../README.md) remains the project entry point. The machine-rea
 - Understanding DRAFT saves and API errors: [problem responses and DRAFT validation](implementation/24-problem-contract-and-draft-validation.md).
 - Reviewing tenant, lifecycle, variable, cancellation, and administrator boundaries: [Phase 2 security boundaries](implementation/25-phase-2-security-boundaries.md).
 - Implementing history-preserving suite/case deletion: [definition trash lifecycle backend](implementation/26-definition-trash-backend.md).
+- Operating suite/case Trash and restore in the web app: [definition Trash UI](implementation/27-definition-trash-ui.md).
 - Designing exact and repeated locators: [executable step language](implementation/10-executable-step-language.md) → [execution correctness](implementation/20-phase-6-execution-correctness.md).
 - Verifying the negative target matrix: use the local-disabled Compose profile described in the [local target guide](operations/12-local-target-testing-guide.md).
 - Reviewing delivery status: milestone 9 release candidate → risks/roadmap/decisions.

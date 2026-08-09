@@ -19,6 +19,7 @@ const SuitesPage = lazy(async () => ({ default: (await import('../features/proje
 const SuitePage = lazy(async () => ({ default: (await import('../features/projects/SuitePages')).SuitePage }))
 const GuidedNewCasePage = lazy(async () => ({ default: (await import('../features/projects/GuidedCasePage')).GuidedNewCasePage }))
 const CasePage = lazy(async () => ({ default: (await import('../features/projects/CasePage')).CasePage }))
+const DefinitionTrashPage = lazy(async () => ({ default: (await import('../features/projects/DefinitionTrashPage')).DefinitionTrashPage }))
 const VariablesPage = lazy(async () => ({ default: (await import('../features/projects/ProjectResourcePages')).VariablesPage }))
 const MembersPage = lazy(async () => ({ default: (await import('../features/projects/ProjectResourcePages')).MembersPage }))
 const ExecutionsPage = lazy(async () => ({ default: (await import('../features/executions/ExecutionPages')).ExecutionsPage }))
@@ -52,6 +53,7 @@ export const router = createBrowserRouter([
           { path: 'suites/:suiteId', element: <LazyPage><SuitePage /></LazyPage> },
           { path: 'suites/:suiteId/cases/new', element: <LazyPage><GuidedNewCasePage /></LazyPage> },
           { path: 'suites/:suiteId/cases/:caseId', element: <LazyPage><CasePage /></LazyPage> },
+          { path: 'trash', element: <LazyPage><DefinitionTrashPage /></LazyPage> },
           { path: 'variables', element: <LazyPage><VariablesPage /></LazyPage> },
           { path: 'members', element: <LazyPage><MembersPage /></LazyPage> },
           { path: 'executions', element: <LazyPage><ExecutionsPage /></LazyPage> },

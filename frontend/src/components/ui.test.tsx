@@ -26,4 +26,17 @@ describe('shared UI primitives', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
+
+  it('keeps keyboard focus inside confirmation dialogs', () => {
+    render(<ConfirmDialog open title="Restore suite?" description="Restore this suite." confirmLabel="Restore" onConfirm={() => undefined} onClose={() => undefined}><label>Restore name<input /></label></ConfirmDialog>)
+    const close = screen.getByRole('button', { name: 'Close dialog' })
+    const restore = screen.getByRole('button', { name: 'Restore' })
+    expect(close).toHaveFocus()
+    restore.focus()
+    fireEvent.keyDown(document, { key: 'Tab' })
+    expect(close).toHaveFocus()
+    close.focus()
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true })
+    expect(restore).toHaveFocus()
+  })
 })

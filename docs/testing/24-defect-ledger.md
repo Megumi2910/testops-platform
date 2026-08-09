@@ -41,11 +41,13 @@
 ### QG-003 — Suite lifecycle controls and identity are missing
 
 - Severity: P1
-- Status: PARTIAL — backend lifecycle complete; UI pending
+- Status: RESOLVED
 - Role: project manager
 - Reproduction: create and open a suite
 - Expected: visible suite name/description plus edit and Move to trash actions; archived content has read-only/restore behavior
-- Actual: the page jumps directly to case content and exposes none of those lifecycle controls
+- Previous actual: the page jumped directly to case content and exposed none of those lifecycle controls
+- Resolution: suite identity/edit/trash controls, project Trash, archived read-only direct links, accessible restore, and rename-on-conflict are implemented.
+- Verification: Chrome DevTools archived the QA-owned suite, observed the read-only view without run/edit/create controls, restored it, and recorded only `200` lifecycle requests.
 - Likely subsystem: suite detail route and missing lifecycle API/UI
 - Regression layer: frontend component + Playwright lifecycle journey
 - Backend resolution: lifecycle-filtered list/detail, versioned archive, restore, actor/time metadata, active-name reuse, and restore conflict responses are implemented in V021/API.
@@ -53,11 +55,13 @@
 ### QG-004 — Case archival is exposed as an unsafe status option
 
 - Severity: P1
-- Status: PARTIAL — backend lifecycle complete; UI pending
+- Status: RESOLVED
 - Role: project manager
 - Reproduction: open an existing case editor
 - Expected: explicit Move to trash confirmation, immutable history, read-only archived page, and restore-to-DRAFT flow
-- Actual: `ARCHIVED` appears beside DRAFT/READY in the ordinary status select; no trash, restore, conflict, or consequence UI exists
+- Previous actual: `ARCHIVED` appeared beside DRAFT/READY in the ordinary status select; no trash, restore, conflict, or consequence UI existed
+- Resolution: explicit Move to trash replaces the status option; archived cases render static steps and restore as DRAFT through conflict-aware dialogs.
+- Verification: Chrome DevTools archived and restored the QA-owned partial draft; the Trash success state appeared and the normal case status selector now contains only DRAFT/READY.
 - Likely subsystem: case editor and definition lifecycle contract
 - Regression layer: persistence integration + frontend dialog + Playwright
 - Backend resolution: ordinary status accepts only DRAFT/READY; explicit archive/restore preserves steps/history and restore returns to DRAFT.

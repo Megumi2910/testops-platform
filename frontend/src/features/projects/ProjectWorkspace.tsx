@@ -9,6 +9,7 @@ import { buildOnboardingChecklist, targetHealthGuidance, useProjectWorkspace, ty
 export function ProjectLayout() {
   const { projectId = '' } = useParams()
   const [archiveOpen, setArchiveOpen] = useState(false)
+  const [restoreOpen, setRestoreOpen] = useState(false)
   const client = useQueryClient()
   const query = useQuery({
     queryKey: projectKeys.detail(projectId),
@@ -19,6 +20,14 @@ export function ProjectLayout() {
     mutationFn: () => projectsApi.archive(projectId),
     onSuccess: project => {
       setArchiveOpen(false)
+      client.setQueryData(projectKeys.detail(projectId), project)
+      void client.invalidateQueries({ queryKey: projectKeys.all })
+    },
+  })
+  const restore = useMutation({
+    mutationFn: () => projectsApi.restore(projectId),
+    onSuccess: project => {
+      setRestoreOpen(false)
       client.setQueryData(projectKeys.detail(projectId), project)
       void client.invalidateQueries({ queryKey: projectKeys.all })
     },
@@ -41,6 +50,8 @@ export function ProjectLayout() {
         <Link className="button button-secondary" to="/projects">All projects</Link>
         {project.permissions.includes('PROJECT_ARCHIVE') && project.status === 'ACTIVE' &&
           <Button variant="danger" onClick={() => setArchiveOpen(true)} disabled={archive.isPending}>Archive</Button>}
+        {project.permissions.includes('PROJECT_ARCHIVE') && project.status === 'ARCHIVED' &&
+          <Button onClick={() => setRestoreOpen(true)} disabled={restore.isPending}>Restore project</Button>}
       </>}
     />
     <Card className="project-summary">
@@ -52,6 +63,7 @@ export function ProjectLayout() {
     <nav className="subnav" aria-label="Project sections">
       <NavLink end to={root}>Overview</NavLink>
       {project.permissions.includes('DEFINITION_VIEW') && <NavLink to={`${root}/suites`}>Suites</NavLink>}
+      {project.permissions.includes('DEFINITION_VIEW') && <NavLink to={`${root}/trash`}>Trash</NavLink>}
       {project.permissions.includes('VARIABLE_VIEW') && <NavLink to={`${root}/variables`}>Variables</NavLink>}
       {project.permissions.includes('MEMBER_MANAGE') && <NavLink to={`${root}/members`}>Members</NavLink>}
       <NavLink to={`${root}/executions`}>Executions</NavLink>
@@ -65,6 +77,16 @@ export function ProjectLayout() {
       busy={archive.isPending}
       onClose={() => setArchiveOpen(false)}
       onConfirm={() => archive.mutate()}
+    />
+    <ConfirmDialog
+      open={restoreOpen}
+      title={`Restore ${project.name}?`}
+      description="The project becomes active again. Its definitions keep their current lifecycle states."
+      confirmLabel="Restore project"
+      confirmVariant="primary"
+      busy={restore.isPending}
+      onClose={() => setRestoreOpen(false)}
+      onConfirm={() => restore.mutate()}
     />
   </section>
 }

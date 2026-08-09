@@ -13,9 +13,10 @@ export type ProjectOnboarding = { suiteCount: number; caseCount: number; readyCa
 export type Project = { id: string; name: string; description?: string; targetOrigin: string; status: 'ACTIVE' | 'ARCHIVED'; version: number; createdAt: string; updatedAt: string; currentUserProjectRole?: string; permissions: ProjectPermission[]; targetHealth?: TargetHealth; onboarding: ProjectOnboarding }
 export type Member = { userId: string; email: string; displayName: string; role: string; version: number; assignedBy?: string }
 export type Variable = { key: string; secret: boolean; value?: string; version: number }
-export type Suite = { id: string; projectId: string; name: string; description?: string; status: string; version: number }
+export type DefinitionLifecycle = 'ACTIVE' | 'ARCHIVED' | 'ALL'
+export type Suite = { id: string; projectId: string; name: string; description?: string; status: string; version: number; archivedAt?: string; archivedBy?: string }
 export type Step = { id?: string; position: number; action: string; locatorType?: string; locatorValue?: string; locatorRole?: string; locatorIndex?: number; inputValue?: string; expectedValue?: string; timeoutMs?: number; viewportWidth?: number; viewportHeight?: number; locale?: string; timezoneId?: string }
-export type TestCase = { id: string; suiteId: string; name: string; description?: string; status: string; priority: string; tags?: string; retryCount: number; dataIsolation: boolean; version: number; steps: Step[] }
+export type TestCase = { id: string; suiteId: string; name: string; description?: string; status: string; priority: string; tags?: string; retryCount: number; dataIsolation: boolean; version: number; steps: Step[]; archivedAt?: string; archivedBy?: string }
 
 export const projectKeys = {
   all: ['projects'] as const,
@@ -24,7 +25,9 @@ export const projectKeys = {
   members: (id: string) => ['projects', id, 'members'] as const,
   variables: (id: string) => ['projects', id, 'variables'] as const,
   suites: (id: string) => ['projects', id, 'suites'] as const,
+  suite: (projectId: string, suiteId: string) => ['projects', projectId, 'suites', suiteId] as const,
   cases: (projectId: string, suiteId: string) => ['projects', projectId, 'suites', suiteId, 'cases'] as const,
+  trash: (projectId: string) => ['projects', projectId, 'trash'] as const,
   executions: (id: string) => ['projects', id, 'executions'] as const,
   execution: (id: string, executionId: string) => ['projects', id, 'executions', executionId] as const,
 }
@@ -45,6 +48,7 @@ export const projectsApi = {
   targetCheck: (id: string) => apiFetch<{ projectId: string; status: string; httpStatus?: number; checkedAt: string; reason?: string }>(`/api/v1/projects/${id}/target-check`, { method: 'POST' }),
   update: (id: string, input: { name: string; description?: string; targetOrigin: string; projectVersion?: number }) => apiFetch<Project>(`/api/v1/projects/${id}`, { method: 'PUT', body: JSON.stringify(input) }),
   archive: (id: string) => apiFetch<Project>(`/api/v1/projects/${id}/archive`, { method: 'POST' }),
+  restore: (id: string) => apiFetch<Project>(`/api/v1/projects/${id}/restore`, { method: 'POST' }),
   members: (id: string) => apiFetch<Member[]>(`/api/v1/projects/${id}/members`),
   addMember: (id: string, input: { email: string; role: string; projectVersion?: number }) => apiFetch<Member>(`/api/v1/projects/${id}/members`, { method: 'POST', body: JSON.stringify(input) }),
   updateMember: (id: string, userId: string, input: { role: string; projectVersion?: number }) => apiFetch<Member>(`/api/v1/projects/${id}/members/${userId}`, { method: 'PUT', body: JSON.stringify(input) }),
@@ -53,12 +57,18 @@ export const projectsApi = {
   createVariable: (id: string, input: { key: string; secret: boolean; value: string }) => apiFetch<Variable>(`/api/v1/projects/${id}/variables`, { method: 'POST', body: JSON.stringify(input) }),
   updateVariable: (id: string, key: string, input: { key: string; secret: boolean; value: string }) => apiFetch<Variable>(`/api/v1/projects/${id}/variables/${encodeURIComponent(key)}`, { method: 'PUT', body: JSON.stringify(input) }),
   deleteVariable: (id: string, key: string) => apiFetch<void>(`/api/v1/projects/${id}/variables/${encodeURIComponent(key)}`, { method: 'DELETE' }),
-  suites: (id: string) => apiFetch<Suite[]>(`/api/v1/projects/${id}/suites`),
+  suites: (id: string, lifecycle: DefinitionLifecycle = 'ACTIVE') => apiFetch<Suite[]>(`/api/v1/projects/${id}/suites?lifecycle=${lifecycle}`),
+  getSuite: (projectId: string, suiteId: string) => apiFetch<Suite>(`/api/v1/projects/${projectId}/suites/${suiteId}`),
   createSuite: (id: string, input: { name: string; description?: string }) => apiFetch<Suite>(`/api/v1/projects/${id}/suites`, { method: 'POST', body: JSON.stringify(input) }),
-  cases: (projectId: string, suiteId: string) => apiFetch<TestCase[]>(`/api/v1/projects/${projectId}/suites/${suiteId}/cases`),
+  updateSuite: (projectId: string, suiteId: string, input: { name: string; description?: string; projectVersion: number }) => apiFetch<Suite>(`/api/v1/projects/${projectId}/suites/${suiteId}`, { method: 'PUT', body: JSON.stringify(input) }),
+  archiveSuite: (projectId: string, suiteId: string, version: number) => apiFetch<Suite>(`/api/v1/projects/${projectId}/suites/${suiteId}`, { method: 'DELETE', headers: { 'If-Match': String(version) } }),
+  restoreSuite: (projectId: string, suiteId: string, input: { version: number; name?: string }) => apiFetch<Suite>(`/api/v1/projects/${projectId}/suites/${suiteId}/restore`, { method: 'POST', body: JSON.stringify(input) }),
+  cases: (projectId: string, suiteId: string, lifecycle: DefinitionLifecycle = 'ACTIVE') => apiFetch<TestCase[]>(`/api/v1/projects/${projectId}/suites/${suiteId}/cases?lifecycle=${lifecycle}`),
   getCase: (projectId: string, suiteId: string, caseId: string) => apiFetch<TestCase>(`/api/v1/projects/${projectId}/suites/${suiteId}/cases/${caseId}`),
   createCase: (projectId: string, suiteId: string, input: Record<string, unknown>) => apiFetch<TestCase>(`/api/v1/projects/${projectId}/suites/${suiteId}/cases`, { method: 'POST', body: JSON.stringify(input) }),
   updateCase: (projectId: string, suiteId: string, caseId: string, input: Record<string, unknown>) => apiFetch<TestCase>(`/api/v1/projects/${projectId}/suites/${suiteId}/cases/${caseId}`, { method: 'PUT', body: JSON.stringify(input) }),
+  archiveCase: (projectId: string, suiteId: string, caseId: string, version: number) => apiFetch<TestCase>(`/api/v1/projects/${projectId}/suites/${suiteId}/cases/${caseId}`, { method: 'DELETE', headers: { 'If-Match': String(version) } }),
+  restoreCase: (projectId: string, suiteId: string, caseId: string, input: { version: number; name?: string }) => apiFetch<TestCase>(`/api/v1/projects/${projectId}/suites/${suiteId}/cases/${caseId}/restore`, { method: 'POST', body: JSON.stringify(input) }),
   queueSuite: (projectId: string, suiteId: string) => apiFetch<{ executionId: string; status: string }>(`/api/v1/projects/${projectId}/suites/${suiteId}/executions`, { method: 'POST', headers: { 'Idempotency-Key': idempotencyKey() } }),
   queueCase: (projectId: string, suiteId: string, caseId: string) => apiFetch<{ executionId: string; status: string }>(`/api/v1/projects/${projectId}/suites/${suiteId}/cases/${caseId}/executions`, { method: 'POST', headers: { 'Idempotency-Key': idempotencyKey() } }),
   executions: (projectId: string) => apiFetch<ExecutionSummary[]>(`/api/v1/projects/${projectId}/executions`),

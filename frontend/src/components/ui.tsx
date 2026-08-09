@@ -1,4 +1,4 @@
-import { type ButtonHTMLAttributes, type ReactNode, useEffect } from 'react'
+import { type ButtonHTMLAttributes, type ReactNode, useEffect, useRef } from 'react'
 
 export type IconName = 'alert' | 'check' | 'info' | 'loader' | 'close' | 'menu' | 'shield' | 'folder' | 'dashboard' | 'logout' | 'arrow'
 
@@ -64,13 +64,27 @@ export function PageHeader({ eyebrow, title, description, actions }: { eyebrow?:
   return <div className="page-heading"><div className="page-heading-copy">{eyebrow && <p className="eyebrow">{eyebrow}</p>}<h1>{title}</h1>{description && <p className="lede">{description}</p>}</div>{actions && <div className="page-heading-actions">{actions}</div>}</div>
 }
 
-export function ConfirmDialog({ open, title, description, confirmLabel = 'Confirm', busy = false, onConfirm, onClose }: { open: boolean; title: string; description: string; confirmLabel?: string; busy?: boolean; onConfirm: () => void; onClose: () => void }) {
+export function ConfirmDialog({ open, title, description, confirmLabel = 'Confirm', confirmVariant = 'danger', busy = false, children, onConfirm, onClose }: { open: boolean; title: string; description: string; confirmLabel?: string; confirmVariant?: ButtonVariant; busy?: boolean; children?: ReactNode; onConfirm: () => void; onClose: () => void }) {
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const previousFocus = useRef<HTMLElement | null>(null)
   useEffect(() => {
     if (!open) return undefined
-    const handleKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape' && !busy) onClose() }
+    previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    const focusable = () => Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href]') ?? [])
+    focusable()[0]?.focus()
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !busy) onClose()
+      if (event.key !== 'Tab') return
+      const items = focusable()
+      if (items.length === 0) return
+      const first = items[0]
+      const last = items[items.length - 1]
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+    }
     document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
+    return () => { document.removeEventListener('keydown', handleKeyDown); previousFocus.current?.focus() }
   }, [busy, onClose, open])
   if (!open) return null
-  return <div className="dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) onClose() }}><div className="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title"><div className="dialog-header"><h2 id="dialog-title">{title}</h2><IconButton label="Close dialog" onClick={onClose} disabled={busy}><Icon name="close" size={18} /></IconButton></div><p>{description}</p><div className="dialog-actions"><Button variant="ghost" onClick={onClose} disabled={busy}>Cancel</Button><Button variant="danger" busy={busy} onClick={onConfirm}>{confirmLabel}</Button></div></div></div>
+  return <div className="dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) onClose() }}><div ref={dialogRef} className="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-description"><div className="dialog-header"><h2 id="dialog-title">{title}</h2><IconButton label="Close dialog" onClick={onClose} disabled={busy}><Icon name="close" size={18} /></IconButton></div><p id="dialog-description">{description}</p>{children}<div className="dialog-actions"><Button variant="ghost" onClick={onClose} disabled={busy}>Cancel</Button><Button variant={confirmVariant} busy={busy} onClick={onConfirm}>{confirmLabel}</Button></div></div></div>
 }
