@@ -119,3 +119,7 @@ testops:
     variable-key-version: ${PROJECT_VARIABLE_KEY_VERSION:1}
   openapi:
     enabled: ${OPENAPI_ENABLED:false}
+  qa-fixtures:
+    enabled: ${TESTOPS_QA_FIXTURES_ENABLED:false}
+    password-path: ${TESTOPS_QA_FIXTURE_PASSWORD_PATH:/run/secrets/testops/qa-fixture-password}
+    target-origin: ${TESTOPS_QA_TARGET_ORIGIN:http://localhost:3001}

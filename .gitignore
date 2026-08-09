@@ -23,6 +23,8 @@ frontend/test-results/
 frontend/pnpm-lock.yaml
 .pnpm-store/
 .agent/
+.playwright-mcp/
+qa-artifacts/
 *.tsbuildinfo
 
 # Runtime artifacts (keep the directory marker)

@@ -87,6 +87,22 @@
       "role": "Reproducible backend, frontend, Compose, Playwright, catalog, and live READY acceptance evidence"
     },
     {
+      "path": "docs/testing/23-quality-gate-baseline.md",
+      "role": "Revision-verified Chrome DevTools and Playwright baseline matrix for TestOps and ecommerce"
+    },
+    {
+      "path": "docs/testing/24-defect-ledger.md",
+      "role": "Sanitized Milestone 10 defects, blockers, severity, evidence, and regression ownership"
+    },
+    {
+      "path": "docs/guides/23-quality-gate-operator-guide.md",
+      "role": "Beginner-safe QA fixture, rebuild, provenance, evidence, and shutdown procedure"
+    },
+    {
+      "path": "docs/workflows/23-quality-gate-flow.md",
+      "role": "End-to-end quality-gate workflow from source provenance through release decision"
+    },
+    {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",
       "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
     }

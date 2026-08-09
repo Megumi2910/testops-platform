@@ -12,6 +12,7 @@ The existing e-commerce site is an **external system under test**. TestOps owns 
 
 New to the local workflow? Start with the [Ecommerce dogfooding guide](docs/operations/15-ecommerce-dogfooding-guide.md). It explains the two Docker networks, exact ports and environment variables, target checks, the guided case builder, catalog synchronization, evidence, and safe E2E resets.
 For the exact release-candidate verification commands and current gate evidence, see the [release-gate verification guide](docs/implementation/22-release-gate-verification.md).
+Before changing Milestone 10 behavior, use the [quality-gate operator guide](docs/guides/23-quality-gate-operator-guide.md), then record browser coverage in the [full-system baseline](docs/testing/23-quality-gate-baseline.md) and [defect ledger](docs/testing/24-defect-ledger.md).
 
 ## Product status
 

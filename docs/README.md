@@ -10,6 +10,9 @@ This directory is organized by the question a maintainer is trying to answer:
 | [`security/`](security/) | Authentication, authorization, secrets, and abuse controls | [Authentication and security](security/02-authentication-and-security.md) |
 | [`milestones/`](milestones/) | Milestone scope, delivery decisions, and release-candidate evidence | [Milestone 9 release candidate](milestones/14-milestone-9-release-candidate.md) |
 | [`planning/`](planning/) | Risks, roadmap, alternatives, and change-safety decisions | [Risks, roadmap, and decisions](planning/05-risks-roadmap-and-decisions.md) |
+| [`testing/`](testing/) | Live QA matrices, defect evidence, automation gates, and completion status | [Full-system quality-gate baseline](testing/23-quality-gate-baseline.md) |
+| [`guides/`](guides/) | Beginner-safe setup and operating procedures | [Quality-gate operator guide](guides/23-quality-gate-operator-guide.md) |
+| [`workflows/`](workflows/) | End-to-end process maps and responsibility handoffs | [Full-system quality-gate workflow](workflows/23-quality-gate-flow.md) |
 
 The root [README](../README.md) remains the project entry point. The machine-readable [`DOCUMENTATION-MANIFEST.json`](../DOCUMENTATION-MANIFEST.json) is the canonical list used by documentation checks and tooling.
 
@@ -22,6 +25,7 @@ The root [README](../README.md) remains the project entry point. The machine-rea
 - Exercising the ecommerce target as a beginner: [ecommerce dogfooding guide](operations/15-ecommerce-dogfooding-guide.md) → [catalog synchronization](implementation/21-catalog-synchronization.md).
 - Synchronizing the ecommerce TestOps catalog: [catalog synchronization](implementation/21-catalog-synchronization.md) → [local target guide](operations/12-local-target-testing-guide.md).
 - Reproducing release gates: [release-gate verification](implementation/22-release-gate-verification.md) → [ecommerce dogfooding guide](operations/15-ecommerce-dogfooding-guide.md).
+- Running the Milestone 10 quality gate: [operator guide](guides/23-quality-gate-operator-guide.md) → [baseline matrix](testing/23-quality-gate-baseline.md) → [defect ledger](testing/24-defect-ledger.md).
 - Designing exact and repeated locators: [executable step language](implementation/10-executable-step-language.md) → [execution correctness](implementation/20-phase-6-execution-correctness.md).
 - Verifying the negative target matrix: use the local-disabled Compose profile described in the [local target guide](operations/12-local-target-testing-guide.md).
 - Reviewing delivery status: milestone 9 release candidate → risks/roadmap/decisions.

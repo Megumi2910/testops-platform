@@ -9,6 +9,9 @@ RUN ./mvnw -B -DskipTests package
 
 FROM mcr.microsoft.com/playwright/java:v1.60.0-noble
 
+ARG VCS_REF=unknown
+LABEL org.opencontainers.image.revision=$VCS_REF
+
 WORKDIR /app
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 USER root
