@@ -235,5 +235,10 @@ tests also remained green. The disposable E2E Mailpit and target-site
 containers were restored for this verification; the normal development
 database was not reset.
 
+GitHub Actions run `31306618823` then passed all five required jobs for commit
+`be529ed`: backend, frontend, containers, enabled E2E, and disabled-local E2E.
+The earlier failed run `31306168007` is retained as the audit trail for the
+strict-mode selector collision and is not treated as a product failure.
+
 The final Compose health inspection also reported all services running in the
 normal, enabled E2E, and disabled E2E projects.
