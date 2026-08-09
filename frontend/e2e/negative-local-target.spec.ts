@@ -22,7 +22,7 @@ test('an allowlisted but offline localhost port is reported as unreachable', asy
   await registerAndVerify(page, `unreachable-${Date.now()}@example.test`)
   await createProject(page, 'http://localhost:3299', `Offline target ${Date.now()}`)
   await page.getByRole('button', { name: 'Check connection' }).click()
-  await expect(page.getByText('UNREACHABLE')).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByText('UNREACHABLE', { exact: true })).toBeVisible({ timeout: 15_000 })
 })
 
 test('a suite without READY cases explains why it cannot run', async ({ page }) => {

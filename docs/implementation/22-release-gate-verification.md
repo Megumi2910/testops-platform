@@ -223,5 +223,17 @@ the former prints the exact three environment settings with the project’s
 configured origin and links to the local-target guide. The frontend build
 remained within the existing entry-chunk budget (99.94 KB gzip).
 
+The first CI run after this UI change exposed a test-only strict-mode failure:
+the new diagnostic code `TARGET_UNREACHABLE` appeared beside the status badge,
+so `getByText('UNREACHABLE')` matched two elements. The negative E2E case now
+uses an exact status locator; no product behavior was weakened.
+
+The corrected local negative matrix then passed all four scenarios: offline
+allowlisted port, no READY cases, failing assertion step reporting, and
+cross-origin navigation rejection. Frontend lint, typecheck, and all 15 unit
+tests also remained green. The disposable E2E Mailpit and target-site
+containers were restored for this verification; the normal development
+database was not reset.
+
 The final Compose health inspection also reported all services running in the
 normal, enabled E2E, and disabled E2E projects.

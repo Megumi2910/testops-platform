@@ -174,6 +174,11 @@ tests and the full 15-test unit gate. Lint, typecheck, and the production build
 also passed after the guidance was added, so the blocked-target message is part
 of the shipped UI rather than a documentation-only workaround.
 
+The negative-local-target matrix also passes four scenarios locally after the
+status locator was made exact. The test harness requires its disposable
+Mailpit and static target services to be running; restarting those services is
+safe because they use the isolated E2E Compose project and volume.
+
 ## Safety boundaries
 
 - Keep `TARGET_LOCAL_DEV_ENABLED=false` in production.

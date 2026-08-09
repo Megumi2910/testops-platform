@@ -80,6 +80,11 @@ not from a browser-only guess. This keeps the guidance consistent for project
 viewers while the **Check connection** action remains restricted to members
 with `EXECUTION_START`.
 
+The negative E2E assertion uses an exact `UNREACHABLE` status locator. The
+workspace also displays the sanitized reason (for example
+`TARGET_UNREACHABLE`), so a broad text locator would match both the badge and
+the diagnostic code and make the test ambiguous.
+
 | Symptom | Check | Recovery |
 |---|---|---|
 | Target is `UNREACHABLE` | Host process, port, and the container `wget` command | Start the site, use the host port, and recreate `backend` |
