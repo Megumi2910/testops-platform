@@ -239,6 +239,9 @@ The offline-target scenario now also asserts the rendered recovery sentence
 and exact sanitized reason, so the browser-level contract covers both the
 status badge and the actionable diagnostic.
 
+GitHub Actions run `31307074433` passed all five jobs for the browser-contract
+commit `03fe005`, including the enabled and disabled-local E2E profiles.
+
 GitHub Actions run `31306618823` then passed all five required jobs for commit
 `be529ed`: backend, frontend, containers, enabled E2E, and disabled-local E2E.
 The earlier failed run `31306168007` is retained as the audit trail for the
