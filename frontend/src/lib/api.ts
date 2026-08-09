@@ -14,6 +14,17 @@ export class ApiError extends Error {
   }
 }
 
+type ProblemViolation = { path?: string; message?: string }
+
+export function normalizeFieldErrors(errors?: Record<string, string> | ProblemViolation[]) {
+  if (!errors) return {}
+  if (!Array.isArray(errors)) return errors
+  return errors.reduce<Record<string, string>>((result, error) => {
+    if (error.path && error.message && !result[error.path]) result[error.path] = error.message
+    return result
+  }, {})
+}
+
 type AuthResponseLike = { accessToken: string }
 
 let accessToken: string | null = null
@@ -76,9 +87,9 @@ async function request<T>(input: RequestInfo | URL, init: RequestInit | undefine
     let message = `Request failed with status ${response.status}`
     let details: { code?: string; correlationId?: string; errors?: Record<string, string> } = {}
     try {
-      const problem = (await response.json()) as { message?: string; detail?: string; code?: string; correlationId?: string; errors?: Record<string, string> }
+      const problem = (await response.json()) as { message?: string; detail?: string; code?: string; correlationId?: string; errors?: Record<string, string> | ProblemViolation[] }
       message = problem.message ?? problem.detail ?? message
-      details = { code: problem.code, correlationId: problem.correlationId, errors: problem.errors }
+      details = { code: problem.code, correlationId: problem.correlationId, errors: normalizeFieldErrors(problem.errors) }
     } catch {
       // Keep the status-based fallback for empty and non-JSON responses.
     }

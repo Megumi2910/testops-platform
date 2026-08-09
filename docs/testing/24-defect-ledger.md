@@ -12,12 +12,15 @@
 ### QG-001 — Partial DRAFT steps cannot be saved
 
 - Severity: P1
+- Status: RESOLVED in the Phase 2 error-contract slice
 - Environment: TestOps `5deaa33d`, rebuilt and revision-verified
 - Role: project manager
 - Preconditions: active project, active suite, existing DRAFT case
 - Reproduction: add a `NAVIGATE` step, leave its input empty, keep status DRAFT, save
 - Expected: the partial draft is persisted, or a documented DRAFT structural error is mapped to `steps[0].inputValue`
-- Actual: `PUT` returns `500 internal_error`; UI shows a generic alert
+- Previous actual: `PUT` returned `500 internal_error`; UI showed a generic alert
+- Resolution: DRAFT replacement now validates structure and present values without requiring execution-only fields. READY retains complete action validation with step-specific paths.
+- Verification: the rebuilt app saved the original partial DRAFT; focused backend tests cover DRAFT acceptance and READY rejection.
 - Evidence: correlation ID `3a582f44-1b86-47a1-b321-a64c02775e3a`
 - Likely subsystem: `DefinitionService.replaceSteps/validateStep`; validation is not status-aware
 - Regression layer: backend unit + MockMvc + mounted builder + Playwright
@@ -25,10 +28,13 @@
 ### QG-002 — Domain errors are consumed by the authentication advice
 
 - Severity: P1
+- Status: RESOLVED in the Phase 2 error-contract slice
 - Environment: TestOps `5deaa33d`
 - Reproduction: trigger the `input_required` domain exception above
 - Expected: standard `400` problem response with stable code and path-specific `errors[]`
-- Actual: `AuthExceptionHandler.unexpected(Exception.class)` emits `500`; backend logs the domain exception as unhandled
+- Previous actual: `AuthExceptionHandler.unexpected(Exception.class)` emitted `500`; backend logged the domain exception as unhandled
+- Resolution: authentication advice now handles only authentication exceptions. Shared advice returns the canonical problem contract for domain, bean-validation, and sanitized unexpected failures.
+- Verification: Chrome DevTools observed `400 input_required`, correlation ID `qa-ready-contract`, and `errors[0].path = steps[0].inputValue`; MVC advice tests cover the contract.
 - Likely subsystem: global exception-advice ordering and duplicated response models
 - Regression layer: MockMvc contract matrix
 
@@ -124,4 +130,4 @@
 
 ## Triage result
 
-There are no confirmed P0 incidents in this baseline, but P1 defects remain open. Therefore the release status is **PARTIAL** and the next permitted product slice is Phase 2 security/error-contract work beginning with `QG-001` and `QG-002`.
+There are no confirmed P0 incidents. `QG-001` and `QG-002` are resolved, but other P1 defects and security blockers remain open. Therefore the release status is **PARTIAL** and the next permitted product slice is the remaining Phase 2 ancestry, permission, administrator-invariant, cancellation-ownership, and archived-resource enforcement work.

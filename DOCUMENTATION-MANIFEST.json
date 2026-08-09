@@ -87,6 +87,10 @@
       "role": "Reproducible backend, frontend, Compose, Playwright, catalog, and live READY acceptance evidence"
     },
     {
+      "path": "docs/implementation/24-problem-contract-and-draft-validation.md",
+      "role": "Status-aware DRAFT and READY validation plus the shared structured API problem contract"
+    },
+    {
       "path": "docs/testing/23-quality-gate-baseline.md",
       "role": "Revision-verified Chrome DevTools and Playwright baseline matrix for TestOps and ecommerce"
     },

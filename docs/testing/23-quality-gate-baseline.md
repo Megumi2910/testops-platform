@@ -39,7 +39,7 @@ Ecommerce already has idempotent development fixtures for one verified customer,
 | Projects | Two fixture projects render; target project opens; project archive control is present | PARTIAL | `QG-B03` Edit/restore, duplicate, stale-version, and full permission matrix are not exposed as one safe QA flow |
 | Target connectivity | Exact `localhost:3001` check returned `REACHABLE` and `POST 200` | PARTIAL | `QG-B04` Disabled-local and unreachable variants require isolated profiles to avoid mutating the normal stack |
 | Suites | PM created `[QA-RUN-20260809] Definition lifecycle`; list and case entry work | FAIL | `QG-003` Suite detail omits identity/edit/trash/restore controls; archived mutation behavior remains unsafe |
-| Cases/steps | Blank draft saved; zero-step DRAFT is accepted; a partial `NAVIGATE` DRAFT was submitted | FAIL | `QG-001` partial DRAFT returns `500`; `QG-004` case lifecycle is a raw status value, not a safe trash workflow |
+| Cases/steps | Blank and partial DRAFT cases now save; READY returns a structured step-specific validation response | PARTIAL | `QG-001` and `QG-002` resolved; `QG-004` case lifecycle is still a raw status value, not a safe trash workflow |
 | Variables | Routes and existing explicit remove UI are present | BLOCKED | `QG-B05` Secret/plain evidence and role boundaries require dedicated fixtures and redaction assertions |
 | Members | Fixture roles were created and project membership rendered | BLOCKED | `QG-B07` add/change/remove/final-manager/cross-project substitutions await security regression coverage |
 | Executions | Existing history/detail surfaces load; DRAFT run is disabled | BLOCKED | `QG-B08` queue/cancel/retry/worker/target-escape matrix requires READY definitions after authoring is fixed |
@@ -76,7 +76,7 @@ The sanitized request body contains a DRAFT case and `steps[0]` with action `NAV
 
 ## Frozen repair order
 
-1. `QG-001` and `QG-002`: split DRAFT/READY validation and consolidate the problem contract.
+1. ~~`QG-001` and `QG-002`: split DRAFT/READY validation and consolidate the problem contract.~~ Resolved and browser-verified.
 2. Security blockers: ancestry, variable visibility, admin invariant, cancellation ownership, and archived-resource mutation.
 3. Suite/case trash and restore, including partial uniqueness and history preservation.
 4. Builder field mapping, pending protection, conflicts, dirty navigation, and Save & run recovery.

@@ -26,6 +26,7 @@ The root [README](../README.md) remains the project entry point. The machine-rea
 - Synchronizing the ecommerce TestOps catalog: [catalog synchronization](implementation/21-catalog-synchronization.md) → [local target guide](operations/12-local-target-testing-guide.md).
 - Reproducing release gates: [release-gate verification](implementation/22-release-gate-verification.md) → [ecommerce dogfooding guide](operations/15-ecommerce-dogfooding-guide.md).
 - Running the Milestone 10 quality gate: [operator guide](guides/23-quality-gate-operator-guide.md) → [baseline matrix](testing/23-quality-gate-baseline.md) → [defect ledger](testing/24-defect-ledger.md).
+- Understanding DRAFT saves and API errors: [problem responses and DRAFT validation](implementation/24-problem-contract-and-draft-validation.md).
 - Designing exact and repeated locators: [executable step language](implementation/10-executable-step-language.md) → [execution correctness](implementation/20-phase-6-execution-correctness.md).
 - Verifying the negative target matrix: use the local-disabled Compose profile described in the [local target guide](operations/12-local-target-testing-guide.md).
 - Reviewing delivery status: milestone 9 release candidate → risks/roadmap/decisions.

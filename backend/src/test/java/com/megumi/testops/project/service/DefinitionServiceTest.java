@@ -45,6 +45,38 @@ class DefinitionServiceTest {
         assertEquals("invalid_timezone", invalidTimezone.getCode());
     }
 
+    @Test
+    void allowsPartialDraftValuesButRequiresThemForExecutableSteps() {
+        ProjectDtos.StepRequest partialNavigate = step("NAVIGATE", null, null, null, "", null);
+        ProjectDtos.StepRequest partialLocator = step("CLICK", "ROLE", "", "BUTTON", null, null);
+
+        assertDoesNotThrow(() -> DefinitionService.validateDraftStep(partialNavigate));
+        assertDoesNotThrow(() -> DefinitionService.validateDraftStep(partialLocator));
+
+        ApiException inputRequired = assertThrows(ApiException.class,
+                () -> DefinitionService.validateStep(partialNavigate));
+        assertEquals("input_required", inputRequired.getCode());
+        assertEquals("steps[0].inputValue", inputRequired.getPath());
+        assertEquals(0, inputRequired.getStepPosition());
+
+        ApiException locatorRequired = assertThrows(ApiException.class,
+                () -> DefinitionService.validateStep(partialLocator));
+        assertEquals("locator_required", locatorRequired.getCode());
+        assertEquals("steps[0].locatorValue", locatorRequired.getPath());
+    }
+
+    @Test
+    void draftStillRejectsInvalidValuesThatArePresent() {
+        ApiException invalidCount = assertThrows(ApiException.class,
+                () -> DefinitionService.validateDraftStep(step("ASSERT_COUNT", "CSS", ".card", null, null, "many")));
+        assertEquals("invalid_expected_count", invalidCount.getCode());
+
+        ApiException invalidTimezone = assertThrows(ApiException.class,
+                () -> DefinitionService.validateDraftStep(new ProjectDtos.StepRequest(0, "NAVIGATE", null, null,
+                        null, null, null, null, 5000, null, null, null, "Not/AZone")));
+        assertEquals("invalid_timezone", invalidTimezone.getCode());
+    }
+
     private static ProjectDtos.StepRequest step(String action, String locatorType, String locatorValue, String role,
             String inputValue, String expectedValue) {
         return new ProjectDtos.StepRequest(0, action, locatorType, locatorValue, role, inputValue, expectedValue, 5000);
