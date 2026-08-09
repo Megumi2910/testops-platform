@@ -11,7 +11,6 @@ const project: Project = {
   createdAt: '2026-08-09T00:00:00Z', updatedAt: '2026-08-09T00:00:00Z', currentUserProjectRole: 'PROJECT_MANAGER',
   permissions: ['DEFINITION_VIEW', 'DEFINITION_MANAGE'], onboarding: { suiteCount: 1, caseCount: 1, readyCaseCount: 0, executionCount: 0 },
 }
-
 afterEach(() => vi.restoreAllMocks())
 
 describe('definition Trash page', () => {
@@ -47,4 +46,3 @@ function renderTrash(contextProject: Project) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
   render(<QueryClientProvider client={client}><MemoryRouter initialEntries={[`/projects/${contextProject.id}/trash`]}><Routes><Route path="/projects/:projectId" element={<Outlet context={{ project: contextProject, root: `/projects/${contextProject.id}` }} />}><Route path="trash" element={<DefinitionTrashPage />} /></Route></Routes></MemoryRouter></QueryClientProvider>)
 }
-

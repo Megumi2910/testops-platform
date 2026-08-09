@@ -30,4 +30,3 @@ describe('definition restore dialog', () => {
     expect(onRestore).toHaveBeenCalledWith(undefined)
   })
 })
-
