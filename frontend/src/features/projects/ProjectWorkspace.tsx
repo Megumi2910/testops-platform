@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { Alert, Button, Card, ConfirmDialog, LoadingState, PageHeader, StatusBadge } from '../../components/ui'
 import { projectKeys, projectsApi } from './api'
-import { buildOnboardingChecklist, useProjectWorkspace, type ProjectWorkspaceContext } from './ProjectWorkspaceContext'
+import { buildOnboardingChecklist, targetHealthGuidance, useProjectWorkspace, type ProjectWorkspaceContext } from './ProjectWorkspaceContext'
 
 export function ProjectLayout() {
   const { projectId = '' } = useParams()
@@ -78,6 +78,7 @@ export function ProjectOverviewPage() {
   })
   const canCheck = project.permissions.includes('EXECUTION_START')
   const checklist = buildOnboardingChecklist(project, root)
+  const healthGuidance = targetHealthGuidance(project)
 
   return <section className="page-stack">
     <Card className="quick-start">
@@ -94,6 +95,11 @@ export function ProjectOverviewPage() {
       </div>
       {check.isSuccess && <Alert tone="success" title="Connection check completed.">Target health has been refreshed.</Alert>}
       {check.isError && <Alert tone="danger" title="The target could not be reached.">Confirm the host alias, port, and allowlist.</Alert>}
+      {healthGuidance && <Alert tone={healthGuidance.tone} title={healthGuidance.title}>
+        <p>{healthGuidance.body}</p>
+        {healthGuidance.details && <p><code>{healthGuidance.details}</code></p>}
+        {project.targetOrigin.toLowerCase().startsWith('http://localhost:') && <p><a href="https://github.com/Megumi2910/testops-platform/blob/codex/milestone-9-release-candidate/docs/operations/12-local-target-testing-guide.md" target="_blank" rel="noreferrer">Read the local-target setup guide</a> after updating the backend environment.</p>}
+      </Alert>}
       <ol className="checklist">
         {checklist.map(item => <li key={item.label} className={item.done ? 'done' : ''}>
           <span aria-hidden="true">{item.done ? '✓' : '○'}</span>

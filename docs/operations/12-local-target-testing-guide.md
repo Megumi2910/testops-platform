@@ -62,6 +62,24 @@ npx playwright test e2e/local-target-disabled.spec.ts
 
 The expected result is one passing test showing `http://localhost:3201` disabled with reason `local_target_disabled`.
 
+### Reading blocked target guidance in the workspace
+
+The project overview now turns the persisted health status into recovery
+instructions instead of treating every non-success as the same outage:
+
+- `BLOCKED` on a `localhost` project means the backend is still fail-closed.
+  The overview prints the three required settings with the project’s exact
+  origin and links back to this guide.
+- `UNREACHABLE` means the policy accepted the origin but the worker could not
+  obtain a response. Start the target and verify the container-side route.
+- `REACHABLE` means the isolated Playwright check opened the target root and
+  received an HTTP response; it does not grant access to another origin.
+
+The recovery message is intentionally derived from the saved project health,
+not from a browser-only guess. This keeps the guidance consistent for project
+viewers while the **Check connection** action remains restricted to members
+with `EXECUTION_START`.
+
 | Symptom | Check | Recovery |
 |---|---|---|
 | Target is `UNREACHABLE` | Host process, port, and the container `wget` command | Start the site, use the host port, and recreate `backend` |

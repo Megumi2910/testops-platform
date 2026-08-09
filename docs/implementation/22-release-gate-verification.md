@@ -215,5 +215,13 @@ to work around a local pipe problem.
 The documentation manifest check also passed with 22 registered documents and
 no missing paths after this guide was added.
 
+The target-recovery UX follow-up then passed the focused workspace suite (5
+tests), the complete frontend unit gate (15 tests), ESLint, TypeScript
+typecheck, and the Vite production build. The overview now distinguishes a
+fail-closed `BLOCKED` localhost policy from an accepted but unreachable target;
+the former prints the exact three environment settings with the project’s
+configured origin and links to the local-target guide. The frontend build
+remained within the existing entry-chunk budget (99.94 KB gzip).
+
 The final Compose health inspection also reported all services running in the
 normal, enabled E2E, and disabled E2E projects.

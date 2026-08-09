@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildOnboardingChecklist } from './ProjectWorkspaceContext'
+import { buildOnboardingChecklist, targetHealthGuidance } from './ProjectWorkspaceContext'
 import type { Project } from './api'
 
 function project(overrides: Partial<Project> = {}): Project {
@@ -34,5 +34,33 @@ describe('project onboarding checklist', () => {
     }), '/projects/project-1')
 
     expect(checklist.every(item => !item.done)).toBe(true)
+  })
+})
+
+describe('target health guidance', () => {
+  it('explains the exact fail-closed settings for a blocked localhost target', () => {
+    const guidance = targetHealthGuidance(project({
+      targetHealth: { status: 'BLOCKED', reason: 'local_target_disabled' },
+    }))
+
+    expect(guidance?.title).toContain('Local target access is disabled')
+    expect(guidance?.body).toContain('TARGET_ALLOWED_ORIGINS')
+    expect(guidance?.details).toContain('TARGET_ALLOWED_ORIGINS=http://localhost:3201')
+    expect(guidance?.details).toContain('TARGET_LOCAL_DEV_ENABLED=true')
+  })
+
+  it('distinguishes an unreachable target from a policy block', () => {
+    const guidance = targetHealthGuidance(project({
+      targetHealth: { status: 'UNREACHABLE', reason: 'TARGET_TIMEOUT' },
+    }))
+
+    expect(guidance?.tone).toBe('warning')
+    expect(guidance?.title).toBe('The target could not be reached.')
+    expect(guidance?.details).toBe('TARGET_TIMEOUT')
+  })
+
+  it('does not show recovery advice before a check or after success', () => {
+    expect(targetHealthGuidance(project({ targetHealth: { status: 'NOT_CHECKED' } }))).toBeNull()
+    expect(targetHealthGuidance(project({ targetHealth: { status: 'REACHABLE' } }))).toBeNull()
   })
 })

@@ -115,6 +115,12 @@ response code, timestamp, and reason, and never stores page content.
 If the button is not present, the account lacks `EXECUTION_START`. A project
 viewer can see the saved health result but cannot run a new probe.
 
+The overview now explains the recovery path inline. A `BLOCKED` localhost
+result prints the exact allowlist, feature flag, and host alias values instead
+of asking the operator to infer whether the problem is the port or the policy.
+An `UNREACHABLE` result uses separate advice because the origin passed policy
+but the worker did not receive an HTTP response.
+
 ## Re-run the existing READY case
 
 The current Ecommerce suite contains the READY case **Homepage smoke**. Its
@@ -162,6 +168,11 @@ execution record still correctly reports the historical `TARGET_UNREACHABLE`
 failure; it is preserved for audit history. The final authenticated **Check
 connection** and rerun must be performed from the project workspace because
 those operations require the project member’s session.
+
+The workspace recovery guidance itself is covered by five focused frontend
+tests and the full 15-test unit gate. Lint, typecheck, and the production build
+also passed after the guidance was added, so the blocked-target message is part
+of the shipped UI rather than a documentation-only workaround.
 
 ## Safety boundaries
 
