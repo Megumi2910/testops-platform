@@ -97,7 +97,7 @@ class ApplicationContextIT {
         // Flyway preserves the migration's zero-padded identifier (V020), so
         // compare the semantic version number instead of its display format.
         org.junit.jupiter.api.Assertions.assertEquals(
-                20,
+                21,
                 Integer.parseInt(flyway.info().current().getVersion().getVersion()));
         Integer targetHealthColumns = jdbcTemplate.queryForObject("""
                 select count(*)
@@ -182,5 +182,36 @@ class ApplicationContextIT {
         org.junit.jupiter.api.Assertions.assertNull(reset.getTargetCheckHttpStatus());
         org.junit.jupiter.api.Assertions.assertNull(reset.getTargetCheckedAt());
         org.junit.jupiter.api.Assertions.assertNull(reset.getTargetCheckReason());
+    }
+
+    @Test
+    void archivedDefinitionsRetainHistoryAndAllowActiveNameReuse() {
+        Instant now = Instant.now();
+        UserEntity user = userRepository.save(new UserEntity(
+                "definition-trash@example.test", "Definition trash", "ACTIVE", true, now));
+        ProjectEntity project = projectRepository.save(new ProjectEntity(
+                "Definition trash project", null, "https://trash.example.test", user, now));
+        TestSuiteEntity archivedSuite = new TestSuiteEntity(project, "Reusable suite", null, user, now);
+        archivedSuite.archive(user, now);
+        archivedSuite = testSuiteRepository.saveAndFlush(archivedSuite);
+        TestSuiteEntity activeSuite = testSuiteRepository.saveAndFlush(
+                new TestSuiteEntity(project, "Reusable suite", null, user, now));
+        TestCaseEntity archivedCase = new TestCaseEntity(activeSuite, "Reusable case", null, "DRAFT", "MEDIUM",
+                null, 0, true, user, now);
+        archivedCase.archive(user, now);
+        archivedCase = testCaseRepository.saveAndFlush(archivedCase);
+        testCaseRepository.saveAndFlush(new TestCaseEntity(activeSuite, "Reusable case", null, "DRAFT", "MEDIUM",
+                null, 0, true, user, now));
+        ExecutionEntity execution = executionRepository.saveAndFlush(new ExecutionEntity(
+                project, archivedSuite, user, 1, java.util.UUID.randomUUID(), now));
+
+        TestSuiteEntity storedSuite = testSuiteRepository.findById(archivedSuite.getId()).orElseThrow();
+        TestCaseEntity storedCase = testCaseRepository.findById(archivedCase.getId()).orElseThrow();
+        org.junit.jupiter.api.Assertions.assertEquals("ARCHIVED", storedSuite.getStatus());
+        org.junit.jupiter.api.Assertions.assertEquals(user.getId(), storedSuite.getArchivedBy().getId());
+        org.junit.jupiter.api.Assertions.assertNotNull(storedSuite.getArchivedAt());
+        org.junit.jupiter.api.Assertions.assertEquals("ARCHIVED", storedCase.getStatus());
+        org.junit.jupiter.api.Assertions.assertEquals(user.getId(), storedCase.getArchivedBy().getId());
+        org.junit.jupiter.api.Assertions.assertTrue(executionRepository.findById(execution.getId()).isPresent());
     }
 }

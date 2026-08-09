@@ -41,22 +41,26 @@
 ### QG-003 — Suite lifecycle controls and identity are missing
 
 - Severity: P1
+- Status: PARTIAL — backend lifecycle complete; UI pending
 - Role: project manager
 - Reproduction: create and open a suite
 - Expected: visible suite name/description plus edit and Move to trash actions; archived content has read-only/restore behavior
 - Actual: the page jumps directly to case content and exposes none of those lifecycle controls
 - Likely subsystem: suite detail route and missing lifecycle API/UI
 - Regression layer: frontend component + Playwright lifecycle journey
+- Backend resolution: lifecycle-filtered list/detail, versioned archive, restore, actor/time metadata, active-name reuse, and restore conflict responses are implemented in V021/API.
 
 ### QG-004 — Case archival is exposed as an unsafe status option
 
 - Severity: P1
+- Status: PARTIAL — backend lifecycle complete; UI pending
 - Role: project manager
 - Reproduction: open an existing case editor
 - Expected: explicit Move to trash confirmation, immutable history, read-only archived page, and restore-to-DRAFT flow
 - Actual: `ARCHIVED` appears beside DRAFT/READY in the ordinary status select; no trash, restore, conflict, or consequence UI exists
 - Likely subsystem: case editor and definition lifecycle contract
 - Regression layer: persistence integration + frontend dialog + Playwright
+- Backend resolution: ordinary status accepts only DRAFT/READY; explicit archive/restore preserves steps/history and restore returns to DRAFT.
 
 ### QG-005 — TestOps form fields omit autocomplete metadata
 

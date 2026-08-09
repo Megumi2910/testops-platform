@@ -11,6 +11,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.ServletRequestBindingException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -35,6 +38,22 @@ public class ApiExceptionHandler {
                         stepPosition(error.getField())))
                 .toList();
         return response(HttpStatus.BAD_REQUEST, "validation_failed", "One or more fields are invalid", errors, request);
+    }
+
+    @ExceptionHandler(ServletRequestBindingException.class)
+    ResponseEntity<ApiProblem> binding(ServletRequestBindingException exception, HttpServletRequest request) {
+        String path = exception instanceof MissingRequestHeaderException missing ? missing.getHeaderName() : "request";
+        List<ApiProblem.Violation> errors = List.of(new ApiProblem.Violation(path, "request_binding_failed",
+                exception.getMessage(), null));
+        return response(HttpStatus.BAD_REQUEST, "request_binding_failed", "A required request value is missing", errors,
+                request);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    ResponseEntity<ApiProblem> typeMismatch(MethodArgumentTypeMismatchException exception, HttpServletRequest request) {
+        List<ApiProblem.Violation> errors = List.of(new ApiProblem.Violation(exception.getName(), "type_mismatch",
+                "The supplied value has the wrong type", null));
+        return response(HttpStatus.BAD_REQUEST, "type_mismatch", "A request value has the wrong type", errors, request);
     }
 
     @ExceptionHandler(Exception.class)

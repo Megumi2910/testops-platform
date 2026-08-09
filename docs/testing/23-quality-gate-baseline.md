@@ -38,8 +38,8 @@ Ecommerce already has idempotent development fixtures for one verified customer,
 | Account/sessions | Authenticated account navigation is reachable | BLOCKED | `QG-B02` Password/Google identity and revoke variants require provider/session fixtures |
 | Projects | Two fixture projects render; target project opens; project archive control is present | PARTIAL | `QG-B03` Edit/restore, duplicate, stale-version, and full permission matrix are not exposed as one safe QA flow |
 | Target connectivity | Exact `localhost:3001` check returned `REACHABLE` and `POST 200` | PARTIAL | `QG-B04` Disabled-local and unreachable variants require isolated profiles to avoid mutating the normal stack |
-| Suites | PM created `[QA-RUN-20260809] Definition lifecycle`; list and case entry work | FAIL | `QG-003` Suite detail omits identity/edit/trash/restore controls; archived mutation behavior remains unsafe |
-| Cases/steps | Blank and partial DRAFT cases now save; READY returns a structured step-specific validation response | PARTIAL | `QG-001` and `QG-002` resolved; `QG-004` case lifecycle is still a raw status value, not a safe trash workflow |
+| Suites | Backend supports lifecycle filters, detail, versioned archive, restore, active-name reuse, and read-only archived state | PARTIAL | `QG-003` frontend identity/edit/trash/restore controls remain |
+| Cases/steps | Backend uses explicit archive/restore, preserves steps/history, restores to DRAFT, and rejects ARCHIVED as an editor status | PARTIAL | `QG-004` frontend still needs dialogs, trash view, and read-only archived rendering |
 | Variables | Listing now requires advertised `VARIABLE_VIEW`; secret values remain masked for every API consumer | PARTIAL | `QG-B05` browser artifact redaction assertions remain |
 | Members | Fixture roles were created and project membership rendered | BLOCKED | `QG-B07` add/change/remove/final-manager/cross-project substitutions await security regression coverage |
 | Executions | Archived suites are blocked from queueing; cancellation is requester-or-project-manager only | PARTIAL | `QG-B08` retry/worker/target-escape and full browser matrix remain |

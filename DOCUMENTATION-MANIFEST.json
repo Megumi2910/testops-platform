@@ -95,6 +95,10 @@
       "role": "Nested ancestry, archived definitions, variable visibility, cancellation ownership, active-admin invariants, and frontend route guards"
     },
     {
+      "path": "docs/implementation/26-definition-trash-backend.md",
+      "role": "V021 archive metadata, active-only uniqueness, suite/case lifecycle APIs, restore conflicts, and history retention"
+    },
+    {
       "path": "docs/testing/23-quality-gate-baseline.md",
       "role": "Revision-verified Chrome DevTools and Playwright baseline matrix for TestOps and ecommerce"
     },

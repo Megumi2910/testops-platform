@@ -30,11 +30,16 @@ public class TestCaseEntity {
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "created_by", nullable = false) private UserEntity createdBy;
     @Column(name = "created_at", nullable = false) private Instant createdAt;
     @Column(name = "updated_at", nullable = false) private Instant updatedAt;
+    @Column(name = "archived_at") private Instant archivedAt;
+    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "archived_by") private UserEntity archivedBy;
     protected TestCaseEntity() { }
     public TestCaseEntity(TestSuiteEntity suite, String name, String description, String status, String priority, String tags, int retryCount, boolean dataIsolation, UserEntity createdBy, Instant now) {
         this.id = UUID.randomUUID(); this.suite = suite; this.name = name; this.description = description; this.status = status; this.priority = priority; this.tags = tags; this.retryCount = retryCount; this.dataIsolation = dataIsolation; this.createdBy = createdBy; this.createdAt = now; this.updatedAt = now;
     }
     public void update(String name, String description, String status, String priority, String tags, int retryCount, boolean dataIsolation, Instant now) { this.name = name; this.description = description; this.status = status; this.priority = priority; this.tags = tags; this.retryCount = retryCount; this.dataIsolation = dataIsolation; this.updatedAt = now; }
+    public void archive(UserEntity actor, Instant now) { status = "ARCHIVED"; archivedAt = now; archivedBy = actor; updatedAt = now; }
+    public void restore(String restoredName, Instant now) { name = restoredName; status = "DRAFT"; archivedAt = null; archivedBy = null; updatedAt = now; }
     public UUID getId() { return id; } public TestSuiteEntity getSuite() { return suite; } public String getName() { return name; } public String getDescription() { return description; }
     public String getStatus() { return status; } public String getPriority() { return priority; } public String getTags() { return tags; } public int getRetryCount() { return retryCount; } public boolean isDataIsolation() { return dataIsolation; } public long getVersion() { return version; }
+    public Instant getArchivedAt() { return archivedAt; } public UserEntity getArchivedBy() { return archivedBy; }
 }

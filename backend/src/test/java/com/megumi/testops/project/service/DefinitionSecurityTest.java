@@ -23,6 +23,7 @@ import com.megumi.testops.auth.domain.UserEntity;
 import com.megumi.testops.project.api.ProjectDtos;
 import com.megumi.testops.project.domain.ProjectEntity;
 import com.megumi.testops.project.domain.TestSuiteEntity;
+import com.megumi.testops.project.domain.TestCaseEntity;
 import com.megumi.testops.project.repository.TestCaseRepository;
 import com.megumi.testops.project.repository.TestStepRepository;
 import com.megumi.testops.project.repository.TestSuiteRepository;
@@ -75,5 +76,51 @@ class DefinitionSecurityTest {
         assertEquals("suite_archived", failure.getCode());
         verify(access).requireProjectRole(eq(project), eq(user), eq(jwt), eq(Set.of("PROJECT_MANAGER", "TEST_MANAGER")));
         verify(cases, never()).save(any());
+    }
+
+    @Test
+    void archivesSuiteWithActorAndRestoresItWithoutChangingChildren() {
+        TestSuiteEntity suite = new TestSuiteEntity(project, "Lifecycle", null, user, Instant.now());
+        when(suites.findByIdAndProjectId(suite.getId(), project.getId())).thenReturn(Optional.of(suite));
+
+        ProjectDtos.SuiteResponse archived = service.archiveSuite(jwt, project.getId(), suite.getId(), 0L);
+
+        assertEquals("ARCHIVED", archived.status());
+        assertEquals(userId, archived.archivedBy());
+        when(suites.existsByProjectIdAndNameIgnoreCaseAndStatusNot(project.getId(), "Lifecycle", "ARCHIVED"))
+                .thenReturn(false);
+
+        ProjectDtos.SuiteResponse restored = service.restoreSuite(jwt, project.getId(), suite.getId(),
+                new ProjectDtos.RestoreRequest(0L, null));
+
+        assertEquals("ACTIVE", restored.status());
+        assertEquals(null, restored.archivedAt());
+    }
+
+    @Test
+    void caseRestoreReturnsToDraftAndSupportsConflictRename() {
+        TestSuiteEntity suite = new TestSuiteEntity(project, "Cases", null, user, Instant.now());
+        TestCaseEntity testCase = new TestCaseEntity(suite, "Reusable", null, "READY", "HIGH", null, 0, true,
+                user, Instant.now());
+        testCase.archive(user, Instant.now());
+        when(suites.findByIdAndProjectId(suite.getId(), project.getId())).thenReturn(Optional.of(suite));
+        when(cases.findByIdAndSuiteId(testCase.getId(), suite.getId())).thenReturn(Optional.of(testCase));
+        when(cases.existsBySuiteIdAndNameIgnoreCaseAndStatusNot(suite.getId(), "Reusable", "ARCHIVED"))
+                .thenReturn(true);
+
+        ApiException conflict = assertThrows(ApiException.class,
+                () -> service.restoreCase(jwt, project.getId(), suite.getId(), testCase.getId(),
+                        new ProjectDtos.RestoreRequest(0L, null)));
+        assertEquals("case_restore_name_conflict", conflict.getCode());
+
+        when(cases.existsBySuiteIdAndNameIgnoreCaseAndStatusNot(suite.getId(), "Renamed", "ARCHIVED"))
+                .thenReturn(false);
+        when(steps.findByTestCaseIdOrderByPositionAsc(testCase.getId())).thenReturn(List.of());
+        ProjectDtos.CaseResponse restored = service.restoreCase(jwt, project.getId(), suite.getId(), testCase.getId(),
+                new ProjectDtos.RestoreRequest(0L, "Renamed"));
+
+        assertEquals("DRAFT", restored.status());
+        assertEquals("Renamed", restored.name());
+        assertEquals(null, restored.archivedAt());
     }
 }

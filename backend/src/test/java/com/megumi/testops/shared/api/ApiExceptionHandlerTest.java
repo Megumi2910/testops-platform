@@ -2,6 +2,7 @@ package com.megumi.testops.shared.api;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -16,6 +17,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 class ApiExceptionHandlerTest {
@@ -56,6 +58,14 @@ class ApiExceptionHandlerTest {
                 .andExpect(jsonPath("$.errors").isArray());
     }
 
+    @Test
+    void missingOptimisticLockHeaderUsesBadRequestProblem() throws Exception {
+        mvc.perform(delete("/test/versioned"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("request_binding_failed"))
+                .andExpect(jsonPath("$.errors[0].path").value("If-Match"));
+    }
+
     @RestController
     static class FailureController {
         @GetMapping("/test/domain")
@@ -71,6 +81,9 @@ class ApiExceptionHandlerTest {
         void unexpected() {
             throw new IllegalStateException("sensitive implementation detail");
         }
+
+        @org.springframework.web.bind.annotation.DeleteMapping("/test/versioned")
+        void versioned(@RequestHeader("If-Match") long version) { }
     }
 
     record ValidationRequest(@NotBlank String name) { }

@@ -33,7 +33,7 @@ class MigrationUpgradeIT {
             Flyway releaseCandidate = flyway(jdbcUrl, username, password, null);
             releaseCandidate.migrate();
 
-            assertThat(releaseCandidate.info().current().getVersion().getVersion()).isEqualTo("020");
+            assertThat(releaseCandidate.info().current().getVersion().getVersion()).isEqualTo("021");
             try (var connection = DriverManager.getConnection(
                     jdbcUrl,
                     username,
@@ -53,6 +53,17 @@ class MigrationUpgradeIT {
                     var result = statement.executeQuery()) {
                 assertThat(result.next()).isTrue();
                 assertThat(result.getInt(1)).isEqualTo(4);
+            }
+            try (var connection = DriverManager.getConnection(jdbcUrl, username, password);
+                    var statement = connection.prepareStatement("""
+                            select count(*)
+                            from pg_indexes
+                            where schemaname = 'public'
+                              and indexname in ('ux_test_suites_active_project_name', 'ux_test_cases_active_suite_name')
+                            """);
+                    var result = statement.executeQuery()) {
+                assertThat(result.next()).isTrue();
+                assertThat(result.getInt(1)).isEqualTo(2);
             }
         } finally {
             if (postgres != null) {
