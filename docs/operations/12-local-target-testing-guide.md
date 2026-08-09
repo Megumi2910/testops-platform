@@ -83,7 +83,9 @@ with `EXECUTION_START`.
 The negative E2E assertion uses an exact `UNREACHABLE` status locator. The
 workspace also displays the sanitized reason (for example
 `TARGET_UNREACHABLE`), so a broad text locator would match both the badge and
-the diagnostic code and make the test ambiguous.
+the diagnostic code and make the test ambiguous. The browser contract also
+asserts the recovery sentence, keeping the operator guidance visible after a
+real connection check rather than only in a unit-level helper.
 
 | Symptom | Check | Recovery |
 |---|---|---|
