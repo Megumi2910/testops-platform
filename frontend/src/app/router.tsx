@@ -2,7 +2,7 @@ import { lazy } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 
 import { AppShell } from '../components/AppShell'
-import { ProtectedRoute, VerifiedRoute } from '../features/projects/RouteGuards'
+import { PlatformPermissionRoute, ProtectedRoute, VerifiedRoute } from '../features/projects/RouteGuards'
 import { LazyPage } from './LazyPage'
 
 const HomePage = lazy(async () => ({ default: (await import('./pages')).HomePage }))
@@ -41,7 +41,9 @@ export const router = createBrowserRouter([
         { path: 'account', element: <AccountPage /> },
         { element: <VerifiedRoute />, children: [
         { path: 'dashboard', element: <LazyPage><DashboardPage /></LazyPage> },
-        { path: 'admin/users', element: <LazyPage><AdminUsersPage /></LazyPage> },
+        { element: <PlatformPermissionRoute permission="USER_ADMINISTER" />, children: [
+          { path: 'admin/users', element: <LazyPage><AdminUsersPage /></LazyPage> },
+        ] },
         { path: 'projects', element: <LazyPage><ProjectsPage /></LazyPage> },
         { path: 'projects/new', element: <LazyPage><NewProjectPage /></LazyPage> },
         { path: 'projects/:projectId', element: <LazyPage><ProjectLayout /></LazyPage>, children: [

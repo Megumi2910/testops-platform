@@ -91,6 +91,10 @@
       "role": "Status-aware DRAFT and READY validation plus the shared structured API problem contract"
     },
     {
+      "path": "docs/implementation/25-phase-2-security-boundaries.md",
+      "role": "Nested ancestry, archived definitions, variable visibility, cancellation ownership, active-admin invariants, and frontend route guards"
+    },
+    {
       "path": "docs/testing/23-quality-gate-baseline.md",
       "role": "Revision-verified Chrome DevTools and Playwright baseline matrix for TestOps and ecommerce"
     },

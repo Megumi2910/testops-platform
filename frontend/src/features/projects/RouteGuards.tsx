@@ -19,3 +19,13 @@ export function VerifiedRoute() {
   if (!user.emailVerified) return <Navigate to={`/verify-email?email=${encodeURIComponent(user.email)}&recover=1`} replace />
   return <Outlet />
 }
+
+export function PlatformPermissionRoute({ permission }: { permission: string }) {
+  const { user, providers, loading } = useAuth()
+  if (loading) return <section className="card"><LoadingState label="Checking your permissions…" /></section>
+  if (!providers?.enabled) return <Navigate to="/" replace />
+  if (!user) return <Navigate to="/login" replace />
+  if (!user.emailVerified) return <Navigate to={`/verify-email?email=${encodeURIComponent(user.email)}&recover=1`} replace />
+  if (!user.platformPermissions?.includes(permission)) return <Navigate to="/dashboard" replace />
+  return <Outlet />
+}

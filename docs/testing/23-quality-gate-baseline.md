@@ -40,11 +40,11 @@ Ecommerce already has idempotent development fixtures for one verified customer,
 | Target connectivity | Exact `localhost:3001` check returned `REACHABLE` and `POST 200` | PARTIAL | `QG-B04` Disabled-local and unreachable variants require isolated profiles to avoid mutating the normal stack |
 | Suites | PM created `[QA-RUN-20260809] Definition lifecycle`; list and case entry work | FAIL | `QG-003` Suite detail omits identity/edit/trash/restore controls; archived mutation behavior remains unsafe |
 | Cases/steps | Blank and partial DRAFT cases now save; READY returns a structured step-specific validation response | PARTIAL | `QG-001` and `QG-002` resolved; `QG-004` case lifecycle is still a raw status value, not a safe trash workflow |
-| Variables | Routes and existing explicit remove UI are present | BLOCKED | `QG-B05` Secret/plain evidence and role boundaries require dedicated fixtures and redaction assertions |
+| Variables | Listing now requires advertised `VARIABLE_VIEW`; secret values remain masked for every API consumer | PARTIAL | `QG-B05` browser artifact redaction assertions remain |
 | Members | Fixture roles were created and project membership rendered | BLOCKED | `QG-B07` add/change/remove/final-manager/cross-project substitutions await security regression coverage |
-| Executions | Existing history/detail surfaces load; DRAFT run is disabled | BLOCKED | `QG-B08` queue/cancel/retry/worker/target-escape matrix requires READY definitions after authoring is fixed |
+| Executions | Archived suites are blocked from queueing; cancellation is requester-or-project-manager only | PARTIAL | `QG-B08` retry/worker/target-escape and full browser matrix remain |
 | Dashboard | Route is present for authenticated manager | BLOCKED | `QG-B09` populated ranges, tenant boundaries, date edges, and bounded queries await aggregate fixtures |
-| Administration | Administrator fixture can authenticate | BLOCKED | `QG-B10` frontend guard and last-active-admin coverage are known security blockers |
+| Administration | Frontend route requires `USER_ADMINISTER`; transactional last-active-admin protection has focused coverage; direct PM navigation redirected to dashboard with no console/network failure | PARTIAL | `QG-B10` complete Chrome DevTools role matrix remains |
 | Responsive/accessibility | Desktop builder accessibility tree inspected; form-name issue reported by Chrome | FAIL | `QG-005` missing autocomplete; complete keyboard/mobile matrix follows lifecycle implementation |
 
 ## Ecommerce matrix
@@ -77,7 +77,7 @@ The sanitized request body contains a DRAFT case and `steps[0]` with action `NAV
 ## Frozen repair order
 
 1. ~~`QG-001` and `QG-002`: split DRAFT/READY validation and consolidate the problem contract.~~ Resolved and browser-verified.
-2. Security blockers: ancestry, variable visibility, admin invariant, cancellation ownership, and archived-resource mutation.
+2. ~~Security blockers: ancestry, variable visibility, admin invariant, cancellation ownership, and archived-resource mutation.~~ Focused code and regression coverage complete; two-project/browser expansion remains in Phase 5.
 3. Suite/case trash and restore, including partial uniqueness and history preservation.
 4. Builder field mapping, pending protection, conflicts, dirty navigation, and Save & run recovery.
 5. Automated TestOps gate and complete role/tenant matrix.

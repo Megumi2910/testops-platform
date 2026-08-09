@@ -117,12 +117,12 @@
 | QG-B02 | Google and full session-revocation states | provider/session fixtures |
 | QG-B03 | Project restore/conflict/stale version | lifecycle API/UI |
 | QG-B04 | target blocked/unreachable variants | isolated local-disabled/unreachable profiles |
-| QG-B05 | variable permissions and evidence redaction | secret/plain fixtures plus runner assertions |
+| QG-B05 | evidence redaction in browser artifacts | variable listing now enforces `VARIABLE_VIEW` and always masks secrets; runner screenshot/trace assertions remain |
 | QG-B06 | ecommerce cross-customer/cross-seller/admin isolation | expanded idempotent fixtures |
 | QG-B07 | membership mutation and final-manager rules | security contract tests |
 | QG-B08 | queue/cancel/retry/artifact matrix | authoring repair and executable READY fixtures |
 | QG-B09 | dashboard range/tenant/query verification | aggregate fixtures and query-count instrumentation |
-| QG-B10 | TestOps admin guard and last-active-admin | Phase 2 security implementation |
+| QG-B10 | browser proof of administration boundaries | frontend permission guard and concurrent-safe last-active-admin protection implemented; full role matrix remains |
 | QG-B11 | ecommerce search/filter/sort URL matrix | repeatable public Playwright suite |
 | QG-B12 | ecommerce email verification/reset | Mailpit QA overlay |
 | QG-B13 | checkout concurrency and destructive order states | isolated PostgreSQL integration harness |
@@ -130,4 +130,4 @@
 
 ## Triage result
 
-There are no confirmed P0 incidents. `QG-001` and `QG-002` are resolved, but other P1 defects and security blockers remain open. Therefore the release status is **PARTIAL** and the next permitted product slice is the remaining Phase 2 ancestry, permission, administrator-invariant, cancellation-ownership, and archived-resource enforcement work.
+There are no confirmed P0 incidents. `QG-001` and `QG-002` are resolved, and the first Phase 2 security slice now enforces nested ancestry, variable visibility, cancellation ownership, archived-suite mutation/queue guards, the active-administrator invariant, and the frontend admin route. Other P1 lifecycle and authoring defects remain open, so release status is **PARTIAL** and the next product slice is Phase 3 history-preserving trash and restore.

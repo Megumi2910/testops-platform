@@ -190,4 +190,35 @@ class ExecutionServiceTest {
                 () -> service.artifactDownload(jwt, project.getId(), execution.getId(), artifact.getId()));
         assertEquals("artifact_purged", error.getCode());
     }
+
+    @Test
+    void rejectsQueueingAnArchivedSuite() {
+        suite.archive(Instant.now());
+
+        ApiException error = assertThrows(ApiException.class,
+                () -> service.queueSuite(jwt, project.getId(), suite.getId(), UUID.randomUUID()));
+
+        assertEquals("suite_archived", error.getCode());
+        verify(executions, never()).save(any());
+    }
+
+    @Test
+    void onlyRequesterOrProjectManagerCanCancel() {
+        UserEntity requester = user;
+        UserEntity tester = mock(UserEntity.class);
+        when(tester.getId()).thenReturn(UUID.randomUUID());
+        ExecutionEntity execution = new ExecutionEntity(project, suite, requester, 1, UUID.randomUUID(), Instant.now());
+        when(access.user(jwt)).thenReturn(tester);
+        when(executions.findByProjectIdAndId(project.getId(), execution.getId())).thenReturn(Optional.of(execution));
+        ProjectMemberEntity membership = mock(ProjectMemberEntity.class);
+        when(membership.getRole()).thenReturn("TESTER");
+        when(access.membership(project, tester)).thenReturn(membership);
+
+        ApiException denied = assertThrows(ApiException.class,
+                () -> service.cancel(jwt, project.getId(), execution.getId()));
+        assertEquals("cancel_denied", denied.getCode());
+
+        when(membership.getRole()).thenReturn("PROJECT_MANAGER");
+        assertSame(execution, service.cancel(jwt, project.getId(), execution.getId()));
+    }
 }

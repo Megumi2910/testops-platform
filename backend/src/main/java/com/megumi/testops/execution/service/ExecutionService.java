@@ -70,6 +70,7 @@ public class ExecutionService {
         UserEntity user = access.user(jwt); ProjectEntity project = access.project(projectId);
         access.requireProjectRole(project, user, jwt, Set.of("PROJECT_MANAGER", "TEST_MANAGER", "TESTER")); ensureActive(project);
         TestSuiteEntity suite = suites.findByIdAndProjectId(suiteId, projectId).orElseThrow(() -> error(HttpStatus.NOT_FOUND, "suite_not_found", "Suite was not found"));
+        ensureActive(suite);
         return queue(project, suite, user, readyCases(suiteId), idempotencyKey);
     }
 
@@ -78,6 +79,7 @@ public class ExecutionService {
         UserEntity user = access.user(jwt); ProjectEntity project = access.project(projectId);
         access.requireProjectRole(project, user, jwt, Set.of("PROJECT_MANAGER", "TEST_MANAGER", "TESTER")); ensureActive(project);
         TestSuiteEntity suite = suites.findByIdAndProjectId(suiteId, projectId).orElseThrow(() -> error(HttpStatus.NOT_FOUND, "suite_not_found", "Suite was not found"));
+        ensureActive(suite);
         TestCaseEntity testCase = cases.findByIdAndSuiteId(caseId, suiteId).orElseThrow(() -> error(HttpStatus.NOT_FOUND, "case_not_found", "Case was not found"));
         if (!"READY".equals(testCase.getStatus())) throw error(HttpStatus.CONFLICT, "case_not_ready", "Only READY test cases can run");
         return queue(project, suite, user, List.of(testCase), idempotencyKey);
@@ -114,8 +116,8 @@ public class ExecutionService {
     public ExecutionEntity cancel(Jwt jwt, UUID projectId, UUID executionId) {
         UserEntity user = access.user(jwt); ProjectEntity project = access.project(projectId); ExecutionEntity execution = find(projectId, executionId);
         boolean owner = execution.getRequestedBy().getId().equals(user.getId());
-        boolean privileged = access.globalAdmin(jwt) || Set.of("PROJECT_MANAGER").contains(access.membership(project, user).getRole());
-        if (!owner && !privileged) throw error(HttpStatus.FORBIDDEN, "cancel_denied", "Only the requester, project owner, or project admin can cancel an execution");
+        boolean privileged = !owner && "PROJECT_MANAGER".equals(access.membership(project, user).getRole());
+        if (!owner && !privileged) throw error(HttpStatus.FORBIDDEN, "cancel_denied", "Only the requester or a project manager can cancel an execution");
         if (ACTIVE.contains(execution.getStatus())) execution.requestCancel(Instant.now());
         return execution;
     }
@@ -130,6 +132,7 @@ public class ExecutionService {
     private ExecutionDtos.ExecutionSummaryResponse summary(ExecutionEntity e) { return new ExecutionDtos.ExecutionSummaryResponse(e.getId(), e.getProject().getId(), e.getSuite() == null ? null : e.getSuite().getId(), e.getStatus().name(), e.getTotalCases(), e.getCompletedCases(), e.getPassedCases(), e.getFailedCases(), e.getErrorCases(), e.getCancelledCases(), e.getCreatedAt(), e.getStartedAt(), e.getFinishedAt(), e.getSuiteNameSnapshot(), e.getInfrastructureErrorCategory()); }
     private ExecutionDtos.CaseResultResponse caseResponse(TestCaseResultEntity result) { return new ExecutionDtos.CaseResultResponse(result.getId(), result.getTestCase().getId(), result.getCaseNameSnapshot(), result.getStatus().name(), result.getAttemptCount(), result.getStartedAt(), result.getFinishedAt(), result.getErrorMessage(), result.getFailedStepPosition(), result.getErrorCategory(), stepResults.findByCaseResultIdOrderByPositionAsc(result.getId()).stream().map(s -> new ExecutionDtos.StepResultResponse(s.getPosition(), s.getAction(), s.getStatus(), s.getDurationMs(), s.getErrorMessage())).toList()); }
     private static void ensureActive(ProjectEntity project) { if ("ARCHIVED".equals(project.getStatus())) throw error(HttpStatus.CONFLICT, "project_archived", "Archived projects are read-only"); }
+    private static void ensureActive(TestSuiteEntity suite) { if ("ARCHIVED".equals(suite.getStatus())) throw error(HttpStatus.CONFLICT, "suite_archived", "Archived suites cannot be executed"); }
     private static ApiException error(HttpStatus status, String code, String message) { return new ApiException(status, code, message); }
     public record ArtifactDownload(Path path, String contentType, String type) { }
 }
