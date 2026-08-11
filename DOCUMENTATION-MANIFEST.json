@@ -111,6 +111,10 @@
       "role": "Case optimistic-lock comparison, explicit Reload/Retry behavior, and two-tab browser evidence"
     },
     {
+      "path": "docs/implementation/30-otp-resend-cooldown.md",
+      "role": "Enumeration-safe OTP resend, serialized cooldown enforcement, frontend countdown, and Mailpit message-count evidence"
+    },
+    {
       "path": "docs/testing/23-quality-gate-baseline.md",
       "role": "Revision-verified Chrome DevTools and Playwright baseline matrix for TestOps and ecommerce"
     },

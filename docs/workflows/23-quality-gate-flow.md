@@ -50,3 +50,18 @@ flowchart LR
 ```
 
 The comparison intentionally summarizes step actions instead of repeating locator and input values. The user's local editor remains intact until one recovery button is chosen.
+
+## Verification resend path
+
+```mermaid
+flowchart LR
+    UI["Verify page or unverified banner"] --> API["POST resend"]
+    API --> Lock["Lock user row"]
+    Lock --> Decision{"Eligible now?"}
+    Decision -->|No| Same["202 + remaining cooldown"]
+    Decision -->|Yes| Send["Invalidate old challenge; send one code"]
+    Send --> Same
+    Same --> Countdown["Disable and count down from server window"]
+```
+
+Unknown public addresses follow the same generic `202` response shape without creating a challenge. The QA overlay routes the one eligible message to Mailpit; simultaneous cooldown requests do not increase its message count.

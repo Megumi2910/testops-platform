@@ -143,11 +143,23 @@
 - Verification: Chrome DevTools observed `PUT 409 → GET 200`, focused comparison, `PUT 200` retry, and an independent Reload flow; the QA fixture was restored
 - Regression layer: pure comparison tests + mounted component + two-tab Chrome DevTools journey
 
+### QG-013 — OTP resend leaks account state and is not consistently idempotent
+
+- Severity: P1
+- Status: RESOLVED
+- Preconditions: verification page or authenticated unverified recovery flow
+- Reproduction: request resend for an unknown address; request authenticated resend repeatedly during the configured delay
+- Expected: the public response cannot reveal account existence, and every resend path enforces one server-owned cooldown without sending duplicate messages
+- Previous actual: the public service threw `verification_unavailable` for an unknown address; the authenticated service skipped the active challenge cooldown check
+- Resolution: both paths acquire a pessimistic user-row lock and share one cooldown decision; public responses always use the same generic `202` shape, while the UI consumes the server retry window
+- Verification: focused backend and mounted frontend tests; Chrome DevTools observed generic `202` plus disabled 60-second countdown; a QA registration followed by two simultaneous resend calls left Mailpit at exactly one message
+- Regression layer: backend service tests + frontend component test + Mailpit browser acceptance
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |
 | --- | --- | --- |
-| QG-B01 | TestOps OTP/recovery/session variants | Mailpit-driven auth harness and time-controlled challenges |
+| QG-B01 | Remaining TestOps OTP/recovery/session variants | Cooldown/idempotency and message-count proof are complete; add time-controlled expiry, invalid-code, password recovery, return-URL, and session cases |
 | QG-B02 | Google and full session-revocation states | provider/session fixtures |
 | QG-B03 | Project restore/conflict/stale version | lifecycle API/UI |
 | QG-B04 | target blocked/unreachable variants | isolated local-disabled/unreachable profiles |

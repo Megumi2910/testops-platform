@@ -25,6 +25,7 @@ export type Providers = {
   googleEnabled: boolean
 }
 export type Session = { familyId: string; issuedAt: string; expiresAt: string; userAgent?: string; createdIp?: string }
+export type ResendVerificationResponse = { message: string; nextResendAt: string; retryAfterSeconds: number }
 
 export const authApi = {
   providers: () => apiFetch<Providers>('/api/v1/auth/providers'),
@@ -36,9 +37,9 @@ export const authApi = {
     return response
   },
   resendEmail: (email: string) =>
-    apiFetch<{ message: string }>('/api/v1/auth/email/resend', { method: 'POST', body: JSON.stringify({ email }) }),
+    apiFetch<ResendVerificationResponse>('/api/v1/auth/email/resend', { method: 'POST', body: JSON.stringify({ email }) }),
   resendAuthenticatedEmail: () =>
-    apiFetch<{ message: string }>('/api/v1/auth/me/email/resend', { method: 'POST' }),
+    apiFetch<ResendVerificationResponse>('/api/v1/auth/me/email/resend', { method: 'POST' }),
   login: async (payload: { email: string; password: string }) => {
     const response = await apiFetch<AuthResponse>('/api/v1/auth/login', { method: 'POST', body: JSON.stringify(payload) })
     setAccessToken(response.accessToken)

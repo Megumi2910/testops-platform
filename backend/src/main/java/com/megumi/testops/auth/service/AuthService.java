@@ -113,46 +113,58 @@ public class AuthService {
     }
 
     @Transactional(dontRollbackOn = AuthException.class)
-    public void resendVerification(String email, String ip) {
+    public ResendVerificationResult resendVerification(String email, String ip) {
         rateLimiter.check("otp-resend-ip", ip, properties.limits().otpResendIpAttempts(),
                 properties.limits().otpResendIpWindow());
-        UserEntity user = userByEmail(email);
-        if (user.isEmailVerified()) return;
         Instant now = Instant.now(clock);
-        if (challenges.countByUserIdAndPurposeAndIssuedAtAfter(user.getId(), "REGISTRATION",
-                now.minus(java.time.Duration.ofHours(1))) >= properties.email().maxSendsPerHour()) {
-            throw new AuthException(HttpStatus.TOO_MANY_REQUESTS, "verification_rate_limited", "Verification email limit reached; try again later");
+        UserEntity user = users.findByEmailForUpdate(normalizeEmail(email)).orElse(null);
+        if (user != null) {
+            try {
+                resendLocked(user, ip, now, false);
+            } catch (AuthException exception) {
+                if (!"email_delivery_unavailable".equals(exception.getCode())) throw exception;
+            }
         }
+        return cooldownFrom(now, now.plus(properties.email().resendDelay()));
+    }
+
+    @Transactional(dontRollbackOn = AuthException.class)
+    public ResendVerificationResult resendVerificationAuthenticated(UUID userId, String ip) {
+        rateLimiter.check("otp-resend-ip", ip, properties.limits().otpResendIpAttempts(),
+                properties.limits().otpResendIpWindow());
+        Instant now = Instant.now(clock);
+        UserEntity user = users.findByIdForUpdate(userId)
+                .orElseThrow(() -> new AuthException(HttpStatus.UNAUTHORIZED, "user_not_found", "User was not found"));
+        return resendLocked(user, ip, now, true);
+    }
+
+    private ResendVerificationResult resendLocked(UserEntity user, String ip, Instant now, boolean discloseRateLimit) {
+        Instant defaultNextResendAt = now.plus(properties.email().resendDelay());
+        if (user.isEmailVerified()) return cooldownFrom(now, defaultNextResendAt);
         EmailVerificationChallengeEntity previous = challenges
                 .findTopByUserIdAndPurposeAndConsumedAtIsNullAndInvalidatedAtIsNullOrderByIssuedAtDesc(user.getId(), "REGISTRATION")
                 .orElse(null);
         if (previous != null && previous.getResendAvailableAt().isAfter(now)) {
-            throw new AuthException(HttpStatus.TOO_MANY_REQUESTS, "verification_resend_cooldown", "Please wait before requesting another code");
+            return cooldownFrom(now, previous.getResendAvailableAt());
         }
-        if (previous != null) previous.invalidate(now, "RESENT");
-        if (previous != null) challenges.flush();
-        issueAndSendChallenge(user, ip, now);
-        audit.record(user, "EMAIL_VERIFICATION_RESENT", true, ip, null, null);
-    }
-
-    @Transactional(dontRollbackOn = AuthException.class)
-    public void resendVerificationAuthenticated(UUID userId, String ip) {
-        rateLimiter.check("otp-resend-ip", ip, properties.limits().otpResendIpAttempts(),
-                properties.limits().otpResendIpWindow());
-        UserEntity user = userById(userId);
-        if (user.isEmailVerified()) return;
-        Instant now = Instant.now(clock);
         if (challenges.countByUserIdAndPurposeAndIssuedAtAfter(user.getId(), "REGISTRATION",
                 now.minus(java.time.Duration.ofHours(1))) >= properties.email().maxSendsPerHour()) {
-            throw new AuthException(HttpStatus.TOO_MANY_REQUESTS, "verification_rate_limited", "Verification email limit reached; try again later");
+            if (discloseRateLimit) {
+                throw new AuthException(HttpStatus.TOO_MANY_REQUESTS, "verification_rate_limited",
+                        "Verification email limit reached; try again later");
+            }
+            return cooldownFrom(now, defaultNextResendAt);
         }
-        EmailVerificationChallengeEntity previous = challenges
-                .findTopByUserIdAndPurposeAndConsumedAtIsNullAndInvalidatedAtIsNullOrderByIssuedAtDesc(user.getId(), "REGISTRATION")
-                .orElse(null);
         if (previous != null) previous.invalidate(now, "RESENT_AUTHENTICATED");
         if (previous != null) challenges.flush();
         issueAndSendChallenge(user, ip, now);
         audit.record(user, "EMAIL_VERIFICATION_RESENT", true, ip, null, null);
+        return cooldownFrom(now, defaultNextResendAt);
+    }
+
+    private static ResendVerificationResult cooldownFrom(Instant now, Instant nextResendAt) {
+        long seconds = Math.max(0, java.time.Duration.between(now, nextResendAt).toSeconds());
+        return new ResendVerificationResult(nextResendAt, seconds);
     }
 
     @Transactional
@@ -322,4 +334,5 @@ public class AuthService {
     }
 
     public record SessionResult(AuthResponse response, String refreshToken, Instant refreshExpiresAt) { }
+    public record ResendVerificationResult(Instant nextResendAt, long retryAfterSeconds) { }
 }

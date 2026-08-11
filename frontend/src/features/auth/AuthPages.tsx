@@ -74,10 +74,19 @@ export function VerifyEmailPage() {
   const [autoResent, setAutoResent] = useState(false)
   const [pending, setPending] = useState(false)
   const [resendPending, setResendPending] = useState(false)
+  const [retryAfterSeconds, setRetryAfterSeconds] = useState(0)
+  useEffect(() => {
+    if (retryAfterSeconds <= 0) return
+    const timer = window.setInterval(() => setRetryAfterSeconds(current => Math.max(0, current - 1)), 1_000)
+    return () => window.clearInterval(timer)
+  }, [retryAfterSeconds])
   useEffect(() => {
     if (!user || user.emailVerified || searchParams.get('recover') !== '1' || autoResent || !email) return
     setAutoResent(true)
-    void resendAuthenticatedEmail().then(() => setMessage('A fresh verification code has been sent.')).catch(caught => setError(caught instanceof Error ? caught.message : 'Unable to resend code'))
+    void resendAuthenticatedEmail().then(response => {
+      setRetryAfterSeconds(response.retryAfterSeconds)
+      setMessage(response.message)
+    }).catch(caught => setError(caught instanceof Error ? caught.message : 'Unable to resend code'))
   }, [autoResent, email, resendAuthenticatedEmail, searchParams, setError, user])
   async function verify(event: FormEvent) {
     event.preventDefault(); clear()
@@ -87,7 +96,11 @@ export function VerifyEmailPage() {
   async function resend() {
     clear(); setMessage('')
     setResendPending(true)
-    try { await resendEmail(email); setMessage('If the account can be verified, a new code is on its way.') }
+    try {
+      const response = await resendEmail(email)
+      setRetryAfterSeconds(response.retryAfterSeconds)
+      setMessage(response.message)
+    }
     catch (caught) { setError(caught instanceof Error ? caught.message : 'Unable to resend code') } finally { setResendPending(false) }
   }
   return <AuthCard title="Verify your email" subtitle="Enter the six-digit code sent to your inbox. Codes expire after ten minutes.">
@@ -97,7 +110,10 @@ export function VerifyEmailPage() {
       {error && <p className="form-error" role="alert">{error}</p>}
       {message && <p className="form-help" role="status">{message}</p>}
       <Button type="submit" busy={pending}>Verify and sign in</Button>
-      <Button type="button" variant="secondary" busy={resendPending} onClick={() => void resend()}>Resend code</Button>
+      <Button type="button" variant="secondary" busy={resendPending} disabled={retryAfterSeconds > 0}
+        onClick={() => void resend()}>
+        {retryAfterSeconds > 0 ? `Resend available in ${retryAfterSeconds}s` : 'Resend code'}
+      </Button>
     </form>
   </AuthCard>
 }

@@ -32,6 +32,7 @@ The root [README](../README.md) remains the project entry point. The machine-rea
 - Operating suite/case Trash and restore in the web app: [definition Trash UI](implementation/27-definition-trash-ui.md).
 - Understanding case metadata, field-error mapping, and Save & run recovery: [guided authoring recovery](implementation/28-guided-authoring-recovery.md).
 - Resolving two-editor stale-version conflicts safely: [case optimistic-lock recovery](implementation/29-case-version-conflicts.md).
+- Understanding verification resend timing, idempotency, and Mailpit evidence: [OTP resend cooldown](implementation/30-otp-resend-cooldown.md).
 - Designing exact and repeated locators: [executable step language](implementation/10-executable-step-language.md) → [execution correctness](implementation/20-phase-6-execution-correctness.md).
 - Verifying the negative target matrix: use the local-disabled Compose profile described in the [local target guide](operations/12-local-target-testing-guide.md).
 - Reviewing delivery status: milestone 9 release candidate → risks/roadmap/decisions.

@@ -19,6 +19,14 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID> {
 
     Optional<UserEntity> findByEmail(String email);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from UserEntity u where u.email = :email")
+    Optional<UserEntity> findByEmailForUpdate(@Param("email") String email);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from UserEntity u where u.id = :id")
+    Optional<UserEntity> findByIdForUpdate(@Param("id") UUID id);
+
     boolean existsByEmail(String email);
     long countByPlatformRole(PlatformRole role);
     @Lock(LockModeType.PESSIMISTIC_WRITE)

@@ -34,7 +34,7 @@ Ecommerce already has idempotent development fixtures for one verified customer,
 
 | Area | Coverage executed in this baseline | State | Defect/blocker |
 | --- | --- | --- | --- |
-| Authentication | Manager browser login; API login across every seeded role/state; protected app load and refresh | PARTIAL | `QG-B01` Mailpit OTP, recovery, expiry, refresh, return-URL, and session variants require the dedicated automated matrix |
+| Authentication | Manager browser login; API login across every seeded role/state; protected app load and refresh; enumeration-safe OTP resend, server countdown, concurrent idempotency, and one-message Mailpit proof | PARTIAL | `QG-013` resolved; expiry, invalid-code, recovery, return-URL, and session variants remain under `QG-B01` |
 | Account/sessions | Authenticated account navigation is reachable | BLOCKED | `QG-B02` Password/Google identity and revoke variants require provider/session fixtures |
 | Projects | Two fixture projects render; target project opens; project archive control is present | PARTIAL | `QG-B03` Edit/restore, duplicate, stale-version, and full permission matrix are not exposed as one safe QA flow |
 | Target connectivity | Exact `localhost:3001` check returned `REACHABLE` and `POST 200` | PARTIAL | `QG-B04` Disabled-local and unreachable variants require isolated profiles to avoid mutating the normal stack |
@@ -79,7 +79,7 @@ The sanitized request body contains a DRAFT case and `steps[0]` with action `NAV
 1. ~~`QG-001` and `QG-002`: split DRAFT/READY validation and consolidate the problem contract.~~ Resolved and browser-verified.
 2. ~~Security blockers: ancestry, variable visibility, admin invariant, cancellation ownership, and archived-resource mutation.~~ Focused code and regression coverage complete; two-project/browser expansion remains in Phase 5.
 3. ~~Suite/case trash and restore, including partial uniqueness and history preservation.~~ Resolved and browser-verified.
-4. ~~Builder field mapping, pending protection, conflicts, dirty navigation, and Save & run recovery.~~ Authoring recovery is complete and browser-verified; OTP cooldown and dashboard aggregation remain separate Phase 4 slices.
+4. ~~Builder field mapping, pending protection, conflicts, dirty navigation, Save & run recovery, and OTP resend cooldown/idempotency.~~ Authoring and resend recovery are browser-verified; dashboard aggregation remains the final Phase 4 slice.
 5. Automated TestOps gate and complete role/tenant matrix.
 6. Ecommerce fixture expansion, database/concurrency, permission, messaging, accessibility, and deterministic assets.
 
