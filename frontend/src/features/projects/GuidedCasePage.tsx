@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { ApiError } from '../../lib/api'
 import { platformApi, projectsApi, type ActionDefinition, type Step, type TestCase } from './api'
 import { Alert, Button, Card, ConfirmDialog, EmptyState, LoadingState } from '../../components/ui'
-import { requirement, serializeSteps, toEditableSteps, validateSteps, type EditableStep } from './caseBuilder'
+import { mapServerStepErrors, requirement, serializeSteps, toEditableSteps, validateSteps, type EditableStep } from './caseBuilder'
 
 type CaseValues = { name: string; description?: string; priority: string; tags?: string; retryCount: number; dataIsolation: boolean }
 type SubmitRequest = { values: CaseValues; status: 'DRAFT' | 'READY'; run: boolean }
@@ -47,6 +47,7 @@ export function GuidedNewCasePage() {
   const [stepErrors, setStepErrors] = useState<Record<string, string>>({})
   const [validationMessage, setValidationMessage] = useState<string>()
   const [savedCase, setSavedCase] = useState<TestCase>()
+  const [suggestedName, setSuggestedName] = useState<string>()
   const allowNavigation = useRef(false)
   const form = useForm<CaseValues>({ defaultValues: { name: templates.homepage.name, description: templates.homepage.description, priority: 'MEDIUM', tags: '', retryCount: 0, dataIsolation: true } })
   const definitions = useMemo(() => options.data?.stepActions ?? [], [options.data?.stepActions])
@@ -67,10 +68,30 @@ export function GuidedNewCasePage() {
     },
     onSuccess: result => {
       setSavedCase(undefined)
+      setSuggestedName(undefined)
       allowNavigation.current = true
       if (result.execution) navigate(`/projects/${projectId}/executions/${result.execution.executionId}`)
       else navigate(`/projects/${projectId}/suites/${suiteId}/cases/${result.created.id}`)
     },
+    onError: error => {
+      if (!(error instanceof ApiError)) return
+      const mapped = mapServerStepErrors(error.fieldErrors, steps)
+      if (Object.keys(mapped).length) { setStepErrors(mapped); setStage('steps') }
+      if (error.fieldErrors.name) form.setError('name', { message: error.fieldErrors.name }, { shouldFocus: true })
+      if (error.code === 'case_name_taken') {
+        const next = `${form.getValues('name').trim()} (copy)`
+        setSuggestedName(next)
+        form.setError('name', { message: 'A case with this name already exists.' }, { shouldFocus: true })
+        setStage('details')
+      }
+    },
+  })
+  const retryRun = useMutation({
+    mutationFn: () => {
+      if (!savedCase) throw new Error('The saved case is unavailable.')
+      return projectsApi.queueCase(projectId, suiteId, savedCase.id)
+    },
+    onSuccess: execution => { allowNavigation.current = true; navigate(`/projects/${projectId}/executions/${execution.executionId}`) },
   })
   const chooseTemplate = (value: string) => {
     const next = templates[value] ?? templates.blank
@@ -79,6 +100,7 @@ export function GuidedNewCasePage() {
     setStepsDirty(true)
     setStepErrors({})
     setValidationMessage(undefined)
+    setSuggestedName(undefined)
     form.reset({ name: next.name, description: next.description, priority: 'MEDIUM', tags: '', retryCount: 0, dataIsolation: true })
   }
   const setStage = (nextStage: BuilderStage) => setSearchParams(nextStage === 'details' ? {} : { stage: nextStage }, { replace: true })
@@ -87,6 +109,7 @@ export function GuidedNewCasePage() {
     setStepsDirty(true)
   }
   const submit = (values: CaseValues, status: 'DRAFT' | 'READY', run: boolean) => {
+    form.clearErrors()
     if (status === 'READY') {
       const validation = validateSteps(steps, definitions)
       setStepErrors(validation.errors)
@@ -96,6 +119,7 @@ export function GuidedNewCasePage() {
     setSavedCase(undefined)
     mutation.mutate({ values, status, run })
   }
+  const continueFromDetails = async () => { if (await form.trigger('name', { shouldFocus: true })) setStage('steps') }
   const dirty = form.formState.isDirty || stepsDirty
   const blocker = useBlocker(({ currentLocation, nextLocation }) => !allowNavigation.current && dirty && currentLocation.pathname !== nextLocation.pathname)
   useEffect(() => {
@@ -107,9 +131,9 @@ export function GuidedNewCasePage() {
   if (options.isPending) return <Card><LoadingState label="Loading case authoring options…" /></Card>
   if (options.isError) return <Alert tone="danger" title="Case authoring options are unavailable.">Retry after the backend is healthy.</Alert>
   return <Card><p className="eyebrow">Guided test case builder</p><h1>New case</h1><nav className="stepper" aria-label="Case authoring stages"><span className={stage === 'details' ? 'active' : ''}>1. Details</span><span className={stage === 'steps' ? 'active' : ''}>2. Steps</span><span className={stage === 'review' ? 'active' : ''}>3. Review</span></nav>
-    {stage === 'details' && <div className="form-stack"><Field label="Start from a template" help="Templates are editable. Choose Blank case when you want to build every step yourself."><select value={template} onChange={event => chooseTemplate(event.target.value)}><option value="homepage">Homepage smoke</option><option value="search">Search journey</option><option value="blank">Blank case</option></select></Field><Field label="Name"><input autoComplete="off" {...form.register('name', { required: 'Name is required' })} /></Field><Field label="Description"><textarea rows={4} {...form.register('description')} /></Field><div className="inline-form"><label>Priority<select {...form.register('priority')}><option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select></label><label>Retry count<input type="number" min={0} max={5} {...form.register('retryCount', { valueAsNumber: true })} /></label></div>{form.formState.errors.name && <p className="form-error" role="alert">{form.formState.errors.name.message}</p>}<Button type="button" onClick={() => setStage('steps')}>Continue to steps</Button></div>}
+    {stage === 'details' && <div className="form-stack"><Field label="Start from a template" help="Templates are editable. Choose Blank case when you want to build every step yourself."><select value={template} onChange={event => chooseTemplate(event.target.value)}><option value="homepage">Homepage smoke</option><option value="search">Search journey</option><option value="blank">Blank case</option></select></Field><Field label="Name"><input autoComplete="off" {...form.register('name', { required: 'Name is required' })} /></Field><Field label="Description"><textarea rows={4} {...form.register('description')} /></Field><div className="inline-form"><label>Priority<select {...form.register('priority')}><option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select></label><label>Retry count<input type="number" min={0} max={5} {...form.register('retryCount', { valueAsNumber: true, min: { value: 0, message: 'Retry count cannot be negative.' }, max: { value: 5, message: 'Retry count cannot exceed 5.' } })} /></label></div><Field label="Tags" help="Use comma-separated labels such as P0, guest, or smoke."><input autoComplete="off" placeholder="P0, smoke" {...form.register('tags')} /></Field><label className="checkbox-field"><input type="checkbox" {...form.register('dataIsolation')} />Use a fresh isolated browser context for this case</label>{form.formState.errors.name && <p className="form-error" role="alert">{form.formState.errors.name.message}</p>}{form.formState.errors.retryCount && <p className="form-error" role="alert">{form.formState.errors.retryCount.message}</p>}{suggestedName && <Alert tone="warning" title="Choose a unique case name.">Try <button type="button" className="inline-link" onClick={() => { form.setValue('name', suggestedName, { shouldDirty: true }); form.clearErrors('name'); setSuggestedName(undefined) }}>{suggestedName}</button>.</Alert>}<Button type="button" onClick={() => void continueFromDetails()}>Continue to steps</Button></div>}
     {stage === 'steps' && <div className="form-stack"><p className="form-help">Edit each action using the same definitions enforced by the backend. The first step must navigate to the target for a READY case.</p><GuidedStepEditor steps={steps} onChange={changeSteps} definitions={definitions} locatorTypes={locatorTypes} roles={roles} errors={stepErrors} /><div className="inline-actions"><Button type="button" variant="secondary" onClick={() => setStage('details')}>Back</Button><Button type="button" onClick={() => { setStepErrors({}); setValidationMessage(undefined); setStage('review') }}>Review case</Button></div></div>}
-    {stage === 'review' && <form className="form-stack" onSubmit={form.handleSubmit(values => submit(values, 'READY', false))}><h2>{form.watch('name') || 'Untitled case'}</h2><p className="muted">{steps.length} steps · ready for validation</p>{steps.length === 0 ? <EmptyState title="No steps yet" description="Return to the Steps stage and add a NAVIGATE step before saving as READY." /> : <ul className="resource-list">{steps.map((step, index) => <li key={step.clientId}><strong>{index + 1}. {definitionsByAction.get(step.action)?.label ?? step.action}</strong><span className="muted">{step.inputValue || step.expectedValue || step.locatorValue || 'No additional value'}</span></li>)}</ul>}{validationMessage && <p className="form-error" role="alert">{validationMessage}</p>}{mutation.isError && <p className="form-error" role="alert">{mutation.error instanceof ApiError ? mutation.error.message : 'Unable to save this case.'}</p>}{savedCase && <p className="form-help" role="status">The case was saved as READY, but the run could not be queued. <Link to={`/projects/${projectId}/suites/${suiteId}/cases/${savedCase.id}`}>Open the saved case</Link> and retry.</p>}<div className="inline-actions"><Button type="button" variant="secondary" onClick={() => setStage('steps')}>Back</Button><Button type="submit" busy={mutation.isPending}>Save as READY</Button><Button type="button" variant="secondary" onClick={() => submit(form.getValues(), 'DRAFT', false)} disabled={mutation.isPending}>Save draft</Button><Button type="button" onClick={() => form.handleSubmit(values => submit(values, 'READY', true))()} disabled={mutation.isPending}>{mutation.isPending ? 'Saving…' : 'Save & run'}</Button></div></form>}
+    {stage === 'review' && <form className="form-stack" onSubmit={form.handleSubmit(values => submit(values, 'READY', false))}><h2>{form.watch('name') || 'Untitled case'}</h2><p className="muted">{steps.length} steps · {form.watch('priority')} priority · {form.watch('retryCount')} retries · {form.watch('dataIsolation') ? 'isolated context' : 'shared policy context'}</p>{form.watch('tags') && <p className="muted">Tags: {form.watch('tags')}</p>}{steps.length === 0 ? <EmptyState title="No steps yet" description="Return to the Steps stage and add a NAVIGATE step before saving as READY." /> : <ul className="resource-list">{steps.map((step, index) => <li key={step.clientId}><strong>{index + 1}. {definitionsByAction.get(step.action)?.label ?? step.action}</strong><span className="muted">{step.inputValue || step.expectedValue || step.locatorValue || 'No additional value'}</span></li>)}</ul>}{validationMessage && <p className="form-error" role="alert">{validationMessage}</p>}{mutation.isError && <p className="form-error" role="alert">{mutation.error instanceof ApiError ? mutation.error.message : 'Unable to save this case.'}</p>}{savedCase && <Alert tone="warning" title="The READY case was saved, but queueing failed."><div className="inline-actions"><Link to={`/projects/${projectId}/suites/${suiteId}/cases/${savedCase.id}`}>Open saved case</Link><Button type="button" variant="secondary" busy={retryRun.isPending} onClick={() => retryRun.mutate()}>Retry run</Button></div>{retryRun.isError && <p className="form-error" role="alert">{retryRun.error instanceof ApiError ? retryRun.error.message : 'Unable to queue the saved case.'}</p>}</Alert>}<div className="inline-actions"><Button type="button" variant="secondary" onClick={() => setStage('steps')}>Back</Button><Button type="submit" busy={mutation.isPending}>Save as READY</Button><Button type="button" variant="secondary" onClick={() => submit(form.getValues(), 'DRAFT', false)} disabled={mutation.isPending}>Save draft</Button><Button type="button" onClick={() => form.handleSubmit(values => submit(values, 'READY', true))()} disabled={mutation.isPending}>{mutation.isPending ? 'Saving…' : 'Save & run'}</Button></div></form>}
     <ConfirmDialog open={blocker.state === 'blocked'} title="Leave without saving?" description="Your case changes will be lost if you leave this page." confirmLabel="Leave page" onClose={() => blocker.reset?.()} onConfirm={() => blocker.proceed?.()} />
   </Card>
 }

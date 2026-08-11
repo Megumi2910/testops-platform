@@ -489,5 +489,11 @@
   <p>The release-gate record in <a href="../implementation/22-release-gate-verification.md"><code>docs/implementation/22-release-gate-verification.md</code></a> is the reproducible handoff for this architecture. It records the 55-test backend unit/package gate, frontend lint/typecheck/unit/build gate, enabled and disabled Playwright profiles, catalog dry-run/apply, and the live READY acceptance pass. The only local PARTIAL is Maven's Testcontainers integration phase, which cannot use the Docker Desktop <code>docker_cli</code> named pipe in this shell; CI remains responsible for that full integration gate.</p>
   <p>The release-gate follow-up corrected two integration tests that had stopped at V016 while the repository had advanced through V017–V020. Both now assert the current V020 schema, so the migration contract covers variable snapshots, immutable queued definitions, locator metadata, and browser-context settings. This changes test expectations only; Flyway remains the source of truth for production schema evolution.</p>
 </section>
+<section aria-labelledby="phase4-authoring-architecture">
+  <h2 id="phase4-authoring-architecture">Phase 4 guided-authoring boundary (2026-08-09)</h2>
+  <p><code>GuidedCasePage.tsx</code> owns Details → Steps → Review orchestration, React Hook Form owns local field state, and React Query owns create/queue pending state. <code>caseBuilder.ts</code> is the small pure boundary that validates backend-provided action descriptors and maps paths such as <code>steps[2].locatorRole</code> to stable client step IDs. <code>CasePage.tsx</code> reuses that same mapping when an existing definition is edited.</p>
+  <p>The backend remains authoritative: the frontend prevents obvious incomplete transitions, but structured problem responses decide whether a definition is valid and unique. Save &amp; run retains the created READY case when queueing fails, then retries only the queue operation. This prevents duplicate definitions and separates durable authoring state from transient worker availability.</p>
+  <p>Focused lint, typecheck, 26-test unit, production build, and Chrome DevTools accessibility checks passed. The live check found and corrected missing focus transfer on invalid Name before publication.</p>
+</section>
 </body>
 </html>

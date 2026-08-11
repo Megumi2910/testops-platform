@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { Alert, Button, Card, ConfirmDialog, LoadingState, StatusBadge } from '../../components/ui'
 import { ApiError } from '../../lib/api'
 import { GuidedStepEditor } from './GuidedCasePage'
-import { serializeSteps, toEditableSteps, validateSteps, type EditableStep } from './caseBuilder'
+import { mapServerStepErrors, serializeSteps, toEditableSteps, validateSteps, type EditableStep } from './caseBuilder'
 import { platformApi, projectKeys, projectsApi } from './api'
 import { useProjectWorkspace } from './ProjectWorkspaceContext'
 import { RestoreDefinitionDialog } from './DefinitionLifecycle'
@@ -74,6 +74,13 @@ export function CasePage() {
       client.setQueryData(queryKey, saved)
       void client.invalidateQueries({ queryKey: projectKeys.detail(projectId) })
     },
+    onError: error => {
+      if (!(error instanceof ApiError)) return
+      const mapped = mapServerStepErrors(error.fieldErrors, steps)
+      if (Object.keys(mapped).length) setStepErrors(mapped)
+      if (error.fieldErrors.name) form.setError('name', { message: error.fieldErrors.name }, { shouldFocus: true })
+      if (error.code === 'case_name_taken') form.setError('name', { message: 'A case with this name already exists.' }, { shouldFocus: true })
+    },
   })
   const run = useMutation({
     mutationFn: () => projectsApi.queueCase(projectId, suiteId, caseId),
@@ -126,12 +133,15 @@ export function CasePage() {
     {run.isError && <Alert tone="danger" title="Unable to queue this case.">Save a valid READY case, then try again.</Alert>}
     {successMessage && <Alert tone="success" title={successMessage}>The latest definition is ready for your next action.</Alert>}
     <form className="form-stack" onSubmit={form.handleSubmit(values => { setSuccessMessage(undefined); save.mutate(values) })}>
-      <label>Name<input disabled={!canEdit} {...form.register('name', { required: true })} /></label>
+      <label>Name<input disabled={!canEdit} {...form.register('name', { required: 'Name is required' })} />{form.formState.errors.name && <small className="form-error">{form.formState.errors.name.message}</small>}</label>
       <label>Description<textarea disabled={!canEdit} rows={4} {...form.register('description')} /></label>
       <div className="inline-form">
         <label>Status<select disabled={!canEdit} {...form.register('status')}><option>DRAFT</option><option>READY</option></select></label>
         <label>Priority<select disabled={!canEdit} {...form.register('priority')}><option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select></label>
+        <label>Retry count<input disabled={!canEdit} type="number" min={0} max={5} {...form.register('retryCount', { valueAsNumber: true })} /></label>
       </div>
+      <label>Tags<input disabled={!canEdit} autoComplete="off" placeholder="P0, smoke" {...form.register('tags')} /></label>
+      <label className="checkbox-field"><input disabled={!canEdit} type="checkbox" {...form.register('dataIsolation')} />Use a fresh isolated browser context for this case</label>
       {save.isError && <p className="form-error" role="alert">{save.error instanceof ApiError ? save.error.message : save.error.message || 'Unable to save this case.'}</p>}
       {canEdit && <Button type="submit" busy={save.isPending}>Save case and steps</Button>}
     </form>

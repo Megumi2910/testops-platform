@@ -103,6 +103,10 @@
       "role": "Suite/case Trash UI, archived read-only views, accessible restore conflicts, project restoration, and browser evidence"
     },
     {
+      "path": "docs/implementation/28-guided-authoring-recovery.md",
+      "role": "Guided case metadata, focused Details validation, stable server-error mapping, and Save & run recovery"
+    },
+    {
       "path": "docs/testing/23-quality-gate-baseline.md",
       "role": "Revision-verified Chrome DevTools and Playwright baseline matrix for TestOps and ecommerce"
     },

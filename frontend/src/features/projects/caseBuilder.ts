@@ -55,3 +55,13 @@ export function validateSteps(steps: EditableStep[], definitions: ActionDefiniti
   })
   return { errors, message: Object.keys(errors).length ? 'Fix the highlighted step before saving as READY.' : undefined }
 }
+
+export function mapServerStepErrors(fieldErrors: Record<string, string>, steps: EditableStep[]) {
+  return Object.entries(fieldErrors).reduce<Record<string, string>>((mapped, [path, message]) => {
+    const match = /^steps\[(\d+)](?:\.|$)/.exec(path)
+    if (!match) return mapped
+    const step = steps[Number(match[1])]
+    if (step) mapped[step.clientId] ??= message
+    return mapped
+  }, {})
+}

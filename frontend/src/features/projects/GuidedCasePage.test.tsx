@@ -1,13 +1,19 @@
-import { describe, expect, it } from 'vitest'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { createMemoryRouter, RouterProvider } from 'react-router-dom'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { serializeSteps, validateSteps, type EditableStep } from './caseBuilder'
-import type { ActionDefinition } from './api'
+import { mapServerStepErrors, serializeSteps, validateSteps, type EditableStep } from './caseBuilder'
+import { platformApi, type ActionDefinition } from './api'
+import { GuidedNewCasePage } from './GuidedCasePage'
 
 const definitions: ActionDefinition[] = [
   { action: 'NAVIGATE', label: 'Navigate', locator: false, input: true, expected: false, role: false, help: '/', inputRequirement: 'REQUIRED' },
   { action: 'ASSERT_VISIBLE', label: 'Assert visible', locator: true, input: false, expected: false, role: true, help: 'Heading', locatorRequirement: 'REQUIRED' },
   { action: 'ASSERT_COUNT', label: 'Assert count', locator: true, input: false, expected: true, role: true, help: 'Matching elements', locatorRequirement: 'REQUIRED', expectedRequirement: 'REQUIRED' },
 ]
+
+afterEach(() => vi.restoreAllMocks())
 
 describe('guided case validation', () => {
   it('keeps validation attached to the stable client step after reorder', () => {
@@ -70,5 +76,34 @@ describe('guided case validation', () => {
     ], definitions)
 
     expect(result.errors.count).toContain('non-negative integer')
+  })
+
+  it('maps backend step paths onto stable client step identities', () => {
+    const steps: EditableStep[] = [
+      { clientId: 'navigation', position: 0, action: 'NAVIGATE', inputValue: '/' },
+      { clientId: 'assertion', position: 1, action: 'ASSERT_VISIBLE', locatorType: 'ROLE', locatorValue: 'Search' },
+    ]
+
+    expect(mapServerStepErrors({ 'steps[1].locatorRole': 'Choose a supported ARIA role.', name: 'Ignored here' }, steps)).toEqual({ assertion: 'Choose a supported ARIA role.' })
+  })
+
+  it('renders supported metadata and blocks leaving Details with an empty name', async () => {
+    vi.spyOn(platformApi, 'options').mockResolvedValue({
+      targetAllowedOrigins: [], targetConfigured: true, projectCreationEnabled: true, reportingAvailable: true,
+      secretVariablesEnabled: true, executionWorkerEnabled: true, supportedStepActions: definitions.map(item => item.action),
+      supportedLocatorTypes: ['TEXT', 'ROLE'], supportedLocatorRoles: ['button'], stepActions: definitions,
+    })
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
+    const router = createMemoryRouter([{ path: '/projects/:projectId/suites/:suiteId/cases/new', element: <GuidedNewCasePage /> }], { initialEntries: ['/projects/project-1/suites/suite-1/cases/new'] })
+    render(<QueryClientProvider client={client}><RouterProvider router={router} /></QueryClientProvider>)
+
+    expect(await screen.findByPlaceholderText('P0, smoke')).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: 'Use a fresh isolated browser context for this case' })).toBeChecked()
+    const name = screen.getByRole('textbox', { name: 'Name' })
+    fireEvent.change(name, { target: { value: '' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Continue to steps' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Name is required')
+    expect(name).toHaveFocus()
+    expect(screen.getByText('1. Details')).toHaveClass('active')
   })
 })

@@ -117,6 +117,19 @@
 - Likely subsystem: lazy-import recovery and root route error boundary
 - Regression layer: deployment smoke with retained browser session
 
+### QG-011 — Invalid Details stage does not focus the failing control
+
+- Severity: P2
+- Status: RESOLVED during the Phase 4 guided-authoring slice
+- Role: project manager
+- Preconditions: new-case builder on Details
+- Reproduction: clear Name and choose **Continue to steps**
+- Expected: remain on Details, announce `Name is required`, and focus Name
+- Previous actual: the error was announced, but focus remained on the Continue button
+- Resolution: Details uses `trigger('name', { shouldFocus: true })`; the mounted test asserts the field receives focus
+- Verification: Chrome DevTools reproduced the original behavior, then confirmed the corrected accessibility tree marked Name as focused
+- Regression layer: mounted React test + Chrome DevTools keyboard/accessibility check
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |
@@ -138,4 +151,4 @@
 
 ## Triage result
 
-There are no confirmed P0 incidents. `QG-001` and `QG-002` are resolved, and the first Phase 2 security slice now enforces nested ancestry, variable visibility, cancellation ownership, archived-suite mutation/queue guards, the active-administrator invariant, and the frontend admin route. Other P1 lifecycle and authoring defects remain open, so release status is **PARTIAL** and the next product slice is Phase 3 history-preserving trash and restore.
+There are no confirmed P0 incidents. Phases 2 and 3 are complete. The first Phase 4 slice resolves metadata exposure, backend field mapping, focused Details validation, and post-save queue recovery. Release status remains **PARTIAL** while optimistic-lock recovery, OTP cooldown, dashboard aggregates, and the automated Phase 5 matrix remain open.
