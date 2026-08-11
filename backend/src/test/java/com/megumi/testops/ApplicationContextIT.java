@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -28,11 +29,14 @@ import com.megumi.testops.project.domain.ProjectEntity;
 import com.megumi.testops.project.domain.ProjectMemberEntity;
 import com.megumi.testops.project.domain.TestCaseEntity;
 import com.megumi.testops.project.domain.TestSuiteEntity;
+import com.megumi.testops.project.api.ProjectDtos;
 import com.megumi.testops.project.repository.ProjectMemberRepository;
 import com.megumi.testops.project.repository.ProjectOnboardingRepository;
 import com.megumi.testops.project.repository.ProjectRepository;
 import com.megumi.testops.project.repository.TestCaseRepository;
 import com.megumi.testops.project.repository.TestSuiteRepository;
+import com.megumi.testops.project.service.ProjectService;
+import com.megumi.testops.shared.api.ApiException;
 
 import java.time.Instant;
 
@@ -101,6 +105,9 @@ class ApplicationContextIT {
 
     @Autowired
     private DashboardReadRepository dashboardReadRepository;
+
+    @Autowired
+    private ProjectService projectService;
 
     @Test
     void startsWithPostgresFlywayAndHealthyActuator() throws Exception {
@@ -288,6 +295,51 @@ class ApplicationContextIT {
         org.junit.jupiter.api.Assertions.assertEquals(
                 java.util.List.of(new DashboardReadRepository.InfrastructureErrorRow("TARGET_UNREACHABLE", 55)),
                 infrastructure);
+    }
+
+    @Test
+    void membershipTransitionsPreserveManagerVersionAndArchiveInvariants() {
+        Instant now = Instant.now();
+        UserEntity owner = userRepository.save(new UserEntity(
+                "membership-owner@example.test", "Membership owner", "ACTIVE", true, now));
+        UserEntity secondManager = userRepository.save(new UserEntity(
+                "membership-second@example.test", "Membership second", "ACTIVE", true, now));
+        ProjectEntity project = projectRepository.saveAndFlush(new ProjectEntity(
+                "Membership integration", null, "https://membership.example.test", owner, now));
+        projectMemberRepository.saveAndFlush(new ProjectMemberEntity(project, owner, "PROJECT_MANAGER", now));
+        projectMemberRepository.saveAndFlush(new ProjectMemberEntity(project, secondManager, "PROJECT_MANAGER", now));
+        Jwt ownerJwt = Jwt.withTokenValue("membership-integration").header("alg", "none")
+                .subject(owner.getId().toString()).build();
+
+        ProjectDtos.MemberResponse demoted = projectService.changeMember(ownerJwt, project.getId(),
+                secondManager.getId(), new ProjectDtos.MemberRoleRequest("TEST_MANAGER", project.getVersion()));
+
+        org.junit.jupiter.api.Assertions.assertEquals("TEST_MANAGER", demoted.role());
+        org.junit.jupiter.api.Assertions.assertEquals(1,
+                projectMemberRepository.countByProjectIdAndRole(project.getId(), "PROJECT_MANAGER"));
+        ProjectEntity afterDemotion = projectRepository.findById(project.getId()).orElseThrow();
+        ApiException finalManager = org.junit.jupiter.api.Assertions.assertThrows(ApiException.class,
+                () -> projectService.changeMember(ownerJwt, project.getId(), owner.getId(),
+                        new ProjectDtos.MemberRoleRequest("VIEWER", afterDemotion.getVersion())));
+        org.junit.jupiter.api.Assertions.assertEquals("final_project_manager", finalManager.getCode());
+        org.junit.jupiter.api.Assertions.assertEquals("PROJECT_MANAGER",
+                projectMemberRepository.findByProjectIdAndUserId(project.getId(), owner.getId()).orElseThrow().getRole());
+
+        ApiException stale = org.junit.jupiter.api.Assertions.assertThrows(ApiException.class,
+                () -> projectService.removeMember(ownerJwt, project.getId(), secondManager.getId(), -1L));
+        org.junit.jupiter.api.Assertions.assertEquals("stale_version", stale.getCode());
+        org.junit.jupiter.api.Assertions.assertTrue(
+                projectMemberRepository.existsByProjectIdAndUserId(project.getId(), secondManager.getId()));
+
+        ProjectEntity archived = projectRepository.findById(project.getId()).orElseThrow();
+        archived.archive(Instant.now());
+        projectRepository.saveAndFlush(archived);
+        ApiException readOnly = org.junit.jupiter.api.Assertions.assertThrows(ApiException.class,
+                () -> projectService.removeMember(ownerJwt, project.getId(), secondManager.getId(),
+                        archived.getVersion()));
+        org.junit.jupiter.api.Assertions.assertEquals("project_archived", readOnly.getCode());
+        org.junit.jupiter.api.Assertions.assertTrue(
+                projectMemberRepository.existsByProjectIdAndUserId(project.getId(), secondManager.getId()));
     }
 
     private void persistResult(ProjectEntity project, TestSuiteEntity suite, TestCaseEntity testCase, UserEntity requester,

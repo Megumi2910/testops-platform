@@ -516,7 +516,7 @@
   <h2 id="phase5-dashboard-integration">Phase 5 dashboard PostgreSQL gate (2026-08-11)</h2>
   <p><code>ApplicationContextIT</code> now accepts an explicit <code>TEST_DATABASE_URL</code> triplet for environments where Docker CLI works but the Java Testcontainers named pipe does not. Without that URL it starts and stops its own PostgreSQL container exactly as CI expects. <code>scripts/verify-dashboard-postgres.ps1</code> wraps the Windows path in a disposable, randomly named, loopback-only container with a Docker-assigned host port.</p>
   <p>The integration fixture creates visible and hidden projects, an execution at the inclusive start, 55 visible infrastructure errors, a hidden-project error, and an error at the exclusive end. It asserts 56 visible totals, one UTC trend bucket, a 50-row diagnostic cap, and an untruncated category count of 55.</p>
-  <p>The clean PostgreSQL 18.4 run migrated V000–V021 and passed 82 unit/package tests plus all 6 application-context integration tests. The test container was removed; normal development data and volumes were not touched.</p>
+  <p>The clean PostgreSQL 18.4 gate migrated V000–V021. Its current Phase 5 run passes 111 unit/package tests plus all 7 application-context integration tests, including the later membership transition scenario. The test container was removed; normal development data and volumes were not touched.</p>
 </section>
 <section aria-labelledby="phase5-project-permissions">
   <h2 id="phase5-project-permissions">Phase 5 project permission contract (2026-08-11)</h2>
@@ -528,6 +528,11 @@
   <h2 id="phase5-auth-http">Phase 5 authorization HTTP contract (2026-08-11)</h2>
   <p>Nested repositories include the parent identifier, so an ID copied from another project is indistinguishable from a missing resource. The HTTP layer preserves the domain status and code in <code>ApiProblem</code> instead of converting expected authorization behavior into a 500.</p>
   <p><code>ProjectMembershipSecurityTest</code> proves the final-manager invariant is side-effect free and foreign user IDs remain hidden. <code>ExecutionServiceTest</code> proves owner, manager override, denied non-owner, and foreign execution paths; controller tests prove the corresponding structured 404, 403, and 409 responses.</p>
+</section>
+<section aria-labelledby="phase5-membership-postgres">
+  <h2 id="phase5-membership-postgres">Phase 5 membership PostgreSQL gate (2026-08-11)</h2>
+  <p>The full Spring integration fixture now drives <code>ProjectService</code> against migrated PostgreSQL: a valid second-manager demotion commits, the final manager cannot be demoted, a stale removal cannot delete the member, and an archived project rejects membership mutation. State is reloaded between decisions so optimistic versions and manager counts are real database behavior.</p>
+  <p>The gate is part of <code>ApplicationContextIT</code> and runs in the disposable PostgreSQL harness documented at <code>docs/testing/35-membership-postgres-regression.md</code>; normal development volumes are never reset.</p>
 </section>
 </body>
 </html>

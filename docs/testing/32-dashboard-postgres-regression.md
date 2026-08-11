@@ -90,4 +90,4 @@ The container uses Docker `--rm`, and the script's `finally` block stops the exa
 
 ## Verified result
 
-On 2026-08-11 the script passed 82 unit/package tests and 6 `ApplicationContextIT` tests against a clean PostgreSQL 18.4 schema migrated through V021. The generated container was removed after the run.
+The initial dashboard slice passed 82 unit/package tests and 6 `ApplicationContextIT` tests. After the authorization and membership slices on 2026-08-11, the same script passed 111 unit/package tests and all 7 integration tests against a clean PostgreSQL 18.4 schema migrated through V021. The generated container was removed after each run.

@@ -131,6 +131,10 @@
       "role": "HTTP-visible nested-resource isolation, final-project-manager conflicts, and execution cancellation ownership"
     },
     {
+      "path": "docs/testing/35-membership-postgres-regression.md",
+      "role": "Disposable PostgreSQL proof for membership transitions, optimistic versions, final-manager retention, and archived-project blocking"
+    },
+    {
       "path": "docs/testing/23-quality-gate-baseline.md",
       "role": "Revision-verified Chrome DevTools and Playwright baseline matrix for TestOps and ecommerce"
     },
