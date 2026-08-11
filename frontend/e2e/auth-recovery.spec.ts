@@ -14,6 +14,13 @@ async function latestOtp(email: string) {
   return otp!
 }
 
+async function messageCount(email: string) {
+  const search = await fetch(`${mailpit}/api/v1/search?query=${encodeURIComponent(`to:${email}`)}`)
+  expect(search.ok).toBeTruthy()
+  const result = await search.json() as { messages: Array<{ ID: string }> }
+  return result.messages.length
+}
+
 async function register(page: Page, email: string) {
   await page.goto('/register')
   await page.getByLabel('Display name').fill('E2E User')
@@ -44,7 +51,9 @@ test('unverified login recovers after leaving verification and following the ban
   await expect(page.getByRole('link', { name: 'Projects', exact: true })).toHaveCount(0)
   await page.getByRole('link', { name: 'Verify now' }).click()
   await expect(page).toHaveURL(/verify-email.*recover=1/)
-  await expect(page.locator('.auth-card [role="status"]')).toContainText('fresh verification code')
+  await expect(page.locator('.auth-card [role="status"]')).toContainText('If the account can be verified')
+  await expect(page.getByRole('button', { name: /Resend available in \d+s/ })).toBeDisabled()
+  expect(await messageCount(email)).toBe(1)
   await page.getByLabel('Verification code').fill(await latestOtp(email))
   await page.getByRole('button', { name: 'Verify and sign in' }).click()
   await expect(page.getByRole('link', { name: 'Projects', exact: true })).toBeVisible()
@@ -58,7 +67,13 @@ test('reloading recovery page does not create a second automatic resend', async 
   await page.getByLabel('Password').fill('correct-horse-battery-staple')
   await page.getByRole('button', { name: 'Sign in' }).click()
   await page.getByRole('link', { name: 'Verify now' }).click()
-  await expect(page.locator('.auth-card [role="status"]')).toContainText('fresh verification code')
+  await expect(page.locator('.auth-card [role="status"]')).toContainText('If the account can be verified')
+  expect(await messageCount(email)).toBe(1)
+  const repeatedResend = page.waitForResponse(response => response.url().endsWith('/api/v1/auth/me/email/resend')
+    && response.request().method() === 'POST', { timeout: 2_000 }).catch(() => null)
   await page.reload()
   await expect(page.getByLabel('Verification code')).toBeVisible()
+  const response = await repeatedResend
+  if (response) expect(response.status()).toBe(202)
+  expect(await messageCount(email)).toBe(1)
 })

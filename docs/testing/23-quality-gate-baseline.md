@@ -34,7 +34,7 @@ Ecommerce already has idempotent development fixtures for one verified customer,
 
 | Area | Coverage executed in this baseline | State | Defect/blocker |
 | --- | --- | --- | --- |
-| Authentication | Manager browser login; API login across every seeded role/state; protected app load and refresh; enumeration-safe OTP resend, server countdown, concurrent idempotency, and one-message Mailpit proof | PARTIAL | `QG-013` resolved; expiry, invalid-code, recovery, return-URL, and session variants remain under `QG-B01` |
+| Authentication | Manager browser login; API login across every seeded role/state; protected app load and refresh; enumeration-safe OTP resend, server countdown, concurrent/reload idempotency, and one-message Mailpit proof | PARTIAL | `QG-013` and stale E2E assertion `QG-014` resolved; expiry, invalid-code, recovery, return-URL, and session variants remain under `QG-B01` |
 | Account/sessions | Authenticated account navigation is reachable | BLOCKED | `QG-B02` Password/Google identity and revoke variants require provider/session fixtures |
 | Projects | Two fixture projects render; target project opens; project archive control is present | PARTIAL | `QG-B03` Edit/restore, duplicate, stale-version, and full permission matrix are not exposed as one safe QA flow |
 | Target connectivity | Exact `localhost:3001` check returned `REACHABLE` and `POST 200` | PARTIAL | `QG-B04` Disabled-local and unreachable variants require isolated profiles to avoid mutating the normal stack |

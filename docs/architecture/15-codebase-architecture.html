@@ -504,6 +504,7 @@
   <h2 id="phase4-otp-architecture">Phase 4 OTP resend boundary (2026-08-11)</h2>
   <p><code>AuthService</code> now serializes verification resend decisions by locking the stable user row before inspecting or replacing an optional challenge. This closes the race in which two eligible requests could both issue and deliver a code. Cooling-down requests are successful idempotent operations: they return the existing retry window and do not create a challenge, send mail, or record a successful resend audit.</p>
   <p>The public controller returns one enumeration-safe <code>202</code> representation for unknown, verified, cooling-down, and eligible addresses. <code>VerifyEmailPage</code> consumes <code>retryAfterSeconds</code>, announces the generic status, and disables its accessible resend button. Chrome DevTools and the QA Mailpit overlay proved that two simultaneous cooldown requests leave the mailbox at one registration message.</p>
+  <p>The first CI run exposed stale browser copy assertions rather than a product failure. The corrected Playwright recovery flow uses a bounded observation window for any resend response after reload and checks Mailpit remains at exactly one message whether the UI suppresses the repeat or the backend accepts it idempotently, making side-effect safety—not wording—the release contract.</p>
 </section>
 </body>
 </html>

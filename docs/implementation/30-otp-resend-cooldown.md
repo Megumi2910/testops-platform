@@ -92,6 +92,19 @@ The unauthenticated application bootstrap still records its expected failed refr
 
 The full local Maven `verify` reached the integration phase after all 78 product tests passed, then encountered the already-documented Windows Docker Desktop/Testcontainers named-pipe limitation in `ApplicationContextIT` and `MigrationUpgradeIT`. The supported local `-DskipITs package` gate passed; GitHub CI remains the authoritative container-backed integration gate for this slice.
 
+### CI contract correction
+
+The first published CI run passed backend, frontend, container health, and local-disabled E2E, but the enabled E2E job still expected the former UI-only phrase `fresh verification code`. The browser had received the correct generic status and `202`; the assertion was stale.
+
+The corrected recovery tests now verify behavior instead of copy:
+
+- the generic enumeration-safe status is visible;
+- the server countdown button is disabled;
+- Mailpit contains exactly one registration message after automatic recovery resend;
+- a reload uses a bounded observation window for any authenticated resend response and still leaves the count at one; no resend request is also valid because the UI may suppress the repeat.
+
+This explicitly proves that React remount/reload cannot create duplicate mail, whether the client suppresses the repeat or the backend accepts it idempotently.
+
 ## Operator guidance
 
 For local email evidence, always start the QA overlay:

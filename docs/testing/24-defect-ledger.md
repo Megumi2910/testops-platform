@@ -155,6 +155,16 @@
 - Verification: focused backend and mounted frontend tests; Chrome DevTools observed generic `202` plus disabled 60-second countdown; a QA registration followed by two simultaneous resend calls left Mailpit at exactly one message
 - Regression layer: backend service tests + frontend component test + Mailpit browser acceptance
 
+### QG-014 — Auth recovery E2E asserts obsolete success copy
+
+- Severity: P2
+- Status: RESOLVED
+- Evidence: CI run `31465170480`; backend, frontend, containers, and local-disabled E2E passed while enabled E2E failed only on `fresh verification code`
+- Expected: recovery automation verifies the generic security contract, disabled cooldown, and mailbox side effect
+- Previous actual: two tests asserted a frontend phrase removed by the enumeration-safe response contract and did not count messages
+- Resolution: both journeys assert the generic status and disabled countdown; the reload journey uses a bounded resend-response observation and verifies Mailpit remains at one message whether the UI suppresses the repeat or the backend accepts it idempotently
+- Regression layer: Playwright + Mailpit
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |
