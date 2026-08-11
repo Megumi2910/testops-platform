@@ -75,4 +75,12 @@ After rebuilding only the frontend container, Chrome DevTools confirmed:
 - project and member requests return `200`, with no console warning/error;
 - at `320×800`, document width equals viewport width and all four save controls remain present.
 
-The mounted viewer regression proves read-only rendering. Switching to the live viewer QA identity remains part of the continuing multi-role Chrome DevTools matrix.
+The live viewer QA identity was then tested through direct navigation to `/projects/{projectId}/members`:
+
+- the workspace reported role `VIEWER`;
+- Members and Variables were absent from project navigation;
+- the direct page rendered four role badges with no add form, selector, save button, or remove button;
+- provider refresh, project, and member-list requests all returned `200`;
+- the console contained no warning or error.
+
+This closes the PM/viewer acceptance pair. Test-manager, tester, non-member, and global-administrator browser journeys remain in the wider Phase 5 role matrix.
