@@ -221,4 +221,26 @@ class ExecutionServiceTest {
         when(membership.getRole()).thenReturn("PROJECT_MANAGER");
         assertSame(execution, service.cancel(jwt, project.getId(), execution.getId()));
     }
+
+    @Test
+    void requesterCanCancelWithoutAProjectManagerRole() {
+        ExecutionEntity execution = new ExecutionEntity(project, suite, user, 1, UUID.randomUUID(), Instant.now());
+        when(executions.findByProjectIdAndId(project.getId(), execution.getId())).thenReturn(Optional.of(execution));
+
+        assertSame(execution, service.cancel(jwt, project.getId(), execution.getId()));
+        verify(access, never()).membership(project, user);
+    }
+
+    @Test
+    void crossProjectExecutionIdentifierIsHiddenBeforeOwnershipChecks() {
+        UUID foreignExecutionId = UUID.randomUUID();
+        when(executions.findByProjectIdAndId(project.getId(), foreignExecutionId)).thenReturn(Optional.empty());
+
+        ApiException failure = assertThrows(ApiException.class,
+                () -> service.cancel(jwt, project.getId(), foreignExecutionId));
+
+        assertEquals("execution_not_found", failure.getCode());
+        assertEquals(404, failure.getStatus().value());
+        verify(access, never()).membership(eq(project), any());
+    }
 }

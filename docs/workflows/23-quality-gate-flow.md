@@ -105,3 +105,19 @@ flowchart LR
 ```
 
 The response and guard are tested separately. A visible frontend control never substitutes for the backend decision, and a backend denial should not be hidden behind a generic client error.
+
+## Scoped identifier and cancellation path
+
+```mermaid
+flowchart LR
+    Request["Nested resource request"] --> Project["Resolve project + caller"]
+    Project --> Scoped["Repository lookup includes parent ID"]
+    Scoped -->|Missing or foreign| Hidden["404 resource_not_found"]
+    Scoped -->|Execution found| Owner{"Requester?"}
+    Owner -->|Yes| Cancel["Accept cancellation"]
+    Owner -->|No| Manager{"Current project manager?"}
+    Manager -->|Yes| Cancel
+    Manager -->|No| Deny["403 cancel_denied"]
+```
+
+Membership demotion/removal uses the same project-scoped lookup. A write targeting the final project manager stops with `409 final_project_manager` before mutation or audit persistence.

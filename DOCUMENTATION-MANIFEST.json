@@ -127,6 +127,10 @@
       "role": "Project role permission payload and backend enforcement matrix for managers, testers, viewers, non-members, and administrators"
     },
     {
+      "path": "docs/testing/34-authorization-http-regression.md",
+      "role": "HTTP-visible nested-resource isolation, final-project-manager conflicts, and execution cancellation ownership"
+    },
+    {
       "path": "docs/testing/23-quality-gate-baseline.md",
       "role": "Revision-verified Chrome DevTools and Playwright baseline matrix for TestOps and ecommerce"
     },

@@ -86,12 +86,11 @@ This keeps global administrators and future permission changes compatible withou
 
 ## Remaining Phase 5 coverage
 
-This slice validates the permission model and core guard. It does not yet complete:
+The follow-up [authorization HTTP regression](34-authorization-http-regression.md) now covers service and problem-response behavior for nested identifier substitution, final-manager conflicts, and cancellation ownership. The combined work does not yet complete:
 
-- MockMvc substitution of a project A identifier with suite/case/execution IDs from project B;
-- add/change/remove member workflows and final-project-manager protection through HTTP;
+- authenticated full-context substitution using two persisted projects;
+- positive add/change/remove member workflows, duplicate membership, stale versions, and archived-project denial;
 - Chrome DevTools proof for every role's visible controls and direct URL behavior;
-- requester-versus-manager execution cancellation at the HTTP boundary;
 - secret artifact redaction in real browser evidence.
 
 Those remain explicit follow-up rows in the quality-gate ledger; they are not implied complete by this unit-level matrix.

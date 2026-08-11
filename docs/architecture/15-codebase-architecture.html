@@ -522,7 +522,12 @@
   <h2 id="phase5-project-permissions">Phase 5 project permission contract (2026-08-11)</h2>
   <p><code>ProjectService.permissionSet</code> is the UI capability contract: every member can view projects, definitions, executions, and artifacts; test managers additionally manage definitions and start/cancel their own runs; testers start/cancel their own runs; project managers receive project, member, variable, definition, and any-run management. Platform administrators receive every <code>ProjectPermission</code>.</p>
   <p><code>ProjectAccessService.requireProjectRole</code> remains the security boundary. It rejects non-members, checks operation-specific role sets, and allows a global administrator independently of frontend visibility. The new parameterized tests protect four response roles, administrator completeness, 12 role/operation combinations, non-member denial, and administrator bypass.</p>
-  <p>The focused gate passed 21 tests. HTTP identifier substitution, membership mutation/final-manager behavior, cancellation ownership, and browser-visible controls remain explicitly scheduled rather than being overstated as complete.</p>
+  <p>The focused gate passed 21 tests. Its HTTP follow-up adds non-disclosing project→suite→case and project→execution lookups, final-project-manager demotion/removal conflicts, scoped foreign-member lookup, and requester-or-manager cancellation. Service decisions and their structured 404/403/409 HTTP responses now have a 22-test focused gate; persisted multi-role and browser-visible controls remain scheduled.</p>
+</section>
+<section aria-labelledby="phase5-auth-http">
+  <h2 id="phase5-auth-http">Phase 5 authorization HTTP contract (2026-08-11)</h2>
+  <p>Nested repositories include the parent identifier, so an ID copied from another project is indistinguishable from a missing resource. The HTTP layer preserves the domain status and code in <code>ApiProblem</code> instead of converting expected authorization behavior into a 500.</p>
+  <p><code>ProjectMembershipSecurityTest</code> proves the final-manager invariant is side-effect free and foreign user IDs remain hidden. <code>ExecutionServiceTest</code> proves owner, manager override, denied non-owner, and foreign execution paths; controller tests prove the corresponding structured 404, 403, and 409 responses.</p>
 </section>
 </body>
 </html>
