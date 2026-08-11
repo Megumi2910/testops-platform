@@ -65,3 +65,23 @@ flowchart LR
 ```
 
 Unknown public addresses follow the same generic `202` response shape without creating a challenge. The QA overlay routes the one eligible message to Mailpit; simultaneous cooldown requests do not increase its message count.
+
+## Dashboard reporting path
+
+```mermaid
+flowchart LR
+    Dashboard[DashboardPage] --> API[DashboardController]
+    API --> Identity[ProjectAccessService]
+    Identity --> Filter[User + global role + optional filters]
+    Filter --> SQL[DashboardReadRepository]
+    SQL --> Membership{Global admin?}
+    Membership -->|No| Exists[EXISTS project_members]
+    Membership -->|Yes| Scope[All projects]
+    Exists --> Aggregate[PostgreSQL aggregation]
+    Scope --> Aggregate
+    Aggregate --> Summary[Totals + UTC trends]
+    Aggregate --> Recent[Newest 50 failures]
+    Aggregate --> Categories[All ERROR categories in window]
+```
+
+Recent failure cards and infrastructure categories deliberately have different bounds. Cards are a 50-row diagnostic preview; categories are a complete aggregate for the requested half-open UTC window. Both are tenant-scoped before PostgreSQL returns data.

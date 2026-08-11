@@ -115,6 +115,10 @@
       "role": "Enumeration-safe OTP resend, serialized cooldown enforcement, frontend countdown, and Mailpit message-count evidence"
     },
     {
+      "path": "docs/implementation/31-dashboard-aggregate-queries.md",
+      "role": "Tenant-scoped dashboard aggregation, bounded recent failures, UTC trends, and full-window infrastructure categories"
+    },
+    {
       "path": "docs/testing/23-quality-gate-baseline.md",
       "role": "Revision-verified Chrome DevTools and Playwright baseline matrix for TestOps and ecommerce"
     },
