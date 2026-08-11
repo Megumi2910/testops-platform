@@ -3,6 +3,7 @@ package com.megumi.testops;
 import javax.sql.DataSource;
 
 import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.health.actuate.endpoint.HealthEndpoint;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,13 +15,15 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.megumi.testops.auth.domain.UserEntity;
 import com.megumi.testops.auth.repository.UserRepository;
+import com.megumi.testops.dashboard.repository.DashboardReadRepository;
 import com.megumi.testops.execution.domain.ExecutionEntity;
+import com.megumi.testops.execution.domain.ExecutionStatus;
+import com.megumi.testops.execution.domain.TestCaseResultEntity;
 import com.megumi.testops.execution.repository.ExecutionRepository;
+import com.megumi.testops.execution.repository.TestCaseResultRepository;
 import com.megumi.testops.project.domain.ProjectEntity;
 import com.megumi.testops.project.domain.ProjectMemberEntity;
 import com.megumi.testops.project.domain.TestCaseEntity;
@@ -33,22 +36,31 @@ import com.megumi.testops.project.repository.TestSuiteRepository;
 
 import java.time.Instant;
 
-@Testcontainers
 @SpringBootTest
 @ActiveProfiles("test")
 class ApplicationContextIT {
+    private static final String EXTERNAL_DATABASE_URL = System.getenv("TEST_DATABASE_URL");
+    private static final PostgreSQLContainer<?> POSTGRES = externalDatabaseConfigured()
+            ? null
+            : new PostgreSQLContainer<>("postgres:18.4-alpine3.24");
 
-    @Container
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:18.4-alpine3.24");
+    static {
+        if (POSTGRES != null) POSTGRES.start();
+    }
 
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
-        registry.add("DB_URL", POSTGRES::getJdbcUrl);
-        registry.add("DB_USERNAME", POSTGRES::getUsername);
-        registry.add("DB_PASSWORD", POSTGRES::getPassword);
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
+        registry.add("DB_URL", ApplicationContextIT::databaseUrl);
+        registry.add("DB_USERNAME", ApplicationContextIT::databaseUsername);
+        registry.add("DB_PASSWORD", ApplicationContextIT::databasePassword);
+        registry.add("spring.datasource.url", ApplicationContextIT::databaseUrl);
+        registry.add("spring.datasource.username", ApplicationContextIT::databaseUsername);
+        registry.add("spring.datasource.password", ApplicationContextIT::databasePassword);
+    }
+
+    @AfterAll
+    static void stopManagedDatabase() {
+        if (POSTGRES != null) POSTGRES.stop();
     }
 
     @Autowired
@@ -83,6 +95,12 @@ class ApplicationContextIT {
 
     @Autowired
     private ExecutionRepository executionRepository;
+
+    @Autowired
+    private TestCaseResultRepository testCaseResultRepository;
+
+    @Autowired
+    private DashboardReadRepository dashboardReadRepository;
 
     @Test
     void startsWithPostgresFlywayAndHealthyActuator() throws Exception {
@@ -213,5 +231,92 @@ class ApplicationContextIT {
         org.junit.jupiter.api.Assertions.assertEquals("ARCHIVED", storedCase.getStatus());
         org.junit.jupiter.api.Assertions.assertEquals(user.getId(), storedCase.getArchivedBy().getId());
         org.junit.jupiter.api.Assertions.assertTrue(executionRepository.findById(execution.getId()).isPresent());
+    }
+
+    @Test
+    void dashboardAggregatesStayTenantScopedBoundedAndCoverTheFullWindow() {
+        Instant from = Instant.parse("2026-01-01T00:00:00Z");
+        Instant inside = Instant.parse("2026-01-01T12:00:00Z");
+        Instant to = Instant.parse("2026-01-02T00:00:00Z");
+        UserEntity member = userRepository.save(new UserEntity(
+                "dashboard-member@example.test", "Dashboard member", "ACTIVE", true, from));
+        UserEntity outsider = userRepository.save(new UserEntity(
+                "dashboard-outsider@example.test", "Dashboard outsider", "ACTIVE", true, from));
+        ProjectEntity visibleProject = projectRepository.save(new ProjectEntity(
+                "Dashboard visible", null, "https://dashboard-visible.example.test", member, from));
+        ProjectEntity hiddenProject = projectRepository.save(new ProjectEntity(
+                "Dashboard hidden", null, "https://dashboard-hidden.example.test", outsider, from));
+        projectMemberRepository.save(new ProjectMemberEntity(visibleProject, member, "VIEWER", from));
+        projectMemberRepository.save(new ProjectMemberEntity(hiddenProject, outsider, "PROJECT_MANAGER", from));
+        TestSuiteEntity visibleSuite = testSuiteRepository.save(new TestSuiteEntity(
+                visibleProject, "Visible suite", null, member, from));
+        TestSuiteEntity hiddenSuite = testSuiteRepository.save(new TestSuiteEntity(
+                hiddenProject, "Hidden suite", null, outsider, from));
+        TestCaseEntity visibleCase = testCaseRepository.save(new TestCaseEntity(
+                visibleSuite, "Visible case", null, "READY", "MEDIUM", null, 0, false, member, from));
+        TestCaseEntity hiddenCase = testCaseRepository.save(new TestCaseEntity(
+                hiddenSuite, "Hidden case", null, "READY", "MEDIUM", null, 0, false, outsider, from));
+
+        persistResult(visibleProject, visibleSuite, visibleCase, member, from,
+                ExecutionStatus.PASSED, null);
+        for (int index = 0; index < 55; index++) {
+            persistResult(visibleProject, visibleSuite, visibleCase, member, inside.plusSeconds(index),
+                    ExecutionStatus.ERROR, "TARGET_UNREACHABLE");
+        }
+        persistResult(hiddenProject, hiddenSuite, hiddenCase, outsider, inside,
+                ExecutionStatus.ERROR, "HIDDEN_PROJECT_ERROR");
+        persistResult(visibleProject, visibleSuite, visibleCase, member, to,
+                ExecutionStatus.ERROR, "END_BOUNDARY_ERROR");
+
+        DashboardReadRepository.Filter filter = new DashboardReadRepository.Filter(
+                member.getId(), false, null, null, null, from, to);
+        DashboardReadRepository.Totals totals = dashboardReadRepository.totals(filter);
+        var trends = dashboardReadRepository.trends(filter);
+        var recent = dashboardReadRepository.recentFailures(filter, 50);
+        var infrastructure = dashboardReadRepository.infrastructureErrors(filter);
+
+        org.junit.jupiter.api.Assertions.assertEquals(56, totals.totalExecutions());
+        org.junit.jupiter.api.Assertions.assertEquals(1, totals.passedCases());
+        org.junit.jupiter.api.Assertions.assertEquals(0, totals.failedCases());
+        org.junit.jupiter.api.Assertions.assertEquals(55, totals.errorCases());
+        org.junit.jupiter.api.Assertions.assertEquals(1, trends.size());
+        org.junit.jupiter.api.Assertions.assertEquals(java.time.LocalDate.of(2026, 1, 1), trends.getFirst().day());
+        org.junit.jupiter.api.Assertions.assertEquals(55, trends.getFirst().errors());
+        org.junit.jupiter.api.Assertions.assertEquals(50, recent.size());
+        org.junit.jupiter.api.Assertions.assertTrue(recent.stream()
+                .allMatch(row -> row.projectId().equals(visibleProject.getId())));
+        org.junit.jupiter.api.Assertions.assertEquals(
+                java.util.List.of(new DashboardReadRepository.InfrastructureErrorRow("TARGET_UNREACHABLE", 55)),
+                infrastructure);
+    }
+
+    private void persistResult(ProjectEntity project, TestSuiteEntity suite, TestCaseEntity testCase, UserEntity requester,
+            Instant createdAt, ExecutionStatus status, String category) {
+        ExecutionEntity execution = new ExecutionEntity(
+                project, suite, requester, 1, java.util.UUID.randomUUID(), createdAt);
+        execution.record(status);
+        execution.finish(status, createdAt.plusSeconds(1), category);
+        execution = executionRepository.save(execution);
+        TestCaseResultEntity result = new TestCaseResultEntity(execution, testCase);
+        result.start(createdAt);
+        if (category != null) result.setFailure(1, category);
+        result.finish(status, createdAt.plusSeconds(1), category);
+        testCaseResultRepository.save(result);
+    }
+
+    private static boolean externalDatabaseConfigured() {
+        return EXTERNAL_DATABASE_URL != null && !EXTERNAL_DATABASE_URL.isBlank();
+    }
+
+    private static String databaseUrl() {
+        return externalDatabaseConfigured() ? EXTERNAL_DATABASE_URL : POSTGRES.getJdbcUrl();
+    }
+
+    private static String databaseUsername() {
+        return externalDatabaseConfigured() ? System.getenv("TEST_DATABASE_USERNAME") : POSTGRES.getUsername();
+    }
+
+    private static String databasePassword() {
+        return externalDatabaseConfigured() ? System.getenv("TEST_DATABASE_PASSWORD") : POSTGRES.getPassword();
     }
 }

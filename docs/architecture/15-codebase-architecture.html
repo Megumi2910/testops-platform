@@ -512,5 +512,11 @@
   <p>Totals and UTC day trends aggregate persisted execution counters in PostgreSQL. Recent failures use one result/execution join and a database limit of 50. Infrastructure categories use a separate full-window aggregate over <code>ERROR</code> results, so the diagnostic-card cap cannot undercount category totals.</p>
   <p>Four focused service tests passed. The rebuilt backend became healthy; Chrome DevTools received HTTP 200 from summary, trends, recent failures, and infrastructure categories; the PostgreSQL UTC expression returned four historical buckets; and backend logs contained no query exception.</p>
 </section>
+<section aria-labelledby="phase5-dashboard-integration">
+  <h2 id="phase5-dashboard-integration">Phase 5 dashboard PostgreSQL gate (2026-08-11)</h2>
+  <p><code>ApplicationContextIT</code> now accepts an explicit <code>TEST_DATABASE_URL</code> triplet for environments where Docker CLI works but the Java Testcontainers named pipe does not. Without that URL it starts and stops its own PostgreSQL container exactly as CI expects. <code>scripts/verify-dashboard-postgres.ps1</code> wraps the Windows path in a disposable, randomly named, loopback-only container with a Docker-assigned host port.</p>
+  <p>The integration fixture creates visible and hidden projects, an execution at the inclusive start, 55 visible infrastructure errors, a hidden-project error, and an error at the exclusive end. It asserts 56 visible totals, one UTC trend bucket, a 50-row diagnostic cap, and an untruncated category count of 55.</p>
+  <p>The clean PostgreSQL 18.4 run migrated V000–V021 and passed 82 unit/package tests plus all 6 application-context integration tests. The test container was removed; normal development data and volumes were not touched.</p>
+</section>
 </body>
 </html>

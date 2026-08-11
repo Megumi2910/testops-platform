@@ -82,6 +82,7 @@ The category query is independent from recent failures. It counts all `ERROR` ca
 - An authenticated Chrome DevTools call observed `200` from the trends endpoint without exposing the access token.
 - A read-only PostgreSQL execution of the UTC grouping returned four historical day buckets, proving the database-specific date expression.
 - Recent backend logs contained no dashboard query exception.
+- The isolated [dashboard PostgreSQL regression gate](../testing/32-dashboard-postgres-regression.md) passed a two-project, 57-error fixture on a clean V021 schema. It proved the hidden project and exact end boundary are excluded, recent failures stop at 50, and the full-window category remains 55.
 
 The local full Maven integration phase may still depend on Docker Desktop named-pipe availability. CI remains the authoritative PostgreSQL integration gate.
 

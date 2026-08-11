@@ -119,6 +119,10 @@
       "role": "Tenant-scoped dashboard aggregation, bounded recent failures, UTC trends, and full-window infrastructure categories"
     },
     {
+      "path": "docs/testing/32-dashboard-postgres-regression.md",
+      "role": "Disposable PostgreSQL dashboard regression gate for tenant isolation, time boundaries, recent limits, and full-window category totals"
+    },
+    {
       "path": "docs/testing/23-quality-gate-baseline.md",
       "role": "Revision-verified Chrome DevTools and Playwright baseline matrix for TestOps and ecommerce"
     },

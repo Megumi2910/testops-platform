@@ -43,7 +43,7 @@ Ecommerce already has idempotent development fixtures for one verified customer,
 | Variables | Listing now requires advertised `VARIABLE_VIEW`; secret values remain masked for every API consumer | PARTIAL | `QG-B05` browser artifact redaction assertions remain |
 | Members | Fixture roles were created and project membership rendered | BLOCKED | `QG-B07` add/change/remove/final-manager/cross-project substitutions await security regression coverage |
 | Executions | Archived suites are blocked from queueing; cancellation is requester-or-project-manager only | PARTIAL | `QG-B08` retry/worker/target-escape and full browser matrix remain |
-| Dashboard | Tenant-scoped SQL totals/trends; bounded recent failures; independent full-window infrastructure categories; all four query shapes executed against PostgreSQL | PARTIAL | `QG-015` resolved; `QG-B09` now covers populated multi-tenant fixtures and date-boundary automation |
+| Dashboard | Tenant-scoped SQL totals/trends; bounded recent failures; independent full-window categories; two-project PostgreSQL fixture; inclusive-start/exclusive-end and >50-error proof | PARTIAL | `QG-015` resolved; `QG-B09` now covers populated Chrome DevTools role/range checks and explicit query-count instrumentation |
 | Administration | Frontend route requires `USER_ADMINISTER`; transactional last-active-admin protection has focused coverage; direct PM navigation redirected to dashboard with no console/network failure | PARTIAL | `QG-B10` complete Chrome DevTools role matrix remains |
 | Responsive/accessibility | Lifecycle dialogs expose modal semantics, initial focus, focus trap and restoration; Trash at `320×800` has no horizontal overflow | PARTIAL | `QG-005` existing case-step form metadata remains; complete keyboard/mobile matrix continues in Phase 4/5 |
 
@@ -96,4 +96,4 @@ cd D:\Projects\ecommerce-web\webcky
 docker compose config --quiet
 ```
 
-The original baseline backend verification passed with 59 tests. After the Phase 2–4 repairs, the current backend unit/package gate passes 82 tests, including four dashboard aggregate tests and four fail-closed QA fixture property tests. Both Compose configurations parsed, both stacks became healthy, and all four application images matched their checked-out revisions at baseline capture.
+The original baseline backend verification passed with 59 tests. After the Phase 2–4 repairs, the current backend unit/package gate passes 82 tests, including four dashboard aggregate tests and four fail-closed QA fixture property tests. The isolated PostgreSQL gate additionally passes all 6 `ApplicationContextIT` cases on a clean V021 schema. Both Compose configurations parsed, both stacks became healthy, and all four application images matched their checked-out revisions at baseline capture.

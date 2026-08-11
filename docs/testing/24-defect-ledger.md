@@ -174,8 +174,8 @@
 - Expected: tenant filtering and aggregation happen in PostgreSQL; recent cards are bounded without changing full-window category totals
 - Previous actual: `ExecutionRepository.findAll()` loaded every execution, case results were fetched once per execution, and infrastructure categories were derived from the already limited recent-failure list
 - Resolution: `DashboardReadRepository` applies the membership/global-administrator predicate to four scoped reads; totals and UTC trends aggregate in PostgreSQL, recent failures are limited to 50 in SQL, and infrastructure categories use an independent full-window `ERROR` aggregate
-- Verification: four focused service tests; healthy rebuilt backend; Chrome DevTools `200` responses for all four endpoints; read-only PostgreSQL UTC grouping returned four historical buckets; no query exception in backend logs
-- Regression layer: backend service tests now; PostgreSQL tenant/date/query-bound tests expand in Phase 5
+- Verification: four focused service tests; healthy rebuilt backend; Chrome DevTools `200` responses for all four endpoints; read-only PostgreSQL UTC grouping returned four historical buckets; isolated V021 PostgreSQL fixture proved 56 visible executions, two-project isolation, half-open dates, recent limit 50, and full category count 55; no query exception in backend logs
+- Regression layer: backend service tests + PostgreSQL integration test
 
 ## Coverage blockers
 
@@ -189,7 +189,7 @@
 | QG-B06 | ecommerce cross-customer/cross-seller/admin isolation | expanded idempotent fixtures |
 | QG-B07 | membership mutation and final-manager rules | security contract tests |
 | QG-B08 | queue/cancel/retry/artifact matrix | authoring repair and executable READY fixtures |
-| QG-B09 | dashboard populated range, tenant, and date-boundary matrix | scoped aggregate implementation is complete; add two-project PostgreSQL fixtures, adjacent-window boundary assertions, and bounded-query instrumentation in Phase 5 |
+| QG-B09 | dashboard populated browser matrix and query-count proof | two-project PostgreSQL isolation, half-open boundaries, recent cap, and full-window totals are automated; add Chrome DevTools role/range evidence and bounded-query instrumentation |
 | QG-B10 | browser proof of administration boundaries | frontend permission guard and concurrent-safe last-active-admin protection implemented; full role matrix remains |
 | QG-B11 | ecommerce search/filter/sort URL matrix | repeatable public Playwright suite |
 | QG-B12 | ecommerce email verification/reset | Mailpit QA overlay |
