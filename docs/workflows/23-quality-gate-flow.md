@@ -123,3 +123,17 @@ flowchart LR
 Membership demotion/removal uses the same project-scoped lookup. A write targeting the final project manager stops with `409 final_project_manager` before mutation or audit persistence.
 
 The disposable PostgreSQL gate follows a successful two-manager demotion with final-manager, stale-version, and archived-project attempts. Every rejected write is re-read from PostgreSQL to prove the membership row and manager role remain intact.
+
+## Member-management UI path
+
+```mermaid
+flowchart LR
+    Page["MembersPage + project permissions"] --> Manage{"MEMBER_MANAGE and ACTIVE?"}
+    Manage -->|No| Read["Read-only role badges"]
+    Manage -->|Yes| Controls["Role selector + Save + Remove"]
+    Controls --> Version["Send current project.version"]
+    Version --> Success{"Mutation succeeds?"}
+    Success -->|Yes| Refresh["Invalidate members + project"]
+    Success -->|No final manager| Conflict["Explain manager handoff"]
+    Success -->|No stale version| Reload["Require refreshed project state"]
+```

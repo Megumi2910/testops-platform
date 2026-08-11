@@ -135,6 +135,10 @@
       "role": "Disposable PostgreSQL proof for membership transitions, optimistic versions, final-manager retention, and archived-project blocking"
     },
     {
+      "path": "docs/implementation/36-member-management-ui.md",
+      "role": "Accessible, version-aware project member role changes, removal confirmation, pending locks, and conflict guidance"
+    },
+    {
       "path": "docs/testing/23-quality-gate-baseline.md",
       "role": "Revision-verified Chrome DevTools and Playwright baseline matrix for TestOps and ecommerce"
     },

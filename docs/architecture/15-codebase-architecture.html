@@ -534,5 +534,11 @@
   <p>The full Spring integration fixture now drives <code>ProjectService</code> against migrated PostgreSQL: a valid second-manager demotion commits, the final manager cannot be demoted, a stale removal cannot delete the member, and an archived project rejects membership mutation. State is reloaded between decisions so optimistic versions and manager counts are real database behavior.</p>
   <p>The gate is part of <code>ApplicationContextIT</code> and runs in the disposable PostgreSQL harness documented at <code>docs/testing/35-membership-postgres-regression.md</code>; normal development volumes are never reset.</p>
 </section>
+<section aria-labelledby="phase5-member-ui">
+  <h2 id="phase5-member-ui">Phase 5 member-management UI (2026-08-11)</h2>
+  <p>Chrome DevTools found that the Members page exposed add-only behavior even though the backend supported role changes and removal. Active project managers now receive labelled role selectors, explicit save actions, and accessible removal confirmation; viewers and archived projects remain read-only.</p>
+  <p>Each mutation includes the current project version and refreshes both membership and project caches after success. Final-manager and stale-version problems render actionable alerts, while pending writes lock competing row actions.</p>
+  <p>The rebuilt frontend passed 32 tests, lint, type checking, and production build. Chrome DevTools observed labelled controls, an accessible focused confirmation dialog with Escape close, only HTTP 200 project/member requests, no console issue, and no overflow at 320×800.</p>
+</section>
 </body>
 </html>

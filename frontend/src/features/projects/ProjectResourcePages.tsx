@@ -4,7 +4,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 
 import { Alert, Button, Card, ConfirmDialog, EmptyState, LoadingState, StatusBadge } from '../../components/ui'
-import { projectKeys, projectsApi } from './api'
+import { ApiError } from '../../lib/api'
+import { projectKeys, projectsApi, type Member } from './api'
 import { useProjectWorkspace } from './ProjectWorkspaceContext'
 
 export function VariablesPage() {
@@ -63,36 +64,76 @@ export function MembersPage() {
   const { project } = useProjectWorkspace()
   const client = useQueryClient()
   const canManage = project.permissions.includes('MEMBER_MANAGE') && project.status === 'ACTIVE'
+  const [removeTarget, setRemoveTarget] = useState<Member>()
   const query = useQuery({ queryKey: projectKeys.members(projectId), queryFn: () => projectsApi.members(projectId) })
   const form = useForm({ defaultValues: { email: '', role: 'TESTER' } })
-  const mutation = useMutation({
-    mutationFn: projectsApi.addMember.bind(null, projectId),
+  const refresh = () => {
+    void client.invalidateQueries({ queryKey: projectKeys.members(projectId) })
+    void client.invalidateQueries({ queryKey: projectKeys.detail(projectId) })
+  }
+  const add = useMutation({
+    mutationFn: (values: { email: string; role: string }) => projectsApi.addMember(projectId, { ...values, projectVersion: project.version }),
     onSuccess: () => {
       form.reset()
-      void client.invalidateQueries({ queryKey: projectKeys.members(projectId) })
+      refresh()
     },
   })
+  const update = useMutation({
+    mutationFn: ({ member, role }: { member: Member; role: string }) => projectsApi.updateMember(projectId, member.userId, { role, projectVersion: project.version }),
+    onSuccess: refresh,
+  })
+  const remove = useMutation({
+    mutationFn: (member: Member) => projectsApi.removeMember(projectId, member.userId, project.version),
+    onSuccess: () => {
+      setRemoveTarget(undefined)
+      refresh()
+    },
+  })
+  const error = add.error ?? update.error ?? remove.error
+  const errorMessage = error instanceof ApiError && error.code === 'final_project_manager'
+    ? 'Assign another project manager before changing or removing the final project manager.'
+    : error instanceof ApiError && error.code === 'stale_version'
+      ? 'The project changed. Reloaded data is required before trying again.'
+      : 'Unable to update project membership. Review the member and try again.'
 
   return <section className="page-stack">
     {canManage && <Card>
       <h2>Add member</h2>
-      <form className="inline-form" onSubmit={form.handleSubmit(values => mutation.mutate(values))}>
+      <form className="inline-form" onSubmit={form.handleSubmit(values => add.mutate(values))}>
         <label>Email<input aria-label="Member email" type="email" placeholder="person@example.com…" autoComplete="email" {...form.register('email')} /></label>
         <label>Role<select aria-label="Member role" {...form.register('role')}><option>PROJECT_MANAGER</option><option>TEST_MANAGER</option><option>TESTER</option><option>VIEWER</option></select></label>
-        <Button type="submit" busy={mutation.isPending}>Add member</Button>
+        <Button type="submit" busy={add.isPending}>Add member</Button>
       </form>
-      {mutation.isError && <p className="form-error" role="alert">Unable to add this member.</p>}
     </Card>}
     <Card>
       <h2>Members</h2>
+      {error && <Alert tone="danger" title="Membership update failed.">{errorMessage}</Alert>}
       {query.isPending && <LoadingState label="Loading members…" />}
       {query.isError && <Alert tone="danger" title="Unable to load members.">Try again after the backend is ready.</Alert>}
       {query.data?.length
-        ? <ul className="resource-list">{query.data.map(member => <li key={member.userId}>
-            <span><strong>{member.displayName}</strong><span className="muted"> · {member.email}</span></span>
-            <StatusBadge status="neutral">{member.role}</StatusBadge>
-          </li>)}</ul>
+        ? <ul className="resource-list">{query.data.map(member => <MemberListItem key={member.userId} member={member} canManage={canManage}
+            busy={update.isPending || remove.isPending}
+            onSave={role => update.mutate({ member, role })}
+            onRemove={() => setRemoveTarget(member)} />)}</ul>
         : query.data ? <EmptyState title="No members yet" description="Invite teammates when you are ready to collaborate on this project." /> : null}
     </Card>
+    <ConfirmDialog open={Boolean(removeTarget)} title={`Remove ${removeTarget?.displayName ?? 'member'}?`}
+      description="This person will immediately lose access to this project. Execution history remains unchanged."
+      confirmLabel="Remove member" busy={remove.isPending}
+      onClose={() => setRemoveTarget(undefined)} onConfirm={() => removeTarget && remove.mutate(removeTarget)} />
   </section>
+}
+
+function MemberListItem({ member, canManage, busy, onSave, onRemove }: { member: Member; canManage: boolean; busy: boolean; onSave: (role: string) => void; onRemove: () => void }) {
+  const [role, setRole] = useState(member.role)
+  return <li className="member-row">
+    <span className="member-identity"><strong>{member.displayName}</strong><span className="muted"> · {member.email}</span></span>
+    {canManage
+      ? <div className="member-actions">
+          <label><span className="sr-only">Role for {member.displayName}</span><select aria-label={`Role for ${member.displayName}`} value={role} disabled={busy} onChange={event => setRole(event.target.value)}><option>PROJECT_MANAGER</option><option>TEST_MANAGER</option><option>TESTER</option><option>VIEWER</option></select></label>
+          <Button type="button" variant="secondary" disabled={busy || role === member.role} onClick={() => onSave(role)}>Save role</Button>
+          <Button type="button" variant="danger" disabled={busy} onClick={onRemove}>Remove</Button>
+        </div>
+      : <StatusBadge status="neutral">{member.role}</StatusBadge>}
+  </li>
 }
