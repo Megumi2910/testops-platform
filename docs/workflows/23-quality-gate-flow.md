@@ -34,3 +34,19 @@ flowchart LR
 ```
 
 Server paths such as `steps[2].locatorRole` are translated to the stable client ID of the corresponding editable row. Reordering therefore cannot make a backend violation appear on a different step.
+
+## Stale-version recovery
+
+```mermaid
+flowchart LR
+    Save["Save case with loaded version"] --> Conflict{"409 stale_version?"}
+    Conflict -->|No| Done["Update query cache"]
+    Conflict -->|Yes| Latest["Fetch latest case without resetting form"]
+    Latest --> Compare["Focus local vs server comparison"]
+    Compare --> Reload["Reload server version"]
+    Compare --> Retry["Retry local changes with latest version"]
+    Reload --> Done
+    Retry --> Save
+```
+
+The comparison intentionally summarizes step actions instead of repeating locator and input values. The user's local editor remains intact until one recovery button is chosen.

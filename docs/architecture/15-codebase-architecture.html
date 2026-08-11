@@ -495,5 +495,10 @@
   <p>The backend remains authoritative: the frontend prevents obvious incomplete transitions, but structured problem responses decide whether a definition is valid and unique. Save &amp; run retains the created READY case when queueing fails, then retries only the queue operation. This prevents duplicate definitions and separates durable authoring state from transient worker availability.</p>
   <p>Focused lint, typecheck, 26-test unit, production build, and Chrome DevTools accessibility checks passed. The live check found and corrected missing focus transfer on invalid Name before publication.</p>
 </section>
+<section aria-labelledby="phase4-conflict-architecture">
+  <h2 id="phase4-conflict-architecture">Phase 4 optimistic-lock boundary (2026-08-11)</h2>
+  <p><code>CasePage.tsx</code> sends the loaded case version with each update. A <code>409 stale_version</code> starts a separate latest-case request instead of invalidating the active query, because automatic invalidation would reset React Hook Form and editable steps before the user could compare them. <code>caseConflict.ts</code> calculates visible differences, while <code>CaseVersionConflict.tsx</code> owns focus and explicit Reload/Retry actions.</p>
+  <p>Reload updates React Query only after user confirmation. Retry sends the current local definition with the newly fetched version and repeats comparison if another writer wins. Chrome DevTools proved both paths with two authenticated tabs and restored the QA fixture afterward.</p>
+</section>
 </body>
 </html>

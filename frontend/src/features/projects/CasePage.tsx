@@ -7,9 +7,10 @@ import { Alert, Button, Card, ConfirmDialog, LoadingState, StatusBadge } from '.
 import { ApiError } from '../../lib/api'
 import { GuidedStepEditor } from './GuidedCasePage'
 import { mapServerStepErrors, serializeSteps, toEditableSteps, validateSteps, type EditableStep } from './caseBuilder'
-import { platformApi, projectKeys, projectsApi } from './api'
+import { platformApi, projectKeys, projectsApi, type TestCase } from './api'
 import { useProjectWorkspace } from './ProjectWorkspaceContext'
 import { RestoreDefinitionDialog } from './DefinitionLifecycle'
+import { CaseVersionConflict } from './CaseVersionConflict'
 
 type CaseForm = {
   name: string
@@ -34,6 +35,7 @@ export function CasePage() {
   const [successMessage, setSuccessMessage] = useState<string>()
   const [trashOpen, setTrashOpen] = useState(false)
   const [restoreOpen, setRestoreOpen] = useState(false)
+  const [versionConflict, setVersionConflict] = useState<TestCase>()
   const form = useForm<CaseForm>()
   const definitions = useMemo(() => options.data?.stepActions ?? [], [options.data?.stepActions])
   const archived = query.data?.status === 'ARCHIVED'
@@ -55,8 +57,12 @@ export function CasePage() {
     })
   }, [form, query.data])
 
+  const latestCase = useMutation({
+    mutationFn: () => projectsApi.getCase(projectId, suiteId, caseId),
+    onSuccess: setVersionConflict,
+  })
   const save = useMutation({
-    mutationFn: (values: CaseForm) => {
+    mutationFn: ({ values, expectedVersion }: { values: CaseForm; expectedVersion?: number }) => {
       if (values.status === 'READY') {
         const validation = validateSteps(steps, definitions)
         setStepErrors(validation.errors)
@@ -64,12 +70,13 @@ export function CasePage() {
       }
       return projectsApi.updateCase(projectId, suiteId, caseId, {
         ...values,
-        projectVersion: query.data?.version,
+        projectVersion: expectedVersion ?? query.data?.version,
         steps: serializeSteps(steps),
       })
     },
     onSuccess: saved => {
       setSuccessMessage('Case and steps saved.')
+      setVersionConflict(undefined)
       setStepErrors({})
       client.setQueryData(queryKey, saved)
       void client.invalidateQueries({ queryKey: projectKeys.detail(projectId) })
@@ -80,8 +87,17 @@ export function CasePage() {
       if (Object.keys(mapped).length) setStepErrors(mapped)
       if (error.fieldErrors.name) form.setError('name', { message: error.fieldErrors.name }, { shouldFocus: true })
       if (error.code === 'case_name_taken') form.setError('name', { message: 'A case with this name already exists.' }, { shouldFocus: true })
+      if (error.code === 'stale_version') latestCase.mutate()
     },
   })
+  const reloadServerVersion = () => {
+    if (!versionConflict) return
+    client.setQueryData(queryKey, versionConflict)
+    setVersionConflict(undefined)
+    setStepErrors({})
+    form.clearErrors()
+    setSuccessMessage('Reloaded the latest server version.')
+  }
   const run = useMutation({
     mutationFn: () => projectsApi.queueCase(projectId, suiteId, caseId),
     onSuccess: result => {
@@ -132,7 +148,15 @@ export function CasePage() {
     {!canEdit && <Alert tone="warning" title="Read-only case.">Your project role does not allow definition changes.</Alert>}
     {run.isError && <Alert tone="danger" title="Unable to queue this case.">Save a valid READY case, then try again.</Alert>}
     {successMessage && <Alert tone="success" title={successMessage}>The latest definition is ready for your next action.</Alert>}
-    <form className="form-stack" onSubmit={form.handleSubmit(values => { setSuccessMessage(undefined); save.mutate(values) })}>
+    {latestCase.isError && <Alert tone="danger" title="Unable to load the latest case.">Your changes are still in this editor. Check the connection and save again to retry the comparison.</Alert>}
+    {versionConflict && <CaseVersionConflict
+      local={{ ...form.watch(), steps: serializeSteps(steps) }}
+      server={versionConflict}
+      busy={save.isPending || latestCase.isPending}
+      onReload={reloadServerVersion}
+      onRetry={() => save.mutate({ values: form.getValues(), expectedVersion: versionConflict.version })}
+    />}
+    <form className="form-stack" onSubmit={form.handleSubmit(values => { setSuccessMessage(undefined); save.mutate({ values }) })}>
       <label>Name<input disabled={!canEdit} {...form.register('name', { required: 'Name is required' })} />{form.formState.errors.name && <small className="form-error">{form.formState.errors.name.message}</small>}</label>
       <label>Description<textarea disabled={!canEdit} rows={4} {...form.register('description')} /></label>
       <div className="inline-form">
@@ -142,8 +166,8 @@ export function CasePage() {
       </div>
       <label>Tags<input disabled={!canEdit} autoComplete="off" placeholder="P0, smoke" {...form.register('tags')} /></label>
       <label className="checkbox-field"><input disabled={!canEdit} type="checkbox" {...form.register('dataIsolation')} />Use a fresh isolated browser context for this case</label>
-      {save.isError && <p className="form-error" role="alert">{save.error instanceof ApiError ? save.error.message : save.error.message || 'Unable to save this case.'}</p>}
-      {canEdit && <Button type="submit" busy={save.isPending}>Save case and steps</Button>}
+      {save.isError && (!(save.error instanceof ApiError) || save.error.code !== 'stale_version') && <p className="form-error" role="alert">{save.error instanceof ApiError ? save.error.message : save.error.message || 'Unable to save this case.'}</p>}
+      {canEdit && <Button type="submit" busy={save.isPending} disabled={Boolean(versionConflict)}>Save case and steps</Button>}
     </form>
     {canEdit
       ? <GuidedStepEditor steps={steps} onChange={setSteps} definitions={definitions} locatorTypes={options.data.supportedLocatorTypes} roles={options.data.supportedLocatorRoles ?? []} errors={stepErrors} />

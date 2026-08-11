@@ -39,7 +39,7 @@ Ecommerce already has idempotent development fixtures for one verified customer,
 | Projects | Two fixture projects render; target project opens; project archive control is present | PARTIAL | `QG-B03` Edit/restore, duplicate, stale-version, and full permission matrix are not exposed as one safe QA flow |
 | Target connectivity | Exact `localhost:3001` check returned `REACHABLE` and `POST 200` | PARTIAL | `QG-B04` Disabled-local and unreachable variants require isolated profiles to avoid mutating the normal stack |
 | Suites | Backend lifecycle plus visible identity/edit/Trash/direct read-only/restore UI; QA suite archive and restore returned `200` | PASS | `QG-003` resolved; expanded role automation remains in Phase 5 |
-| Cases/steps | Explicit archive/Trash/direct static steps/restore-to-DRAFT; backend-owned authoring metadata; focused Details validation; stable server-step error mapping; queue retry that reuses the saved READY case | PARTIAL | `QG-004` and `QG-011` resolved; optimistic-lock comparison and Phase 5 role automation remain |
+| Cases/steps | Explicit lifecycle; backend-owned metadata; focused validation; stable server-step error mapping; queue recovery; two-tab optimistic-lock comparison with explicit Reload or Retry | PARTIAL | `QG-004`, `QG-011`, and `QG-012` resolved; Phase 5 role automation remains |
 | Variables | Listing now requires advertised `VARIABLE_VIEW`; secret values remain masked for every API consumer | PARTIAL | `QG-B05` browser artifact redaction assertions remain |
 | Members | Fixture roles were created and project membership rendered | BLOCKED | `QG-B07` add/change/remove/final-manager/cross-project substitutions await security regression coverage |
 | Executions | Archived suites are blocked from queueing; cancellation is requester-or-project-manager only | PARTIAL | `QG-B08` retry/worker/target-escape and full browser matrix remain |
@@ -79,7 +79,7 @@ The sanitized request body contains a DRAFT case and `steps[0]` with action `NAV
 1. ~~`QG-001` and `QG-002`: split DRAFT/READY validation and consolidate the problem contract.~~ Resolved and browser-verified.
 2. ~~Security blockers: ancestry, variable visibility, admin invariant, cancellation ownership, and archived-resource mutation.~~ Focused code and regression coverage complete; two-project/browser expansion remains in Phase 5.
 3. ~~Suite/case trash and restore, including partial uniqueness and history preservation.~~ Resolved and browser-verified.
-4. Builder field mapping, pending protection, conflicts, dirty navigation, and Save & run recovery. The metadata/error/retry slice is complete; optimistic-lock comparison remains.
+4. ~~Builder field mapping, pending protection, conflicts, dirty navigation, and Save & run recovery.~~ Authoring recovery is complete and browser-verified; OTP cooldown and dashboard aggregation remain separate Phase 4 slices.
 5. Automated TestOps gate and complete role/tenant matrix.
 6. Ecommerce fixture expansion, database/concurrency, permission, messaging, accessibility, and deterministic assets.
 

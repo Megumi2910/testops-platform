@@ -196,6 +196,10 @@ h2, h3 { text-wrap: balance; }
 .form-stack input, .form-stack select, .form-stack textarea, .inline-form input, .inline-form select, .inline-form textarea, .search-field input { background: #fff; min-height: 2.65rem; }
 .checkbox-field { align-items: center; display: flex; gap: .65rem; }
 .checkbox-field input { flex: 0 0 auto; min-height: 1.2rem; width: 1.2rem; }
+.version-conflict:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+.conflict-table-wrap { margin: .8rem 0; max-width: 100%; overflow-x: auto; }
+.conflict-table { border-collapse: collapse; min-width: 34rem; width: 100%; }
+.conflict-table th, .conflict-table td { border-bottom: 1px solid var(--line); padding: .55rem; text-align: left; vertical-align: top; }
 .form-stack textarea, .inline-form textarea { min-height: 8rem; resize: vertical; }
 .form-stack input::placeholder, .form-stack textarea::placeholder, .search-field input::placeholder { color: #78839a; }
 .resource-list li { min-width: 0; }

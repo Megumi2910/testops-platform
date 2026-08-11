@@ -107,6 +107,10 @@
       "role": "Guided case metadata, focused Details validation, stable server-error mapping, and Save & run recovery"
     },
     {
+      "path": "docs/implementation/29-case-version-conflicts.md",
+      "role": "Case optimistic-lock comparison, explicit Reload/Retry behavior, and two-tab browser evidence"
+    },
+    {
       "path": "docs/testing/23-quality-gate-baseline.md",
       "role": "Revision-verified Chrome DevTools and Playwright baseline matrix for TestOps and ecommerce"
     },

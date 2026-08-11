@@ -130,6 +130,19 @@
 - Verification: Chrome DevTools reproduced the original behavior, then confirmed the corrected accessibility tree marked Name as focused
 - Regression layer: mounted React test + Chrome DevTools keyboard/accessibility check
 
+### QG-012 — Stale case edits have no safe comparison workflow
+
+- Severity: P1
+- Status: RESOLVED
+- Role: project manager in two authenticated tabs
+- Preconditions: both tabs load the same active case version
+- Reproduction: save a change in tab B, then save a different change from stale tab A
+- Expected: preserve local edits, fetch latest server state, compare differences, and require an explicit reload or retry choice
+- Previous actual: the API returned `409 stale_version`, but the editor exposed only the generic error detail
+- Resolution: a focused comparison panel shows differing visible fields and action sequence; Reload replaces local state, while Retry submits local state with the latest fetched version
+- Verification: Chrome DevTools observed `PUT 409 → GET 200`, focused comparison, `PUT 200` retry, and an independent Reload flow; the QA fixture was restored
+- Regression layer: pure comparison tests + mounted component + two-tab Chrome DevTools journey
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |
@@ -151,4 +164,4 @@
 
 ## Triage result
 
-There are no confirmed P0 incidents. Phases 2 and 3 are complete. The first Phase 4 slice resolves metadata exposure, backend field mapping, focused Details validation, and post-save queue recovery. Release status remains **PARTIAL** while optimistic-lock recovery, OTP cooldown, dashboard aggregates, and the automated Phase 5 matrix remain open.
+There are no confirmed P0 incidents. Phases 2 and 3 are complete. Phase 4 authoring and optimistic-lock recovery are browser-verified. Release status remains **PARTIAL** while OTP cooldown, dashboard aggregates, and the automated Phase 5 matrix remain open.
