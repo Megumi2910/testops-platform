@@ -187,7 +187,7 @@
 | QG-B04 | target blocked/unreachable variants | isolated local-disabled/unreachable profiles |
 | QG-B05 | evidence redaction in browser artifacts | variable listing now enforces `VARIABLE_VIEW` and always masks secrets; runner screenshot/trace assertions remain |
 | QG-B06 | ecommerce cross-customer/cross-seller/admin isolation | expanded idempotent fixtures |
-| QG-B07 | membership mutation and final-manager rules | security contract tests |
+| QG-B07 | membership HTTP mutation, final-manager, and cross-project substitutions | response permission sets and backend role guards are automated for PM/test-manager/tester/viewer/non-member/admin; add MockMvc and browser workflows |
 | QG-B08 | queue/cancel/retry/artifact matrix | authoring repair and executable READY fixtures |
 | QG-B09 | dashboard populated browser matrix and query-count proof | two-project PostgreSQL isolation, half-open boundaries, recent cap, and full-window totals are automated; add Chrome DevTools role/range evidence and bounded-query instrumentation |
 | QG-B10 | browser proof of administration boundaries | frontend permission guard and concurrent-safe last-active-admin protection implemented; full role matrix remains |

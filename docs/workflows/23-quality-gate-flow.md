@@ -87,3 +87,21 @@ flowchart LR
 Recent failure cards and infrastructure categories deliberately have different bounds. Cards are a 50-row diagnostic preview; categories are a complete aggregate for the requested half-open UTC window. Both are tenant-scoped before PostgreSQL returns data.
 
 The repeatable database proof is `scripts/verify-dashboard-postgres.ps1`. It creates a disposable PostgreSQL container on a Docker-selected loopback port, passes its connection through `TEST_DATABASE_*`, runs the complete `ApplicationContextIT`, and stops only that generated container. CI continues to use Testcontainers automatically when no external URL is supplied.
+
+## Project permission decision
+
+```mermaid
+flowchart LR
+    Response[ProjectService response] --> Permission[Permission strings]
+    Permission --> UI[React shows allowed controls]
+    Request[API mutation or queue] --> Guard[ProjectAccessService role guard]
+    Guard --> Admin{Platform ADMIN?}
+    Admin -->|Yes| Allow[Allow managed operation]
+    Admin -->|No| Member{Project membership?}
+    Member -->|No| DenyAccess[project_access_denied]
+    Member -->|Yes| Role{Role in operation set?}
+    Role -->|No| DenyRole[project_role_required]
+    Role -->|Yes| Allow
+```
+
+The response and guard are tested separately. A visible frontend control never substitutes for the backend decision, and a backend denial should not be hidden behind a generic client error.

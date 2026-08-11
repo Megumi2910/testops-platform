@@ -123,6 +123,10 @@
       "role": "Disposable PostgreSQL dashboard regression gate for tenant isolation, time boundaries, recent limits, and full-window category totals"
     },
     {
+      "path": "docs/testing/33-project-permission-matrix.md",
+      "role": "Project role permission payload and backend enforcement matrix for managers, testers, viewers, non-members, and administrators"
+    },
+    {
       "path": "docs/testing/23-quality-gate-baseline.md",
       "role": "Revision-verified Chrome DevTools and Playwright baseline matrix for TestOps and ecommerce"
     },

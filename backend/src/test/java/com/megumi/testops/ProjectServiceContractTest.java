@@ -12,9 +12,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -30,6 +34,7 @@ import com.megumi.testops.project.repository.ProjectMemberRepository;
 import com.megumi.testops.project.repository.ProjectOnboardingRepository;
 import com.megumi.testops.project.repository.ProjectRepository;
 import com.megumi.testops.project.service.ProjectAccessService;
+import com.megumi.testops.project.service.ProjectPermission;
 import com.megumi.testops.project.service.ProjectService;
 import com.megumi.testops.project.service.ProjectTargetPolicy;
 
@@ -92,5 +97,49 @@ class ProjectServiceContractTest {
         assertEquals(1, page.content().size());
         assertEquals(1, page.content().getFirst().onboarding().suiteCount());
         verify(onboarding).findByProjectIds(List.of(project.getId()));
+    }
+
+    @ParameterizedTest(name = "{0} receives the advertised project permissions")
+    @MethodSource("projectRolePermissions")
+    void projectResponseMatchesTheRolePermissionContract(String role, java.util.Set<String> expected) {
+        ProjectMemberEntity roleMembership = new ProjectMemberEntity(project, user, role, Instant.now());
+        when(members.findByProjectIdAndUserId(project.getId(), user.getId()))
+                .thenReturn(Optional.of(roleMembership));
+
+        ProjectDtos.ProjectResponse response = service.get(jwt, project.getId());
+
+        assertEquals(role, response.currentUserProjectRole());
+        assertEquals(expected, response.permissions());
+    }
+
+    @Test
+    void globalAdministratorReceivesEveryProjectPermissionWithoutMembership() {
+        when(access.globalAdmin(jwt)).thenReturn(true);
+
+        ProjectDtos.ProjectResponse response = service.get(jwt, project.getId());
+
+        assertEquals("ADMIN", response.currentUserProjectRole());
+        assertEquals(java.util.Arrays.stream(ProjectPermission.values()).map(Enum::name)
+                .collect(java.util.stream.Collectors.toUnmodifiableSet()), response.permissions());
+    }
+
+    private static Stream<Arguments> projectRolePermissions() {
+        java.util.Set<String> viewer = java.util.Set.of(
+                "PROJECT_VIEW", "DEFINITION_VIEW", "EXECUTION_VIEW", "ARTIFACT_VIEW");
+        java.util.Set<String> tester = union(viewer, "EXECUTION_START", "EXECUTION_CANCEL_OWN");
+        java.util.Set<String> testManager = union(tester, "DEFINITION_MANAGE");
+        java.util.Set<String> projectManager = java.util.Arrays.stream(ProjectPermission.values()).map(Enum::name)
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        return Stream.of(
+                Arguments.of("PROJECT_MANAGER", projectManager),
+                Arguments.of("TEST_MANAGER", testManager),
+                Arguments.of("TESTER", tester),
+                Arguments.of("VIEWER", viewer));
+    }
+
+    private static java.util.Set<String> union(java.util.Set<String> source, String... additions) {
+        java.util.Set<String> result = new java.util.HashSet<>(source);
+        result.addAll(java.util.List.of(additions));
+        return java.util.Set.copyOf(result);
     }
 }

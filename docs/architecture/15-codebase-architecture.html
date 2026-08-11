@@ -518,5 +518,11 @@
   <p>The integration fixture creates visible and hidden projects, an execution at the inclusive start, 55 visible infrastructure errors, a hidden-project error, and an error at the exclusive end. It asserts 56 visible totals, one UTC trend bucket, a 50-row diagnostic cap, and an untruncated category count of 55.</p>
   <p>The clean PostgreSQL 18.4 run migrated V000–V021 and passed 82 unit/package tests plus all 6 application-context integration tests. The test container was removed; normal development data and volumes were not touched.</p>
 </section>
+<section aria-labelledby="phase5-project-permissions">
+  <h2 id="phase5-project-permissions">Phase 5 project permission contract (2026-08-11)</h2>
+  <p><code>ProjectService.permissionSet</code> is the UI capability contract: every member can view projects, definitions, executions, and artifacts; test managers additionally manage definitions and start/cancel their own runs; testers start/cancel their own runs; project managers receive project, member, variable, definition, and any-run management. Platform administrators receive every <code>ProjectPermission</code>.</p>
+  <p><code>ProjectAccessService.requireProjectRole</code> remains the security boundary. It rejects non-members, checks operation-specific role sets, and allows a global administrator independently of frontend visibility. The new parameterized tests protect four response roles, administrator completeness, 12 role/operation combinations, non-member denial, and administrator bypass.</p>
+  <p>The focused gate passed 21 tests. HTTP identifier substitution, membership mutation/final-manager behavior, cancellation ownership, and browser-visible controls remain explicitly scheduled rather than being overstated as complete.</p>
+</section>
 </body>
 </html>

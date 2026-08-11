@@ -35,6 +35,7 @@ The root [README](../README.md) remains the project entry point. The machine-rea
 - Understanding verification resend timing, idempotency, and Mailpit evidence: [OTP resend cooldown](implementation/30-otp-resend-cooldown.md).
 - Understanding tenant-scoped reporting, bounded failures, and full-window infrastructure totals: [dashboard aggregate queries](implementation/31-dashboard-aggregate-queries.md).
 - Reproducing the isolated PostgreSQL dashboard regression gate on Windows: [dashboard PostgreSQL regression](testing/32-dashboard-postgres-regression.md).
+- Reviewing project-manager, test-manager, tester, viewer, non-member, and administrator capabilities: [project permission regression matrix](testing/33-project-permission-matrix.md).
 - Designing exact and repeated locators: [executable step language](implementation/10-executable-step-language.md) → [execution correctness](implementation/20-phase-6-execution-correctness.md).
 - Verifying the negative target matrix: use the local-disabled Compose profile described in the [local target guide](operations/12-local-target-testing-guide.md).
 - Reviewing delivery status: milestone 9 release candidate → risks/roadmap/decisions.
