@@ -40,6 +40,17 @@ The full backend gate must still be run before publishing the slice:
 ./mvnw -q verify
 ```
 
-## Remaining quality-gate work
+## Chrome DevTools role evidence
 
-The positive service contract is now covered, but the browser matrix still needs repeatable PM, test-manager, tester, non-member, and administrator journeys against the rebuilt image. The next lifecycle slice should add suite/case archive and restore UI/API behavior and then rerun this membership matrix through Chrome DevTools and Playwright.
+The live role matrix was rerun against `http://localhost:3000` after the current image was rebuilt:
+
+| Role | Journey and observed result |
+| --- | --- |
+| Project manager | Existing PM journey exposed labelled member selectors, Save actions, and accessible removal confirmation; desktop/mobile layout and network/console checks were clean. |
+| Test manager | Project response was `200` with `TEST_MANAGER`; project navigation exposed Overview, Suites, Trash, and Executions but not Members or Variables. Suites rendered the explicit read-only message. |
+| Tester | Project response was `200` with `TESTER`; Suites rendered the same read-only definition message and no member/variable mutation controls. |
+| Viewer | Direct member-page navigation rendered role badges only; Members navigation and mutation controls were absent, with clean requests and console. |
+| Non-member | Direct project navigation rendered the controlled “Unable to load this project” alert; the project request returned `403`. The browser’s resource-level 403 message is expected evidence, not an application exception. |
+| Administrator | Project response was `200` with `ADMIN`; Admin navigation, Archive, Variables, and Members controls were visible. The project request and console were clean. |
+
+The HTTP/service and browser role evidence together close QG-B07. Remaining quality-gate work moves to suite/case lifecycle and the wider execution/browser matrix.
