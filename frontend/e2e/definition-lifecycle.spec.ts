@@ -60,3 +60,49 @@ test('a draft case can be moved to Trash and restored as DRAFT', async ({ page }
   await expect(page.getByRole('link', { name: caseName, exact: true })).toBeVisible()
   await expect(page.locator('.status-badge').filter({ hasText: 'DRAFT' }).first()).toBeVisible()
 })
+
+test('an archived suite is read-only until it is restored', async ({ page }) => {
+  const runId = Date.now()
+  const targetOrigin = process.env.E2E_TARGET_ORIGIN ?? 'http://localhost:3201'
+  const email = `suite-lifecycle-${runId}@example.test`
+  const projectName = `Suite lifecycle project ${runId}`
+  const suiteName = `Archiveable suite ${runId}`
+
+  await registerAndVerify(page, email)
+  await page.getByRole('link', { name: 'Projects', exact: true }).click()
+  await page.getByRole('link', { name: 'New project', exact: true }).click()
+  await page.getByLabel('Name').fill(projectName)
+  await page.getByLabel('Target origin').selectOption({ label: targetOrigin })
+  await page.getByRole('button', { name: 'Create project', exact: true }).click()
+  await expect(page).toHaveURL(/\/projects\/[0-9a-f-]+$/)
+
+  await page.getByRole('link', { name: 'Suites', exact: true }).click()
+  await page.getByRole('textbox', { name: 'Suite name' }).fill(suiteName)
+  await page.getByRole('button', { name: 'Add suite' }).click()
+  await page.getByRole('link', { name: new RegExp(suiteName) }).click()
+
+  await page.getByRole('button', { name: 'Move to trash' }).click()
+  const archiveResponse = page.waitForResponse(response => response.request().method() === 'DELETE' && response.url().includes('/suites/'))
+  const archiveDialog = page.getByRole('dialog', { name: new RegExp(`Move ${suiteName} to Trash`) })
+  await expect(archiveDialog).toBeVisible()
+  await archiveDialog.getByRole('button', { name: 'Move to trash' }).click()
+  await expect((await archiveResponse).status()).toBe(200)
+  await expect(page).toHaveURL(/\/trash$/)
+
+  await page.getByRole('link', { name: suiteName, exact: true }).click()
+  await expect(page.getByText('This suite is in Trash.')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Run ready cases' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'New case', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Edit suite' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Restore suite' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Restore suite' }).click()
+  const restoreDialog = page.getByRole('dialog', { name: 'Restore suite?' })
+  await expect(restoreDialog).toBeVisible()
+  const restoreResponse = page.waitForResponse(response => response.request().method() === 'POST' && response.url().includes('/restore'))
+  await restoreDialog.getByRole('button', { name: 'Restore suite' }).click()
+  await expect((await restoreResponse).status()).toBe(200)
+  await expect(page.getByRole('link', { name: 'New case', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Edit suite' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Move to trash' })).toBeVisible()
+})

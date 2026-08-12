@@ -89,7 +89,7 @@ Pop-Location
 docker compose -f docker-compose.yml -f docker-compose.e2e.yml down -v
 ```
 
-The isolated volume is the only volume that may be removed by this procedure. CI runs this test as part of the standard enabled E2E job.
+The isolated volume is the only volume that may be removed by this procedure. CI runs both the case and suite lifecycle tests as part of the standard enabled E2E job. The suite test additionally opens the archived direct link, proves Run/New case/Edit controls are absent, restores the suite, and confirms those controls return.
 
 ## Reproduction commands
 
