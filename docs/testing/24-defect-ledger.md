@@ -236,6 +236,29 @@
 - Verification: focused recovery Playwright run passed all four scenarios against rebuilt containers; full local Playwright run passed 24 scenarios with 10 intentional ecommerce skips; CI rerun is required as the publication gate
 - Regression layer: Playwright recovery journey plus CI Compose environment configuration
 
+### QG-021 — Browser actions could mask target escape as a network failure
+
+- Severity: P1
+- Status: RESOLVED in the Phase 5 evidence-safety slice
+- Preconditions: a READY case clicks a target link or submits a form whose action resolves outside the project origin
+- Reproduction: use the static QA target's `Outside target` link or `Submit outside form`
+- Expected: the worker rejects the main-frame navigation as `BLOCKED_NAVIGATION` before connection errors can change the category
+- Previous actual: explicit `NAVIGATE` steps were guarded, but click/form requests were only observed after navigation; an unreachable destination could be reported as `TARGET_UNREACHABLE`
+- Resolution: `PlaywrightCaseRunner` now observes navigation requests as well as frame and popup events, records one violation, and attributes it to the action's step outcome
+- Verification: `phase5-evidence-safety.spec.ts` passed two cases; both execution case results contained `BLOCKED_NAVIGATION` and `Browser navigation left the approved project target`
+- Regression layer: Playwright browser journey plus runner/service tests
+
+### QG-022 — Secret evidence had no repeatable browser proof
+
+- Severity: P1
+- Status: RESOLVED for passing secret/non-secret cases in the Phase 5 evidence-safety slice
+- Preconditions: a READY case interpolates a secret variable into an action and includes `TAKE_SCREENSHOT`
+- Expected: secret-bearing cases persist no screenshot or trace; non-secret cases retain their evidence; secret plaintext is absent from the execution response
+- Previous actual: worker suppression existed in source, but the release matrix did not prove persisted artifact behavior through the UI/API
+- Resolution: the new browser journey creates both variable types through the Variables page and inspects the authenticated execution detail response
+- Verification: two browser cases passed on the rebuilt isolated stack; the secret case had zero artifacts and the plain case had `SCREENSHOT` plus `TRACE`
+- Regression layer: Playwright browser journey plus `ExecutionRunServiceTest` and `ExecutionServiceTest`
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |
@@ -244,10 +267,10 @@
 | QG-B02 | Google and locked/disabled session states | provider fixtures and browser matrix; individual/revoke-all session behavior is complete |
 | QG-B03 | Project restore/conflict/stale version | RESOLVED by versioned archive/restore API, frontend cache wiring, and lifecycle E2E; broader edit/duplicate/project-role coverage remains in the Projects row |
 | QG-B04 | target blocked/unreachable variants | isolated local-disabled/unreachable profiles |
-| QG-B05 | evidence redaction in browser artifacts | variable listing now enforces `VARIABLE_VIEW` and always masks secrets; runner screenshot/trace assertions remain |
+| QG-B05 | evidence redaction in browser artifacts | variable listing now enforces `VARIABLE_VIEW` and always masks secrets; `phase5-evidence-safety.spec.ts` proves passing secret cases suppress all artifacts, ordinary cases retain screenshot/trace, and secret plaintext is absent from the detail response; secret-bearing failure and full download authorization variants remain |
 | QG-B06 | ecommerce cross-customer/cross-seller/admin isolation | expanded idempotent fixtures |
 | QG-B07 | remaining membership HTTP/browser matrix | RESOLVED: service/MockMvc/PostgreSQL covers ancestry, cancellation, versions, archive, final manager, positive add/change/remove, duplicate, archived-project, and role denial paths; HTTP add/change/remove/duplicate responses are explicit; Chrome DevTools confirms PM, test-manager, tester, viewer, non-member, and administrator boundaries |
-| QG-B08 | queue/cancel/retry/artifact matrix | cancellation and infrastructure retry browser evidence are covered by `phase5-execution-matrix.spec.ts`; retry asserts concise sanitized connection errors with no Playwright stack/call-log leakage. `ExecutionWorkerTest` proves disabled polling never claims work, and `ExecutionServiceTest` proves a full queue returns `429 execution_queue_full` before persistence. Secret suppression, target escape, browser-crash, and full artifact assertions remain |
+| QG-B08 | queue/cancel/retry/artifact matrix | cancellation and infrastructure retry browser evidence are covered by `phase5-execution-matrix.spec.ts`; retry asserts concise sanitized connection errors with no Playwright stack/call-log leakage. `ExecutionWorkerTest` proves disabled polling never claims work, and `ExecutionServiceTest` proves a full queue returns `429 execution_queue_full` before persistence. `phase5-evidence-safety.spec.ts` proves click/form target escape is `BLOCKED_NAVIGATION`; browser-crash, secret-bearing failure, and complete artifact-download assertions remain |
 | QG-B09 | dashboard populated browser matrix and query-count proof | `phase5-dashboard-admin-matrix.spec.ts` renders the dashboard after a real passed run and asserts all three dashboard API responses are HTTP 200; add Chrome DevTools role/range evidence and bounded-query instrumentation |
 | QG-B10 | browser proof of administration boundaries | `phase5-dashboard-admin-matrix.spec.ts` proves guest login preservation and verified-member denial; frontend permission guard and concurrent-safe last-active-admin protection implemented; bootstrap-administrator CRUD and full role matrix remain |
 | QG-B11 | ecommerce search/filter/sort URL matrix | repeatable public Playwright suite |
@@ -257,4 +280,4 @@
 
 ## Triage result
 
-There are no confirmed P0 incidents. Phases 2, 3, and 4 are complete, and `QG-017` through `QG-020` close the core role/tenant, session, OTP-expiry, password-recovery, and canonical E2E-origin slices. Release status remains **PARTIAL** while Google/locked/disabled variants, administration, execution/evidence, dashboard, accessibility/performance, and twice-consecutive-CI gates remain open.
+There are no confirmed P0 incidents. Phases 2, 3, and 4 are complete, and `QG-017` through `QG-022` close the core role/tenant, session, OTP-expiry, password-recovery, canonical E2E-origin, navigation-boundary, and passing evidence-suppression slices. Release status remains **PARTIAL** while Google/locked/disabled variants, administration, browser-crash/secret-failure evidence, dashboard, accessibility/performance, and twice-consecutive-CI gates remain open.

@@ -187,6 +187,14 @@
       "role": "Sanitized CI diagnosis and regression evidence for canonical E2E origin alignment"
     },
     {
+      "path": "docs/implementation/39-execution-evidence-safety.md",
+      "role": "Worker-only secret evidence suppression and request-level navigation-boundary enforcement"
+    },
+    {
+      "path": "docs/testing/47-phase5-evidence-safety.md",
+      "role": "Playwright proof for secret/non-secret artifact behavior and click/form target escape classification"
+    },
+    {
       "path": "docs/implementation/36-member-management-ui.md",
       "role": "Accessible, version-aware project member role changes, removal confirmation, pending locks, and conflict guidance"
     },

@@ -1,0 +1,37 @@
+# Phase 5 evidence-safety browser evidence
+
+## Scope
+
+This slice closes two execution-quality risks in the Phase 5 matrix: secret variables must not produce screenshots or traces, and click/form navigation that leaves the approved target must be reported as `BLOCKED_NAVIGATION`.
+
+The test creates records with timestamped `phase5-*` names. It does not commit a password, token, OTP, secret value, trace, or screenshot.
+
+## Evidence
+
+| Journey | Expected contract | Result |
+| --- | --- | --- |
+| Secret variable in `FILL` plus explicit screenshot | Case passes; no case artifacts; plaintext absent from execution response | PASS locally, rebuilt isolated stack |
+| Non-secret variable in `FILL` plus explicit screenshot | Case passes; `SCREENSHOT` and `TRACE` artifacts remain associated with the case | PASS locally, rebuilt isolated stack |
+| Click link to `localhost:3299` | Case completes with `BLOCKED_NAVIGATION` and sanitized message | PASS locally, rebuilt isolated stack |
+| Submit form to `localhost:3299` | Case completes with `BLOCKED_NAVIGATION` and sanitized message | PASS locally, rebuilt isolated stack |
+
+The browser test asserts the execution detail through the same-origin refresh contract. The token exists only in page memory and is never written to test output.
+
+## Commands and results
+
+```text
+frontend: npm run lint                         PASS
+frontend: npm run typecheck                    PASS
+frontend: npm run test -- --run               34 tests PASS
+backend focused Maven tests                   PASS
+phase5-evidence-safety.spec.ts                 2 tests PASS (26.1s)
+full Playwright suite                            26 passed, 10 intentional ecommerce skips (2.3m)
+```
+
+The target fixture contains only two deliberately unsafe QA links/forms. It remains a static local page and does not contact the public internet during the test.
+
+## Defect status
+
+This slice closes the evidence and navigation portions of `QG-B05` and `QG-B08` for the covered paths. Browser-crash classification, secret-bearing failure variants, full artifact-download authorization, and the complete Chrome DevTools performance/accessibility matrix remain separate gates.
+
+The full-suite password-recovery regression was also stabilized by waiting for the post-reset `/login` route and asserting the email field value before submit. The focused recovery test and the complete suite both pass after this change.
