@@ -61,6 +61,9 @@ The dashboard unit suite covers valid custom windows, invalid fallback, the
 default seven-day request, the three-query contract, and URL updates when the
 selector changes.
 
+The published commit `e68c657` passed CI run `31614750283`: backend, frontend,
+containers, enabled E2E, and local-disabled E2E all completed successfully.
+
 For live verification, rebuild the normal frontend image and open
 `http://localhost:3000/dashboard?range=90` in Chrome DevTools:
 

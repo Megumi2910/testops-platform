@@ -33,6 +33,10 @@
 | Cumulative Layout Shift | 0.03 | Pass: `<0.1` |
 | Console errors/warnings | 0 | Pass |
 
+The publication gate also passed CI run `31614750283` for commit `e68c657`.
+All five jobs—backend, frontend, containers, enabled E2E, and
+local-disabled E2E—completed successfully.
+
 The first trace before the layout fix measured CLS `0.16`. The dashboard then
 kept metric/detail card slots mounted and gave them stable minimum heights. A
 fresh trace measured CLS `0.03`; this is the regression proof for the fix.
