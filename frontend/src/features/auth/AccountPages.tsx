@@ -23,7 +23,24 @@ export function AccountPage() {
 
 export function AdminUsersPage() {
   const [query, setQuery] = useState('')
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
   const deferredQuery = useDeferredValue(query)
   const users = useQuery({ queryKey: ['admin-users', deferredQuery], queryFn: () => apiFetch<{ content: AdminUser[] }>(`/api/v1/admin/users?size=50${deferredQuery ? `&query=${encodeURIComponent(deferredQuery)}` : ''}`) })
-  return <section className="page-stack"><div><p className="eyebrow">Administration</p><h1>Users</h1><p className="lede">Manage platform roles and account status. Project roles remain scoped to each project.</p></div><label className="search-field">Search users<input value={query} onChange={event => setQuery(event.target.value)} placeholder="Email or display name" /></label><div className="card"><ul className="resource-list">{users.data?.content.map(user => <li key={user.id}><span><strong>{user.displayName}</strong><span className="muted"> · {user.email}</span></span><span className="inline-actions"><select value={user.platformRole} onChange={event => void apiFetch(`/api/v1/admin/users/${user.id}/platform-role`, { method: 'PATCH', body: JSON.stringify({ platformRole: event.target.value }) }).then(() => users.refetch())}><option>MEMBER</option><option>ADMIN</option></select><select value={user.status} onChange={event => void apiFetch(`/api/v1/admin/users/${user.id}/status`, { method: 'PATCH', body: JSON.stringify({ status: event.target.value }) }).then(() => users.refetch())}><option>ACTIVE</option><option>LOCKED</option><option>DISABLED</option></select></span></li>)}</ul>{users.isPending && <p>Loading users…</p>}{users.isError && <p className="form-error">Unable to load users.</p>}</div></section>
+  async function updateUser(id: string, path: string, body: Record<string, string>) {
+    setPendingUserId(id)
+    setMessage('')
+    setError('')
+    try {
+      await apiFetch(`/api/v1/admin/users/${id}/${path}`, { method: 'PATCH', body: JSON.stringify(body) })
+      setMessage('User updated.')
+      await users.refetch()
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : 'Unable to update this user.')
+    } finally {
+      setPendingUserId(null)
+    }
+  }
+  return <section className="page-stack"><div><p className="eyebrow">Administration</p><h1>Users</h1><p className="lede">Manage platform roles and account status. Project roles remain scoped to each project.</p></div><label className="search-field">Search users<input value={query} onChange={event => setQuery(event.target.value)} placeholder="Email or display name" /></label>{message && <p className="form-help" role="status">{message}</p>}{error && <p className="form-error" role="alert">{error}</p>}<div className="card"><ul className="resource-list">{users.data?.content.map(user => <li key={user.id}><span><strong>{user.displayName}</strong><span className="muted"> · {user.email}</span></span><span className="inline-actions"><select aria-label={`Platform role for ${user.email}`} value={user.platformRole} disabled={pendingUserId === user.id} onChange={event => void updateUser(user.id, 'platform-role', { platformRole: event.target.value })}><option>MEMBER</option><option>ADMIN</option></select><select aria-label={`Account status for ${user.email}`} value={user.status} disabled={pendingUserId === user.id} onChange={event => void updateUser(user.id, 'status', { status: event.target.value })}><option>ACTIVE</option><option>LOCKED</option><option>DISABLED</option></select></span></li>)}</ul>{users.isPending && <p>Loading users…</p>}{users.isError && <p className="form-error" role="alert">Unable to load users.</p>}{users.data && users.data.content.length === 0 && <p className="muted">No users match this search.</p>}</div></section>
 }

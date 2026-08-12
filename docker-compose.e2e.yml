@@ -33,6 +33,10 @@ services:
       TARGET_LOCAL_DEV_HOST_ALIAS: host.docker.internal
       PROJECT_SECRET_VARIABLES_ENABLED: "true"
       PROJECT_VARIABLE_KEY_PATH: /run/secrets/testops/project-variable-key
+      BOOTSTRAP_ADMIN_ENABLED: "true"
+      BOOTSTRAP_ADMIN_EMAIL: qa.bootstrap-admin@testops.local
+      BOOTSTRAP_ADMIN_DISPLAY_NAME: QA Bootstrap Administrator
+      BOOTSTRAP_ADMIN_PASSWORD_PATH: /run/secrets/testops/bootstrap-admin-password
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:

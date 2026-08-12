@@ -293,6 +293,17 @@
 - Verification: focused backend and browser checks passed locally; CI run `31605913214` passed all jobs including the full E2E suite
 - Regression layer: `PlaywrightCaseRunnerTest`, `ExecutionServiceTest`, and Playwright browser journey
 
+### QG-026 — Administrator mutations lacked browser proof and actionable errors
+
+- Severity: P1
+- Status: IMPLEMENTED; focused browser verification passed; remote CI verification pending
+- Preconditions: isolated E2E stack has a disposable bootstrap administrator and a generated managed account
+- Expected: an administrator can change a user's platform role and account status; attempting to remove the final active administrator returns `409 final_active_admin`, leaves the account active, and displays an inline error
+- Previous actual: the page fired PATCH requests without accessible control names, pending protection, or visible mutation errors, and only guest/member route guards were automated
+- Resolution: `AdminUsersPage` now names both selects by email, disables controls while a mutation is pending, refetches after success, and renders status/error feedback. `AdminUserController` and `AdminUserService` now use the explicit auth-enabled property condition so their routes are registered reliably. The E2E Compose profile exposes only a generated bootstrap password to the CI process; `phase5-administrator-crud.spec.ts` covers positive changes and the final-admin invariant
+- Verification: first local browser run exposed the missing controller mapping. After changing the condition, rebuilding the disposable stack, and recreating the E2E backend/frontend, `phase5-administrator-crud.spec.ts` passed in 4.2 seconds with role/status persistence and final-admin protection; remote CI evidence is pending
+- Regression layer: Playwright browser journey plus existing `AdminUserServiceTest` and `AdminUsersPage` route guard tests
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |
@@ -306,7 +317,7 @@
 | QG-B07 | remaining membership HTTP/browser matrix | RESOLVED: service/MockMvc/PostgreSQL covers ancestry, cancellation, versions, archive, final manager, positive add/change/remove, duplicate, archived-project, and role denial paths; HTTP add/change/remove/duplicate responses are explicit; Chrome DevTools confirms PM, test-manager, tester, viewer, non-member, and administrator boundaries |
 | QG-B08 | queue/cancel/retry/artifact matrix | cancellation and infrastructure retry browser evidence are covered by `phase5-execution-matrix.spec.ts`; retry asserts concise sanitized connection errors with no Playwright stack/call-log leakage. `ExecutionWorkerTest` proves disabled polling never claims work, and `ExecutionServiceTest` proves a full queue returns `429 execution_queue_full` before persistence and denies non-member artifacts before lookup. `phase5-evidence-safety.spec.ts` proves click/form target escape and secret-bearing failure suppression; `phase5-artifact-download.spec.ts` proves member PNG/ZIP downloads and outsider denial. Wrapped browser shutdown classification is unit-tested; real process-kill and DevTools deployment evidence remain |
 | QG-B09 | dashboard populated browser matrix and query-count proof | `phase5-dashboard-admin-matrix.spec.ts` renders the dashboard after a real passed run and asserts all three dashboard API responses are HTTP 200; add Chrome DevTools role/range evidence and bounded-query instrumentation |
-| QG-B10 | browser proof of administration boundaries | `phase5-dashboard-admin-matrix.spec.ts` proves guest login preservation and verified-member denial; frontend permission guard and concurrent-safe last-active-admin protection implemented; bootstrap-administrator CRUD and full role matrix remain |
+| QG-B10 | browser proof of administration boundaries | `phase5-dashboard-admin-matrix.spec.ts` proves guest login preservation and verified-member denial; frontend permission guard and concurrent-safe last-active-admin protection implemented; `phase5-administrator-crud.spec.ts` now covers bootstrap-admin role/status CRUD and final-admin rejection; locked/disabled provider variants and the broader role matrix remain |
 | QG-B11 | ecommerce search/filter/sort URL matrix | repeatable public Playwright suite |
 | QG-B12 | ecommerce email verification/reset | Mailpit QA overlay |
 | QG-B13 | checkout concurrency and destructive order states | isolated PostgreSQL integration harness |

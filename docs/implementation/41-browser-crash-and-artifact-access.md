@@ -45,3 +45,9 @@ The focused checks passed locally. CI run `31605913214` also passed backend, fro
 ## Boundaries
 
 This slice does not claim real Chromium process-kill reproduction (which is intentionally nondeterministic in a shared browser) or the Chrome DevTools accessibility/performance gate. Those remain separate release evidence rows. The unit test covers direct and wrapped Playwright shutdown exceptions, while the browser test covers member/non-member artifact authorization and both evidence file types.
+
+## E2E administrator fixture contract
+
+The isolated E2E Compose profile enables the existing bootstrap administrator only for the disposable test stack. CI generates the password into the ignored secret directory, masks it, and exports it to the Playwright process through `E2E_ADMIN_PASSWORD`; no password is committed or written into test names, assertions, screenshots, or traces. The browser test creates a generated ordinary account, changes its role and status, restores both values, and attempts to lock the only active administrator. The final operation must return the structured `409 final_active_admin` problem and leave the administrator active.
+
+The first browser attempt exposed an application-context defect rather than a fixture problem: `AdminUserController` and `AdminUserService` used `@ConditionalOnBean(AuthService.class)`, which can be evaluated before the runtime configuration registers the auth service. Spring then served `/api/v1/admin/users` as a static-resource miss. Both components now use the explicit `testops.auth.enabled=true` property condition, matching the rest of the auth runtime and keeping the route absent in auth-disabled profiles.

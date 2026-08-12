@@ -84,7 +84,12 @@ jobs:
           cp frontend/.env.example frontend/.env
           cp pgadmin4/.env.example pgadmin4/.env
       - name: Prepare ephemeral E2E secrets
-        run: bash .github/scripts/prepare-e2e-secrets.sh
+        run: |
+          bash .github/scripts/prepare-e2e-secrets.sh
+          bootstrap_password="$(cat backend/.secrets/bootstrap-admin-password)"
+          echo "::add-mask::$bootstrap_password"
+          echo "E2E_ADMIN_EMAIL=qa.bootstrap-admin@testops.local" >> "$GITHUB_ENV"
+          echo "E2E_ADMIN_PASSWORD=$bootstrap_password" >> "$GITHUB_ENV"
       - run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml config --quiet
       - run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml build
       - name: Start isolated E2E stack
