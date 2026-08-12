@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -34,8 +35,8 @@ public class ProjectController {
     @GetMapping("/{id}") public ProjectDtos.ProjectResponse get(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) { return service.get(jwt, id); }
     @PutMapping("/{id}") public ProjectDtos.ProjectResponse update(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id, @Valid @RequestBody ProjectDtos.ProjectRequest request) { return service.update(jwt, id, request); }
     @PostMapping("/{id}/target-check") public ProjectDtos.TargetCheckResponse targetCheck(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) { return targetChecks.check(jwt, id); }
-    @PostMapping("/{id}/archive") public ProjectDtos.ProjectResponse archive(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) { return service.setArchived(jwt, id, true); }
-    @PostMapping("/{id}/restore") public ProjectDtos.ProjectResponse restore(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) { return service.setArchived(jwt, id, false); }
+    @PostMapping("/{id}/archive") public ProjectDtos.ProjectResponse archive(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id, @RequestHeader("If-Match") long version) { return service.setArchived(jwt, id, true, version); }
+    @PostMapping("/{id}/restore") public ProjectDtos.ProjectResponse restore(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id, @RequestHeader("If-Match") long version) { return service.setArchived(jwt, id, false, version); }
     @GetMapping("/{id}/members") public List<ProjectDtos.MemberResponse> members(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) { return service.members(jwt, id); }
     @PostMapping("/{id}/members") @ResponseStatus(HttpStatus.CREATED) public ProjectDtos.MemberResponse addMember(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id, @Valid @RequestBody ProjectDtos.MemberRequest request) { return service.addMember(jwt, id, request); }
     @PutMapping("/{id}/members/{userId}") public ProjectDtos.MemberResponse changeMember(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id, @PathVariable UUID userId, @Valid @RequestBody ProjectDtos.MemberRoleRequest request) { return service.changeMember(jwt, id, userId, request); }

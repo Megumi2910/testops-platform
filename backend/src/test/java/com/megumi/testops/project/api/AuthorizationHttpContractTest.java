@@ -142,4 +142,14 @@ class AuthorizationHttpContractTest {
                         .queryParam("projectVersion", "4"))
                 .andExpect(status().isNoContent());
     }
+
+    @Test
+    void projectArchiveRequiresAnIfMatchVersion() throws Exception {
+        UUID projectId = UUID.randomUUID();
+
+        mvc.perform(post("/api/v1/projects/{projectId}/archive", projectId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("request_binding_failed"))
+                .andExpect(jsonPath("$.errors[0].path").value("If-Match"));
+    }
 }

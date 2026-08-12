@@ -1,6 +1,7 @@
 package com.megumi.testops;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -37,6 +38,7 @@ import com.megumi.testops.project.service.ProjectAccessService;
 import com.megumi.testops.project.service.ProjectPermission;
 import com.megumi.testops.project.service.ProjectService;
 import com.megumi.testops.project.service.ProjectTargetPolicy;
+import com.megumi.testops.shared.api.ApiException;
 
 class ProjectServiceContractTest {
     private final ProjectRepository projects = mock(ProjectRepository.class);
@@ -121,6 +123,42 @@ class ProjectServiceContractTest {
         assertEquals("ADMIN", response.currentUserProjectRole());
         assertEquals(java.util.Arrays.stream(ProjectPermission.values()).map(Enum::name)
                 .collect(java.util.stream.Collectors.toUnmodifiableSet()), response.permissions());
+    }
+
+    @Test
+    void projectArchiveRequiresTheCurrentVersionAndChangesState() {
+        when(onboarding.findByProjectIds(List.of(project.getId()))).thenReturn(Map.of());
+
+        ProjectDtos.ProjectResponse archived = service.setArchived(jwt, project.getId(), true, project.getVersion());
+
+        assertEquals("ARCHIVED", archived.status());
+        verify(projects).saveAndFlush(project);
+        verify(audits).save(any());
+    }
+
+    @Test
+    void staleProjectArchiveIsRejectedBeforeMutation() {
+        ApiException failure = assertThrows(ApiException.class,
+                () -> service.setArchived(jwt, project.getId(), true, project.getVersion() + 1));
+
+        assertEquals("stale_version", failure.getCode());
+        assertEquals("ACTIVE", project.getStatus());
+        verify(audits, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
+    void repeatedArchiveAndRestoreRequestsReturnConflict() {
+        when(onboarding.findByProjectIds(List.of(project.getId()))).thenReturn(Map.of());
+        service.setArchived(jwt, project.getId(), true, project.getVersion());
+
+        ApiException alreadyArchived = assertThrows(ApiException.class,
+                () -> service.setArchived(jwt, project.getId(), true, project.getVersion()));
+        assertEquals("project_already_archived", alreadyArchived.getCode());
+
+        service.setArchived(jwt, project.getId(), false, project.getVersion());
+        ApiException alreadyActive = assertThrows(ApiException.class,
+                () -> service.setArchived(jwt, project.getId(), false, project.getVersion()));
+        assertEquals("project_not_archived", alreadyActive.getCode());
     }
 
     private static Stream<Arguments> projectRolePermissions() {

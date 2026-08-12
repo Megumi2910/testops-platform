@@ -81,8 +81,17 @@ public class ProjectService {
         project.update(name, trim(request.description()), targets.validate(request.targetOrigin()), Instant.now()); audit(project, user, "PROJECT_UPDATED"); return response(jwt, project);
     }
     @Transactional
-    public ProjectDtos.ProjectResponse setArchived(Jwt jwt, UUID id, boolean archived) {
-        UserEntity user = access.user(jwt); ProjectEntity project = access.project(id); access.requireProjectRole(project, user, jwt, java.util.Set.of("PROJECT_MANAGER")); if (archived) project.archive(Instant.now()); else project.restore(Instant.now()); audit(project, user, archived ? "PROJECT_ARCHIVED" : "PROJECT_RESTORED"); return response(jwt, project);
+    public ProjectDtos.ProjectResponse setArchived(Jwt jwt, UUID id, boolean archived, long version) {
+        UserEntity user = access.user(jwt); ProjectEntity project = access.project(id); access.requireProjectRole(project, user, jwt, java.util.Set.of("PROJECT_MANAGER")); requireVersion(project.getVersion(), version);
+        if (archived) {
+            if ("ARCHIVED".equals(project.getStatus())) throw error(HttpStatus.CONFLICT, "project_already_archived", "Project is already archived");
+            project.archive(Instant.now());
+        } else {
+            if ("ACTIVE".equals(project.getStatus())) throw error(HttpStatus.CONFLICT, "project_not_archived", "Project is already active");
+            project.restore(Instant.now());
+        }
+        projects.saveAndFlush(project);
+        audit(project, user, archived ? "PROJECT_ARCHIVED" : "PROJECT_RESTORED"); return response(jwt, project);
     }
     @Transactional(readOnly = true)
     public List<ProjectDtos.MemberResponse> members(Jwt jwt, UUID id) { UserEntity user = access.user(jwt); ProjectEntity project = access.project(id); if (!access.globalAdmin(jwt)) access.membership(project, user); return members.findByProjectIdOrderByCreatedAtAsc(id).stream().map(ProjectService::memberResponse).toList(); }

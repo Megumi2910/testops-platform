@@ -180,3 +180,5 @@ flowchart LR
 ```
 
 The browser proof for this path is captured in [definition lifecycle browser evidence](../testing/38-definition-lifecycle-browser-evidence.md). A newly authored QA-owned draft was saved, archived with a focused modal, observed in the project Trash list, restored through the name-aware dialog, and found again under the active suite as `DRAFT`. The lifecycle requests returned `201` for creation and `200` for archive/list/restore, with no console messages. The repeatable E2E equivalent is `frontend/e2e/definition-lifecycle.spec.ts`, which runs against the isolated target-site profile. Archived definitions retain execution history but cannot be mutated or queued.
+
+Project archive and restore follow the same safe mutation boundary. The UI sends the loaded project version in `If-Match`; the backend rejects missing or stale versions and repeated state transitions with structured problems. See [project lifecycle version evidence](../testing/39-project-lifecycle-version-evidence.md).

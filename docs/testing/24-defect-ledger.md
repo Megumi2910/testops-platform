@@ -177,13 +177,25 @@
 - Verification: four focused service tests; healthy rebuilt backend; Chrome DevTools `200` responses for all four endpoints; read-only PostgreSQL UTC grouping returned four historical buckets; isolated V021 PostgreSQL fixture proved 56 visible executions, two-project isolation, half-open dates, recent limit 50, and full category count 55; no query exception in backend logs
 - Regression layer: backend service tests + PostgreSQL integration test
 
+### QG-016 — Project archive/restore was not concurrency-safe
+
+- Severity: P1
+- Status: RESOLVED in the project lifecycle version slice
+- Preconditions: two project tabs or a direct API caller hold the same project response
+- Reproduction: archive or restore without a version, repeat a state transition, or submit a stale version
+- Expected: the mutation requires the current project version and reports a structured conflict without changing state
+- Previous actual: project archive/restore endpoints accepted no optimistic version and repeated transitions were silently idempotent
+- Resolution: both endpoints require `If-Match`; `ProjectService` checks the current version, rejects stale requests and invalid repeated transitions, flushes the incremented JPA version before responding, and audits only successful changes. The frontend sends the loaded version and refreshes its cache from the response.
+- Verification: `ProjectServiceContractTest` and `AuthorizationHttpContractTest` cover success, stale, repeated-state, and missing-header paths; the rebuilt isolated Playwright archived-project test passed.
+- Regression layer: backend unit + MockMvc + Playwright
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |
 | --- | --- | --- |
 | QG-B01 | Remaining TestOps OTP/recovery/session variants | Cooldown/idempotency and message-count proof are complete; add time-controlled expiry, invalid-code, password recovery, return-URL, and session cases |
 | QG-B02 | Google and full session-revocation states | provider/session fixtures |
-| QG-B03 | Project restore/conflict/stale version | lifecycle API/UI |
+| QG-B03 | Project restore/conflict/stale version | RESOLVED by versioned archive/restore API, frontend cache wiring, and lifecycle E2E; broader edit/duplicate/project-role coverage remains in the Projects row |
 | QG-B04 | target blocked/unreachable variants | isolated local-disabled/unreachable profiles |
 | QG-B05 | evidence redaction in browser artifacts | variable listing now enforces `VARIABLE_VIEW` and always masks secrets; runner screenshot/trace assertions remain |
 | QG-B06 | ecommerce cross-customer/cross-seller/admin isolation | expanded idempotent fixtures |

@@ -17,7 +17,7 @@ export function ProjectLayout() {
     enabled: Boolean(projectId),
   })
   const archive = useMutation({
-    mutationFn: () => projectsApi.archive(projectId),
+    mutationFn: () => projectsApi.archive(projectId, query.data?.version ?? 0),
     onSuccess: project => {
       setArchiveOpen(false)
       client.setQueryData(projectKeys.detail(projectId), project)
@@ -25,7 +25,7 @@ export function ProjectLayout() {
     },
   })
   const restore = useMutation({
-    mutationFn: () => projectsApi.restore(projectId),
+    mutationFn: () => projectsApi.restore(projectId, query.data?.version ?? 0),
     onSuccess: project => {
       setRestoreOpen(false)
       client.setQueryData(projectKeys.detail(projectId), project)
