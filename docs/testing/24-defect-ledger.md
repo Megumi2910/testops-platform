@@ -271,6 +271,17 @@
 - Verification: local isolated stack passes the two evidence-safety cases; the first corrected CI profile reached Compose startup but exposed the key-format defect, which this follow-up fixes; another CI run is required
 - Regression layer: full Playwright CI workflow and Compose config gate
 
+### QG-024 — Secret-bearing failures and artifact downloads lacked complete regression coverage
+
+- Severity: P1
+- Status: RESOLVED for secret-bearing assertion failures and non-member download denial; browser-crash and full role matrix remain open
+- Preconditions: a READY case uses an encrypted variable before a failing assertion, or a caller requests an artifact without project membership
+- Expected: failure evidence is suppressed and non-members are denied before artifact lookup
+- Previous actual: passing secret cases were covered, but failure evidence and the authorization-before-lookup path were not independently proven
+- Resolution: `phase5-evidence-safety.spec.ts` now adds a secret-bearing failing case; `ExecutionServiceTest` verifies `403 project_access_denied` before execution/artifact repositories are queried
+- Verification: focused backend run and the next full Playwright/CI run
+- Regression layer: Playwright browser journey plus service unit test
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |
@@ -292,4 +303,4 @@
 
 ## Triage result
 
-There are no confirmed P0 incidents. Phases 2, 3, and 4 are complete, and `QG-017` through `QG-022` close the core role/tenant, session, OTP-expiry, password-recovery, canonical E2E-origin, navigation-boundary, and passing evidence-suppression slices. `QG-023` now includes the Compose flag and key-format fixes and awaits a clean remote CI rerun. Release status remains **PARTIAL** while Google/locked/disabled variants, administration, browser-crash/secret-failure evidence, dashboard, accessibility/performance, and twice-consecutive-CI gates remain open.
+There are no confirmed P0 incidents. Phases 2, 3, and 4 are complete, and `QG-017` through `QG-024` close the core role/tenant, session, OTP-expiry, password-recovery, canonical E2E-origin, navigation-boundary, evidence-suppression, and secret-failure/download-denial slices. Release status remains **PARTIAL** while Google/locked/disabled variants, administration, browser-crash/full artifact-role coverage, dashboard, accessibility/performance, ecommerce, and twice-consecutive-CI gates remain open.

@@ -215,6 +215,24 @@ class ExecutionServiceTest {
     }
 
     @Test
+    void rejectsArtifactDownloadForNonMemberBeforeReadingArtifact() {
+        UUID executionId = UUID.randomUUID();
+        UUID artifactId = UUID.randomUUID();
+        ApiException denied = new ApiException(org.springframework.http.HttpStatus.FORBIDDEN,
+                "project_access_denied", "You do not have access to this project");
+        when(access.globalAdmin(jwt)).thenReturn(false);
+        when(access.membership(eq(project), eq(user))).thenThrow(denied);
+
+        ApiException error = assertThrows(ApiException.class,
+                () -> service.artifactDownload(jwt, project.getId(), executionId, artifactId));
+
+        assertSame(denied, error);
+        verify(executions, never()).findByProjectIdAndId(any(), any());
+        verify(artifacts, never()).findByExecutionIdAndId(any(), any());
+        verify(artifactWriter, never()).resolve(any());
+    }
+
+    @Test
     void rejectsQueueingAnArchivedSuite() {
         suite.archive(Instant.now());
 

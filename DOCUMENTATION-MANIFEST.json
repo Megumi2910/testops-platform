@@ -195,6 +195,14 @@
       "role": "Playwright proof for secret/non-secret artifact behavior and click/form target escape classification"
     },
     {
+      "path": "docs/implementation/40-secret-failure-artifact-authorization.md",
+      "role": "Secret-bearing failure suppression and project-scoped artifact-download authorization"
+    },
+    {
+      "path": "docs/testing/48-phase5-secret-failure-artifact.md",
+      "role": "Focused browser/service evidence for secret failures and non-member artifact denial"
+    },
+    {
       "path": "docs/implementation/36-member-management-ui.md",
       "role": "Accessible, version-aware project member role changes, removal confirmation, pending locks, and conflict guidance"
     },

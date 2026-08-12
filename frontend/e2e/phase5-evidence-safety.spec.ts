@@ -68,6 +68,31 @@ async function createVariableCase(page: Page, projectId: string, suiteId: string
   await page.locator(`a[href$="/suites/${suiteId}"]`).click()
 }
 
+async function createSecretFailureCase(page: Page, projectId: string, suiteId: string, name: string, variableKey: string) {
+  await page.getByRole('link', { name: 'Suites', exact: true }).click()
+  await page.locator(`a[href$="/suites/${suiteId}"]`).click()
+  await page.getByRole('link', { name: 'New case', exact: true }).click()
+  await page.getByLabel('Start from a template').selectOption('blank')
+  await page.getByLabel('Name').fill(name)
+  await page.getByRole('button', { name: 'Continue to steps' }).click()
+  await page.getByRole('button', { name: 'Add step' }).click()
+  await page.locator('fieldset.step-card').nth(0).getByLabel('Input value').fill('/')
+  await page.getByRole('button', { name: 'Add step' }).click()
+  const fillStep = page.locator('fieldset.step-card').nth(1)
+  await fillStep.getByLabel('Action').selectOption('FILL')
+  await fillStep.getByRole('combobox', { name: 'Locator' }).selectOption('LABEL')
+  await fillStep.getByLabel('Locator value').fill('Tìm kiếm sản phẩm, thương hiệu...')
+  await fillStep.getByLabel('Input value').fill(`$\{${variableKey}}`)
+  await page.getByRole('button', { name: 'Add step' }).click()
+  const assertionStep = page.locator('fieldset.step-card').nth(2)
+  await assertionStep.getByLabel('Action').selectOption('ASSERT_VISIBLE')
+  await assertionStep.getByRole('combobox', { name: 'Locator' }).selectOption('TEXT')
+  await assertionStep.getByLabel('Locator value').fill('This text is intentionally missing')
+  await page.getByRole('button', { name: 'Review case' }).click()
+  await page.getByRole('button', { name: 'Save as READY', exact: true }).click()
+  await expect(page).toHaveURL(new RegExp(`/projects/${projectId}/suites/${suiteId}/cases/[0-9a-f-]+$`))
+}
+
 test('secret variables suppress evidence while non-secret variables retain screenshot and trace artifacts', async ({ page }) => {
   test.setTimeout(90_000)
   const runId = Date.now()
@@ -100,6 +125,33 @@ test('secret variables suppress evidence while non-secret variables retain scree
   expect(plainArtifacts.map(item => item.type)).toEqual(expect.arrayContaining(['SCREENSHOT', 'TRACE']))
   expect(execution.artifacts.every(item => item.secretSuppressed === false)).toBeTruthy()
   expect(JSON.stringify(execution)).not.toContain(secretValue)
+})
+
+test('secret-bearing failures suppress failure evidence and sanitize execution details', async ({ page }) => {
+  test.setTimeout(90_000)
+  const runId = Date.now()
+  await registerAndVerify(page, `phase5-secret-failure-${runId}@example.test`)
+  const { projectId, suiteId } = await createProjectAndSuite(page, 'Secret failure')
+  const secretKey = `QA_FAILURE_SECRET_${runId}`
+  const secretValue = `never-persist-${runId}`
+  await addVariable(page, secretKey, secretValue, true)
+  await createSecretFailureCase(page, projectId, suiteId, `Secret failure ${runId}`, secretKey)
+  await page.getByRole('link', { name: 'Suites', exact: true }).click()
+  await page.locator(`a[href$="/suites/${suiteId}"]`).click()
+  await page.getByRole('button', { name: 'Run ready cases', exact: true }).click()
+  await expect(page).toHaveURL(/\/executions\/[0-9a-f-]+$/)
+  await expect(page.getByRole('heading', { name: /FAILED|ERROR/, exact: true })).toBeVisible({ timeout: 30_000 })
+
+  const executionId = page.url().match(/\/executions\/([0-9a-f-]+)$/)?.[1]
+  expect(executionId).toBeTruthy()
+  const response = await authenticatedExecution(page, `/api/v1/projects/${projectId}/executions/${executionId}`)
+  expect(response.status).toBe(200)
+  const execution = JSON.parse(response.body) as { cases: Array<{ errorCategory?: string; errorMessage?: string }>; artifacts: unknown[] }
+  expect(execution.cases).toHaveLength(1)
+  expect(execution.cases[0].errorCategory).toBe('ASSERTION_FAILURE')
+  expect(execution.cases[0].errorMessage).not.toContain(secretValue)
+  expect(execution.artifacts).toHaveLength(0)
+  expect(response.body).not.toContain(secretValue)
 })
 
 async function createNavigationCase(page: Page, projectId: string, suiteId: string, name: string, locatorRole: string, locatorName: string) {
