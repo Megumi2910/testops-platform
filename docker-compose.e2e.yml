@@ -31,6 +31,8 @@ services:
       TARGET_ALLOWED_ORIGINS: http://frontend:8080,http://localhost:3001,http://localhost:3201,http://localhost:3299
       TARGET_LOCAL_DEV_ENABLED: "true"
       TARGET_LOCAL_DEV_HOST_ALIAS: host.docker.internal
+      PROJECT_SECRET_VARIABLES_ENABLED: "true"
+      PROJECT_VARIABLE_KEY_PATH: /run/secrets/testops/project-variable-key
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:

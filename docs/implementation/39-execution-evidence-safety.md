@@ -24,6 +24,8 @@ Non-secret variables do not set the suppression flag. Their explicit screenshots
 
 This is a conservative case-level policy: one secret-bearing step suppresses the whole case's evidence. It avoids partial screenshots that could reveal a value entered earlier or a token rendered later in the same page.
 
+The isolated E2E Compose override explicitly enables secret variables and points the backend at the generated `/run/secrets/testops/project-variable-key`. This is required because CI starts from `backend/.env.example`, which keeps secret variables disabled by default; the repeatable QA profile must declare its security-sensitive mode explicitly rather than inheriting a developer's local `.env`.
+
 ## Navigation policy
 
 `ExecutionTargetGuard.resolve` remains the source of truth for absolute and relative URLs. The runner now also attaches a `Page.onRequest` navigation listener in addition to the existing main-frame and popup listeners. This catches the request before a click or form submission can turn into a connection-refused error.
