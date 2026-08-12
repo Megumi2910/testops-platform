@@ -296,12 +296,12 @@
 ### QG-026 — Administrator mutations lacked browser proof and actionable errors
 
 - Severity: P1
-- Status: IMPLEMENTED; focused browser verification passed; remote CI verification pending
+- Status: RESOLVED; focused browser verification and remote CI passed
 - Preconditions: isolated E2E stack has a disposable bootstrap administrator and a generated managed account
 - Expected: an administrator can change a user's platform role and account status; attempting to remove the final active administrator returns `409 final_active_admin`, leaves the account active, and displays an inline error
 - Previous actual: the page fired PATCH requests without accessible control names, pending protection, or visible mutation errors, and only guest/member route guards were automated
 - Resolution: `AdminUsersPage` now names both selects by email, disables controls while a mutation is pending, refetches after success, and renders status/error feedback. `AdminUserController` and `AdminUserService` now use the explicit auth-enabled property condition so their routes are registered reliably. The E2E Compose profile exposes only a generated bootstrap password to the CI process; `phase5-administrator-crud.spec.ts` covers positive changes and the final-admin invariant
-- Verification: first local browser run exposed the missing controller mapping. After changing the condition, rebuilding the disposable stack, and recreating the E2E backend/frontend, `phase5-administrator-crud.spec.ts` passed in 4.2 seconds with role/status persistence and final-admin protection; remote CI evidence is pending
+- Verification: first local browser run exposed the missing controller mapping. After changing the condition, rebuilding the disposable stack, and recreating the E2E backend/frontend, `phase5-administrator-crud.spec.ts` passed in 4.2 seconds with role/status persistence and final-admin protection. CI run `31609560806` passed backend, frontend, containers, local-disabled E2E, and the full E2E suite for commit `53258e1`
 - Regression layer: Playwright browser journey plus existing `AdminUserServiceTest` and `AdminUsersPage` route guard tests
 
 ## Coverage blockers

@@ -56,4 +56,4 @@ $env:E2E_ADMIN_PASSWORD = (Get-Content ..\backend\.secrets\bootstrap-admin-passw
 npm run e2e -- phase5-administrator-crud.spec.ts --reporter=line
 ```
 
-The first local attempt returned a static-resource `404` because the admin controller was conditionally omitted by `@ConditionalOnBean(AuthService.class)`. Replacing that condition with `@ConditionalOnProperty(testops.auth.enabled=true)` makes the mapping deterministic without exposing it when authentication is disabled. After rebuilding the disposable backend/frontend, the focused test passed in 4.2 seconds; the remote CI rerun is the remaining publication check.
+The first local attempt returned a static-resource `404` because the admin controller was conditionally omitted by `@ConditionalOnBean(AuthService.class)`. Replacing that condition with `@ConditionalOnProperty(testops.auth.enabled=true)` makes the mapping deterministic without exposing it when authentication is disabled. After rebuilding the disposable backend/frontend, the focused test passed in 4.2 seconds. CI run `31609560806` passed the complete backend, frontend, container, local-disabled, and E2E gates for commit `53258e1`.
