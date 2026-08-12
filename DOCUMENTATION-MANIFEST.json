@@ -135,6 +135,10 @@
       "role": "Disposable PostgreSQL proof for membership transitions, optimistic versions, final-manager retention, and archived-project blocking"
     },
     {
+      "path": "docs/testing/37-membership-positive-lifecycle.md",
+      "role": "Positive member add/change/remove service coverage, duplicate and archived-project guards, and role denial evidence"
+    },
+    {
       "path": "docs/implementation/36-member-management-ui.md",
       "role": "Accessible, version-aware project member role changes, removal confirmation, pending locks, and conflict guidance"
     },

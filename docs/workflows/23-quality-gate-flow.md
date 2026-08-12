@@ -137,3 +137,24 @@ flowchart LR
     Success -->|No final manager| Conflict["Explain manager handoff"]
     Success -->|No stale version| Reload["Require refreshed project state"]
 ```
+
+## Positive membership lifecycle path
+
+```mermaid
+flowchart LR
+    PM[Project manager] --> Add[POST members]
+    Add --> Normalize[Normalize email and role]
+    Normalize --> Duplicate{Already a member?}
+    Duplicate -->|Yes| Conflict[409 member_exists]
+    Duplicate -->|No| Save[Persist membership + assign actor]
+    Save --> AuditAdd[Audit MEMBER_ADDED]
+    PM --> Change[PUT member role]
+    PM --> Remove[DELETE member]
+    Change --> Active{Project active + version current?}
+    Remove --> Active
+    Active -->|No| Guard[409 project_archived or stale_version]
+    Active -->|Yes| Mutate[Persist role/delete]
+    Mutate --> Audit[Audit MEMBER_ROLE_CHANGED or MEMBER_REMOVED]
+```
+
+The focused positive lifecycle regression is documented in [membership positive lifecycle](../testing/37-membership-positive-lifecycle.md). It complements the PostgreSQL final-manager and stale-version gate; the remaining gap is HTTP/browser proof for every project role.

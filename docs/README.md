@@ -38,6 +38,7 @@ The root [README](../README.md) remains the project entry point. The machine-rea
 - Reviewing project-manager, test-manager, tester, viewer, non-member, and administrator capabilities: [project permission regression matrix](testing/33-project-permission-matrix.md).
 - Reproducing nested-resource isolation, final-manager conflicts, and execution cancellation ownership: [authorization HTTP regression](testing/34-authorization-http-regression.md).
 - Verifying membership transitions, optimistic versions, final-manager retention, and archived-project blocking on PostgreSQL: [membership PostgreSQL regression](testing/35-membership-postgres-regression.md).
+- Verifying successful member add/change/remove paths, duplicate protection, archived-project guards, and role denial: [membership positive lifecycle](testing/37-membership-positive-lifecycle.md).
 - Operating version-aware member role changes and safe removal from the project UI: [member management UI](implementation/36-member-management-ui.md).
 - Designing exact and repeated locators: [executable step language](implementation/10-executable-step-language.md) → [execution correctness](implementation/20-phase-6-execution-correctness.md).
 - Verifying the negative target matrix: use the local-disabled Compose profile described in the [local target guide](operations/12-local-target-testing-guide.md).

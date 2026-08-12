@@ -540,5 +540,10 @@
   <p>Each mutation includes the current project version and refreshes both membership and project caches after success. Final-manager and stale-version problems render actionable alerts, while pending writes lock competing row actions.</p>
   <p>The rebuilt frontend passed 32 tests, lint, type checking, and production build. Chrome DevTools observed labelled PM controls, an accessible focused confirmation dialog with Escape close, only HTTP 200 project/member requests, no console issue, and no overflow at 320×800. A separate viewer login hid Members navigation; direct URL access rendered badges only with no mutation control and a clean console/network trace.</p>
 </section>
+<section aria-labelledby="phase5-membership-positive">
+  <h2 id="phase5-membership-positive">Phase 5 membership positive lifecycle (2026-08-12)</h2>
+  <p>The project-member service now has regression evidence for the successful lifecycle as well as its safety stops. A project manager can add a normalized email/role, change a non-manager role, and remove that membership; each successful write persists the row transition and records the corresponding audit event.</p>
+  <p>The same test slice proves duplicate membership is rejected before persistence, all membership writes are blocked on archived projects, and a non-manager cannot reach user lookup or repository mutation. See <code>docs/testing/37-membership-positive-lifecycle.md</code> for commands and remaining browser-matrix work.</p>
+</section>
 </body>
 </html>

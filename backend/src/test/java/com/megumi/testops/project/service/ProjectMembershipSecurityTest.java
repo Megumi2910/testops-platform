@@ -17,6 +17,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.http.HttpStatus;
 
 import com.megumi.testops.auth.domain.UserEntity;
 import com.megumi.testops.auth.repository.UserRepository;
@@ -100,5 +101,104 @@ class ProjectMembershipSecurityTest {
         assertEquals(404, failure.getStatus().value());
         verify(members, never()).delete(any());
         verify(audits, never()).save(any());
+    }
+
+    @Test
+    void projectManagerCanAddMemberWithNormalizedIdentityAndRole() {
+        UUID memberId = UUID.randomUUID();
+        UserEntity memberUser = mock(UserEntity.class);
+        when(memberUser.getId()).thenReturn(memberId);
+        when(memberUser.getEmail()).thenReturn("qa.member@example.test");
+        when(memberUser.getDisplayName()).thenReturn("QA Member");
+        when(users.findByEmail("qa.member@example.test")).thenReturn(Optional.of(memberUser));
+        when(members.existsByProjectIdAndUserId(project.getId(), memberId)).thenReturn(false);
+        when(members.save(any(ProjectMemberEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ProjectDtos.MemberResponse response = service.addMember(jwt, project.getId(),
+                new ProjectDtos.MemberRequest(" QA.MEMBER@EXAMPLE.TEST ", " test_manager ", project.getVersion()));
+
+        assertEquals(memberId, response.userId());
+        assertEquals("qa.member@example.test", response.email());
+        assertEquals("TEST_MANAGER", response.role());
+        assertEquals(actorId, response.assignedBy());
+        verify(members).save(any(ProjectMemberEntity.class));
+        verify(audits).save(any());
+    }
+
+    @Test
+    void duplicateMemberIsRejectedBeforePersistence() {
+        UserEntity memberUser = mock(UserEntity.class);
+        UUID memberId = UUID.randomUUID();
+        when(memberUser.getId()).thenReturn(memberId);
+        when(users.findByEmail("qa.member@example.test")).thenReturn(Optional.of(memberUser));
+        when(members.existsByProjectIdAndUserId(project.getId(), memberId)).thenReturn(true);
+
+        ApiException failure = assertThrows(ApiException.class,
+                () -> service.addMember(jwt, project.getId(),
+                        new ProjectDtos.MemberRequest("qa.member@example.test", "VIEWER", project.getVersion())));
+
+        assertEquals("member_exists", failure.getCode());
+        assertEquals(409, failure.getStatus().value());
+        verify(members, never()).save(any());
+        verify(audits, never()).save(any());
+    }
+
+    @Test
+    void projectManagerCanChangeAndRemoveNonManagerMember() {
+        UserEntity memberUser = mock(UserEntity.class);
+        UUID memberId = UUID.randomUUID();
+        when(memberUser.getId()).thenReturn(memberId);
+        when(memberUser.getEmail()).thenReturn("qa.member@example.test");
+        when(memberUser.getDisplayName()).thenReturn("QA Member");
+        ProjectMemberEntity member = new ProjectMemberEntity(project, memberUser, "TESTER", Instant.now());
+        when(members.findByProjectIdAndUserId(project.getId(), memberId)).thenReturn(Optional.of(member));
+
+        ProjectDtos.MemberResponse changed = service.changeMember(jwt, project.getId(), memberId,
+                new ProjectDtos.MemberRoleRequest("VIEWER", project.getVersion()));
+        service.removeMember(jwt, project.getId(), memberId, project.getVersion());
+
+        assertEquals("VIEWER", changed.role());
+        assertEquals("VIEWER", member.getRole());
+        verify(members).delete(member);
+        verify(audits, org.mockito.Mockito.times(2)).save(any());
+    }
+
+    @Test
+    void archivedProjectRejectsEveryMemberMutation() {
+        project.archive(Instant.now());
+        UUID memberId = UUID.randomUUID();
+
+        ApiException addFailure = assertThrows(ApiException.class,
+                () -> service.addMember(jwt, project.getId(),
+                        new ProjectDtos.MemberRequest("qa.member@example.test", "VIEWER", project.getVersion())));
+        ApiException changeFailure = assertThrows(ApiException.class,
+                () -> service.changeMember(jwt, project.getId(), memberId,
+                        new ProjectDtos.MemberRoleRequest("VIEWER", project.getVersion())));
+        ApiException removeFailure = assertThrows(ApiException.class,
+                () -> service.removeMember(jwt, project.getId(), memberId, project.getVersion()));
+
+        assertEquals("project_archived", addFailure.getCode());
+        assertEquals("project_archived", changeFailure.getCode());
+        assertEquals("project_archived", removeFailure.getCode());
+        verify(members, never()).save(any());
+        verify(members, never()).delete(any());
+        verify(audits, never()).save(any());
+    }
+
+    @Test
+    void nonManagerCannotMutateMembership() {
+        ApiException denied = new ApiException(HttpStatus.FORBIDDEN, "project_role_required",
+                "Your project role does not allow this operation");
+        org.mockito.Mockito.doThrow(denied).when(access)
+                .requireProjectRole(eq(project), eq(actor), eq(jwt), any());
+
+        ApiException failure = assertThrows(ApiException.class,
+                () -> service.addMember(jwt, project.getId(),
+                        new ProjectDtos.MemberRequest("qa.member@example.test", "VIEWER", project.getVersion())));
+
+        assertEquals("project_role_required", failure.getCode());
+        assertEquals(403, failure.getStatus().value());
+        verify(users, never()).findByEmail(any());
+        verify(members, never()).save(any());
     }
 }
