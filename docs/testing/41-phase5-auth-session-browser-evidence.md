@@ -21,6 +21,8 @@
 
 The final focused run reported `3 passed (7.8s)`. Before the fix, the same run exposed a `500` for `GET /api/v1/users/me/sessions`; backend logs identified `NoResourceFoundException` because the controller mapping was not registered. After registration, the DELETE endpoint initially returned an empty `200`; changing it to `204` allowed the frontend's request helper to parse the response and refetch the session list.
 
+The first pushed revision also exposed an integration-profile regression: an unconditional controller required the auth service when `AUTH_ENABLED=false`. The follow-up correction uses the shared `testops.auth.enabled=true` property condition. This keeps the endpoint available in the E2E stack without breaking the intentionally auth-disabled Spring context.
+
 ## Evidence and redaction
 
 Playwright used semantic labels and roles. The test email addresses are run-prefixed and disposable. OTP values are read only in memory from Mailpit. Access tokens, refresh cookies, session IDs, and passwords are not written to screenshots, traces, console output, or committed files.

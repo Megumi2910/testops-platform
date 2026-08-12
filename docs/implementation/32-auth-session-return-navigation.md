@@ -36,7 +36,7 @@ The authenticated branch of `LoginPage` uses the same sanitizer. This matters wh
 
 ## Session endpoint contract
 
-`SessionController` is registered unconditionally because `AuthRuntimeConfiguration` always supplies its `RefreshTokenService` bean when the auth feature is enabled. A conditional controller was evaluated before that bean was visible and silently removed the mapping.
+`SessionController` is guarded by `@ConditionalOnProperty(testops.auth.enabled=true)`, the same feature boundary as `AuthRuntimeConfiguration`. A bean-presence condition was evaluated too early and silently removed the mapping in the enabled runtime, while making the controller unconditional broke the auth-disabled integration profile. The property condition is stable in both contexts: the endpoint exists when auth is enabled and the controller is absent when auth is deliberately disabled.
 
 The endpoint contract is:
 

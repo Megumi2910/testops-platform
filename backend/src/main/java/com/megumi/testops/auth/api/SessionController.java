@@ -7,6 +7,7 @@ import java.util.UUID;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,6 +22,7 @@ import com.megumi.testops.auth.service.AuthException;
 import com.megumi.testops.auth.service.RefreshTokenService;
 
 @RestController
+@ConditionalOnProperty(prefix = "testops.auth", name = "enabled", havingValue = "true")
 @RequestMapping("/api/v1/users/me/sessions")
 public class SessionController {
     private final RefreshTokenRepository tokens;
