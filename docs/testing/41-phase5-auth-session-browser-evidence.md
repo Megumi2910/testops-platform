@@ -21,6 +21,8 @@
 
 The final focused run reported `3 passed (7.8s)`. Before the fix, the same run exposed a `500` for `GET /api/v1/users/me/sessions`; backend logs identified `NoResourceFoundException` because the controller mapping was not registered. After registration, the DELETE endpoint initially returned an empty `200`; changing it to `204` allowed the frontend's request helper to parse the response and refetch the session list.
 
+CI run `31588286405` then caught a browser-test false negative: the protected-return assertion used a non-exact `Projects` heading name, which also matched the `No projects yet` empty-state heading. The application had reached the correct `/projects` page, but Playwright strict mode rejected the ambiguous locator. The test now uses the exact page heading (`name: 'Projects', exact: true`), and the failure is recorded as a test-quality correction rather than a product defect.
+
 The first pushed revision also exposed an integration-profile regression: an unconditional controller required the auth service when `AUTH_ENABLED=false`. The follow-up correction uses the shared `testops.auth.enabled=true` property condition. This keeps the endpoint available in the E2E stack without breaking the intentionally auth-disabled Spring context.
 
 ## Evidence and redaction

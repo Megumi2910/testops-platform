@@ -61,7 +61,7 @@ test('protected deep links survive unverified login and verification', async ({ 
   await page.getByLabel('Verification code').fill(await latestOtp(email))
   await page.getByRole('button', { name: 'Verify and sign in' }).click()
   await expect(page).toHaveURL(/\/projects$/)
-  await expect(page.getByRole('heading', { name: 'Projects' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Projects', exact: true })).toBeVisible()
 })
 
 test('active sessions can be individually revoked and then revoked all at once', async ({ page, browser }) => {

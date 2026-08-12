@@ -208,8 +208,8 @@
 - Environment: isolated TestOps E2E stack on `3100/8180`, Mailpit on `8025`, rebuilt from the current source revision
 - Reproduction: open `/projects` while anonymous, register an unverified account, sign in, open Account in a second browser context, revoke one session, and revoke all
 - Previous actual: authenticated login could be redirected to `/` before the verification guard; `GET /api/v1/users/me/sessions` fell through to static-resource handling with `500`; individual revoke returned an empty `200`, so the frontend skipped its refetch
-- Resolution: login's authenticated branch now preserves the sanitized `returnTo`; `SessionController` is registered unconditionally and returns an explicit `204` for individual revocation; Account renders session loading/error/empty states and re-fetches after a successful revoke
-- Verification: `frontend/e2e/phase5-auth-session-matrix.spec.ts` passed all three scenarios; backend verification passed 124 tests; frontend lint, typecheck, unit tests (33), and isolated image rebuild passed
+- Resolution: login's authenticated branch now preserves the sanitized `returnTo`; `SessionController` is registered when `testops.auth.enabled=true` and returns an explicit `204` for individual revocation; Account renders session loading/error/empty states and re-fetches after a successful revoke
+- Verification: `frontend/e2e/phase5-auth-session-matrix.spec.ts` passed all three scenarios; backend verification passed 124 tests; frontend lint, typecheck, unit tests (33), and isolated image rebuild passed. CI run `31588286405` also exposed and resolved an ambiguous non-exact `Projects` heading locator in the protected-return test; the product route itself was correct.
 - Regression layer: backend unit/HTTP contract plus Playwright browser matrix
 - Remaining boundary: OTP expiry/password recovery, Google OAuth, locked/disabled browser journeys, and administrator access are tracked under `QG-B01`, `QG-B02`, and `QG-B10`
 
