@@ -215,6 +215,18 @@
       "role": "Playwright administrator role/status CRUD and final-active-admin browser contract"
     },
     {
+      "path": "frontend/e2e/phase5-account-status.spec.ts",
+      "role": "Playwright locked and disabled account session-denial browser contract"
+    },
+    {
+      "path": "docs/implementation/42-account-status-browser-coverage.md",
+      "role": "Implementation rationale and fixture isolation for locked and disabled account browser coverage"
+    },
+    {
+      "path": "docs/testing/50-phase5-account-status-browser-evidence.md",
+      "role": "Evidence matrix and reproduction guide for locked and disabled account session denial"
+    },
+    {
       "path": "docs/implementation/36-member-management-ui.md",
       "role": "Accessible, version-aware project member role changes, removal confirmation, pending locks, and conflict guidance"
     },
