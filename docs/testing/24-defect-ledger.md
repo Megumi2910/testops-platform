@@ -224,6 +224,18 @@
 - Verification: `AuthServiceRecoveryTest` passed 3 tests; the rebuilt E2E stack ran all 4 `auth-recovery.spec.ts` scenarios successfully, including Mailpit reset delivery and sign-in using the new password
 - Regression layer: migration, service, frontend, and Playwright/Mailpit browser tests
 
+### QG-020 — CI password-recovery run used a non-canonical browser origin
+
+- Severity: P1
+- Status: RESOLVED in the E2E environment contract slice
+- Environment: CI isolated TestOps stack, frontend `3100`, backend `8180`, Mailpit `8025`
+- Reproduction: run Playwright with `E2E_BASE_URL=http://127.0.0.1:3100` while the backend is configured with `FRONTEND_ORIGIN=http://localhost:3100`; complete password reset and click the final Sign in button
+- Expected: origin-protected refresh/logout requests use the configured frontend origin; the final login submits the filled email and reaches the workspace
+- Previous actual: refresh/logout returned `403 Request origin is not allowed`; the controlled login form could be rerendered with an empty email, so Chromium blocked submission before `/api/v1/auth/login`
+- Resolution: Playwright defaults and CI profiles now use `localhost` to match `FRONTEND_ORIGIN`. `OriginGuard` remains unchanged and production remains fail-closed.
+- Verification: focused recovery Playwright run passed all four scenarios against rebuilt containers; full local Playwright run passed 24 scenarios with 10 intentional ecommerce skips; CI rerun is required as the publication gate
+- Regression layer: Playwright recovery journey plus CI Compose environment configuration
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |
@@ -245,4 +257,4 @@
 
 ## Triage result
 
-There are no confirmed P0 incidents. Phases 2, 3, and 4 are complete, and `QG-017` through `QG-019` close the core role/tenant, session, OTP-expiry, and password-recovery slices. Release status remains **PARTIAL** while Google/locked/disabled variants, administration, execution/evidence, dashboard, accessibility/performance, and twice-consecutive-CI gates remain open.
+There are no confirmed P0 incidents. Phases 2, 3, and 4 are complete, and `QG-017` through `QG-020` close the core role/tenant, session, OTP-expiry, password-recovery, and canonical E2E-origin slices. Release status remains **PARTIAL** while Google/locked/disabled variants, administration, execution/evidence, dashboard, accessibility/performance, and twice-consecutive-CI gates remain open.

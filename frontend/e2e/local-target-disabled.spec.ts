@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 
 import { registerAndVerify } from './helpers/auth'
 
-test.use({ baseURL: process.env.E2E_DISABLED_BASE_URL ?? 'http://127.0.0.1:3101' })
+test.use({ baseURL: process.env.E2E_DISABLED_BASE_URL ?? 'http://localhost:3101' })
 
 test('local origins are visibly disabled when the local bridge is off', async ({ page }) => {
   test.skip(!process.env.E2E_DISABLED_BASE_URL, 'Run against the local-disabled Compose profile')

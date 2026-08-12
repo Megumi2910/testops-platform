@@ -12,7 +12,10 @@ export default defineConfig({
   workers: Number(process.env.PW_WORKERS ?? 1),
   reporter: [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
   use: {
-    baseURL: process.env.E2E_BASE_URL ?? 'http://127.0.0.1:3100',
+    // Keep the browser origin aligned with backend FRONTEND_ORIGIN. Origin-
+    // protected refresh/logout calls must not be exercised through an alias
+    // that the backend intentionally rejects.
+    baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3100',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',

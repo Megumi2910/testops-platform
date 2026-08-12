@@ -105,7 +105,7 @@ jobs:
       - run: npm run e2e
         working-directory: frontend
         env:
-          E2E_BASE_URL: http://127.0.0.1:3100
+          E2E_BASE_URL: http://localhost:3100
           MAILPIT_URL: http://127.0.0.1:8025
       - if: always()
         uses: actions/upload-artifact@v4
@@ -152,7 +152,7 @@ jobs:
       - run: npm run e2e -- local-target-disabled.spec.ts
         working-directory: frontend
         env:
-          E2E_DISABLED_BASE_URL: http://127.0.0.1:3101
+          E2E_DISABLED_BASE_URL: http://localhost:3101
           MAILPIT_URL: http://127.0.0.1:8026
       - if: always()
         uses: actions/upload-artifact@v4

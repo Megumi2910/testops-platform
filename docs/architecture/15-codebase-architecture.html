@@ -584,11 +584,17 @@
   <p><code>ExecutionService.queue*()</code> checks the idempotency key before locking the singleton queue guard. A full guard returns the structured <code>429 execution_queue_full</code> problem before acquisition, execution creation, case-result creation, or definition/variable snapshot writes. The focused 13-test backend slice records both behaviors in <code>docs/testing/44-phase5-worker-queue-evidence.md</code>.</p>
   <p>This closes only the deterministic worker/queue contract. Secret evidence suppression, target escape, browser-crash handling, and the complete screenshot/trace artifact matrix remain open under <code>QG-B08</code>.</p>
 </section>
-<section aria-labelledby="phase5-password-recovery">
+  <section aria-labelledby="phase5-password-recovery">
   <h2 id="phase5-password-recovery">Phase 5 password recovery and OTP expiry (2026-08-12)</h2>
   <p>The login surface now links to a public two-stage <code>/password-reset</code> route. The request endpoint always returns the same <code>202</code> response, while <code>AuthService.requestPasswordReset</code> locks the user row, enforces the existing IP/account cooldowns, and sends a code only for a verified active account. This keeps account existence private without making the recovery flow unusable.</p>
   <p><code>AuthService.resetPassword</code> accepts only an active, unexpired <code>PASSWORD_RESET</code> challenge, counts failed attempts, consumes a successful code, changes or creates the local credential, increments the token version, revokes refresh sessions, and records an audit event. The public confirmation endpoint returns <code>204</code>; the frontend keeps server retry metadata and maps invalid-code problems into the existing auth-card error state.</p>
   <p>The runtime defect was a stale PostgreSQL check constraint left by the unified identity migration. <code>V022__password_reset_challenge_purpose.sql</code> explicitly adds <code>PASSWORD_RESET</code> to the supported challenge purposes without resetting the database. The focused recovery service test passed three cases and the rebuilt Mailpit/Playwright suite passed four browser scenarios. See <code>docs/implementation/37-password-recovery-and-otp-expiry.md</code> and <code>docs/testing/45-phase5-password-recovery-evidence.md</code>.</p>
-</section>
+  </section>
+  <section aria-labelledby="phase5-e2e-origin">
+    <h2 id="phase5-e2e-origin">Phase 5 E2E origin contract (2026-08-12)</h2>
+    <p>The isolated Compose profile configures <code>FRONTEND_ORIGIN=http://localhost:3100</code>. Playwright and CI now open the frontend at that same canonical origin instead of the equivalent-but-different <code>127.0.0.1</code> hostname.</p>
+    <p>This matters because refresh and logout pass through <code>OriginGuard</code>. A loopback alias is still a different web origin, so the backend correctly returned <code>403</code> when CI used it. The mismatch could also rerender the controlled login form during password recovery, leaving the email empty and preventing a final login request from being sent.</p>
+    <p>The fix changes only E2E defaults and workflow environment values; it does not weaken production origin validation. The focused Mailpit recovery journey passed all four scenarios, and the full local browser suite passed 24 scenarios with 10 intentional ecommerce skips after rebuilding the isolated stack. See <code>docs/implementation/38-e2e-origin-alignment.md</code> and <code>docs/testing/46-phase5-e2e-origin-regression.md</code>.</p>
+  </section>
 </body>
 </html>

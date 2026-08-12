@@ -179,6 +179,14 @@
       "role": "Password-reset schema, service, frontend, Mailpit, and Playwright evidence"
     },
     {
+      "path": "docs/implementation/38-e2e-origin-alignment.md",
+      "role": "Canonical frontend-origin contract for Playwright, CI, OriginGuard, and password-recovery reliability"
+    },
+    {
+      "path": "docs/testing/46-phase5-e2e-origin-regression.md",
+      "role": "Sanitized CI diagnosis and regression evidence for canonical E2E origin alignment"
+    },
+    {
       "path": "docs/implementation/36-member-management-ui.md",
       "role": "Accessible, version-aware project member role changes, removal confirmation, pending locks, and conflict guidance"
     },

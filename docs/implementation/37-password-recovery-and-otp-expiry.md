@@ -109,14 +109,16 @@ cd D:\Projects\testops-platform
 docker compose -p testops-e2e -f docker-compose.yml -f docker-compose.e2e.yml up -d --build backend frontend
 
 cd frontend
-$env:E2E_BASE_URL='http://127.0.0.1:3100'
+$env:E2E_BASE_URL='http://localhost:3100'
 $env:MAILPIT_URL='http://127.0.0.1:8025'
 npm run e2e -- auth-recovery.spec.ts --reporter=line
 ```
 
 The verified run passed four scenarios: registration verification,
 unverified recovery, no duplicate resend after reload, and verified password
-reset followed by sign-in with the new password.
+reset followed by sign-in with the new password. The complete suite also passed
+24 scenarios with 10 intentionally skipped ecommerce scenarios when run with
+`E2E_BASE_URL=http://localhost:3100`.
 
 ## Limitations and next work
 
