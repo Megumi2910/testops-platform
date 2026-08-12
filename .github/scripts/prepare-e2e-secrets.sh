@@ -12,7 +12,9 @@ openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 \
 openssl rsa -pubout -in "$secret_dir/jwt-private.pem" \
   -out "$secret_dir/jwt-public.pem" >/dev/null 2>&1
 openssl rand -hex 32 > "$secret_dir/email-otp-pepper"
-openssl rand -hex 32 > "$secret_dir/project-variable-key"
+# ProjectVariableCrypto accepts either raw 32 bytes or Base64 for a 256-bit AES key.
+# Base64 keeps the disposable secret text-safe while decoding to exactly 32 bytes.
+openssl rand -base64 32 > "$secret_dir/project-variable-key"
 printf 'ci-e2e-bootstrap-password-%s\n' "$(openssl rand -hex 16)" \
   > "$secret_dir/bootstrap-admin-password"
 

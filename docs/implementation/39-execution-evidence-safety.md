@@ -24,7 +24,7 @@ Non-secret variables do not set the suppression flag. Their explicit screenshots
 
 This is a conservative case-level policy: one secret-bearing step suppresses the whole case's evidence. It avoids partial screenshots that could reveal a value entered earlier or a token rendered later in the same page.
 
-The isolated E2E Compose override explicitly enables secret variables and points the backend at the generated `/run/secrets/testops/project-variable-key`. This is required because CI starts from `backend/.env.example`, which keeps secret variables disabled by default; the repeatable QA profile must declare its security-sensitive mode explicitly rather than inheriting a developer's local `.env`.
+The isolated E2E Compose override explicitly enables secret variables and points the backend at the generated `/run/secrets/testops/project-variable-key`. This is required because CI starts from `backend/.env.example`, which keeps secret variables disabled by default; the repeatable QA profile must declare its security-sensitive mode explicitly rather than inheriting a developer's local `.env`. The preparation script writes Base64 for 32 random bytes, matching `ProjectVariableCrypto`'s accepted 256-bit key format; hex text would decode to the wrong byte length and prevent the backend from starting.
 
 ## Navigation policy
 
