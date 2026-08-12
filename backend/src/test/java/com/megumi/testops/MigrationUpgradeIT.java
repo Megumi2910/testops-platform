@@ -33,7 +33,7 @@ class MigrationUpgradeIT {
             Flyway releaseCandidate = flyway(jdbcUrl, username, password, null);
             releaseCandidate.migrate();
 
-            assertThat(releaseCandidate.info().current().getVersion().getVersion()).isEqualTo("021");
+            assertThat(releaseCandidate.info().current().getVersion().getVersion()).isEqualTo("022");
             try (var connection = DriverManager.getConnection(
                     jdbcUrl,
                     username,

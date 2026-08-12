@@ -122,7 +122,7 @@ class ApplicationContextIT {
         // Flyway preserves the migration's zero-padded identifier (V020), so
         // compare the semantic version number instead of its display format.
         org.junit.jupiter.api.Assertions.assertEquals(
-                21,
+                22,
                 Integer.parseInt(flyway.info().current().getVersion().getVersion()));
         Integer targetHealthColumns = jdbcTemplate.queryForObject("""
                 select count(*)
