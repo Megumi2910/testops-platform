@@ -70,6 +70,27 @@ No authorization headers, cookies, OTPs, passwords, or tokens were captured in t
 - Restore is explicit, accessible, and returns an individually archived case to `DRAFT`, requiring a later READY save before execution.
 - The browser contract now supports the lifecycle behavior required by QG-003 and QG-004. Remaining Phase 5 work is the broader role, conflict, project-archive, execution, and automated matrix—not this basic PM/admin lifecycle path.
 
+## Automated regression
+
+The same journey is repeatable in `frontend/e2e/definition-lifecycle.spec.ts`. It creates an isolated user/project/suite, saves a draft from the guided builder, asserts that a draft cannot run, verifies the `DELETE` archive response and Trash projection, restores the case, and confirms the active suite renders it as `DRAFT`. The test uses the E2E Compose target at `http://localhost:3201`, so it does not depend on the developer's ecommerce data.
+
+Run it against the isolated stack with:
+
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d --build
+$env:E2E_BASE_URL = 'http://127.0.0.1:3100'
+$env:MAILPIT_URL = 'http://127.0.0.1:8025'
+$env:E2E_TARGET_ORIGIN = 'http://localhost:3201'
+Push-Location frontend
+npm ci
+npx playwright install chromium
+npm run e2e -- definition-lifecycle.spec.ts
+Pop-Location
+docker compose -f docker-compose.yml -f docker-compose.e2e.yml down -v
+```
+
+The isolated volume is the only volume that may be removed by this procedure. CI runs this test as part of the standard enabled E2E job.
+
 ## Reproduction commands
 
 ```powershell
