@@ -168,7 +168,34 @@ public class PlaywrightCaseRunner {
     private static int indexOfIgnoreCase(String value, String search) {
         return value.toLowerCase(Locale.ROOT).indexOf(search.toLowerCase(Locale.ROOT));
     }
-    static String category(Throwable ex) { if (ex instanceof NavigationViolation) return "BLOCKED_NAVIGATION"; if (ex instanceof AssertionError) return "ASSERTION_FAILURE"; if (ex instanceof IllegalArgumentException) return "INVALID_DEFINITION"; if (ex instanceof TimeoutError) return "WORKER_TIMEOUT"; String name = ex.getClass().getSimpleName().toLowerCase(Locale.ROOT); String message = ex.getMessage() == null ? "" : ex.getMessage().toLowerCase(Locale.ROOT); if (name.contains("timeout") || message.contains("timeout")) return "LOCATOR_TIMEOUT"; if (message.contains("err_connection") || message.contains("econnrefused") || message.contains("net::") || message.contains("connection refused")) return "TARGET_UNREACHABLE"; if (name.contains("browser") || message.contains("browser has been closed") || message.contains("target page, context or browser has been closed")) return "BROWSER_CRASH"; if (ex instanceof com.megumi.testops.shared.api.ApiException) return "TARGET_UNREACHABLE"; if (name.contains("playwright")) return "BROWSER_CRASH"; return "UNKNOWN"; }
+    static String category(Throwable ex) {
+        if (ex instanceof NavigationViolation) return "BLOCKED_NAVIGATION";
+        if (ex instanceof AssertionError) return "ASSERTION_FAILURE";
+        if (ex instanceof IllegalArgumentException) return "INVALID_DEFINITION";
+        if (ex instanceof TimeoutError) return "WORKER_TIMEOUT";
+        String name = ex.getClass().getSimpleName().toLowerCase(Locale.ROOT);
+        String message = ex.getMessage() == null ? "" : ex.getMessage().toLowerCase(Locale.ROOT);
+        if (name.contains("timeout") || message.contains("timeout")) return "LOCATOR_TIMEOUT";
+        if (message.contains("err_connection") || message.contains("econnrefused") || message.contains("net::") || message.contains("connection refused")) return "TARGET_UNREACHABLE";
+        if (browserCrash(ex)) return "BROWSER_CRASH";
+        if (ex instanceof com.megumi.testops.shared.api.ApiException) return "TARGET_UNREACHABLE";
+        return "UNKNOWN";
+    }
+
+    private static boolean browserCrash(Throwable failure) {
+        Throwable current = failure;
+        int depth = 0;
+        while (current != null && depth++ < 12) {
+            String name = current.getClass().getSimpleName().toLowerCase(Locale.ROOT);
+            String message = current.getMessage() == null ? "" : current.getMessage().toLowerCase(Locale.ROOT);
+            if (name.contains("browser") || name.contains("playwright")
+                    || message.contains("browser has been closed")
+                    || message.contains("target page, context or browser has been closed")
+                    || message.contains("browser process")) return true;
+            current = current.getCause();
+        }
+        return false;
+    }
     private static boolean infrastructureFailure(Throwable ex, String category) { return ex instanceof NavigationViolation || ex instanceof TimeoutError || "TARGET_UNREACHABLE".equals(category) || "BROWSER_CRASH".equals(category); }
     private void monitorNavigation(Page page, String origin, AtomicReference<NavigationViolation> violation) {
         page.onRequest(request -> {

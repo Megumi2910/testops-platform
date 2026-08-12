@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10 Phase 5 adds the quality-gate matrix, role/tenant and execution regression evidence, worker/queue safety, and public password recovery; Google OAuth variants, full artifact redaction, and accessibility/performance release gates remain open",
+  "source_status": "Milestone 10 Phase 5 adds the quality-gate matrix, role/tenant and execution regression evidence, worker/queue safety, public password recovery, deterministic browser-crash classification, and binary artifact access; Google OAuth variants, real process-kill reproduction, and accessibility/performance release gates remain open",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -201,6 +201,14 @@
     {
       "path": "docs/testing/48-phase5-secret-failure-artifact.md",
       "role": "Focused browser/service evidence for secret failures and non-member artifact denial"
+    },
+    {
+      "path": "docs/implementation/41-browser-crash-and-artifact-access.md",
+      "role": "Playwright browser-crash classification and project-scoped artifact download implementation"
+    },
+    {
+      "path": "docs/testing/49-phase5-browser-crash-artifact-access.md",
+      "role": "Phase 5 evidence for wrapped browser shutdowns and member/non-member screenshot and trace downloads"
     },
     {
       "path": "docs/implementation/36-member-management-ui.md",

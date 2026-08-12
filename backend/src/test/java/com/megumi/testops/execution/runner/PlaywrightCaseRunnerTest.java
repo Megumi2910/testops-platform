@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Set;
 import java.util.Map;
 
+import com.microsoft.playwright.PlaywrightException;
 
 import org.junit.jupiter.api.Test;
 
@@ -90,5 +91,14 @@ class PlaywrightCaseRunnerTest {
         assertEquals("LOCATOR_TIMEOUT", PlaywrightCaseRunner.category(new RuntimeException("Timeout 5000ms exceeded")));
         assertEquals("TARGET_UNREACHABLE", PlaywrightCaseRunner.category(new RuntimeException("net::ERR_CONNECTION_REFUSED")));
         assertEquals("BLOCKED_NAVIGATION", PlaywrightCaseRunner.category(new PlaywrightCaseRunner.NavigationViolation()));
+    }
+
+    @Test
+    void classifiesDirectAndWrappedPlaywrightShutdownsAsBrowserCrashes() {
+        var direct = new PlaywrightException("Target page, context or browser has been closed");
+        var wrapped = new IllegalStateException("runner stopped", direct);
+
+        assertEquals("BROWSER_CRASH", PlaywrightCaseRunner.category(direct));
+        assertEquals("BROWSER_CRASH", PlaywrightCaseRunner.category(wrapped));
     }
 }
