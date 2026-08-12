@@ -35,6 +35,7 @@ function renderGuard(auth: AuthContextValue) {
             <Route path="/admin/users" element={<p>Administration</p>} />
           </Route>
           <Route path="/dashboard" element={<p>Dashboard</p>} />
+          <Route path="/login" element={<p>Sign in</p>} />
         </Routes>
       </MemoryRouter>
     </AuthContext.Provider>,
@@ -42,6 +43,11 @@ function renderGuard(auth: AuthContextValue) {
 }
 
 describe('PlatformPermissionRoute', () => {
+  it('preserves an anonymous deep link through the login route', () => {
+    renderGuard({ ...baseAuth, user: null })
+    expect(screen.getByText('Sign in')).toBeInTheDocument()
+  })
+
   it('redirects a verified member without the required permission', () => {
     renderGuard(baseAuth)
     expect(screen.getByText('Dashboard')).toBeInTheDocument()

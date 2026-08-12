@@ -200,3 +200,22 @@ flowchart LR
 The browser proof for this path is captured in [definition lifecycle browser evidence](../testing/38-definition-lifecycle-browser-evidence.md). A newly authored QA-owned draft was saved, archived with a focused modal, observed in the project Trash list, restored through the name-aware dialog, and found again under the active suite as `DRAFT`. The lifecycle requests returned `201` for creation and `200` for archive/list/restore, with no console messages. The repeatable E2E equivalent is `frontend/e2e/definition-lifecycle.spec.ts`, which runs against the isolated target-site profile. Archived definitions retain execution history but cannot be mutated or queued.
 
 Project archive and restore follow the same safe mutation boundary. The UI sends the loaded project version in `If-Match`; the backend rejects missing or stale versions and repeated state transitions with structured problems. See [project lifecycle version evidence](../testing/39-project-lifecycle-version-evidence.md).
+
+## Phase 5 authentication, return, and session path
+
+```mermaid
+flowchart LR
+    DeepLink[Anonymous protected deep link] --> Login[/login?returnTo=...]
+    Login --> Credentials{Password accepted?}
+    Credentials -->|No| Invalid[Structured login error]
+    Credentials -->|Yes| Verified{Email verified?}
+    Verified -->|No| Verify[/verify-email?email=...&returnTo=...]
+    Verify --> Code{OTP valid and active?}
+    Code -->|No| CodeError[Inline invalid/expired error]
+    Code -->|Yes| Destination[Return to sanitized destination]
+    Destination --> Account[Account: list active sessions]
+    Account --> Revoke[Revoke one family -> 204 -> refetch]
+    Account --> RevokeAll[Revoke all -> invalidate tokens -> login]
+```
+
+The return value is always a same-origin relative path. `returnTo.ts` rejects absolute, protocol-relative, and backslash-containing values before React Router navigates. `SessionController` lists only active refresh-token families for the authenticated subject, checks ownership before individual revocation, and returns `204` for empty successful writes so the shared `apiFetch` helper can complete and React Query can refetch. The repeatable proof is [Phase 5 auth/session browser evidence](../testing/41-phase5-auth-session-browser-evidence.md) and `frontend/e2e/phase5-auth-session-matrix.spec.ts`. Expiry, recovery, Google, administrator, execution, and accessibility/performance paths remain separate gate rows.

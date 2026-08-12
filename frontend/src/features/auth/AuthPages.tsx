@@ -5,6 +5,7 @@ import { authApi } from './api'
 import { useAuth } from './AuthContext'
 import { ApiError } from '../../lib/api'
 import { Button } from '../../components/ui'
+import { safeReturnTo } from './returnTo'
 
 function useFormError() {
   const [error, setError] = useState('')
@@ -15,15 +16,16 @@ function problemMessage(caught: unknown, fallback: string) { if (caught instance
 export function LoginPage() {
   const { login, providers, user } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { error, setError, clear } = useFormError()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [pending, setPending] = useState(false)
-  if (user) return <NavigateHome />
+  if (user) return <NavigateHome returnTo={searchParams.get('returnTo')} />
   async function submit(event: FormEvent) {
     event.preventDefault(); clear()
     setPending(true)
-    try { await login(email, password); navigate('/') } catch (caught) { setError(problemMessage(caught, 'Unable to sign in')) } finally { setPending(false) }
+    try { await login(email, password); navigate(safeReturnTo(searchParams.get('returnTo'))) } catch (caught) { setError(problemMessage(caught, 'Unable to sign in')) } finally { setPending(false) }
   }
   return <AuthCard title="Sign in" subtitle="Use your TestOps account to continue.">
     <form className="form-stack" onSubmit={submit}>
@@ -75,6 +77,7 @@ export function VerifyEmailPage() {
   const [pending, setPending] = useState(false)
   const [resendPending, setResendPending] = useState(false)
   const [retryAfterSeconds, setRetryAfterSeconds] = useState(0)
+  const returnTo = safeReturnTo(searchParams.get('returnTo'))
   useEffect(() => {
     if (retryAfterSeconds <= 0) return
     const timer = window.setInterval(() => setRetryAfterSeconds(current => Math.max(0, current - 1)), 1_000)
@@ -91,7 +94,7 @@ export function VerifyEmailPage() {
   async function verify(event: FormEvent) {
     event.preventDefault(); clear()
     setPending(true)
-    try { await verifyEmail(email, otp); navigate('/') } catch (caught) { setError(caught instanceof Error ? caught.message : 'Unable to verify email') } finally { setPending(false) }
+    try { await verifyEmail(email, otp); navigate(returnTo) } catch (caught) { setError(caught instanceof Error ? caught.message : 'Unable to verify email') } finally { setPending(false) }
   }
   async function resend() {
     clear(); setMessage('')
@@ -130,10 +133,11 @@ export function OAuthCallbackPage() {
   return <AuthCard title="Signing you in" subtitle={error} />
 }
 
-function NavigateHome() {
+function NavigateHome({ returnTo }: { returnTo: string | null }) {
   const location = useLocation()
   const navigate = useNavigate()
-  useEffect(() => { if (location.pathname !== '/') navigate('/') }, [location.pathname, navigate])
+  const destination = safeReturnTo(returnTo)
+  useEffect(() => { if (location.pathname !== destination) navigate(destination, { replace: true }) }, [destination, location.pathname, navigate])
   return null
 }
 

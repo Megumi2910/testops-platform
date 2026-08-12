@@ -201,12 +201,24 @@
 - Regression layer: Playwright browser matrix plus existing service, MockMvc, and PostgreSQL authorization tests
 - Remaining boundary: administrator, unverified, session, dashboard, execution-artifact, and complete accessibility/performance rows are tracked separately and are not waived by this focused pass
 
+### QG-018 — Authenticated deep links and session management were not browser-complete
+
+- Severity: P1
+- Status: RESOLVED for the invalid-code, protected-return, and refresh-session slice; the broader authentication matrix remains open
+- Environment: isolated TestOps E2E stack on `3100/8180`, Mailpit on `8025`, rebuilt from the current source revision
+- Reproduction: open `/projects` while anonymous, register an unverified account, sign in, open Account in a second browser context, revoke one session, and revoke all
+- Previous actual: authenticated login could be redirected to `/` before the verification guard; `GET /api/v1/users/me/sessions` fell through to static-resource handling with `500`; individual revoke returned an empty `200`, so the frontend skipped its refetch
+- Resolution: login's authenticated branch now preserves the sanitized `returnTo`; `SessionController` is registered unconditionally and returns an explicit `204` for individual revocation; Account renders session loading/error/empty states and re-fetches after a successful revoke
+- Verification: `frontend/e2e/phase5-auth-session-matrix.spec.ts` passed all three scenarios; backend verification passed 124 tests; frontend lint, typecheck, unit tests (33), and isolated image rebuild passed
+- Regression layer: backend unit/HTTP contract plus Playwright browser matrix
+- Remaining boundary: OTP expiry/password recovery, Google OAuth, locked/disabled browser journeys, and administrator access are tracked under `QG-B01`, `QG-B02`, and `QG-B10`
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |
 | --- | --- | --- |
-| QG-B01 | Remaining TestOps OTP/recovery/session variants | Cooldown/idempotency and message-count proof are complete; add time-controlled expiry, invalid-code, password recovery, return-URL, and session cases |
-| QG-B02 | Google and full session-revocation states | provider/session fixtures |
+| QG-B01 | Remaining TestOps OTP/recovery variants | Cooldown/idempotency, invalid-code, protected return-URL, session revoke, and message-count proof are complete; add time-controlled expiry and password recovery |
+| QG-B02 | Google and locked/disabled session states | provider fixtures and browser matrix; individual/revoke-all session behavior is complete |
 | QG-B03 | Project restore/conflict/stale version | RESOLVED by versioned archive/restore API, frontend cache wiring, and lifecycle E2E; broader edit/duplicate/project-role coverage remains in the Projects row |
 | QG-B04 | target blocked/unreachable variants | isolated local-disabled/unreachable profiles |
 | QG-B05 | evidence redaction in browser artifacts | variable listing now enforces `VARIABLE_VIEW` and always masks secrets; runner screenshot/trace assertions remain |
@@ -222,4 +234,4 @@
 
 ## Triage result
 
-There are no confirmed P0 incidents. Phases 2, 3, and 4 are complete, and `QG-017` closes the core repeatable role/tenant browser slice. Release status remains **PARTIAL** while the remaining Phase 5 authentication/session, administration, execution/evidence, dashboard, accessibility/performance, and twice-consecutive-CI gates remain open.
+There are no confirmed P0 incidents. Phases 2, 3, and 4 are complete, and `QG-017` plus the focused `QG-018` slice close the core role/tenant and authentication/session journeys. Release status remains **PARTIAL** while OTP expiry/password recovery, administration, execution/evidence, dashboard, accessibility/performance, and twice-consecutive-CI gates remain open.

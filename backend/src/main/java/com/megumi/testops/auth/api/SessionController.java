@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 
 import com.megumi.testops.auth.domain.RefreshTokenEntity;
 import com.megumi.testops.auth.repository.RefreshTokenRepository;
@@ -21,7 +21,6 @@ import com.megumi.testops.auth.service.AuthException;
 import com.megumi.testops.auth.service.RefreshTokenService;
 
 @RestController
-@ConditionalOnBean(RefreshTokenService.class)
 @RequestMapping("/api/v1/users/me/sessions")
 public class SessionController {
     private final RefreshTokenRepository tokens;
@@ -35,11 +34,12 @@ public class SessionController {
     }
 
     @DeleteMapping("/{familyId}")
-    public void revoke(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID familyId) {
+    public ResponseEntity<Void> revoke(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID familyId) {
         UUID userId = subject(jwt);
         boolean owned = tokens.findByUserIdAndRevokedAtIsNullAndExpiresAtAfterOrderByIssuedAtDesc(userId, Instant.now()).stream().anyMatch(token -> token.getFamilyId().equals(familyId));
         if (!owned) throw new AuthException(HttpStatus.NOT_FOUND, "session_not_found", "Session was not found");
         refreshTokens.revokeFamily(familyId, "USER_REVOKED_SESSION");
+        return ResponseEntity.noContent().build();
     }
 
     private static UUID subject(Jwt jwt) { if (jwt == null || jwt.getSubject() == null) throw new AuthException(HttpStatus.UNAUTHORIZED, "authentication_required", "Authentication is required"); try { return UUID.fromString(jwt.getSubject()); } catch (IllegalArgumentException ex) { throw new AuthException(HttpStatus.UNAUTHORIZED, "invalid_subject", "Authentication subject is invalid"); } }
