@@ -23,6 +23,25 @@ class PlaywrightCaseRunnerTest {
     }
 
     @Test
+    void stripsPlaywrightStackAndCallLogFromFailureMessages() {
+        String message = PlaywrightCaseRunner.sanitizeMessage(new IllegalStateException(
+                "Error { message='net::ERR_CONNECTION_REFUSED at http://localhost:3299/' name='Error' stack='Error: leaked stack' } Call log: - navigating to target"));
+
+        assertEquals("net::ERR_CONNECTION_REFUSED at http://localhost:3299/", message);
+        assertFalse(message.contains("leaked stack"));
+        assertFalse(message.contains("Call log"));
+    }
+
+    @Test
+    void stripsPlaywrightFieldsWhenRuntimeOmitsMessageMarker() {
+        String message = PlaywrightCaseRunner.sanitizeMessage(new IllegalStateException(
+                "net::ERR_CONNECTION_REFUSED at http://localhost:3299/ name='Error' stack='leaked' Call log: navigating"));
+        assertEquals("net::ERR_CONNECTION_REFUSED at http://localhost:3299/", message);
+        assertFalse(message.contains("name="));
+        assertFalse(message.contains("stack="));
+    }
+
+    @Test
     void detectsSecretReferencesOnlyForConfiguredSecretKeys() {
         var secretStep = new PlaywrightCaseRunner.StepDefinition(1, "FILL", "LABEL", "Password", null, "${PASSWORD}", null, null);
         var ordinaryStep = new PlaywrightCaseRunner.StepDefinition(2, "FILL", "LABEL", "Search", null, "${SEARCH_TERM}", null, null);

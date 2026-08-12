@@ -159,6 +159,10 @@
       "role": "Playwright proof for invalid OTP, protected return navigation, individual session revoke, and revoke-all behavior"
     },
     {
+      "path": "docs/testing/42-phase5-execution-browser-evidence.md",
+      "role": "Execution cancellation, infrastructure retry, and failure-category browser evidence"
+    },
+    {
       "path": "docs/implementation/36-member-management-ui.md",
       "role": "Accessible, version-aware project member role changes, removal confirmation, pending locks, and conflict guidance"
     },

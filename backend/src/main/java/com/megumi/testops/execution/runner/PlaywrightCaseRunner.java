@@ -145,7 +145,29 @@ public class PlaywrightCaseRunner {
     private static String interpolate(String value, Map<String, String> variables) { if (value == null) return ""; java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("\\$\\{([A-Za-z][A-Za-z0-9_]{1,63})}").matcher(value); StringBuffer output = new StringBuffer(); while (matcher.find()) { String replacement = variables.get(matcher.group(1).toUpperCase(Locale.ROOT)); if (replacement == null) throw new IllegalArgumentException("Variable is unavailable or secret values are not allowed in this action"); matcher.appendReplacement(output, java.util.regex.Matcher.quoteReplacement(replacement)); } matcher.appendTail(output); return output.toString(); }
     private static int parseWaitMillis(String value, int fallback) { try { int millis = Integer.parseInt(value == null || value.isBlank() ? String.valueOf(fallback) : value.trim()); return Math.max(0, Math.min(millis, 120_000)); } catch (NumberFormatException ex) { throw new IllegalArgumentException("WAIT requires milliseconds"); } }
     private static int parseExpectedCount(String value) { try { int count = Integer.parseInt(value == null ? "" : value.trim()); if (count < 0) throw new NumberFormatException(); return count; } catch (NumberFormatException ex) { throw new IllegalArgumentException("ASSERT_COUNT requires a non-negative integer"); } }
-    static String sanitizeMessage(Throwable ex) { String value = ex.getMessage(); return value == null ? ex.getClass().getSimpleName() : value.replaceAll("(?i)(password|token|secret)=\\S+", "$1=[REDACTED]"); }
+    static String sanitizeMessage(Throwable ex) {
+        String value = ex.getMessage();
+        if (value == null || value.isBlank()) return ex.getClass().getSimpleName();
+        var structured = java.util.regex.Pattern.compile("(?i)message\\s*=\\s*['\\\"]([^'\\\"]*)['\\\"]").matcher(value);
+        if (structured.find()) value = structured.group(1);
+        else {
+            int message = indexOfIgnoreCase(value, "message=");
+            if (message >= 0) value = value.substring(message + "message=".length()).trim();
+        }
+        int name = indexOfIgnoreCase(value, " name=");
+        if (name >= 0) value = value.substring(0, name);
+        int stack = indexOfIgnoreCase(value, " stack=");
+        if (stack >= 0) value = value.substring(0, stack);
+        int callLog = indexOfIgnoreCase(value, "call log:");
+        if (callLog >= 0) value = value.substring(0, callLog);
+        value = value.replaceAll("\\s+", " ").trim();
+        value = value.replaceAll("(?i)(password|token|secret)=\\S+", "$1=[REDACTED]");
+        return value.length() > 500 ? value.substring(0, 497) + "..." : value;
+    }
+
+    private static int indexOfIgnoreCase(String value, String search) {
+        return value.toLowerCase(Locale.ROOT).indexOf(search.toLowerCase(Locale.ROOT));
+    }
     static String category(Throwable ex) { if (ex instanceof NavigationViolation) return "BLOCKED_NAVIGATION"; if (ex instanceof AssertionError) return "ASSERTION_FAILURE"; if (ex instanceof IllegalArgumentException) return "INVALID_DEFINITION"; if (ex instanceof TimeoutError) return "WORKER_TIMEOUT"; String name = ex.getClass().getSimpleName().toLowerCase(Locale.ROOT); String message = ex.getMessage() == null ? "" : ex.getMessage().toLowerCase(Locale.ROOT); if (name.contains("timeout") || message.contains("timeout")) return "LOCATOR_TIMEOUT"; if (message.contains("err_connection") || message.contains("econnrefused") || message.contains("net::") || message.contains("connection refused")) return "TARGET_UNREACHABLE"; if (name.contains("browser") || message.contains("browser has been closed") || message.contains("target page, context or browser has been closed")) return "BROWSER_CRASH"; if (ex instanceof com.megumi.testops.shared.api.ApiException) return "TARGET_UNREACHABLE"; if (name.contains("playwright")) return "BROWSER_CRASH"; return "UNKNOWN"; }
     private static boolean infrastructureFailure(Throwable ex, String category) { return ex instanceof NavigationViolation || ex instanceof TimeoutError || "TARGET_UNREACHABLE".equals(category) || "BROWSER_CRASH".equals(category); }
     private void monitorNavigation(Page page, String origin, AtomicReference<NavigationViolation> violation) {

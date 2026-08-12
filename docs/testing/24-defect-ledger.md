@@ -224,7 +224,7 @@
 | QG-B05 | evidence redaction in browser artifacts | variable listing now enforces `VARIABLE_VIEW` and always masks secrets; runner screenshot/trace assertions remain |
 | QG-B06 | ecommerce cross-customer/cross-seller/admin isolation | expanded idempotent fixtures |
 | QG-B07 | remaining membership HTTP/browser matrix | RESOLVED: service/MockMvc/PostgreSQL covers ancestry, cancellation, versions, archive, final manager, positive add/change/remove, duplicate, archived-project, and role denial paths; HTTP add/change/remove/duplicate responses are explicit; Chrome DevTools confirms PM, test-manager, tester, viewer, non-member, and administrator boundaries |
-| QG-B08 | queue/cancel/retry/artifact matrix | authoring repair and executable READY fixtures |
+| QG-B08 | queue/cancel/retry/artifact matrix | cancellation and infrastructure retry browser evidence are covered by `phase5-execution-matrix.spec.ts`; retry asserts concise sanitized connection errors with no Playwright stack/call-log leakage. Add worker-disabled/queue-full, secret suppression, target escape, browser-crash, and full artifact assertions |
 | QG-B09 | dashboard populated browser matrix and query-count proof | two-project PostgreSQL isolation, half-open boundaries, recent cap, and full-window totals are automated; add Chrome DevTools role/range evidence and bounded-query instrumentation |
 | QG-B10 | browser proof of administration boundaries | frontend permission guard and concurrent-safe last-active-admin protection implemented; full role matrix remains |
 | QG-B11 | ecommerce search/filter/sort URL matrix | repeatable public Playwright suite |
