@@ -61,7 +61,7 @@
 - Expected: explicit Move to trash confirmation, immutable history, read-only archived page, and restore-to-DRAFT flow
 - Previous actual: `ARCHIVED` appeared beside DRAFT/READY in the ordinary status select; no trash, restore, conflict, or consequence UI existed
 - Resolution: explicit Move to trash replaces the status option; archived cases render static steps and restore as DRAFT through conflict-aware dialogs.
-- Verification: Chrome DevTools archived and restored the QA-owned partial draft; the Trash success state appeared and the normal case status selector now contains only DRAFT/READY.
+- Verification: Chrome DevTools archived and restored the QA-owned partial draft and a newly authored QA-owned Homepage smoke draft; the Trash success state appeared, the archived entry retained its suite and timestamp, and the normal case status selector contains only DRAFT/READY. The full browser sequence and sanitized request list are recorded in [definition lifecycle browser evidence](38-definition-lifecycle-browser-evidence.md).
 - Likely subsystem: case editor and definition lifecycle contract
 - Regression layer: persistence integration + frontend dialog + Playwright
 - Backend resolution: ordinary status accepts only DRAFT/READY; explicit archive/restore preserves steps/history and restore returns to DRAFT.

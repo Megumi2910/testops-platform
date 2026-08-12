@@ -545,5 +545,10 @@
   <p>The project-member service now has regression evidence for the successful lifecycle as well as its safety stops. A project manager can add a normalized email/role, change a non-manager role, and remove that membership; each successful write persists the row transition and records the corresponding audit event.</p>
   <p>The same test slice proves duplicate membership is rejected before persistence, all membership writes are blocked on archived projects, and a non-manager cannot reach user lookup or repository mutation. The MockMvc contract additionally proves <code>201</code> add, <code>200</code> role change, <code>204</code> removal, and structured <code>409 member_exists</code> responses. See <code>docs/testing/37-membership-positive-lifecycle.md</code> for commands and remaining browser-matrix work.</p>
 </section>
+<section aria-labelledby="phase5-definition-lifecycle-browser">
+  <h2 id="phase5-definition-lifecycle-browser">Phase 5 definition lifecycle browser proof (2026-08-12)</h2>
+  <p>The live QA journey now covers the user-facing case lifecycle from guided authoring through reversible deletion. A QA-owned Homepage smoke draft was created through Details → Steps → Review, saved without becoming executable, moved to Trash through an accessible consequence dialog, found in the project-level archived list, and restored through the name-aware restore dialog.</p>
+  <p>The browser observed <code>201</code> for creation and <code>200</code> for archive, archived-list, restore, and active-list requests. Restore announced success and returned the case as <code>DRAFT</code>; no console messages were emitted. The suite retained its child case and the project Trash retained history rather than deleting rows. The detailed sanitized evidence is in <code>docs/testing/38-definition-lifecycle-browser-evidence.md</code>.</p>
+</section>
 </body>
 </html>

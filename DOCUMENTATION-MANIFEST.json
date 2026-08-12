@@ -139,6 +139,10 @@
       "role": "Positive member add/change/remove service coverage, duplicate and archived-project guards, and role denial evidence"
     },
     {
+      "path": "docs/testing/38-definition-lifecycle-browser-evidence.md",
+      "role": "Chrome DevTools evidence for guided draft authoring, case Trash, project Trash listing, and restore-to-DRAFT behavior"
+    },
+    {
       "path": "docs/implementation/36-member-management-ui.md",
       "role": "Accessible, version-aware project member role changes, removal confirmation, pending locks, and conflict guidance"
     },

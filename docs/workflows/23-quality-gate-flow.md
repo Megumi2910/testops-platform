@@ -158,3 +158,25 @@ flowchart LR
 ```
 
 The focused positive lifecycle regression is documented in [membership positive lifecycle](../testing/37-membership-positive-lifecycle.md). Its MockMvc assertions prove `201` add, `200` role change, `204` removal, and structured duplicate conflicts. Chrome DevTools then verifies the same boundary for project manager, test manager, tester, viewer, non-member, and administrator journeys.
+
+## Definition Trash and restore path
+
+```mermaid
+flowchart LR
+    Author[Guided case builder] --> Draft[Save DRAFT]
+    Draft --> Archive[Move to trash]
+    Archive --> Confirm{Accessible confirmation?}
+    Confirm -->|Cancel| Draft
+    Confirm -->|Confirm| History[Archive metadata + preserve steps/history]
+    History --> Trash[Project Trash: archived suite/case]
+    Trash --> ReadOnly[Direct link is read-only; run/edit/create blocked]
+    Trash --> Restore[Restore with optional name]
+    Restore --> Conflict{Active name conflict?}
+    Conflict -->|Yes| Rename[Return 409; choose a new name]
+    Conflict -->|No| Active[Restore active definition]
+    Active --> CaseState{Definition type}
+    CaseState -->|Case| DraftAgain[Return case as DRAFT]
+    CaseState -->|Suite| Ready[Restore suite access; preserve child states]
+```
+
+The browser proof for this path is captured in [definition lifecycle browser evidence](../testing/38-definition-lifecycle-browser-evidence.md). A newly authored QA-owned draft was saved, archived with a focused modal, observed in the project Trash list, restored through the name-aware dialog, and found again under the active suite as `DRAFT`. The lifecycle requests returned `201` for creation and `200` for archive/list/restore, with no console messages. Archived definitions retain execution history but cannot be mutated or queued.
