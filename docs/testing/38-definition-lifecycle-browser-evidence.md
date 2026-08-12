@@ -89,7 +89,7 @@ Pop-Location
 docker compose -f docker-compose.yml -f docker-compose.e2e.yml down -v
 ```
 
-The isolated volume is the only volume that may be removed by this procedure. CI runs the case and suite lifecycle tests, including the same-name restore conflict, as part of the standard enabled E2E job. The suite test additionally opens the archived direct link, proves Run/New case/Edit controls are absent, restores the suite, and confirms those controls return. The conflict test creates a new active suite with the archived name, observes `409`, then supplies a replacement name and observes `200`.
+The isolated volume is the only volume that may be removed by this procedure. CI runs the case, suite, same-name restore conflict, and archived-project mutation-boundary tests as part of the standard enabled E2E job. The suite test additionally opens the archived direct link, proves Run/New case/Edit controls are absent, restores the suite, and confirms those controls return. The conflict test creates a new active suite with the archived name, observes `409`, then supplies a replacement name and observes `200`. The project test archives a project, proves its suite loses create/edit/trash/run controls, restores the project, and confirms those controls return.
 
 ## Reproduction commands
 
