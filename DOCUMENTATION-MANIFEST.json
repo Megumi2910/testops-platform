@@ -167,6 +167,10 @@
       "role": "Populated dashboard reporting and administrator route-guard browser evidence"
     },
     {
+      "path": "docs/testing/44-phase5-worker-queue-evidence.md",
+      "role": "Worker-disabled polling and queue-capacity rejection regression evidence"
+    },
+    {
       "path": "docs/implementation/36-member-management-ui.md",
       "role": "Accessible, version-aware project member role changes, removal confirmation, pending locks, and conflict guidance"
     },

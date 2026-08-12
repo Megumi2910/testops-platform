@@ -168,6 +168,29 @@ class ExecutionServiceTest {
     }
 
     @Test
+    void rejectsQueueWhenTheGuardIsAtCapacityBeforeWritingSnapshots() {
+        UUID key = UUID.randomUUID();
+        TestCaseEntity testCase = new TestCaseEntity(suite, "Ready case", null, "READY", "HIGH", null, 0, false, user, Instant.now());
+        when(executions.findByProjectIdAndIdempotencyKey(project.getId(), key)).thenReturn(Optional.empty());
+        when(cases.findBySuiteIdAndStatusNotOrderByNameAsc(suite.getId(), "ARCHIVED")).thenReturn(List.of(testCase));
+        ExecutionQueueGuardEntity guard = mock(ExecutionQueueGuardEntity.class);
+        when(guard.full(10)).thenReturn(true);
+        when(queueGuard.lockGuard()).thenReturn(Optional.of(guard));
+
+        ApiException error = assertThrows(ApiException.class,
+                () -> service.queueSuite(jwt, project.getId(), suite.getId(), key));
+
+        assertEquals("execution_queue_full", error.getCode());
+        assertEquals(429, error.getStatus().value());
+        verify(guard, never()).acquire();
+        verify(queueGuard, never()).save(any());
+        verify(executions, never()).save(any());
+        verify(caseResults, never()).saveAll(any());
+        verify(stepSnapshots, never()).saveAll(any());
+        verify(variableSnapshots, never()).saveAll(any());
+    }
+
+    @Test
     void downloadsArtifactForProjectMemberAndRejectsPurgedContent() {
         UUID key = UUID.randomUUID();
         ExecutionEntity execution = new ExecutionEntity(project, suite, user, 1, key, Instant.now());

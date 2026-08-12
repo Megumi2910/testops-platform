@@ -578,5 +578,11 @@
   <p><code>phase5-dashboard-admin-matrix.spec.ts</code> creates a QA-owned project and READY case, completes a real local-target run, then opens the dashboard through the application shell. It asserts the reporting headings and observes successful responses for summary, recent failures, and infrastructure categories. The same matrix proves that guests preserve <code>returnTo=/admin/users</code> through login and that a verified non-administrator is redirected to the dashboard without rendering user-management content. The focused run passed all 3 scenarios in 13.5 seconds against freshly rebuilt isolated images.</p>
   <p>A dedicated bootstrap-administrator fixture is still required for positive administrator CRUD and last-active-admin browser coverage; the current slice intentionally proves the negative boundary without committing credentials.</p>
 </section>
+<section aria-labelledby="phase5-worker-queue">
+  <h2 id="phase5-worker-queue">Phase 5 worker and queue safety (2026-08-12)</h2>
+  <p><code>ExecutionWorker.poll()</code> is fail-closed when <code>EXECUTION_WORKER_ENABLED=false</code>: it does not recover stale executions, claim queued work, or invoke the runner. Enabled polling performs one recovery pass, claims at most one execution, and stops cleanly when the queue is empty.</p>
+  <p><code>ExecutionService.queue*()</code> checks the idempotency key before locking the singleton queue guard. A full guard returns the structured <code>429 execution_queue_full</code> problem before acquisition, execution creation, case-result creation, or definition/variable snapshot writes. The focused 13-test backend slice records both behaviors in <code>docs/testing/44-phase5-worker-queue-evidence.md</code>.</p>
+  <p>This closes only the deterministic worker/queue contract. Secret evidence suppression, target escape, browser-crash handling, and the complete screenshot/trace artifact matrix remain open under <code>QG-B08</code>.</p>
+</section>
 </body>
 </html>
