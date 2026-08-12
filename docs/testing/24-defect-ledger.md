@@ -309,7 +309,7 @@
 | ID | Blocked coverage | Required resolution |
 | --- | --- | --- |
 | QG-B01 | Remaining TestOps OTP/recovery variants | Cooldown/idempotency, invalid-code, protected return-URL, session revoke, message-count proof, expired-code rejection, and verified password recovery are complete; Google provider coverage remains under `QG-B02` |
-| QG-B02 | Google and locked/disabled session states | `phase5-account-status.spec.ts` now covers fresh password-session denial for `LOCKED` and `DISABLED` accounts; Google provider fixtures and browser matrix remain |
+| QG-B02 | Google and locked/disabled session states | `phase5-account-status.spec.ts` covers fresh password-session denial for `LOCKED` and `DISABLED` accounts; local 5.3-second run and CI `31611690370` passed; Google provider fixtures and browser matrix remain |
 | QG-B03 | Project restore/conflict/stale version | RESOLVED by versioned archive/restore API, frontend cache wiring, and lifecycle E2E; broader edit/duplicate/project-role coverage remains in the Projects row |
 | QG-B04 | target blocked/unreachable variants | isolated local-disabled/unreachable profiles |
 | QG-B05 | evidence redaction in browser artifacts | variable listing now enforces `VARIABLE_VIEW` and always masks secrets; `phase5-evidence-safety.spec.ts` proves passing and failing secret cases suppress all artifacts, ordinary cases retain screenshot/trace, and secret plaintext is absent from the detail response; member/non-member download authorization is covered separately |

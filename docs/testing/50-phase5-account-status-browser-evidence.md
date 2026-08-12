@@ -24,6 +24,10 @@ npm run e2e -- phase5-account-status.spec.ts --reporter=line
 
 The browser test reads only visible status and alert text. It does not persist bearer tokens or email contents as evidence.
 
+## Remote verification
+
+CI run `31611690370` passed all five jobs for commit `80ff65e`, including the full Playwright E2E suite containing this test. The local focused run passed in 5.3 seconds.
+
 ## Interpretation
 
 `LOCKED` and `DISABLED` both map to the intentionally non-specific `account_unavailable` response. Keeping the same public message avoids account-state enumeration while still giving the user a clear recovery path through an administrator. A `200` response, a redirect away from `/login`, or a generic network error is a regression.

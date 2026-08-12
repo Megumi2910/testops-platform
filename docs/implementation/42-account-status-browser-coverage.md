@@ -35,6 +35,8 @@ npm run e2e -- phase5-account-status.spec.ts --reporter=line
 
 The generated password is ignored and masked by CI. It must never be copied into a test, screenshot, trace, log, or committed file.
 
+The focused run passed in 5.3 seconds after rebuilding the disposable stack. CI run `31611690370` passed backend, frontend, containers, local-disabled E2E, and the complete E2E suite for commit `80ff65e`.
+
 ## Boundaries
 
 Google OAuth still requires a provider-backed fixture and remains outside this slice. Existing session listing, individual revoke, and revoke-all tests remain the authority for refresh-token lifecycle behavior. The broader administrator role matrix and Chrome DevTools accessibility/performance evidence are also separate gates.
