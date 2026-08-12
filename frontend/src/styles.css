@@ -47,6 +47,8 @@ h2 { margin-bottom: .4rem; font-size: 1.1rem; }
 .account-card h2, .account-card p { margin: 0; }
 .inline-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: .75rem; }
 .page-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem; }
+.dashboard-filter { display: grid; gap: .35rem; min-width: 11rem; font-weight: 700; }
+.dashboard-filter select { min-height: 2.6rem; }
 .project-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 1rem; }
 .project-card { display: grid; gap: .5rem; text-decoration: none; min-height: 9rem; }
 .project-card h2, .project-card p { margin: 0; }
@@ -146,8 +148,10 @@ h2, h3 { text-wrap: balance; }
 .welcome-card { align-items: center; display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-between; }
 .welcome-card h2 { font-size: 1.35rem; }
 .metric-grid { display: grid; gap: 1rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.metric-grid > .card { min-height: 8rem; }
 .metric-value { font-size: 2.2rem; font-variant-numeric: tabular-nums; font-weight: 800; letter-spacing: -.04em; margin: .2rem 0; }
 .dashboard-grid { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1.35fr) minmax(16rem, .65fr); }
+.dashboard-grid > .card { min-height: 20rem; }
 .section-heading { align-items: flex-start; display: flex; gap: 1rem; justify-content: space-between; }
 .section-heading h2 { margin-bottom: 0; }
 .min-w-0 { min-width: 0; }

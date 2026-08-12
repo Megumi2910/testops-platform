@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10 Phase 5 adds the quality-gate matrix, role/tenant and execution regression evidence, worker/queue safety, public password recovery, deterministic browser-crash classification, and binary artifact access; Google OAuth variants, real process-kill reproduction, and accessibility/performance release gates remain open",
+  "source_status": "Milestone 10 Phase 5 adds the quality-gate matrix, role/tenant and execution regression evidence, worker/queue safety, public password recovery, deterministic browser-crash classification, binary artifact access, and dashboard range/performance evidence; Google OAuth variants, real process-kill reproduction, broader role permutations, and ecommerce release gates remain open",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -225,6 +225,18 @@
     {
       "path": "docs/testing/50-phase5-account-status-browser-evidence.md",
       "role": "Evidence matrix and reproduction guide for locked and disabled account session denial"
+    },
+    {
+      "path": "docs/implementation/43-dashboard-range-and-devtools.md",
+      "role": "URL-backed dashboard reporting windows, stable loading layout, query contract, and Chrome DevTools quality-gate implementation"
+    },
+    {
+      "path": "docs/testing/51-phase5-dashboard-range-devtools.md",
+      "role": "Dashboard range, query-count, accessibility, console, and performance evidence from the rebuilt local stack"
+    },
+    {
+      "path": "frontend/src/features/dashboard/DashboardPage.test.tsx",
+      "role": "Dashboard reporting-window, three-query, and URL selector regression tests"
     },
     {
       "path": "docs/implementation/36-member-management-ui.md",
