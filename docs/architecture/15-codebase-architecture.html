@@ -584,5 +584,11 @@
   <p><code>ExecutionService.queue*()</code> checks the idempotency key before locking the singleton queue guard. A full guard returns the structured <code>429 execution_queue_full</code> problem before acquisition, execution creation, case-result creation, or definition/variable snapshot writes. The focused 13-test backend slice records both behaviors in <code>docs/testing/44-phase5-worker-queue-evidence.md</code>.</p>
   <p>This closes only the deterministic worker/queue contract. Secret evidence suppression, target escape, browser-crash handling, and the complete screenshot/trace artifact matrix remain open under <code>QG-B08</code>.</p>
 </section>
+<section aria-labelledby="phase5-password-recovery">
+  <h2 id="phase5-password-recovery">Phase 5 password recovery and OTP expiry (2026-08-12)</h2>
+  <p>The login surface now links to a public two-stage <code>/password-reset</code> route. The request endpoint always returns the same <code>202</code> response, while <code>AuthService.requestPasswordReset</code> locks the user row, enforces the existing IP/account cooldowns, and sends a code only for a verified active account. This keeps account existence private without making the recovery flow unusable.</p>
+  <p><code>AuthService.resetPassword</code> accepts only an active, unexpired <code>PASSWORD_RESET</code> challenge, counts failed attempts, consumes a successful code, changes or creates the local credential, increments the token version, revokes refresh sessions, and records an audit event. The public confirmation endpoint returns <code>204</code>; the frontend keeps server retry metadata and maps invalid-code problems into the existing auth-card error state.</p>
+  <p>The runtime defect was a stale PostgreSQL check constraint left by the unified identity migration. <code>V022__password_reset_challenge_purpose.sql</code> explicitly adds <code>PASSWORD_RESET</code> to the supported challenge purposes without resetting the database. The focused recovery service test passed three cases and the rebuilt Mailpit/Playwright suite passed four browser scenarios. See <code>docs/implementation/37-password-recovery-and-otp-expiry.md</code> and <code>docs/testing/45-phase5-password-recovery-evidence.md</code>.</p>
+</section>
 </body>
 </html>

@@ -66,6 +66,22 @@ public class AuthController {
         return ResponseEntity.accepted().body(resendResponse(result));
     }
 
+    @PostMapping("/password/reset/request")
+    public ResponseEntity<ResendVerificationResponse> requestPasswordReset(
+            @Valid @RequestBody PasswordResetRequest request, HttpServletRequest servletRequest) {
+        AuthService.ResendVerificationResult result = service().requestPasswordReset(request, clientIp(servletRequest));
+        return ResponseEntity.accepted().body(new ResendVerificationResponse(
+                "If the account can be recovered, a reset code has been sent", result.nextResendAt(),
+                result.retryAfterSeconds()));
+    }
+
+    @PostMapping("/password/reset/confirm")
+    public ResponseEntity<Void> confirmPasswordReset(
+            @Valid @RequestBody PasswordResetConfirmRequest request, HttpServletRequest servletRequest) {
+        service().resetPassword(request, clientIp(servletRequest));
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/me/email/resend")
     public ResponseEntity<ResendVerificationResponse> resendAuthenticated(@AuthenticationPrincipal Jwt jwt,
             HttpServletRequest servletRequest) {

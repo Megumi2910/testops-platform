@@ -33,6 +33,7 @@ export function LoginPage() {
       <label>Password<input name="password" type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} /></label>
       {error && <p className="form-error" role="alert">{error}</p>}
       <Button type="submit" busy={pending}>Sign in</Button>
+      <p className="form-help"><Link to="/password-reset">Forgot your password?</Link></p>
       {providers?.googleEnabled && <a className="button button-secondary" href="/oauth2/authorization/google">Continue with Google</a>}
       {providers?.registrationEnabled && <p className="form-help">New here? <Link to="/register">Create an account</Link>.</p>}
     </form>
@@ -118,6 +119,54 @@ export function VerifyEmailPage() {
         {retryAfterSeconds > 0 ? `Resend available in ${retryAfterSeconds}s` : 'Resend code'}
       </Button>
     </form>
+  </AuthCard>
+}
+
+export function PasswordResetPage() {
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const { error, setError, clear } = useFormError()
+  const [email, setEmail] = useState(searchParams.get('email') ?? '')
+  const [otp, setOtp] = useState('')
+  const [password, setPassword] = useState('')
+  const [message, setMessage] = useState('')
+  const [sent, setSent] = useState(false)
+  const [pending, setPending] = useState(false)
+  const [retryAfterSeconds, setRetryAfterSeconds] = useState(0)
+  useEffect(() => {
+    if (retryAfterSeconds <= 0) return
+    const timer = window.setInterval(() => setRetryAfterSeconds(current => Math.max(0, current - 1)), 1_000)
+    return () => window.clearInterval(timer)
+  }, [retryAfterSeconds])
+  async function requestCode(event: FormEvent) {
+    event.preventDefault(); clear(); setPending(true)
+    try {
+      const response = await authApi.requestPasswordReset(email)
+      setMessage(response.message); setRetryAfterSeconds(response.retryAfterSeconds); setSent(true)
+    } catch (caught) { setError(problemMessage(caught, 'Unable to request a reset code')) } finally { setPending(false) }
+  }
+  async function confirm(event: FormEvent) {
+    event.preventDefault(); clear(); setPending(true)
+    try { await authApi.confirmPasswordReset({ email, otp, password }); setMessage('Password reset. You can now sign in.'); setSent(false); setOtp(''); setPassword('') }
+    catch (caught) { setError(problemMessage(caught, 'Unable to reset your password')) } finally { setPending(false) }
+  }
+  return <AuthCard title="Reset your password" subtitle="We will email a six-digit code to your verified account. Codes expire after ten minutes.">
+    {!sent ? <form className="form-stack" onSubmit={requestCode}>
+      <label>Email<input name="email" type="email" autoComplete="email" spellCheck={false} required value={email} onChange={event => setEmail(event.target.value)} /></label>
+      {error && <p className="form-error" role="alert">{error}</p>}
+      {message && <p className="form-help" role="status">{message}</p>}
+      <Button type="submit" busy={pending}>Send reset code</Button>
+      <p className="form-help"><Link to="/login">Back to sign in</Link></p>
+    </form> : <form className="form-stack" onSubmit={confirm}>
+      <label>Email<input name="email" type="email" autoComplete="email" spellCheck={false} required value={email} onChange={event => setEmail(event.target.value)} /></label>
+      <label>Reset code<input name="otp" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={otp} onChange={event => setOtp(event.target.value.replace(/\D/g, ''))} /></label>
+      <label>New password<input name="password" type="password" autoComplete="new-password" minLength={12} required value={password} onChange={event => setPassword(event.target.value)} /></label>
+      {error && <p className="form-error" role="alert">{error}</p>}
+      {message && <p className="form-help" role="status">{message}</p>}
+      <Button type="submit" busy={pending}>Reset password</Button>
+      <Button type="button" variant="secondary" disabled={retryAfterSeconds > 0 || pending} onClick={() => { setSent(false); setMessage('') }}>{retryAfterSeconds > 0 ? `Request again in ${retryAfterSeconds}s` : 'Request a new code'}</Button>
+      <p className="form-help"><button className="link-button" type="button" onClick={() => navigate('/login')}>Back to sign in</button></p>
+    </form>}
   </AuthCard>
 }
 

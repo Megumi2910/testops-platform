@@ -11,6 +11,7 @@ const LoginPage = lazy(async () => ({ default: (await import('../features/auth/A
 const OAuthCallbackPage = lazy(async () => ({ default: (await import('../features/auth/AuthPages')).OAuthCallbackPage }))
 const RegisterPage = lazy(async () => ({ default: (await import('../features/auth/AuthPages')).RegisterPage }))
 const VerifyEmailPage = lazy(async () => ({ default: (await import('../features/auth/AuthPages')).VerifyEmailPage }))
+const PasswordResetPage = lazy(async () => ({ default: (await import('../features/auth/AuthPages')).PasswordResetPage }))
 const ProjectsPage = lazy(async () => ({ default: (await import('../features/projects/ProjectPages')).ProjectsPage }))
 const NewProjectPage = lazy(async () => ({ default: (await import('../features/projects/ProjectPages')).NewProjectPage }))
 const ProjectLayout = lazy(async () => ({ default: (await import('../features/projects/ProjectWorkspace')).ProjectLayout }))
@@ -37,6 +38,7 @@ export const router = createBrowserRouter([
       { path: 'login', element: <LazyPage><LoginPage /></LazyPage> },
       { path: 'register', element: <LazyPage><RegisterPage /></LazyPage> },
       { path: 'verify-email', element: <LazyPage><VerifyEmailPage /></LazyPage> },
+      { path: 'password-reset', element: <LazyPage><PasswordResetPage /></LazyPage> },
       { path: 'auth/oauth/callback', element: <LazyPage><OAuthCallbackPage /></LazyPage> },
       { element: <ProtectedRoute />, children: [
         { path: 'account', element: <AccountPage /> },

@@ -3,7 +3,8 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
 import { AuthContext, type AuthContextValue } from './AuthContext'
-import { VerifyEmailPage } from './AuthPages'
+import { PasswordResetPage, VerifyEmailPage } from './AuthPages'
+import { authApi } from './api'
 
 describe('VerifyEmailPage', () => {
   it('uses the server retry window to disable repeated resend requests', async () => {
@@ -35,5 +36,32 @@ describe('VerifyEmailPage', () => {
     const cooldown = screen.getByRole('button', { name: 'Resend available in 30s' })
     expect(cooldown).toBeDisabled()
     expect(screen.getByRole('status')).toHaveTextContent('If the account can be verified')
+  })
+})
+
+describe('PasswordResetPage', () => {
+  it('moves from a generic reset request to the code form and confirms the new password', async () => {
+    const request = vi.spyOn(authApi, 'requestPasswordReset').mockResolvedValue({
+      message: 'If the account can be recovered, a reset code has been sent',
+      nextResendAt: '2026-08-12T12:00:30Z',
+      retryAfterSeconds: 30,
+    })
+    const confirm = vi.spyOn(authApi, 'confirmPasswordReset').mockResolvedValue(undefined)
+    render(<MemoryRouter initialEntries={['/password-reset']}><PasswordResetPage /></MemoryRouter>)
+
+    await fireEvent.change(screen.getByRole('textbox', { name: 'Email' }), { target: { value: 'qa@example.com' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Send reset code' }))
+    await waitFor(() => expect(request).toHaveBeenCalledWith('qa@example.com'))
+    expect(screen.getByRole('textbox', { name: 'Reset code' })).toBeVisible()
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Reset code' }), { target: { value: '123456' } })
+    fireEvent.change(document.querySelector<HTMLInputElement>('input[name="password"]')!, { target: { value: 'new-correct-horse-battery-staple' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Reset password' }))
+    await waitFor(() => expect(confirm).toHaveBeenCalledWith({
+      email: 'qa@example.com', otp: '123456', password: 'new-correct-horse-battery-staple',
+    }))
+    expect(screen.getByRole('status')).toHaveTextContent('Password reset')
+    request.mockRestore()
+    confirm.mockRestore()
   })
 })

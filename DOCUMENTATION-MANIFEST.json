@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 7 adds guided local-target testing, browser-based target checks, structured action metadata, editable case authoring, and negative E2E coverage; scheduling, notifications, and distributed workers remain planned",
+  "source_status": "Milestone 10 Phase 5 adds the quality-gate matrix, role/tenant and execution regression evidence, worker/queue safety, and public password recovery; Google OAuth variants, full artifact redaction, and accessibility/performance release gates remain open",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -169,6 +169,14 @@
     {
       "path": "docs/testing/44-phase5-worker-queue-evidence.md",
       "role": "Worker-disabled polling and queue-capacity rejection regression evidence"
+    },
+    {
+      "path": "docs/implementation/37-password-recovery-and-otp-expiry.md",
+      "role": "Password-reset API, challenge lifecycle, session invalidation, migration, and frontend flow"
+    },
+    {
+      "path": "docs/testing/45-phase5-password-recovery-evidence.md",
+      "role": "Password-reset schema, service, frontend, Mailpit, and Playwright evidence"
     },
     {
       "path": "docs/implementation/36-member-management-ui.md",

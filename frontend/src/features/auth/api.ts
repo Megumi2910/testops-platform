@@ -40,6 +40,10 @@ export const authApi = {
     apiFetch<ResendVerificationResponse>('/api/v1/auth/email/resend', { method: 'POST', body: JSON.stringify({ email }) }),
   resendAuthenticatedEmail: () =>
     apiFetch<ResendVerificationResponse>('/api/v1/auth/me/email/resend', { method: 'POST' }),
+  requestPasswordReset: (email: string) =>
+    apiFetch<ResendVerificationResponse>('/api/v1/auth/password/reset/request', { method: 'POST', body: JSON.stringify({ email }) }),
+  confirmPasswordReset: (payload: { email: string; otp: string; password: string }) =>
+    apiFetch<void>('/api/v1/auth/password/reset/confirm', { method: 'POST', body: JSON.stringify(payload) }),
   login: async (payload: { email: string; password: string }) => {
     const response = await apiFetch<AuthResponse>('/api/v1/auth/login', { method: 'POST', body: JSON.stringify(payload) })
     setAccessToken(response.accessToken)

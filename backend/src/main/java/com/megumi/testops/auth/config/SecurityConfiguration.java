@@ -49,7 +49,8 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/actuator/health", "/api/v1/auth/providers", "/api/v1/auth/register",
                             "/api/v1/auth/email/**", "/api/v1/auth/login", "/api/v1/auth/refresh",
-                            "/api/v1/auth/logout", "/oauth2/**", "/login/oauth2/**").permitAll();
+                            "/api/v1/auth/logout", "/api/v1/auth/password/reset/**", "/oauth2/**",
+                            "/login/oauth2/**").permitAll();
                     auth.requestMatchers("/api/v1/projects/**", "/api/v1/executions/**", "/api/v1/dashboard/**",
                             "/api/v1/admin/**", "/api/v1/platform/options").hasAuthority("EMAIL_VERIFIED");
                     if (properties.enabled()) auth.anyRequest().authenticated();

@@ -77,3 +77,27 @@ test('reloading recovery page does not create a second automatic resend', async 
   if (response) expect(response.status()).toBe(202)
   expect(await messageCount(email)).toBe(1)
 })
+
+test('verified account can reset its password through the Mailpit code', async ({ page }) => {
+  const email = `password-reset-${Date.now()}@example.test`
+  await register(page, email)
+  await page.getByLabel('Verification code').fill(await latestOtp(email))
+  await page.getByRole('button', { name: 'Verify and sign in' }).click()
+  await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible()
+  await page.getByRole('button', { name: 'Sign out' }).click()
+
+  await page.goto('/password-reset')
+  await page.getByRole('textbox', { name: 'Email' }).fill(email)
+  await page.getByRole('button', { name: 'Send reset code' }).click()
+  await expect(page.getByRole('status')).toContainText('If the account can be recovered')
+  await expect.poll(() => messageCount(email)).toBe(2)
+  await page.getByRole('textbox', { name: 'Reset code' }).fill(await latestOtp(email))
+  await page.locator('input[name="password"]').fill('new-correct-horse-battery-staple')
+  await page.getByRole('button', { name: 'Reset password' }).click()
+  await expect(page.getByRole('status')).toContainText('Password reset')
+  await page.getByRole('link', { name: 'Back to sign in' }).click()
+  await page.getByRole('textbox', { name: 'Email' }).fill(email)
+  await page.locator('input[name="password"]').fill('new-correct-horse-battery-staple')
+  await page.getByRole('button', { name: 'Sign in' }).click()
+  await expect(page.getByRole('link', { name: 'Projects', exact: true })).toBeVisible()
+})

@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.megumi.testops.auth.api.AuthResponse;
 import com.megumi.testops.auth.api.LoginRequest;
+import com.megumi.testops.auth.api.PasswordResetConfirmRequest;
+import com.megumi.testops.auth.api.PasswordResetRequest;
 import com.megumi.testops.auth.api.RegisterRequest;
 import com.megumi.testops.auth.api.UserSummaryResponse;
 import com.megumi.testops.auth.api.VerifyEmailRequest;
@@ -136,6 +138,60 @@ public class AuthService {
         UserEntity user = users.findByIdForUpdate(userId)
                 .orElseThrow(() -> new AuthException(HttpStatus.UNAUTHORIZED, "user_not_found", "User was not found"));
         return resendLocked(user, ip, now, true);
+    }
+
+    @Transactional(dontRollbackOn = AuthException.class)
+    public ResendVerificationResult requestPasswordReset(PasswordResetRequest request, String ip) {
+        rateLimiter.check("password-reset-ip", ip, properties.limits().otpResendIpAttempts(),
+                properties.limits().otpResendIpWindow());
+        Instant now = Instant.now(clock);
+        UserEntity user = users.findByEmailForUpdate(normalizeEmail(request.email())).orElse(null);
+        if (user == null || !user.isEmailVerified() || !"ACTIVE".equals(user.getStatus())) {
+            return cooldownFrom(now, now.plus(properties.email().resendDelay()));
+        }
+        EmailVerificationChallengeEntity previous = challenges
+                .findTopByUserIdAndPurposeAndConsumedAtIsNullAndInvalidatedAtIsNullOrderByIssuedAtDesc(user.getId(), "PASSWORD_RESET")
+                .orElse(null);
+        if (previous != null && previous.getResendAvailableAt().isAfter(now)) {
+            return cooldownFrom(now, previous.getResendAvailableAt());
+        }
+        if (challenges.countByUserIdAndPurposeAndIssuedAtAfter(user.getId(), "PASSWORD_RESET",
+                now.minus(java.time.Duration.ofHours(1))) >= properties.email().maxSendsPerHour()) {
+            return cooldownFrom(now, now.plus(properties.email().resendDelay()));
+        }
+        if (previous != null) {
+            previous.invalidate(now, "RESENT_PASSWORD_RESET");
+            challenges.flush();
+        }
+        issueAndSendPasswordResetChallenge(user, ip, now);
+        audit.record(user, "PASSWORD_RESET_REQUESTED", true, ip, null, null);
+        return cooldownFrom(now, now.plus(properties.email().resendDelay()));
+    }
+
+    @Transactional(dontRollbackOn = AuthException.class)
+    public void resetPassword(PasswordResetConfirmRequest request, String ip) {
+        UserEntity user = users.findByEmail(normalizeEmail(request.email())).orElseThrow(
+                () -> new AuthException(HttpStatus.BAD_REQUEST, "verification_invalid", "Verification code is invalid or expired"));
+        if (!user.isEmailVerified() || !"ACTIVE".equals(user.getStatus())) {
+            throw new AuthException(HttpStatus.BAD_REQUEST, "verification_invalid", "Verification code is invalid or expired");
+        }
+        EmailVerificationChallengeEntity challenge = challenges
+                .findTopByUserIdAndPurposeAndConsumedAtIsNullAndInvalidatedAtIsNullOrderByIssuedAtDesc(user.getId(), "PASSWORD_RESET")
+                .orElseThrow(() -> new AuthException(HttpStatus.BAD_REQUEST, "verification_invalid", "Verification code is invalid or expired"));
+        Instant now = Instant.now(clock);
+        if (!challenge.isActive(now) || !otpHasher.matches(user.getEmail(), request.otp(), challenge.getOtpHash())) {
+            challenge.failAttempt();
+            if (challenge.getFailedAttempts() >= challenge.getMaxAttempts()) challenge.invalidate(now, "MAX_ATTEMPTS");
+            audit.record(user, "PASSWORD_RESET_FAILED", false, ip, null, null);
+            throw new AuthException(HttpStatus.BAD_REQUEST, "verification_invalid", "Verification code is invalid or expired");
+        }
+        challenge.consume(now);
+        LocalCredentialEntity credential = credentials.findByUserId(user.getId()).orElse(null);
+        if (credential == null) credentials.save(new LocalCredentialEntity(user, passwordEncoder.encode(request.password()), now));
+        else credential.changePassword(passwordEncoder.encode(request.password()), now);
+        user.incrementTokenVersion(now);
+        refreshTokens.revokeAll(user, "PASSWORD_RESET");
+        audit.record(user, "PASSWORD_RESET_SUCCEEDED", true, ip, null, null);
     }
 
     private ResendVerificationResult resendLocked(UserEntity user, String ip, Instant now, boolean discloseRateLimit) {
@@ -308,6 +364,21 @@ public class AuthService {
         challenges.save(challenge);
         try {
             emailDelivery.sendVerificationCode(user.getEmail(), user.getDisplayName(), otp, challenge.getExpiresAt());
+            challenge.markDeliveryAttempt(now, true);
+        } catch (RuntimeException exception) {
+            challenge.markDeliveryAttempt(now, false);
+            throw exception;
+        }
+    }
+
+    private void issueAndSendPasswordResetChallenge(UserEntity user, String ip, Instant now) {
+        String otp = String.format(Locale.ROOT, "%06d", random.nextInt(1_000_000));
+        EmailVerificationChallengeEntity challenge = new EmailVerificationChallengeEntity(user, "PASSWORD_RESET",
+                otpHasher.hash(user.getEmail(), otp), now, now.plus(properties.email().otpLifetime()),
+                now.plus(properties.email().resendDelay()), ip);
+        challenges.save(challenge);
+        try {
+            emailDelivery.sendPasswordResetCode(user.getEmail(), user.getDisplayName(), otp, challenge.getExpiresAt());
             challenge.markDeliveryAttempt(now, true);
         } catch (RuntimeException exception) {
             challenge.markDeliveryAttempt(now, false);

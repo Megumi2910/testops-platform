@@ -211,13 +211,24 @@
 - Resolution: login's authenticated branch now preserves the sanitized `returnTo`; `SessionController` is registered when `testops.auth.enabled=true` and returns an explicit `204` for individual revocation; Account renders session loading/error/empty states and re-fetches after a successful revoke
 - Verification: `frontend/e2e/phase5-auth-session-matrix.spec.ts` passed all three scenarios; backend verification passed 124 tests; frontend lint, typecheck, unit tests (33), and isolated image rebuild passed. CI run `31588286405` also exposed and resolved an ambiguous non-exact `Projects` heading locator in the protected-return test; the product route itself was correct.
 - Regression layer: backend unit/HTTP contract plus Playwright browser matrix
-- Remaining boundary: OTP expiry/password recovery, Google OAuth, locked/disabled browser journeys, and administrator access are tracked under `QG-B01`, `QG-B02`, and `QG-B10`
+- Remaining boundary: Google OAuth, locked/disabled browser journeys, and administrator access are tracked under `QG-B02` and `QG-B10`; OTP expiry and password recovery are now covered by `QG-019`
+
+### QG-019 — Password-reset purpose was rejected by the challenge schema
+
+- Severity: P1
+- Status: RESOLVED in the Phase 5 password-recovery slice
+- Environment: isolated TestOps E2E stack on `3100/8180`, PostgreSQL, and Mailpit on `8025`
+- Reproduction: verify an account, request a password reset, and persist a `PASSWORD_RESET` challenge
+- Previous actual: the service returned a database check-constraint error because `email_verification_challenges_purpose_check` still allowed only `REGISTRATION` and `ADD_PASSWORD`
+- Resolution: `V022__password_reset_challenge_purpose.sql` replaces the named PostgreSQL constraint with the three supported purposes; the public reset endpoints are permit-all and return the documented generic/204 contracts
+- Verification: `AuthServiceRecoveryTest` passed 3 tests; the rebuilt E2E stack ran all 4 `auth-recovery.spec.ts` scenarios successfully, including Mailpit reset delivery and sign-in using the new password
+- Regression layer: migration, service, frontend, and Playwright/Mailpit browser tests
 
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |
 | --- | --- | --- |
-| QG-B01 | Remaining TestOps OTP/recovery variants | Cooldown/idempotency, invalid-code, protected return-URL, session revoke, and message-count proof are complete; add time-controlled expiry and password recovery |
+| QG-B01 | Remaining TestOps OTP/recovery variants | Cooldown/idempotency, invalid-code, protected return-URL, session revoke, message-count proof, expired-code rejection, and verified password recovery are complete; Google and locked/disabled provider variants remain under `QG-B02` |
 | QG-B02 | Google and locked/disabled session states | provider fixtures and browser matrix; individual/revoke-all session behavior is complete |
 | QG-B03 | Project restore/conflict/stale version | RESOLVED by versioned archive/restore API, frontend cache wiring, and lifecycle E2E; broader edit/duplicate/project-role coverage remains in the Projects row |
 | QG-B04 | target blocked/unreachable variants | isolated local-disabled/unreachable profiles |
@@ -234,4 +245,4 @@
 
 ## Triage result
 
-There are no confirmed P0 incidents. Phases 2, 3, and 4 are complete, and `QG-017` plus the focused `QG-018` slice close the core role/tenant and authentication/session journeys. Release status remains **PARTIAL** while OTP expiry/password recovery, administration, execution/evidence, dashboard, accessibility/performance, and twice-consecutive-CI gates remain open.
+There are no confirmed P0 incidents. Phases 2, 3, and 4 are complete, and `QG-017` through `QG-019` close the core role/tenant, session, OTP-expiry, and password-recovery slices. Release status remains **PARTIAL** while Google/locked/disabled variants, administration, execution/evidence, dashboard, accessibility/performance, and twice-consecutive-CI gates remain open.
