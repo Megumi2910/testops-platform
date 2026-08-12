@@ -573,5 +573,10 @@
   <p>Runner failures are sanitized before persistence: structured Playwright messages keep only their concise message, while stack traces and call logs are removed and token-like values are redacted.</p>
   <p>Execution detail remains the source of truth for status, per-case attempts, failure category, step results, and artifacts. The browser proof intentionally avoids direct database mutation and records only QA-owned run identifiers. Worker-disabled/queue-full behavior, secret evidence suppression, target escape, browser crashes, and the broader artifact matrix remain open gates.</p>
 </section>
+<section aria-labelledby="phase5-dashboard-admin-browser">
+  <h2 id="phase5-dashboard-admin-browser">Phase 5 dashboard and administrator browser contract (2026-08-12)</h2>
+  <p><code>phase5-dashboard-admin-matrix.spec.ts</code> creates a QA-owned project and READY case, completes a real local-target run, then opens the dashboard through the application shell. It asserts the reporting headings and observes successful responses for summary, recent failures, and infrastructure categories. The same matrix proves that guests preserve <code>returnTo=/admin/users</code> through login and that a verified non-administrator is redirected to the dashboard without rendering user-management content. The focused run passed all 3 scenarios in 13.5 seconds against freshly rebuilt isolated images.</p>
+  <p>A dedicated bootstrap-administrator fixture is still required for positive administrator CRUD and last-active-admin browser coverage; the current slice intentionally proves the negative boundary without committing credentials.</p>
+</section>
 </body>
 </html>

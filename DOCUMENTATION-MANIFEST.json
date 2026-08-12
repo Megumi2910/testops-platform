@@ -163,6 +163,10 @@
       "role": "Execution cancellation, infrastructure retry, and failure-category browser evidence"
     },
     {
+      "path": "docs/testing/43-phase5-dashboard-admin-browser-evidence.md",
+      "role": "Populated dashboard reporting and administrator route-guard browser evidence"
+    },
+    {
       "path": "docs/implementation/36-member-management-ui.md",
       "role": "Accessible, version-aware project member role changes, removal confirmation, pending locks, and conflict guidance"
     },
