@@ -159,6 +159,24 @@ flowchart LR
 
 The focused positive lifecycle regression is documented in [membership positive lifecycle](../testing/37-membership-positive-lifecycle.md). Its MockMvc assertions prove `201` add, `200` role change, `204` removal, and structured duplicate conflicts. Chrome DevTools then verifies the same boundary for project manager, test manager, tester, viewer, non-member, and administrator journeys.
 
+## Phase 5 role and tenant browser path
+
+```mermaid
+flowchart LR
+    Register[Register and verify QA accounts] --> Grant[Project manager grants role]
+    Grant --> Matrix{Effective permissions}
+    Matrix --> TM[TEST_MANAGER: create + run]
+    Matrix --> Tester[TESTER: run only]
+    Matrix --> Viewer[VIEWER: read only]
+    Matrix --> NonMember[Non-member: project load denied]
+    Primary[Primary project] --> Foreign[Foreign suite identifier]
+    Foreign --> Scoped[Parent-scoped API lookup]
+    Scoped --> Hidden[404 without resource disclosure]
+    Hidden --> Legitimate[Legitimate suite remains readable]
+```
+
+The repeatable browser proof for this path is [`phase5-role-tenant-browser-evidence.md`](../testing/40-phase5-role-tenant-browser-evidence.md) and [`phase5-role-matrix.spec.ts`](../../frontend/e2e/phase5-role-matrix.spec.ts). Each account keeps its authenticated SPA context while the test uses semantic navigation; this avoids coupling the test to the frontend's in-memory access-token implementation. A foreign suite ID is asserted at the network boundary as `404`, then the UI's non-disclosing error state and the legitimate suite are both checked.
+
 ## Definition Trash and restore path
 
 ```mermaid

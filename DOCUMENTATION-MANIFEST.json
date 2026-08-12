@@ -147,6 +147,10 @@
       "role": "Versioned project archive/restore contract, conflict behavior, and focused browser/backend verification"
     },
     {
+      "path": "docs/testing/40-phase5-role-tenant-browser-evidence.md",
+      "role": "Playwright role-control and cross-project nested-resource isolation evidence, E2E Mailpit recovery, and remaining Phase 5 boundaries"
+    },
+    {
       "path": "docs/implementation/36-member-management-ui.md",
       "role": "Accessible, version-aware project member role changes, removal confirmation, pending locks, and conflict guidance"
     },

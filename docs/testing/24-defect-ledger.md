@@ -189,6 +189,18 @@
 - Verification: `ProjectServiceContractTest` and `AuthorizationHttpContractTest` cover success, stale, repeated-state, and missing-header paths; the rebuilt isolated Playwright archived-project test passed.
 - Regression layer: backend unit + MockMvc + Playwright
 
+### QG-017 — Role and nested-resource browser boundaries were not repeatably covered
+
+- Severity: P1
+- Status: RESOLVED for the core project-role and tenant-isolation slice; the full Phase 5 release matrix remains open
+- Environment: isolated TestOps E2E stack on `3100/8180`, static target on `3204`, Mailpit on `8025`
+- Preconditions: verified QA users, one primary project with a suite, and a second project owned by a different user
+- Previous gap: role controls had focused component/HTTP evidence, but no repeatable browser proof that TEST_MANAGER, TESTER, VIEWER, and non-member capabilities matched the project permission payload, and no browser assertion for a foreign suite identifier under a legitimate project
+- Resolution: `frontend/e2e/phase5-role-matrix.spec.ts` registers run-prefixed accounts, grants project roles, checks New case/Run ready cases/Members visibility, verifies non-member project denial, and captures the authenticated foreign-suite request as `404` before confirming the legitimate suite remains readable
+- Verification: both Playwright tests passed on 2026-08-12; frontend lint, typecheck, and the 32-test unit suite passed; the isolated Mailpit service was recreated on the declared Compose network after the first run found a detached stale container
+- Regression layer: Playwright browser matrix plus existing service, MockMvc, and PostgreSQL authorization tests
+- Remaining boundary: administrator, unverified, session, dashboard, execution-artifact, and complete accessibility/performance rows are tracked separately and are not waived by this focused pass
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |
@@ -210,4 +222,4 @@
 
 ## Triage result
 
-There are no confirmed P0 incidents. Phases 2, 3, and 4 are complete. Release status remains **PARTIAL** while the automated Phase 5 role, tenant, lifecycle, browser, accessibility, and PostgreSQL matrix remains open.
+There are no confirmed P0 incidents. Phases 2, 3, and 4 are complete, and `QG-017` closes the core repeatable role/tenant browser slice. Release status remains **PARTIAL** while the remaining Phase 5 authentication/session, administration, execution/evidence, dashboard, accessibility/performance, and twice-consecutive-CI gates remain open.
