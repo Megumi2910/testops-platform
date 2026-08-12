@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -80,5 +81,65 @@ class AuthorizationHttpContractTest {
                         .queryParam("projectVersion", "0"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("final_project_manager"));
+    }
+
+    @Test
+    void addMemberReturnsCreatedResponse() throws Exception {
+        UUID projectId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        ProjectDtos.MemberRequest request = new ProjectDtos.MemberRequest("member@example.test", "VIEWER", 4L);
+        when(projects.addMember(isNull(Jwt.class), eq(projectId), eq(request)))
+                .thenReturn(new ProjectDtos.MemberResponse(userId, "member@example.test", "Member", "VIEWER", 0L,
+                        null));
+
+        mvc.perform(post("/api/v1/projects/{projectId}/members", projectId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"member@example.test\",\"role\":\"VIEWER\",\"projectVersion\":4}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.userId").value(userId.toString()))
+                .andExpect(jsonPath("$.role").value("VIEWER"));
+    }
+
+    @Test
+    void duplicateMemberReturnsConflictProblem() throws Exception {
+        UUID projectId = UUID.randomUUID();
+        ProjectDtos.MemberRequest request = new ProjectDtos.MemberRequest("member@example.test", "VIEWER", 4L);
+        when(projects.addMember(isNull(Jwt.class), eq(projectId), eq(request)))
+                .thenThrow(new ApiException(HttpStatus.CONFLICT, "member_exists", "User is already a project member"));
+
+        mvc.perform(post("/api/v1/projects/{projectId}/members", projectId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"member@example.test\",\"role\":\"VIEWER\",\"projectVersion\":4}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("member_exists"))
+                .andExpect(jsonPath("$.title").value("Conflict"));
+    }
+
+    @Test
+    void changeMemberReturnsUpdatedRole() throws Exception {
+        UUID projectId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        ProjectDtos.MemberRoleRequest request = new ProjectDtos.MemberRoleRequest("TEST_MANAGER", 4L);
+        when(projects.changeMember(isNull(Jwt.class), eq(projectId), eq(userId), eq(request)))
+                .thenReturn(new ProjectDtos.MemberResponse(userId, "member@example.test", "Member", "TEST_MANAGER", 1L,
+                        null));
+
+        mvc.perform(put("/api/v1/projects/{projectId}/members/{userId}", projectId, userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"role\":\"TEST_MANAGER\",\"projectVersion\":4}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.role").value("TEST_MANAGER"))
+                .andExpect(jsonPath("$.version").value(1));
+    }
+
+    @Test
+    void removeMemberReturnsNoContent() throws Exception {
+        UUID projectId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        org.mockito.Mockito.doNothing().when(projects).removeMember(isNull(Jwt.class), eq(projectId), eq(userId), eq(4L));
+
+        mvc.perform(delete("/api/v1/projects/{projectId}/members/{userId}", projectId, userId)
+                        .queryParam("projectVersion", "4"))
+                .andExpect(status().isNoContent());
     }
 }

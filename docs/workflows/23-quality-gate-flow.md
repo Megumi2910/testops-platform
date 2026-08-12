@@ -157,4 +157,4 @@ flowchart LR
     Mutate --> Audit[Audit MEMBER_ROLE_CHANGED or MEMBER_REMOVED]
 ```
 
-The focused positive lifecycle regression is documented in [membership positive lifecycle](../testing/37-membership-positive-lifecycle.md). It complements the PostgreSQL final-manager and stale-version gate; the remaining gap is HTTP/browser proof for every project role.
+The focused positive lifecycle regression is documented in [membership positive lifecycle](../testing/37-membership-positive-lifecycle.md). Its MockMvc assertions prove `201` add, `200` role change, `204` removal, and structured duplicate conflicts; the remaining gap is browser proof for every project role.

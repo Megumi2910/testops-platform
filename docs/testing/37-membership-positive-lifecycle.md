@@ -26,10 +26,12 @@ Project-member writes are project-manager operations. Every write resolves the p
 
 `ProjectAccessServiceTest` remains the source of truth for the complete project-role operation matrix, including project-manager-only membership management and administrator bypass. `ApplicationContextIT` proves the corresponding optimistic-version and manager-count behavior against PostgreSQL.
 
+`backend/src/test/java/com/megumi/testops/project/api/AuthorizationHttpContractTest.java` now proves the public controller contract too: add returns `201` with the member identity, duplicate add returns structured `409 member_exists`, role change returns `200` with the updated role/version, and removal returns `204`. The existing final-manager tests continue to prove structured conflict responses at the same boundary.
+
 Run the focused gate from `backend/`:
 
 ```powershell
-./mvnw -q '-Dtest=ProjectMembershipSecurityTest,ProjectAccessServiceTest' test
+./mvnw -q '-Dtest=AuthorizationHttpContractTest,ProjectMembershipSecurityTest,ProjectAccessServiceTest' test
 ```
 
 The full backend gate must still be run before publishing the slice:
