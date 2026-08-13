@@ -371,6 +371,18 @@
       "role": "Opt-in ecommerce selective-checkout, idempotency replay, cart cleanup, and cancellation browser contract"
     },
     {
+      "path": "docs/implementation/55-phase5-ecommerce-messaging.md",
+      "role": "Ecommerce SockJS/STOMP principal resolution, thread ownership boundary, and live delivery implementation"
+    },
+    {
+      "path": "docs/testing/64-phase5-ecommerce-messaging-evidence.md",
+      "role": "Two-context ecommerce WebSocket delivery evidence with REST fallback intentionally disabled"
+    },
+    {
+      "path": "frontend/e2e/phase5-ecommerce-messaging.spec.ts",
+      "role": "Opt-in ecommerce two-user WebSocket messaging and REST-fallback isolation browser contract"
+    },
+    {
       "path": "frontend/e2e/phase5-ecommerce-role-isolation.spec.ts",
       "role": "Two-context ecommerce customer cart/order/thread and seller product ownership browser contract"
     },

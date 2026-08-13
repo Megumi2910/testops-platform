@@ -324,7 +324,7 @@
 | QG-B11 | ecommerce search/filter/sort URL matrix | RESOLVED for the catalog sub-gate: `ecommerce-smoke.spec.ts` covers category navigation, product detail, keyword/no-result search, filter/sort URL state, retry, and pagination against the permanent mock catalog; checkout, messaging, permissions, and accessibility remain separate gates |
 | QG-B12 | ecommerce email verification/reset | RESOLVED for the deterministic delivery sub-gate: `ecommerce-auth-mailpit.spec.ts` passes registration → same-origin verification, unverified resend/cooldown, and password reset (3/3) against the isolated ecommerce PostgreSQL/Mailpit profile. Real SMTP-provider behavior remains outside this local gate; see `testing/60-phase5-ecommerce-mailpit-auth-evidence.md` |
 | QG-B13 | checkout concurrency and destructive order states | PARTIAL: `OrderServiceImplCheckoutTest` and `phase5-ecommerce-checkout.spec.ts` prove server-side pricing, selected-item cleanup, UUID idempotency replay, and exact-once cancellation restoration; PostgreSQL final-unit concurrency, payment-state, stale-stock, and review scenarios remain |
-| QG-B14 | two-user messaging | PARTIAL: separate customer-A/seller-B and customer-B/seller-B threads are seeded and foreign REST reads return `404` in two contexts; WebSocket/reconnect/REST-fallback send/receive remains |
+| QG-B14 | two-user messaging | PARTIAL: separate customer-A/seller-B and customer-B/seller-B threads are seeded, foreign REST reads return `404`, and the two-context browser contract proves WebSocket send/receive with REST intentionally aborted; reconnect timing, explicit fallback, unread-state, and native stress remain |
 
 ## Triage result
 
