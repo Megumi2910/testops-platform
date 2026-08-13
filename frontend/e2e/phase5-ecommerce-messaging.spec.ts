@@ -106,4 +106,40 @@ test.describe('ecommerce Phase 5 two-user messaging', () => {
       await sellerContext.close()
     }
   })
+
+  test('falls back to REST while disconnected and preserves unread state until the thread is opened', async ({ browser }) => {
+    const customerContext = await browser.newContext()
+    const sellerContext = await browser.newContext()
+    const customer = await customerContext.newPage()
+    const seller = await sellerContext.newPage()
+
+    try {
+      await signIn(customer, customerEmail, customerPassword)
+      await signIn(seller, sellerEmail, sellerPassword, '/seller')
+
+      const customerThreads = await browserApi(customer, '/api/messages/threads')
+      const customerThread = threadWithSeller(threadRows(customerThreads))
+      expect(customerThread?.['id']).toBeTruthy()
+      const threadId = customerThread?.['id']
+
+      await seller.goto(`${ecommerceOrigin}/messages`, { waitUntil: 'networkidle' })
+      await customer.route('**/ws/**', (route) => route.abort('blockedbyclient'))
+      await customer.goto(`${ecommerceOrigin}/messages/${threadId}`, { waitUntil: 'networkidle' })
+      await expect(customer.getByTestId('message-transport-status')).toContainText('REST dự phòng', { timeout: 15_000 })
+
+      const message = `[QA-REST-${Date.now()}] Customer fallback message`
+      await customer.getByRole('textbox', { name: 'Message text' }).fill(message)
+      await customer.getByRole('button', { name: 'Send message' }).click()
+      await expect(customer.locator('p:visible').filter({ hasText: message }).first()).toBeVisible({ timeout: 10_000 })
+
+      await seller.getByRole('tab', { name: /Unread/ }).click()
+      await expect(seller.getByRole('button', { name: /unread messages/ }).first()).toBeVisible({ timeout: 20_000 })
+      await seller.getByRole('button', { name: /unread messages/ }).first().click()
+      await expect(seller.locator('p:visible').filter({ hasText: message }).first()).toBeVisible({ timeout: 10_000 })
+      await expect(seller.getByRole('button', { name: /unread messages/ }).first()).toHaveCount(0)
+    } finally {
+      await customerContext.close()
+      await sellerContext.close()
+    }
+  })
 })

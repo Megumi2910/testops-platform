@@ -423,6 +423,14 @@
       "role": "Opt-in ecommerce QR payment-state and stale-cart recovery browser contract"
     },
     {
+      "path": "docs/implementation/59-phase5-ecommerce-messaging-resilience.md",
+      "role": "Ecommerce SockJS reconnect status, REST fallback, unread synchronization, and read-state behavior"
+    },
+    {
+      "path": "docs/testing/68-phase5-ecommerce-messaging-resilience-evidence.md",
+      "role": "Two-user WebSocket, disconnected REST fallback, unread-filter, and read-state browser evidence"
+    },
+    {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",
       "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
     }
