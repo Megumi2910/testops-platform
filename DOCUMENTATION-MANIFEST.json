@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10 Phase 5 adds the quality-gate matrix, role/tenant and execution regression evidence, worker/queue safety, public password recovery, deterministic browser-crash classification, binary artifact access, dashboard range/performance evidence, role/unverified browser boundaries, and a deterministic Google OAuth provider; real-provider/Chrome DevTools authentication, real process-kill reproduction, broader account/session permutations, and ecommerce release gates remain open",
+  "source_status": "Milestone 10 Phase 5 adds the quality-gate matrix, role/tenant and execution regression evidence, worker/queue safety, public password recovery, deterministic and real-process browser-crash classification, binary artifact access, dashboard range/performance evidence, role/unverified browser boundaries, and a deterministic Google OAuth provider; real-provider/Chrome DevTools authentication, deployment-mode crash evidence, broader account/session permutations, and ecommerce release gates remain open",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -285,6 +285,18 @@
     {
       "path": "docs/testing/53-phase5-google-browser-evidence.md",
       "role": "Google OAuth browser matrix, evidence, protocol diagnosis, and release interpretation"
+    },
+    {
+      "path": "frontend/e2e/zz-phase5-browser-crash.spec.ts",
+      "role": "Opt-in real Chromium process-termination regression and sanitized BROWSER_CRASH assertions"
+    },
+    {
+      "path": "docs/implementation/46-real-browser-crash-regression.md",
+      "role": "Isolated crash-test design, runner hardening, local commands, and failure interpretation"
+    },
+    {
+      "path": "docs/testing/54-phase5-browser-crash-evidence.md",
+      "role": "Fresh-container browser-crash acceptance evidence and QG-B08 release interpretation"
     },
     {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",

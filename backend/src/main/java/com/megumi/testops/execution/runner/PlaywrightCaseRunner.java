@@ -45,7 +45,7 @@ public class PlaywrightCaseRunner {
             long deadline = System.nanoTime() + properties.execution().maxDuration().toNanos();
             int failedStepPosition = -1;
             try { for (StepDefinition step : definitions) { failedStepPosition = step.position(); if (System.nanoTime() > deadline) throw new TimeoutError("Execution duration exceeded"); long started = System.nanoTime(); boolean stepUsesSecret = referencesSecret(step, secretKeys); secretUsed[0] |= stepUsesSecret; try { execute(page, step, targetOrigin, variables, screenshots, secretUsed[0]); assertNavigationAllowed(navigationViolation); outcomes.add(new StepOutcome(step.position(), step.action(), "PASSED", (System.nanoTime() - started) / 1_000_000, null)); } catch (Throwable stepError) { Throwable recordedError = navigationViolation.get() == null ? stepError : navigationViolation.get(); outcomes.add(new StepOutcome(step.position(), step.action(), "FAILED", (System.nanoTime() - started) / 1_000_000, sanitizeMessage(recordedError))); if (recordedError instanceof RuntimeException runtime) throw runtime; if (recordedError instanceof Error error) throw error; throw new RuntimeException(recordedError); } } return new Result(true, null, null, secretUsed[0], false, null, null, trace, outcomes, screenshots); }
-            catch (Throwable ex) { byte[] screenshot = secretUsed[0] ? null : page.screenshot(new Page.ScreenshotOptions().setFullPage(true)); String failureCategory = category(ex); boolean infrastructure = infrastructureFailure(ex, failureCategory); return new Result(false, sanitizeMessage(ex), screenshot, secretUsed[0], infrastructure, failureCategory, failedStepPosition < 0 ? null : failedStepPosition, trace, outcomes, screenshots); }
+            catch (Throwable ex) { byte[] screenshot = secretUsed[0] ? null : failureScreenshot(page); String failureCategory = category(ex); boolean infrastructure = infrastructureFailure(ex, failureCategory); return new Result(false, sanitizeMessage(ex), screenshot, secretUsed[0], infrastructure, failureCategory, failedStepPosition < 0 ? null : failedStepPosition, trace, outcomes, screenshots); }
             finally { try { context.tracing().stop(new Tracing.StopOptions().setPath(trace)); } catch (Exception ignored) { } if (secretUsed[0]) { try { Files.deleteIfExists(trace); } catch (Exception ignored) { } } }
         } catch (Exception ex) { String failureCategory = category(ex); return new Result(false, sanitizeMessage(ex), null, secretUsed[0], true, "UNKNOWN".equals(failureCategory) ? "WORKER_INFRASTRUCTURE" : failureCategory, null, null); }
     }
@@ -160,6 +160,8 @@ public class PlaywrightCaseRunner {
         if (stack >= 0) value = value.substring(0, stack);
         int callLog = indexOfIgnoreCase(value, "call log:");
         if (callLog >= 0) value = value.substring(0, callLog);
+        int browserLogs = indexOfIgnoreCase(value, " browser logs:");
+        if (browserLogs >= 0) value = value.substring(0, browserLogs);
         value = value.replaceAll("\\s+", " ").trim();
         value = value.replaceAll("(?i)(password|token|secret)=\\S+", "$1=[REDACTED]");
         return value.length() > 500 ? value.substring(0, 497) + "..." : value;
@@ -214,6 +216,7 @@ public class PlaywrightCaseRunner {
         });
     }
     private static boolean isBlankPage(String url) { return url == null || url.isBlank() || "about:blank".equalsIgnoreCase(url); }
+    private static byte[] failureScreenshot(Page page) { try { return page.screenshot(new Page.ScreenshotOptions().setFullPage(true)); } catch (Throwable ignored) { return null; } }
     private static void assertNavigationAllowed(AtomicReference<NavigationViolation> violation) { NavigationViolation failure = violation.get(); if (failure != null) throw failure; }
     private static final class TimeoutError extends RuntimeException { TimeoutError(String message) { super(message); } }
     static final class NavigationViolation extends RuntimeException { NavigationViolation() { super("Browser navigation left the approved project target"); } }

@@ -43,6 +43,14 @@ class PlaywrightCaseRunnerTest {
     }
 
     @Test
+    void stripsBrowserLaunchLogsFromFailureMessages() {
+        String message = PlaywrightCaseRunner.sanitizeMessage(new IllegalStateException(
+                "Target page, context or browser has been closed Browser logs: <launching> /ms-playwright/chromium"));
+        assertEquals("Target page, context or browser has been closed", message);
+        assertFalse(message.contains("Browser logs"));
+    }
+
+    @Test
     void detectsSecretReferencesOnlyForConfiguredSecretKeys() {
         var secretStep = new PlaywrightCaseRunner.StepDefinition(1, "FILL", "LABEL", "Password", null, "${PASSWORD}", null, null);
         var ordinaryStep = new PlaywrightCaseRunner.StepDefinition(2, "FILL", "LABEL", "Search", null, "${SEARCH_TERM}", null, null);
