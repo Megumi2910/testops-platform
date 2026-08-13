@@ -27,7 +27,7 @@ Set-Location frontend
 npm exec playwright test e2e/phase5-google-boundary.spec.ts --config=e2e/playwright.config.ts --workers=1
 ```
 
-Observed focused result: **2 passed** in approximately 2.4 seconds after rebuilding the provider and backend images. The earlier failure was diagnosed from the provider request path: the backend exchanged the code but did not request user-info because the fixture was configured with `openid` while returning no signed ID token. Making scopes configurable and using `profile,email` in E2E resolved the protocol mismatch without changing production defaults.
+Observed focused result: **2 passed** in approximately 2.4 seconds after rebuilding the provider and backend images. The earlier failure was diagnosed from the provider request path: the backend exchanged the code but did not request user-info because the fixture was configured with `openid` while returning no signed ID token. Making scopes configurable and using `profile,email` in E2E resolved the protocol mismatch without changing production defaults. GitHub Actions run `31681331701` then passed all five repository gates: backend, frontend, containers, local-target-disabled E2E, and full E2E.
 
 ## Security and release interpretation
 
