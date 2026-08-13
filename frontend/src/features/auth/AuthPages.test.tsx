@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
 import { AuthContext, type AuthContextValue } from './AuthContext'
-import { PasswordResetPage, VerifyEmailPage } from './AuthPages'
+import { LoginPage, OAuthCallbackPage, PasswordResetPage, VerifyEmailPage } from './AuthPages'
 import { authApi } from './api'
 
 describe('VerifyEmailPage', () => {
@@ -36,6 +36,26 @@ describe('VerifyEmailPage', () => {
     const cooldown = screen.getByRole('button', { name: 'Resend available in 30s' })
     expect(cooldown).toBeDisabled()
     expect(screen.getByRole('status')).toHaveTextContent('If the account can be verified')
+  })
+})
+
+describe('Google authentication', () => {
+  it('shows the provider link only when the backend advertises Google', () => {
+    const context: AuthContextValue = {
+      user: null,
+      providers: { enabled: true, registrationEnabled: true, emailVerificationEnabled: true, googleEnabled: true },
+      loading: false,
+      login: vi.fn(), register: vi.fn(), verifyEmail: vi.fn(), resendEmail: vi.fn(),
+      resendAuthenticatedEmail: vi.fn(), logout: vi.fn(),
+    }
+    render(<MemoryRouter initialEntries={['/login']}><AuthContext.Provider value={context}><LoginPage /></AuthContext.Provider></MemoryRouter>)
+    expect(screen.getByRole('link', { name: 'Continue with Google' })).toHaveAttribute('href', '/oauth2/authorization/google')
+  })
+
+  it('keeps provider errors generic on the callback page', async () => {
+    render(<MemoryRouter initialEntries={['/auth/oauth/callback?oauth_error=oauth_sign_in_failed']}><OAuthCallbackPage /></MemoryRouter>)
+    expect(await screen.findByText('Google sign-in could not be completed.', { exact: true })).toBeVisible()
+    expect(screen.queryByText(/client_secret|token|stack|exception/i)).not.toBeInTheDocument()
   })
 })
 

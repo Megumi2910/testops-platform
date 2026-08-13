@@ -80,6 +80,9 @@ testops:
       client-id: ${GOOGLE_CLIENT_ID:}
       client-secret: ${GOOGLE_CLIENT_SECRET:}
       redirect-uri: ${FRONTEND_ORIGIN:http://localhost:3000}/login/oauth2/code/google
+      provider-base-uri: ${GOOGLE_PROVIDER_BASE_URI:}
+      public-base-uri: ${GOOGLE_PUBLIC_BASE_URI:}
+      scopes: ${GOOGLE_SCOPES:openid,profile,email}
     frontend-origin: ${FRONTEND_ORIGIN:http://localhost:3000}
     bootstrap:
       enabled: ${BOOTSTRAP_ADMIN_ENABLED:false}

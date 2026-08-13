@@ -1,4 +1,18 @@
 services:
+  oauth-provider:
+    build:
+      context: ./frontend/e2e/oauth-provider
+    ports:
+      - "9090:9090"
+    environment:
+      GOOGLE_TEST_EMAIL: qa.google@testops.local
+      GOOGLE_TEST_NAME: QA Google User
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:9090/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
   postgres:
     ports: !override
       - "55432:5432"
@@ -37,10 +51,18 @@ services:
       BOOTSTRAP_ADMIN_EMAIL: qa.bootstrap-admin@testops.local
       BOOTSTRAP_ADMIN_DISPLAY_NAME: QA Bootstrap Administrator
       BOOTSTRAP_ADMIN_PASSWORD_PATH: /run/secrets/testops/bootstrap-admin-password
+      GOOGLE_AUTH_ENABLED: "true"
+      GOOGLE_CLIENT_ID: e2e-client
+      GOOGLE_CLIENT_SECRET: e2e-secret
+      GOOGLE_PROVIDER_BASE_URI: http://oauth-provider:9090
+      GOOGLE_PUBLIC_BASE_URI: http://localhost:9090
+      GOOGLE_SCOPES: profile,email
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
       mailpit:
+        condition: service_healthy
+      oauth-provider:
         condition: service_healthy
   frontend:
     ports: !override

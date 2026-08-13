@@ -627,11 +627,17 @@
   <p><code>AuthService.resetPassword</code> accepts only an active, unexpired <code>PASSWORD_RESET</code> challenge, counts failed attempts, consumes a successful code, changes or creates the local credential, increments the token version, revokes refresh sessions, and records an audit event. The public confirmation endpoint returns <code>204</code>; the frontend keeps server retry metadata and maps invalid-code problems into the existing auth-card error state.</p>
   <p>The runtime defect was a stale PostgreSQL check constraint left by the unified identity migration. <code>V022__password_reset_challenge_purpose.sql</code> explicitly adds <code>PASSWORD_RESET</code> to the supported challenge purposes without resetting the database. The focused recovery service test passed three cases and the rebuilt Mailpit/Playwright suite passed four browser scenarios. See <code>docs/implementation/37-password-recovery-and-otp-expiry.md</code> and <code>docs/testing/45-phase5-password-recovery-evidence.md</code>.</p>
   </section>
-  <section aria-labelledby="phase5-e2e-origin">
+<section aria-labelledby="phase5-e2e-origin">
     <h2 id="phase5-e2e-origin">Phase 5 E2E origin contract (2026-08-12)</h2>
     <p>The isolated Compose profile configures <code>FRONTEND_ORIGIN=http://localhost:3100</code>. Playwright and CI now open the frontend at that same canonical origin instead of the equivalent-but-different <code>127.0.0.1</code> hostname.</p>
     <p>This matters because refresh and logout pass through <code>OriginGuard</code>. A loopback alias is still a different web origin, so the backend correctly returned <code>403</code> when CI used it. The mismatch could also rerender the controlled login form during password recovery, leaving the email empty and preventing a final login request from being sent.</p>
     <p>The fix changes only E2E defaults and workflow environment values; it does not weaken production origin validation. The focused Mailpit recovery journey passed all four scenarios, and the full local browser suite passed 24 scenarios with 10 intentional ecommerce skips after rebuilding the isolated stack. See <code>docs/implementation/38-e2e-origin-alignment.md</code> and <code>docs/testing/46-phase5-e2e-origin-regression.md</code>.</p>
-  </section>
+</section>
+<section aria-labelledby="phase5-google-provider">
+  <h2 id="phase5-google-provider">Phase 5 deterministic Google provider contract (2026-08-13)</h2>
+  <p>Google OAuth now supports separate provider addresses for the browser and the backend. <code>GoogleClientConfiguration</code> uses <code>public-base-uri</code> for the authorization redirect that the browser follows, while <code>provider-base-uri</code> remains reachable from the backend container for token exchange and user-info requests. Production defaults continue to use Google at <code>https://accounts.google.com</code>; only the isolated E2E Compose profile overrides these values.</p>
+  <p>The disposable <code>frontend/e2e/oauth-provider</code> service implements the minimum authorization-code contract: authorization redirect, token exchange, user-info, health, and an empty certificate set. The E2E profile uses <code>profile,email</code> scopes instead of <code>openid</code> because the provider intentionally returns a user-info profile rather than a signed OIDC ID token. No external OAuth account, client secret, or access token is committed.</p>
+  <p>The frontend advertises the provider only when the backend reports Google as enabled. Its callback page renders a generic failure message and never displays provider response details. <code>phase5-google-boundary.spec.ts</code> passed both deterministic sign-in/session-refresh and sanitized callback-error scenarios against freshly rebuilt images. Real Google credentials and Chrome DevTools authentication remain separate release-gate work.</p>
+</section>
 </body>
 </html>

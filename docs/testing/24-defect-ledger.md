@@ -309,7 +309,7 @@
 | ID | Blocked coverage | Required resolution |
 | --- | --- | --- |
 | QG-B01 | Remaining TestOps OTP/recovery variants | Cooldown/idempotency, invalid-code, protected return-URL, session revoke, message-count proof, expired-code rejection, and verified password recovery are complete; Google provider coverage remains under `QG-B02` |
-| QG-B02 | Google and locked/disabled session states | `phase5-account-status.spec.ts` covers fresh password-session denial for `LOCKED` and `DISABLED` accounts; local 5.3-second run and CI `31611690370` passed; Google provider fixtures and browser matrix remain |
+| QG-B02 | Google and locked/disabled session states | `phase5-account-status.spec.ts` covers fresh password-session denial for `LOCKED` and `DISABLED` accounts; local 5.3-second run and CI `31611690370` passed. `phase5-google-boundary.spec.ts` now covers deterministic local-provider sign-in, session refresh, and sanitized callback failure; real Google-provider credentials and Chrome DevTools variants remain |
 | QG-B03 | Project restore/conflict/stale version | RESOLVED by versioned archive/restore API, frontend cache wiring, and lifecycle E2E; broader edit/duplicate/project-role coverage remains in the Projects row |
 | QG-B04 | target blocked/unreachable variants | isolated local-disabled/unreachable profiles |
 | QG-B05 | evidence redaction in browser artifacts | variable listing now enforces `VARIABLE_VIEW` and always masks secrets; `phase5-evidence-safety.spec.ts` proves passing and failing secret cases suppress all artifacts, ordinary cases retain screenshot/trace, and secret plaintext is absent from the detail response; member/non-member download authorization is covered separately |
@@ -325,4 +325,4 @@
 
 ## Triage result
 
-There are no confirmed P0 incidents. Phases 2, 3, and 4 are complete, and `QG-017` through `QG-026` close the core role/tenant, unverified recovery, session, OTP-expiry, password-recovery, canonical E2E-origin, navigation-boundary, evidence-suppression, secret-failure, deterministic artifact-access, administrator mutation, and dashboard reporting slices. Release status remains **PARTIAL** while Google provider coverage, real browser-crash reproduction, broader account/session permutations, ecommerce, and twice-consecutive-CI gates remain open.
+There are no confirmed P0 incidents. Phases 2, 3, and 4 are complete, and `QG-017` through `QG-026` close the core role/tenant, unverified recovery, session, OTP-expiry, password-recovery, canonical E2E-origin, navigation-boundary, evidence-suppression, secret-failure, deterministic artifact-access, administrator mutation, and dashboard reporting slices. The deterministic Google OAuth sub-gate is now closed for the isolated E2E provider; release status remains **PARTIAL** while real-provider/Chrome DevTools authentication, real browser-crash reproduction, broader account/session permutations, ecommerce, and twice-consecutive-CI gates remain open.

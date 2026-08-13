@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10 Phase 5 adds the quality-gate matrix, role/tenant and execution regression evidence, worker/queue safety, public password recovery, deterministic browser-crash classification, binary artifact access, dashboard range/performance evidence, and role/unverified browser boundaries; Google OAuth variants, real process-kill reproduction, broader account/session permutations, and ecommerce release gates remain open",
+  "source_status": "Milestone 10 Phase 5 adds the quality-gate matrix, role/tenant and execution regression evidence, worker/queue safety, public password recovery, deterministic browser-crash classification, binary artifact access, dashboard range/performance evidence, role/unverified browser boundaries, and a deterministic Google OAuth provider; real-provider/Chrome DevTools authentication, real process-kill reproduction, broader account/session permutations, and ecommerce release gates remain open",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -269,6 +269,22 @@
     {
       "path": "docs/workflows/23-quality-gate-flow.md",
       "role": "End-to-end quality-gate workflow from source provenance through release decision"
+    },
+    {
+      "path": "frontend/e2e/oauth-provider/index.js",
+      "role": "Disposable deterministic OAuth2 provider used by the isolated Google browser contract"
+    },
+    {
+      "path": "frontend/e2e/phase5-google-boundary.spec.ts",
+      "role": "Deterministic Google sign-in, session refresh, and sanitized callback-failure browser coverage"
+    },
+    {
+      "path": "docs/implementation/45-deterministic-google-provider.md",
+      "role": "Implementation rationale, container/browser networking contract, provider endpoints, and troubleshooting"
+    },
+    {
+      "path": "docs/testing/53-phase5-google-browser-evidence.md",
+      "role": "Google OAuth browser matrix, evidence, protocol diagnosis, and release interpretation"
     },
     {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",
