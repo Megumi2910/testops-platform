@@ -31,3 +31,7 @@ The dedicated volume was reset before the final run with `scripts/reset-e2e.ps1`
 ## Gate interpretation
 
 This closes the deterministic delivery portion of `QG-B12`. It does not waive real-provider email testing, and it does not close ecommerce checkout, messaging, seller/admin, or Lighthouse accessibility gates.
+
+## Remote CI status
+
+The commit containing this contract (`2a68676`) triggered [CI run 31695646441](https://github.com/Megumi2910/testops-platform/actions/runs/31695646441). GitHub rejected all jobs before startup with its account billing/spending-limit message. This is an external runner-availability blocker, not a test failure; the local 3/3 result above is the authoritative execution evidence until the account restriction is cleared.
