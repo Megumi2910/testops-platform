@@ -327,6 +327,14 @@
       "role": "Role-based ecommerce header accessibility and category-link browser evidence"
     },
     {
+      "path": "docs/implementation/50-phase5-ecommerce-deterministic-assets.md",
+      "role": "Local SVG storefront artwork, system fonts, same-origin mock product assets, and seeder normalization"
+    },
+    {
+      "path": "docs/testing/59-phase5-ecommerce-deterministic-assets-evidence.md",
+      "role": "Ecommerce same-origin visual-asset network evidence, seeder verification, and rerun commands"
+    },
+    {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",
       "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
     }

@@ -176,6 +176,22 @@ test.describe('ecommerce storefront smoke', () => {
     await expect(page).toHaveURL(/\/search\?q=%C3%81o%20thun$/)
   })
 
+  test('homepage uses same-origin visual assets and actionable banner links', async ({ page }) => {
+    const externalAssets: string[] = []
+    page.on('request', (request) => {
+      const requestUrl = new URL(request.url())
+      if (['image', 'stylesheet', 'font'].includes(request.resourceType()) && requestUrl.origin !== ecommerceOrigin) {
+        externalAssets.push(request.url())
+      }
+    })
+
+    await page.goto(`${ecommerceOrigin}/`, { waitUntil: 'networkidle' })
+    await expect(page.getByRole('heading', { name: 'Siêu Sale 11.11', exact: true })).toBeVisible()
+    await page.getByRole('button', { name: 'Mua ngay' }).click()
+    await expect(page).toHaveURL(`${ecommerceOrigin}/search`)
+    expect(externalAssets).toEqual([])
+  })
+
   test('search shows a stable no-result state for an unknown term', async ({ page }) => {
     await page.goto(`${ecommerceOrigin}/search?q=phase5-no-such-product-${Date.now()}`, { waitUntil: 'networkidle' })
     await expect(page.getByRole('heading', { name: 'Không tìm thấy sản phẩm', exact: true })).toBeVisible()

@@ -95,9 +95,11 @@
 ### QG-008 — Ecommerce fixtures depend on third-party visual assets
 
 - Severity: P2
-- Evidence: homepage loads Google Fonts and multiple Unsplash resources; performance trace reports LCP render delay `771 ms`
+- Status: RESOLVED for storefront and permanent mock fixtures; fresh Lighthouse timing remains a separate performance check
+- Evidence: the previous baseline loaded Google Fonts and multiple Unsplash resources; the new Playwright network allowlist observed zero external image, stylesheet, or font requests after a clean container rebuild
 - Expected: deterministic local assets for QA and no external availability dependency
-- Actual: test rendering and evidence depend on third parties
+- Resolution: local SVG banners/team art, checked-in public mock product art, system fonts, local category fallback, and seeder synchronization for existing `MOCK-*` rows. Seeder values are copied into mutable lists before Hibernate replacement.
+- Actual: source and permanent fixtures are deterministic; the prior `771 ms` render-delay measurement must be refreshed before the overall performance gate can be closed
 - Regression layer: network allowlist assertion + visual smoke
 
 ### QG-009 — Incomplete ecommerce destinations look production-ready
