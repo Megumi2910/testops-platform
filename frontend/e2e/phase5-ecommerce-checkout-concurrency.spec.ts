@@ -105,14 +105,18 @@ test.describe('ecommerce Phase 5 final-unit concurrency', () => {
         browserApi(customerA, '/api/orders/checkout', request),
         browserApi(customerB, '/api/orders/checkout', { ...request, idempotencyKey: crypto.randomUUID() }),
       ])
+      successfulOrder = resultA.status === 200
+        ? { page: customerA, id: data(resultA)?.['id'] }
+        : resultB.status === 200
+          ? { page: customerB, id: data(resultB)?.['id'] }
+          : undefined
       const successes = [resultA, resultB].filter((result) => result.status === 200)
       const rejected = [resultA, resultB].filter((result) => result.status >= 400 && result.status < 500)
       expect(successes, JSON.stringify([resultA, resultB])).toHaveLength(1)
       expect(rejected, JSON.stringify([resultA, resultB])).toHaveLength(1)
 
-      successfulOrder = resultA.status === 200
-        ? { page: customerA, id: data(resultA)?.['id'] }
-        : { page: customerB, id: data(resultB)?.['id'] }
+      expect(successfulOrder).toBeTruthy()
+      if (!successfulOrder) throw new Error('No checkout request succeeded')
       expect(successfulOrder.id).toBeTruthy()
 
       const reserved = await browserApi(customerA, `/api/products/${productId}`)
