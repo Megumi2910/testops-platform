@@ -335,6 +335,14 @@
       "role": "Ecommerce same-origin visual-asset network evidence, seeder verification, and rerun commands"
     },
     {
+      "path": "docs/implementation/51-phase5-ecommerce-mailpit-auth.md",
+      "role": "Isolated ecommerce Mailpit authentication architecture, browser contract, reset safety, and troubleshooting"
+    },
+    {
+      "path": "docs/testing/60-phase5-ecommerce-mailpit-auth-evidence.md",
+      "role": "Registration verification, unverified resend/cooldown, and password-reset browser evidence against isolated Mailpit"
+    },
+    {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",
       "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
     }
