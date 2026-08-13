@@ -455,6 +455,14 @@
       "role": "Ecommerce storefront regression contract including unfinished-destination availability states"
     },
     {
+      "path": "docs/implementation/62-phase5-ecommerce-gallery-accessibility.md",
+      "role": "Keyboard-operable ecommerce product-gallery zoom, navigation labels, and focus restoration"
+    },
+    {
+      "path": "docs/testing/71-phase5-ecommerce-gallery-accessibility-evidence.md",
+      "role": "Product-detail gallery dialog semantics, keyboard, and focus-restoration evidence"
+    },
+    {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",
       "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
     }

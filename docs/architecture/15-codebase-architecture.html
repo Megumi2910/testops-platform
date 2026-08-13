@@ -730,5 +730,10 @@
   <p><code>FeatureAvailabilityNotice</code> is the shared status-region contract for storefront capabilities whose backend is not enabled. <code>FlashSalePage</code> no longer presents a fabricated countdown while the campaign API returns no products; <code>CustomerWishlist</code> preserves the catalog recovery path but disables empty-list controls and explains that server synchronization is unavailable. Wallet, voucher, and header integrations retain their existing coming-soon/disabled copy.</p>
   <p>The focused ecommerce smoke contract proves both notices and the disabled wishlist filter/view controls against the rebuilt disposable stack. This closes the covered portion of <code>QG-009</code>; simulated settings and any unreviewed destination still require the same audit. See <code>docs/implementation/61-phase5-ecommerce-feature-availability.md</code> and <code>docs/testing/70-phase5-ecommerce-feature-availability-evidence.md</code>.</p>
 </section>
+<section aria-labelledby="phase5-ecommerce-gallery-accessibility">
+  <h2 id="phase5-ecommerce-gallery-accessibility">Phase 5 ecommerce product-gallery accessibility (2026-08-13)</h2>
+  <p><code>ProductGallery</code> turns image zoom into a named button, labels previous/next and thumbnail controls, and renders the zoom surface as a named modal dialog. Opening stores the active element, focuses the close control, Escape/backdrop closes the dialog, and focus returns to the opening image button. The close glyph is decorative rather than a misleading navigation icon.</p>
+  <p>The rebuilt isolated storefront contract proves keyboard activation, dialog semantics, close-button focus, Escape dismissal, and focus restoration on the seeded product detail. This closes the gallery sub-slice of <code>QG-006</code>; route/form remediation and the fresh Lighthouse release threshold remain open. See <code>docs/implementation/62-phase5-ecommerce-gallery-accessibility.md</code> and <code>docs/testing/71-phase5-ecommerce-gallery-accessibility-evidence.md</code>.</p>
+</section>
 </body>
 </html>

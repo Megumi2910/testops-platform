@@ -168,6 +168,17 @@ test.describe('ecommerce storefront smoke', () => {
     await product.click()
     await expect(page).toHaveURL(/\/product\/\d+$/)
     await expect(page.getByRole('heading', { name: 'Áo thun basic cotton', exact: true })).toBeVisible()
+
+    const zoomButton = page.getByRole('button', { name: 'Phóng to ảnh sản phẩm 1' })
+    await expect(zoomButton).toBeVisible()
+    await zoomButton.click()
+    const zoomDialog = page.getByRole('dialog', { name: 'Phóng to hình ảnh sản phẩm' })
+    await expect(zoomDialog).toBeVisible()
+    const closeZoom = zoomDialog.getByRole('button', { name: 'Đóng ảnh phóng to' })
+    await expect(closeZoom).toBeFocused()
+    await page.keyboard.press('Escape')
+    await expect(zoomDialog).toHaveCount(0)
+    await expect(zoomButton).toBeFocused()
   })
 
   test('header navigation exposes named controls and working category links', async ({ page }) => {

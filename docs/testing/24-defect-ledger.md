@@ -77,11 +77,11 @@
 ### QG-006 — Ecommerce header and remaining controls are not fully semantic
 
 - Severity: P1
-- Status: PARTIALLY RESOLVED; catalog and shared-header sub-slices verified locally
+- Status: PARTIALLY RESOLVED; catalog, shared-header, unavailable-feature, and product-gallery sub-slices verified locally
 - Environment: ecommerce `3f06fde`, mobile `320×800`
-- Evidence: catalog cards use named React Router links, homepage category cards use native buttons, and the shared header now exposes named search/cart/message/account/menu controls. The remaining baseline still contains route-level form, contrast, dialog, and mobile findings
+- Evidence: catalog cards use named React Router links, homepage category cards use native buttons, the shared header exposes named search/cart/message/account/menu controls, and the product-gallery browser contract proves named zoom/navigation buttons plus dialog Escape/focus restoration. The remaining baseline still contains route-level form, contrast, and mobile findings
 - Expected: every control has a programmatic name and card navigation is a semantic link
-- Actual: catalog and header portions are resolved for this slice, but the overall accessibility defect remains open until the remaining routes and full Lighthouse target are remediated
+- Actual: catalog, header, unavailable-destination, and gallery portions are resolved for this slice, but the overall accessibility defect remains open until the remaining routes and full Lighthouse target are remediated
 - Regression layer: React accessibility tests + Playwright keyboard journey
 
 ### QG-007 — Ecommerce accessibility is below the release gate
