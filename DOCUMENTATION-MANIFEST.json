@@ -343,6 +343,14 @@
       "role": "Registration verification, unverified resend/cooldown, and password-reset browser evidence against isolated Mailpit"
     },
     {
+      "path": "docs/implementation/52-phase5-ecommerce-fixture-matrix.md",
+      "role": "Deterministic ecommerce role, catalog-state, order, cart, and messaging fixture implementation for Phase 5 isolation tests"
+    },
+    {
+      "path": "docs/testing/61-phase5-ecommerce-fixture-evidence.md",
+      "role": "Ecommerce fixture prerequisite evidence, remaining isolation gates, and safe reset rules"
+    },
+    {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",
       "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
     }

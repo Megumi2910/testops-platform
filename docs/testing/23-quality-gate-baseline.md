@@ -21,7 +21,7 @@ The `local-qa` TestOps profile creates or reconciles these stable identities: pl
 
 Login probes returned `200` for the administrator, project manager, test manager, tester, viewer, non-member, and unverified fixtures. Locked and disabled fixtures returned the expected `403`. The project manager also completed a real browser login.
 
-Ecommerce already has idempotent development fixtures for one verified customer, one unverified customer, one seller, one administrator, three approved products, a cart, a completed order, a verified review, and a message thread. The expanded two-customer/two-seller and state-rich fixture matrix is not yet present; this blocks the corresponding isolation tests under `QG-B06`.
+Ecommerce now has idempotent development fixtures for two verified customers, one unverified customer, two approved sellers, one administrator, three seller-A products, a seller-B product, rejected/out-of-stock/discontinued product states, customer-A and customer-B carts, completed and cancellable orders, a review, and separate customer/seller message threads. The data prerequisite for cross-user isolation is resolved; the actual authorization and two-browser assertions remain under `QG-B06` and `QG-B14`.
 
 ## Evidence method
 
@@ -59,8 +59,8 @@ Ecommerce already has idempotent development fixtures for one verified customer,
 | Search/catalog variants | The repeatable ecommerce contract covers seeded category navigation, product detail, keyword search, filter/sort URL state, no-result recovery, retry, and pagination | PASS for catalog sub-gate | `QG-B11` catalog/search coverage is closed; email, checkout, messaging, seller/admin, and accessibility gates remain |
 | Auth/email | Isolated Mailpit contract covers unique registration → verification, unverified sign-in → resend/cooldown, and password reset; clean E2E PostgreSQL volume and health checks were verified | PARTIAL | `QG-B12` deterministic delivery sub-gate is resolved; real SMTP-provider behavior and broader resend/expiry permutations remain |
 | Cart/checkout/orders/reviews | Stable cart, completed order, and review fixture exist | BLOCKED | `QG-B13` destructive and concurrency scenarios are restricted to the isolated PostgreSQL harness |
-| Messaging | One deterministic customer–seller thread exists | BLOCKED | `QG-B14` second customer/seller and two-browser orchestration are absent |
-| Seller/admin boundaries | One seller and administrator exist | BLOCKED | `QG-B06` cross-seller/customer/admin fixtures are incomplete |
+| Messaging | Separate customer-A/seller-B and customer-B/seller-B threads are seeded; customer B has an independent cart/order | PARTIAL | `QG-B14` two-browser WebSocket/reconnect/REST-fallback orchestration remains |
+| Seller/admin boundaries | Two verified customers, two approved sellers, administrator, and product state fixtures are seeded idempotently; stable customer-B cancellable order is available | PARTIAL | `QG-B06` endpoint/UI authorization matrix and administrator mutations still require execution |
 | Unfinished destinations | Wishlist/flash-sale and other destinations remain visible | FAIL | `QG-009` incomplete features are not consistently labelled or disabled |
 
 ## Reproduced critical path
