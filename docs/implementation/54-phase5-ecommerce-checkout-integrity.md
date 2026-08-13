@@ -41,3 +41,5 @@ Local evidence is **PASS for the selective-checkout/idempotency sub-gate**:
 the backend suite passed 19 tests and the browser scenario passed after a clean
 E2E reset. The complete Phase 5 checkout gate remains open for PostgreSQL
 concurrency, payment-state, stale-stock, and broader role/permission cases.
+The pushed CI run `31699514415` was rejected before steps started by the
+account Actions quota, so it does not contradict the local results.

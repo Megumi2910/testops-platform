@@ -39,3 +39,8 @@ before a second run. Do not use it for the normal development volume.
 
 The selective-checkout sub-gate is no longer blocked. QG-B13 remains PARTIAL
 until database-level concurrency and payment-state cases are executed.
+
+GitHub Actions run `31699514415` failed before any job step started because the
+account Actions quota is exhausted. This is recorded as an external CI
+availability blocker; the local gates above are the executable evidence for
+this slice.
