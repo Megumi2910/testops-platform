@@ -76,10 +76,18 @@ test('project roles expose only their permitted definition and execution control
     await expect(account.page.getByRole('link', { name: 'New case', exact: true })).toHaveCount(expectations.canCreate ? 1 : 0)
     await expect(account.page.getByRole('button', { name: 'Run ready cases', exact: true })).toHaveCount(expectations.canRun ? 1 : 0)
     await expect(account.page.getByRole('link', { name: 'Members', exact: true })).toHaveCount(0)
+    await expect(account.page.getByRole('link', { name: 'Admin', exact: true })).toHaveCount(0)
+    await account.page.goto('/admin/users')
+    await expect(account.page).toHaveURL(/\/dashboard$/)
+    await expect(account.page.getByRole('heading', { name: 'Execution dashboard', exact: true })).toBeVisible()
+    await expect(account.page.getByRole('heading', { name: 'Users', exact: true })).toHaveCount(0)
   }
 
   await navigateWithoutReload(nonMember.page, `/projects/${projectId}`)
   await expect(nonMember.page.getByRole('alert')).toContainText('Unable to load this project')
+  await nonMember.page.goto('/admin/users')
+  await expect(nonMember.page).toHaveURL(/\/dashboard$/)
+  await expect(nonMember.page.getByRole('heading', { name: 'Users', exact: true })).toHaveCount(0)
 
   await Promise.all([testManager.context.close(), tester.context.close(), viewer.context.close(), nonMember.context.close()])
 })

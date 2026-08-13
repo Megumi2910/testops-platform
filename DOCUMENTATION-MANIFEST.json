@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10 Phase 5 adds the quality-gate matrix, role/tenant and execution regression evidence, worker/queue safety, public password recovery, deterministic browser-crash classification, binary artifact access, and dashboard range/performance evidence; Google OAuth variants, real process-kill reproduction, broader role permutations, and ecommerce release gates remain open",
+  "source_status": "Milestone 10 Phase 5 adds the quality-gate matrix, role/tenant and execution regression evidence, worker/queue safety, public password recovery, deterministic browser-crash classification, binary artifact access, dashboard range/performance evidence, and role/unverified browser boundaries; Google OAuth variants, real process-kill reproduction, broader account/session permutations, and ecommerce release gates remain open",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -233,6 +233,18 @@
     {
       "path": "docs/testing/51-phase5-dashboard-range-devtools.md",
       "role": "Dashboard range, query-count, accessibility, console, and performance evidence from the rebuilt local stack"
+    },
+    {
+      "path": "frontend/e2e/phase5-unverified-boundary.spec.ts",
+      "role": "Playwright unverified-account recovery banner, restricted navigation, and resend-cooldown contract"
+    },
+    {
+      "path": "docs/implementation/44-role-and-unverified-boundary-browser-coverage.md",
+      "role": "Implementation rationale for project-role admin-route protection and unverified-account recovery"
+    },
+    {
+      "path": "docs/testing/52-phase5-role-unverified-browser-evidence.md",
+      "role": "Role, tenant, administrator-route, and unverified-account browser evidence from the isolated stack"
     },
     {
       "path": "frontend/src/features/dashboard/DashboardPage.test.tsx",
