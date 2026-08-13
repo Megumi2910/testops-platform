@@ -41,6 +41,6 @@ ecommerce-smoke.spec.ts             13 passed in 22.9s
 
 The stack used frontend `3101`, backend `8181`, PostgreSQL `5543`, and Mailpit
 `8025`/`1025`. The normal development volume was not touched. GitHub Actions
-run `31696968131` was rejected before any step started because the account
+run `31698236912` was rejected before any step started because the account
 Actions minutes/spending limit is exhausted; local results are therefore the
 available execution evidence.
