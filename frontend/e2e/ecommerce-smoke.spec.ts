@@ -145,7 +145,7 @@ test.describe('ecommerce storefront smoke', () => {
   test('public catalog opens a seeded category and product detail', async ({ page }) => {
     await page.goto(`${ecommerceOrigin}/categories`, { waitUntil: 'networkidle' })
     await expect(page.getByRole('heading', { name: 'Danh mục sản phẩm', exact: true })).toBeVisible()
-    const category = page.getByText('Thời trang', { exact: true }).first()
+    const category = page.getByRole('link', { name: 'Mở danh mục Thời trang' })
     await expect(category).toBeVisible()
     await category.click()
     await expect(page).toHaveURL(/\/category\/\d+$/)
@@ -153,7 +153,7 @@ test.describe('ecommerce storefront smoke', () => {
     await expect(page.getByText(/Tìm thấy \d+ sản phẩm/)).toBeVisible()
 
     await page.goto(`${ecommerceOrigin}/search?q=Áo%20thun`, { waitUntil: 'networkidle' })
-    const product = page.getByText('Áo thun basic cotton', { exact: true }).first()
+    const product = page.getByRole('link', { name: 'Xem sản phẩm Áo thun basic cotton' }).first()
     await expect(product).toBeVisible()
     await product.click()
     await expect(page).toHaveURL(/\/product\/\d+$/)

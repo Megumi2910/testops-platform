@@ -53,9 +53,9 @@ Ecommerce already has idempotent development fixtures for one verified customer,
 | Area | Coverage executed in this baseline | State | Defect/blocker |
 | --- | --- | --- | --- |
 | Public catalog | Homepage, categories, featured/hot/new products and same-origin APIs all returned `200` | PASS | — |
-| Responsive home | Chrome mobile emulation at `320×800`; no transport failure; semantic tree captured | PARTIAL | `QG-006` unnamed controls and non-semantic product cards |
+| Responsive home | Chrome mobile emulation at `320×800`; no transport failure; semantic tree captured; category cards now use native buttons and product/category navigation uses named links | PARTIAL | `QG-006` header/icon controls and remaining route semantics still need closure |
 | Performance | Mobile LCP `939 ms`, CLS `0.00`; no throttling; render delay `771 ms` | PASS WITH RISK | `QG-008` external fonts/images remain nondeterministic and dominate the dependency chain |
-| Accessibility | Mobile Lighthouse accessibility `80`; best practices `81`; SEO `92` | FAIL | `QG-006`, `QG-007` |
+| Accessibility | Mobile Lighthouse accessibility `80`; best practices `81`; SEO `92`; catalog card semantics improved | FAIL | `QG-006` remaining header/icon/form findings and `QG-007` Lighthouse release threshold |
 | Search/catalog variants | The repeatable ecommerce contract covers seeded category navigation, product detail, keyword search, filter/sort URL state, no-result recovery, retry, and pagination | PASS for catalog sub-gate | `QG-B11` catalog/search coverage is closed; email, checkout, messaging, seller/admin, and accessibility gates remain |
 | Auth/email | Existing verified and unverified fixtures are documented | BLOCKED | `QG-B12` Mailpit verification/reset/resend matrix is not attached to the normal QA overlay |
 | Cart/checkout/orders/reviews | Stable cart, completed order, and review fixture exist | BLOCKED | `QG-B13` destructive and concurrency scenarios are restricted to the isolated PostgreSQL harness |

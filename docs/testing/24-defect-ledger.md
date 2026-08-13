@@ -74,13 +74,13 @@
 - Actual: Chrome reports a form-field metadata issue
 - Regression layer: accessibility/component tests
 
-### QG-006 — Ecommerce header and card controls are not fully semantic
+### QG-006 — Ecommerce header and remaining controls are not fully semantic
 
 - Severity: P1
-- Environment: ecommerce `7a430ea`, mobile `320×800`
-- Evidence: accessibility tree contains unnamed header buttons/links; product cards appear as clickable generic containers rather than named links
+- Environment: ecommerce `3f06fde`, mobile `320×800`
+- Evidence: the catalog card portion is now covered by named React Router links and a native homepage category button; the remaining baseline still contains unnamed header/icon controls and other route-level findings
 - Expected: every control has a programmatic name and card navigation is a semantic link
-- Actual: keyboard/screen-reader intent is ambiguous
+- Actual: card navigation is resolved for this sub-slice, but the overall accessibility defect remains open until header, form, dialog, and mobile findings are remediated
 - Regression layer: React accessibility tests + Playwright keyboard journey
 
 ### QG-007 — Ecommerce accessibility is below the release gate

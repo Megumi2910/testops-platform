@@ -311,6 +311,14 @@
       "role": "Ecommerce category, product detail, search empty state, URL filters, retry, and pagination evidence"
     },
     {
+      "path": "docs/implementation/48-phase5-ecommerce-semantic-catalog.md",
+      "role": "Semantic category and product navigation, native controls, focus behavior, and accessibility rationale"
+    },
+    {
+      "path": "docs/testing/57-phase5-ecommerce-semantic-catalog-evidence.md",
+      "role": "Role-based ecommerce category and product navigation evidence and rerun command"
+    },
+    {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",
       "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
     }
