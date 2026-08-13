@@ -54,4 +54,6 @@ returned the expected `4xx` stock response.
 
 QG-B13's concurrency sub-gate is PASS. Payment-state, stale-stock UI refresh,
 and review-eligibility scenarios remain open, so the overall Milestone 10
-quality gate remains PARTIAL.
+quality gate remains PARTIAL. TestOps CI run `31704931872` is recorded as
+quota-blocked before any job steps started; the account has consumed all 3,000
+included Actions minutes.

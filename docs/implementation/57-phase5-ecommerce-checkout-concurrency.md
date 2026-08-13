@@ -50,5 +50,7 @@ development database. The test asserts:
 - The first implementation run deliberately exposed the stale-instance
   regression; it was corrected before this evidence was recorded.
 - GitHub Actions is currently unavailable because the account has consumed
-  all 3,000 included minutes; this is an external verification limitation,
-  not a local test failure.
+  all 3,000 included minutes. The pushed TestOps run
+  `31704931872` failed before any job step started (all six jobs report zero
+  steps); this is an external verification limitation, not a local test
+  failure.
