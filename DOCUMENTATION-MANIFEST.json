@@ -359,6 +359,18 @@
       "role": "Ecommerce cross-customer, cross-seller, nested-resource, and thread-visibility browser evidence"
     },
     {
+      "path": "docs/implementation/54-phase5-ecommerce-checkout-integrity.md",
+      "role": "Selective checkout, server-side pricing, idempotency replay, cart cleanup, and cancellation-restoration implementation contract"
+    },
+    {
+      "path": "docs/testing/63-phase5-ecommerce-checkout-evidence.md",
+      "role": "Native and isolated-browser checkout integrity evidence with remaining concurrency and payment gates"
+    },
+    {
+      "path": "frontend/e2e/phase5-ecommerce-checkout.spec.ts",
+      "role": "Opt-in ecommerce selective-checkout, idempotency replay, cart cleanup, and cancellation browser contract"
+    },
+    {
       "path": "frontend/e2e/phase5-ecommerce-role-isolation.spec.ts",
       "role": "Two-context ecommerce customer cart/order/thread and seller product ownership browser contract"
     },
