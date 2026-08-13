@@ -25,6 +25,8 @@ On a freshly recreated `testops-e2e-backend-1`, the focused browser test passed 
 
 Frontend lint, typecheck, and 39 unit tests passed. Backend unit/package verification passed 135 tests with Docker-dependent integration tests excluded in this shell. The dedicated CI job is the authoritative full-container verification because it runs on GitHub Actions with Docker available.
 
+GitHub Actions run **31684261528** passed all six jobs: backend, frontend, Compose containers, local-target-disabled E2E, the complete E2E suite, and the isolated `e2e-browser-crash` job. The crash job rebuilt its own disposable Compose stack, terminated only the managed Chromium process, uploaded its Playwright report, and tore the stack down afterward.
+
 ## Release interpretation
 
-This closes the real process-kill classification portion of `QG-B08`. It proves that a genuine managed-browser termination is reported as infrastructure failure rather than as a user assertion failure or an unhandled worker crash. It does not claim automatic browser recovery, Chrome DevTools deployment evidence, ecommerce coverage, or completion of the overall Phase 5 release gate.
+This closes the real process-kill classification portion of `QG-B08`. It proves that a genuine managed-browser termination is reported as infrastructure failure rather than as a user assertion failure or an unhandled worker crash, both locally and in the six-job CI run above. It does not claim automatic browser recovery, Chrome DevTools deployment evidence, ecommerce coverage, or completion of the overall Phase 5 release gate.
