@@ -720,5 +720,10 @@
   <p>The message page treats SockJS/STOMP as an acceleration path. It keeps an accessible connecting/disconnected banner, falls back to <code>messageApi.sendMessage</code> when a socket send fails, and exposes a retry control for message-load errors. Routine closed-socket and malformed-payload diagnostics are suppressed while status transitions continue to drive the UI.</p>
   <p>Because the backend currently broadcasts thread messages without a dedicated unread notification, the page refreshes the lightweight thread summary every five seconds. Incoming messages in the selected thread are marked read; messages in other threads remain unread until opened. The rebuilt isolated two-user browser contract passed live WebSocket delivery plus disconnected REST fallback, unread filtering, and read-state removal. See <code>docs/implementation/59-phase5-ecommerce-messaging-resilience.md</code> and <code>docs/testing/68-phase5-ecommerce-messaging-resilience-evidence.md</code>.</p>
 </section>
+<section aria-labelledby="phase5-ecommerce-review-eligibility">
+  <h2 id="phase5-ecommerce-review-eligibility">Phase 5 ecommerce review eligibility and ownership (2026-08-13)</h2>
+  <p>The product review composer now asks the backend for a boolean eligibility decision instead of assuming that every authenticated user can review. <code>ReviewServiceImpl</code> requires a completed order item and no existing user/product review; <code>ReviewRestController</code> applies the verified-account and role boundary without exposing order details. The create endpoint repeats the same checks as the final authority.</p>
+  <p>The isolated browser contract proves a completed purchaser sees the composer and creates a verified-purchase review, a duplicate returns <code>400</code>, and a non-purchaser receives <code>false</code>, sees purchase guidance, and cannot create a review. Cleanup removes only the QA-owned review. See <code>docs/implementation/60-phase5-ecommerce-review-eligibility.md</code> and <code>docs/testing/69-phase5-ecommerce-review-evidence.md</code>.</p>
+</section>
 </body>
 </html>

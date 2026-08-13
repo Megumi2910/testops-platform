@@ -431,6 +431,18 @@
       "role": "Two-user WebSocket, disconnected REST fallback, unread-filter, and read-state browser evidence"
     },
     {
+      "path": "docs/implementation/60-phase5-ecommerce-review-eligibility.md",
+      "role": "Backend-authoritative completed-purchase review eligibility, duplicate protection, and UI ownership flow"
+    },
+    {
+      "path": "docs/testing/69-phase5-ecommerce-review-evidence.md",
+      "role": "Completed-purchaser, duplicate-review, and non-purchaser browser and service evidence"
+    },
+    {
+      "path": "frontend/e2e/phase5-ecommerce-reviews.spec.ts",
+      "role": "Opt-in ecommerce review eligibility, verified-purchase creation, duplicate, and ownership boundary contract"
+    },
+    {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",
       "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
     }
