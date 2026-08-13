@@ -9,7 +9,7 @@
 | Unverified account can sign in and recover | PASS | Persistent `Tài khoản của bạn chưa được xác thực` banner exposes `Xác thực ngay` |
 | Resend reaches Mailpit | PASS | Request page status plus recipient-filtered Mailpit message |
 | Resend cooldown is visible | PASS | Banner resend displays the server `Try again in … seconds` response |
-| Password reset reaches Mailpit and completes | PASS | Reset link is followed and `Đặt lại mật khẩu thành công!` renders |
+| Password reset reaches Mailpit and completes | PASS | Reset link is followed and `Đặt lại mật khẩu thành công!` renders for the run-unique registration account; the permanent Customer A password remains unchanged |
 
 ## Reproduction
 
@@ -20,6 +20,11 @@ ecommerce-auth-mailpit.spec.ts — 3 passed in 13.5s
 ```
 
 The dedicated volume was reset before the final run with `scripts/reset-e2e.ps1`; the normal development PostgreSQL volume was not touched. During diagnosis, a detached stale Mailpit container was recreated so it joined `ecommerce_e2e_network`; this is why the backend initially reported `UnknownHostException: mailpit`. After recreation, all services were healthy.
+
+The contract now retains the unique registration email in memory and uses it
+for the reset scenario. A standalone reset run may provide
+`ECOMMERCE_E2E_RESET_EMAIL`; it no longer changes the permanent seeded
+Customer A credential, which keeps later role-isolation tests deterministic.
 
 ## Security and evidence rules
 

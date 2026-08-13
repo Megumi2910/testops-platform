@@ -351,6 +351,18 @@
       "role": "Ecommerce fixture prerequisite evidence, remaining isolation gates, and safe reset rules"
     },
     {
+      "path": "docs/implementation/53-phase5-ecommerce-role-isolation.md",
+      "role": "Two-context ecommerce customer and seller ownership browser contract and safe execution guidance"
+    },
+    {
+      "path": "docs/testing/62-phase5-ecommerce-role-isolation-evidence.md",
+      "role": "Ecommerce cross-customer, cross-seller, nested-resource, and thread-visibility browser evidence"
+    },
+    {
+      "path": "frontend/e2e/phase5-ecommerce-role-isolation.spec.ts",
+      "role": "Two-context ecommerce customer cart/order/thread and seller product ownership browser contract"
+    },
+    {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",
       "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
     }

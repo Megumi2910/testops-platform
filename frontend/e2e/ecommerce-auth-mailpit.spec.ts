@@ -4,7 +4,6 @@ const ecommerceBaseUrl = process.env.ECOMMERCE_E2E_BASE_URL
 const mailpitUrl = process.env.MAILPIT_URL
 const ecommerceOrigin = ecommerceBaseUrl?.replace(/\/$/, '')
 const mailpitOrigin = mailpitUrl?.replace(/\/$/, '')
-const customerEmail = process.env.ECOMMERCE_E2E_CUSTOMER_EMAIL ?? 'mock.customer@example.test'
 const customerPassword = process.env.ECOMMERCE_E2E_CUSTOMER_PASSWORD
 const unverifiedEmail = process.env.ECOMMERCE_E2E_UNVERIFIED_EMAIL ?? 'mock.unverified@example.test'
 const unverifiedPassword = process.env.ECOMMERCE_E2E_UNVERIFIED_PASSWORD
@@ -15,6 +14,8 @@ type MailpitMessage = {
   To: Array<{ Address: string }>
   Text?: string
 }
+
+let registeredEmail: string | undefined
 
 test.describe('ecommerce authentication and Mailpit flows', () => {
   test.skip(
@@ -87,6 +88,7 @@ test.describe('ecommerce authentication and Mailpit flows', () => {
     await page.goto(verificationLink, { waitUntil: 'networkidle' })
     await expect(page.getByRole('heading', { name: 'Xác thực thành công!' })).toBeVisible()
     await expect(page.getByRole('status')).toContainText('Email của bạn đã được xác thực thành công!')
+    registeredEmail = email
   })
 
   test('unverified login exposes recovery and enforces resend cooldown', async ({ page }) => {
@@ -110,12 +112,15 @@ test.describe('ecommerce authentication and Mailpit flows', () => {
   })
 
   test('forgot-password delivers a reset link and completes the reset form', async ({ page }) => {
+    const resetEmail = registeredEmail ?? process.env.ECOMMERCE_E2E_RESET_EMAIL
+    test.skip(!resetEmail, 'The reset journey uses the unique account created by the registration test or ECOMMERCE_E2E_RESET_EMAIL.')
+
     await page.goto(`${ecommerceOrigin}/forgot-password`, { waitUntil: 'networkidle' })
-    await page.getByLabel('Email').fill(customerEmail)
+    await page.getByLabel('Email').fill(resetEmail as string)
     await page.getByRole('button', { name: 'Gửi link đặt lại mật khẩu' }).click()
     await expect(page.getByRole('heading', { name: 'Email đã được gửi!' })).toBeVisible()
 
-    const message = await waitForMessage(customerEmail, /Reset Password|Đặt lại mật khẩu/i)
+    const message = await waitForMessage(resetEmail as string, /Reset Password|Đặt lại mật khẩu/i)
     const resetLink = extractLink(message, 'reset-password')
     await page.goto(resetLink, { waitUntil: 'networkidle' })
     const newPassword = process.env.ECOMMERCE_E2E_RESET_PASSWORD ?? 'Phase5Reset!123'

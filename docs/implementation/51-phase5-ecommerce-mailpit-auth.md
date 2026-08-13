@@ -19,7 +19,7 @@ The seeded accounts remain local-only. Passwords are passed through environment 
 3. Extract only the frontend verification URL, follow it, and assert the success state.
 4. Sign in as the seeded unverified customer, follow the persistent recovery link, and assert the resend email.
 5. Request resend again from the banner and assert the server cooldown message.
-6. Request a password reset for the seeded verified customer, follow the Mailpit link, submit a new password, and assert completion.
+6. Request a password reset for the unique account created in step 1 (or the explicitly supplied `ECOMMERCE_E2E_RESET_EMAIL`), follow the Mailpit link, submit a new password, and assert completion. The permanent seeded Customer A password is never mutated by this contract.
 
 The helper polls Mailpit's message list, then fetches one message detail. It checks the recipient, subject, link origin, and presence of a token; it never writes message bodies into an artifact.
 
@@ -45,6 +45,7 @@ To reset only this disposable database, run `D:\Projects\ecommerce-web\webcky\sc
 - Wrong link origin: the backend frontend-base-url configuration is wrong for the E2E profile.
 - Cooldown missing: the resend endpoint or the persistent banner is bypassing the account rate limit.
 - Reset link rejected: inspect token purpose/expiry migration and the reset endpoint response, not the mailbox.
+- A later suite cannot sign in: reset the isolated volume if an older contract changed a permanent fixture, then rerun the current contract; the current implementation uses the run-unique registration account for password reset.
 - Port already allocated: stop only disposable TestOps/ecommerce E2E containers or use their documented alternate profile; never reset the normal database.
 
 ## Trade-off and remaining scope
