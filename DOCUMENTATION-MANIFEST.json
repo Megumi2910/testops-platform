@@ -411,6 +411,18 @@
       "role": "Two-user final-unit checkout evidence, reproduction command, defect history, and QG-B13 interpretation"
     },
     {
+      "path": "docs/implementation/58-phase5-payment-stale-stock.md",
+      "role": "Backend-owned QR payment configuration, stale-cart comparison, and checkout recovery implementation"
+    },
+    {
+      "path": "docs/testing/67-phase5-payment-stale-stock-evidence.md",
+      "role": "QR payment configuration and two-customer stale-stock browser evidence with remaining QG-B13 gates"
+    },
+    {
+      "path": "frontend/e2e/phase5-ecommerce-payment-stale-stock.spec.ts",
+      "role": "Opt-in ecommerce QR payment-state and stale-cart recovery browser contract"
+    },
+    {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",
       "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
     }
