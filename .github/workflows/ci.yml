@@ -168,7 +168,11 @@ jobs:
         run: docker compose -p testops-e2e-disabled -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-local-disabled.yml down -v
 
   e2e-browser-crash:
-    needs: e2e
+    # Keep this job independently schedulable. GitHub's "rerun failed jobs"
+    # action does not enqueue a skipped dependency, which previously caused
+    # this job to fail before its first step after an unrelated transient
+    # image-build failure. The crash stack is disposable and isolated, so it
+    # does not need to share the normal E2E job's container or database.
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
