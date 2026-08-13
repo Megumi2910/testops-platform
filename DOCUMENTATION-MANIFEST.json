@@ -383,6 +383,18 @@
       "role": "Opt-in ecommerce two-user WebSocket messaging and REST-fallback isolation browser contract"
     },
     {
+      "path": "frontend/e2e/phase5-ecommerce-permission-matrix.spec.ts",
+      "role": "Opt-in ecommerce guest, unverified, customer, seller, and administrator authorization browser contract"
+    },
+    {
+      "path": "docs/implementation/56-phase5-ecommerce-permission-matrix.md",
+      "role": "Ecommerce authorization response contract, cross-seller ownership boundary, and role matrix implementation"
+    },
+    {
+      "path": "docs/testing/65-phase5-ecommerce-permission-evidence.md",
+      "role": "Ecommerce permission matrix and 403/404 response evidence from the isolated E2E stack"
+    },
+    {
       "path": "frontend/e2e/phase5-ecommerce-role-isolation.spec.ts",
       "role": "Two-context ecommerce customer cart/order/thread and seller product ownership browser contract"
     },
