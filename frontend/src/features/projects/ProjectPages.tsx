@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth } from '../auth/AuthContext'
 import { ApiError } from '../../lib/api'
 import { platformApi, projectKeys, projectsApi, type Project } from './api'
+import { useProjectWorkspace } from './ProjectWorkspaceContext'
 import { Alert, Button, Card, EmptyState, LoadingState, PageHeader } from '../../components/ui'
 
 const projectSchema = z.object({ name: z.string().trim().min(2).max(120), description: z.string().max(2000).optional(), targetOrigin: z.string().url() })
@@ -55,6 +56,52 @@ export function NewProjectPage() {
   if (!options.data.projectCreationEnabled) return <section className="card" role="alert"><PageHeader eyebrow="Projects" title="Project creation is restricted" description="Your account must be active and email verified before it can create a project." /><Link className="button button-secondary" to="/projects">Back to projects</Link></section>
   const origins = options.data.targetOrigins ?? options.data.targetAllowedOrigins.map(origin => ({ origin, type: 'EXTERNAL' as const, usable: true }))
   return <section className="card auth-card"><PageHeader eyebrow="Projects" title="Create project" description="Register a safe target before adding suites and browser checks." /><form className="form-stack" onSubmit={form.handleSubmit(values => mutation.mutate(values))}><Field label="Name" error={form.formState.errors.name?.message}><input autoComplete="organization" {...form.register('name')} /></Field><Field label="Description" error={form.formState.errors.description?.message}><textarea {...form.register('description')} rows={4} /></Field><Field label="Target origin" help="Choose an origin from the deployment allowlist. Disabled entries explain why they cannot be used." error={form.formState.errors.targetOrigin?.message}><select {...form.register('targetOrigin')}><option value="">Select target origin</option>{origins.map(origin => <option key={origin.origin} value={origin.origin} disabled={!origin.usable}>{origin.origin}{origin.usable ? '' : ` — ${origin.blockedReason ?? 'Unavailable'}`}</option>)}</select></Field>{mutation.isError && <p className="form-error" role="alert" aria-live="polite">{mutation.error instanceof ApiError ? mutation.error.message : 'Unable to create project'}</p>}<div className="inline-actions"><Button type="submit" busy={mutation.isPending}>{mutation.isPending ? 'Creating…' : 'Create project'}</Button><Link className="button button-secondary" to="/projects">Cancel</Link></div></form></section>
+}
+
+export function EditProjectPage() {
+  const { project, root } = useProjectWorkspace()
+  const navigate = useNavigate()
+  const client = useQueryClient()
+  const form = useForm<ProjectForm>({
+    resolver: zodResolver(projectSchema),
+    defaultValues: { name: project.name, description: project.description ?? '', targetOrigin: project.targetOrigin },
+  })
+  const mutation = useMutation({
+    mutationFn: (values: ProjectForm) => projectsApi.update(project.id, { ...values, projectVersion: project.version }),
+    onSuccess: updated => {
+      client.setQueryData(projectKeys.detail(project.id), updated)
+      void client.invalidateQueries({ queryKey: projectKeys.all })
+      navigate(root)
+    },
+  })
+
+  if (project.status === 'ARCHIVED' || !project.permissions.includes('PROJECT_UPDATE')) {
+    return <section className="card" role="alert">
+      <PageHeader eyebrow="Projects" title="Project editing is unavailable" description={project.status === 'ARCHIVED' ? 'Archived projects are read-only until they are restored.' : 'Your project role cannot edit this project.'} />
+      <Link className="button button-secondary" to={root}>Back to project</Link>
+    </section>
+  }
+
+  const errorMessage = mutation.error instanceof ApiError
+    ? mutation.error.code === 'project_name_taken'
+      ? 'An active project already uses this name.'
+      : mutation.error.code === 'stale_version'
+        ? 'This project changed in another tab. Reload the project before saving again.'
+        : mutation.error.code === 'project_archived'
+          ? 'This project was archived and is now read-only.'
+          : mutation.error.message
+    : 'Unable to save project changes.'
+
+  return <section className="card auth-card">
+    <PageHeader eyebrow="Projects" title="Edit project" description="Update the project identity and its approved target origin." />
+    <form className="form-stack" onSubmit={form.handleSubmit(values => mutation.mutate(values))}>
+      <Field label="Name" error={form.formState.errors.name?.message}><input autoComplete="organization" {...form.register('name')} /></Field>
+      <Field label="Description" error={form.formState.errors.description?.message}><textarea {...form.register('description')} rows={4} /></Field>
+      <Field label="Target origin" help="The origin must remain in the backend allowlist." error={form.formState.errors.targetOrigin?.message}><input type="url" {...form.register('targetOrigin')} /></Field>
+      {mutation.isError && <p className="form-error" role="alert" aria-live="polite">{errorMessage}</p>}
+      <div className="inline-actions"><Button type="submit" busy={mutation.isPending}>{mutation.isPending ? 'Saving…' : 'Save changes'}</Button><Link className="button button-secondary" to={root}>Cancel</Link></div>
+    </form>
+  </section>
 }
 
 function Field({ label, help, error, children }: { label: string; help?: string; error?: string; children: ReactNode }) { return <label>{label}{children}{help && <small className="form-help">{help}</small>}{error && <small className="form-error">{error}</small>}</label> }

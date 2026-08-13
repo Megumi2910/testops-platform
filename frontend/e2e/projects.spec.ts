@@ -44,3 +44,39 @@ test('verified users can create and find a project', async ({ page }) => {
   await page.getByLabel('Filter projects').fill(projectName)
   await expect(page.getByRole('link', { name: projectName })).toBeVisible()
 })
+
+test('project managers can edit a project and receive a duplicate-name conflict', async ({ page }) => {
+  const email = `project-edit-${Date.now()}@example.test`
+  const projectName = `Editable project ${Date.now()}`
+  const duplicateName = `Existing project ${Date.now()}`
+  await registerAndVerify(page, email)
+
+  await page.getByRole('link', { name: 'Projects', exact: true }).click()
+  await page.getByRole('link', { name: 'New project', exact: true }).click()
+  await page.getByLabel('Name').fill(projectName)
+  await page.getByLabel('Target origin').selectOption({ label: 'http://frontend:8080' })
+  await page.getByRole('button', { name: 'Create project', exact: true }).click()
+  await expect(page).toHaveURL(/\/projects\/[0-9a-f-]+$/)
+
+  await page.getByRole('link', { name: 'Edit project', exact: true }).click()
+  await page.getByLabel('Name').fill(`${projectName} updated`)
+  await page.getByRole('button', { name: 'Save changes' }).click()
+  await expect(page).toHaveURL(/\/projects\/[0-9a-f-]+$/)
+  await expect(page.getByRole('heading', { name: `${projectName} updated`, exact: true })).toBeVisible()
+
+  await page.getByRole('link', { name: 'All projects', exact: true }).click()
+  await page.getByRole('link', { name: 'New project', exact: true }).click()
+  await page.getByLabel('Name').fill(duplicateName)
+  await page.getByLabel('Target origin').selectOption({ label: 'http://frontend:8080' })
+  await page.getByRole('button', { name: 'Create project', exact: true }).click()
+  await expect(page).toHaveURL(/\/projects\/[0-9a-f-]+$/)
+
+  await page.getByRole('link', { name: 'All projects', exact: true }).click()
+  await page.getByRole('link', { name: 'New project', exact: true }).click()
+  await page.getByLabel('Name').fill(duplicateName)
+  await page.getByLabel('Target origin').selectOption({ label: 'http://frontend:8080' })
+  const response = page.waitForResponse(request => request.request().method() === 'POST' && request.url().endsWith('/api/v1/projects'))
+  await page.getByRole('button', { name: 'Create project', exact: true }).click()
+  await expect((await response).status()).toBe(409)
+  await expect(page.getByRole('alert')).toContainText('Project name is already in use')
+})

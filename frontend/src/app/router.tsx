@@ -14,6 +14,7 @@ const VerifyEmailPage = lazy(async () => ({ default: (await import('../features/
 const PasswordResetPage = lazy(async () => ({ default: (await import('../features/auth/AuthPages')).PasswordResetPage }))
 const ProjectsPage = lazy(async () => ({ default: (await import('../features/projects/ProjectPages')).ProjectsPage }))
 const NewProjectPage = lazy(async () => ({ default: (await import('../features/projects/ProjectPages')).NewProjectPage }))
+const EditProjectPage = lazy(async () => ({ default: (await import('../features/projects/ProjectPages')).EditProjectPage }))
 const ProjectLayout = lazy(async () => ({ default: (await import('../features/projects/ProjectWorkspace')).ProjectLayout }))
 const ProjectOverviewPage = lazy(async () => ({ default: (await import('../features/projects/ProjectWorkspace')).ProjectOverviewPage }))
 const SuitesPage = lazy(async () => ({ default: (await import('../features/projects/SuitePages')).SuitesPage }))
@@ -51,6 +52,7 @@ export const router = createBrowserRouter([
         { path: 'projects/new', element: <LazyPage><NewProjectPage /></LazyPage> },
         { path: 'projects/:projectId', element: <LazyPage><ProjectLayout /></LazyPage>, children: [
           { index: true, element: <LazyPage><ProjectOverviewPage /></LazyPage> },
+          { path: 'edit', element: <LazyPage><EditProjectPage /></LazyPage> },
           { path: 'suites', element: <LazyPage><SuitesPage /></LazyPage> },
           { path: 'suites/:suiteId', element: <LazyPage><SuitePage /></LazyPage> },
           { path: 'suites/:suiteId/cases/new', element: <LazyPage><GuidedNewCasePage /></LazyPage> },

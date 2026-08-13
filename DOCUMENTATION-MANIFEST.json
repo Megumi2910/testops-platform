@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10 Phase 5 adds the quality-gate matrix, role/tenant and execution regression evidence, worker/queue safety, public password recovery, deterministic and real-process browser-crash classification, binary artifact access, dashboard range/performance evidence, role/unverified browser boundaries, and a deterministic Google OAuth provider; real-provider/Chrome DevTools authentication, deployment-mode crash evidence, broader account/session permutations, and ecommerce release gates remain open",
+  "source_status": "Milestone 10 Phase 5 adds the quality-gate matrix, role/tenant and execution regression evidence, worker/queue safety, public password recovery, deterministic and real-process browser-crash classification, binary artifact access, dashboard range/performance evidence, role/unverified browser boundaries, deterministic Google OAuth, and project edit/name-conflict coverage; real-provider/Chrome DevTools authentication, deployment-mode crash evidence, broader account/session permutations, and ecommerce release gates remain open",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -297,6 +297,14 @@
     {
       "path": "docs/testing/54-phase5-browser-crash-evidence.md",
       "role": "Fresh-container browser-crash acceptance evidence and QG-B08 release interpretation"
+    },
+    {
+      "path": "docs/implementation/47-phase5-project-edit.md",
+      "role": "Versioned project editing, permission-aware UI, duplicate-name conflicts, and browser evidence"
+    },
+    {
+      "path": "docs/testing/55-phase5-project-edit-evidence.md",
+      "role": "Project edit, optimistic version, archived read-only, and duplicate-name browser evidence"
     },
     {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",

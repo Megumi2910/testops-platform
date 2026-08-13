@@ -48,6 +48,8 @@ export function ProjectLayout() {
       description={project.description || 'Build and maintain reliable browser checks.'}
       actions={<>
         <Link className="button button-secondary" to="/projects">All projects</Link>
+        {project.permissions.includes('PROJECT_UPDATE') && project.status === 'ACTIVE' &&
+          <Link className="button button-secondary" to={`${root}/edit`}>Edit project</Link>}
         {project.permissions.includes('PROJECT_ARCHIVE') && project.status === 'ACTIVE' &&
           <Button variant="danger" onClick={() => setArchiveOpen(true)} disabled={archive.isPending}>Archive</Button>}
         {project.permissions.includes('PROJECT_ARCHIVE') && project.status === 'ARCHIVED' &&
