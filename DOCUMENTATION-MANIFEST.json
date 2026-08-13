@@ -319,6 +319,14 @@
       "role": "Role-based ecommerce category and product navigation evidence and rerun command"
     },
     {
+      "path": "docs/implementation/49-phase5-ecommerce-header-accessibility.md",
+      "role": "Ecommerce header labels, disclosure state, keyboard semantics, and unfinished-control behavior"
+    },
+    {
+      "path": "docs/testing/58-phase5-ecommerce-header-evidence.md",
+      "role": "Role-based ecommerce header accessibility and category-link browser evidence"
+    },
+    {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",
       "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
     }

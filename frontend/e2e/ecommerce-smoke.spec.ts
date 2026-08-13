@@ -160,6 +160,22 @@ test.describe('ecommerce storefront smoke', () => {
     await expect(page.getByRole('heading', { name: 'Áo thun basic cotton', exact: true })).toBeVisible()
   })
 
+  test('header navigation exposes named controls and working category links', async ({ page }) => {
+    await page.goto(`${ecommerceOrigin}/`, { waitUntil: 'networkidle' })
+
+    await expect(page.getByRole('textbox', { name: 'Tìm kiếm sản phẩm' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Tìm kiếm' })).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Đăng nhập' })).toBeVisible()
+
+    const categoriesToggle = page.getByRole('button', { name: 'Danh mục' })
+    await expect(categoriesToggle).toHaveAttribute('aria-expanded', 'false')
+    await categoriesToggle.click()
+    await expect(categoriesToggle).toHaveAttribute('aria-expanded', 'true')
+
+    await page.getByRole('menuitem', { name: 'Áo thun' }).click()
+    await expect(page).toHaveURL(/\/search\?q=%C3%81o%20thun$/)
+  })
+
   test('search shows a stable no-result state for an unknown term', async ({ page }) => {
     await page.goto(`${ecommerceOrigin}/search?q=phase5-no-such-product-${Date.now()}`, { waitUntil: 'networkidle' })
     await expect(page.getByRole('heading', { name: 'Không tìm thấy sản phẩm', exact: true })).toBeVisible()
