@@ -107,9 +107,19 @@ test.describe('ecommerce storefront smoke', () => {
 
     await page.goto(`${ecommerceOrigin}/customer/wishlist`, { waitUntil: 'networkidle' })
     await expect(page.getByRole('heading', { name: 'Sản phẩm yêu thích', exact: true })).toBeVisible()
+    await expect(page.getByRole('status', { name: 'Danh sách yêu thích chưa khả dụng' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Lọc (sắp có)' })).toBeDisabled()
+    await expect(page.getByRole('button', { name: 'Hiển thị dạng lưới' })).toBeDisabled()
+    await expect(page.getByRole('button', { name: 'Hiển thị dạng danh sách' })).toBeDisabled()
     await expect(page.getByText('Chưa có sản phẩm yêu thích')).toBeVisible()
     await page.getByRole('button', { name: 'Khám phá sản phẩm' }).click()
     await expect(page).toHaveURL(`${ecommerceOrigin}/`)
+  })
+
+  test('unfinished flash sale route explains its unavailable capability', async ({ page }) => {
+    await page.goto(`${ecommerceOrigin}/flash-sale`, { waitUntil: 'networkidle' })
+    await expect(page.getByRole('status', { name: 'Flash Sale chưa khả dụng' })).toBeVisible()
+    await expect(page.getByText(/không có giao dịch Flash Sale nào được thực hiện/)).toBeVisible()
   })
 
   test('storefront keeps the mobile layout within the viewport', async ({ page }) => {

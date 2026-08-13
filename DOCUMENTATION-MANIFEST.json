@@ -443,6 +443,18 @@
       "role": "Opt-in ecommerce review eligibility, verified-purchase creation, duplicate, and ownership boundary contract"
     },
     {
+      "path": "docs/implementation/61-phase5-ecommerce-feature-availability.md",
+      "role": "Truthful unavailable-state behavior for ecommerce wishlist and Flash Sale routes"
+    },
+    {
+      "path": "docs/testing/70-phase5-ecommerce-feature-availability-evidence.md",
+      "role": "Focused browser evidence for disabled wishlist controls and Flash Sale availability messaging"
+    },
+    {
+      "path": "frontend/e2e/ecommerce-smoke.spec.ts",
+      "role": "Ecommerce storefront regression contract including unfinished-destination availability states"
+    },
+    {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",
       "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
     }

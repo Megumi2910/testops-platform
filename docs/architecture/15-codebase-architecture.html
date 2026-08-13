@@ -725,5 +725,10 @@
   <p>The product review composer now asks the backend for a boolean eligibility decision instead of assuming that every authenticated user can review. <code>ReviewServiceImpl</code> requires a completed order item and no existing user/product review; <code>ReviewRestController</code> applies the verified-account and role boundary without exposing order details. The create endpoint repeats the same checks as the final authority.</p>
   <p>The isolated browser contract proves a completed purchaser sees the composer and creates a verified-purchase review, a duplicate returns <code>400</code>, and a non-purchaser receives <code>false</code>, sees purchase guidance, and cannot create a review. Cleanup removes only the QA-owned review. See <code>docs/implementation/60-phase5-ecommerce-review-eligibility.md</code> and <code>docs/testing/69-phase5-ecommerce-review-evidence.md</code>.</p>
 </section>
+<section aria-labelledby="phase5-ecommerce-feature-availability">
+  <h2 id="phase5-ecommerce-feature-availability">Phase 5 ecommerce feature availability (2026-08-13)</h2>
+  <p><code>FeatureAvailabilityNotice</code> is the shared status-region contract for storefront capabilities whose backend is not enabled. <code>FlashSalePage</code> no longer presents a fabricated countdown while the campaign API returns no products; <code>CustomerWishlist</code> preserves the catalog recovery path but disables empty-list controls and explains that server synchronization is unavailable. Wallet, voucher, and header integrations retain their existing coming-soon/disabled copy.</p>
+  <p>The focused ecommerce smoke contract proves both notices and the disabled wishlist filter/view controls against the rebuilt disposable stack. This closes the covered portion of <code>QG-009</code>; simulated settings and any unreviewed destination still require the same audit. See <code>docs/implementation/61-phase5-ecommerce-feature-availability.md</code> and <code>docs/testing/70-phase5-ecommerce-feature-availability-evidence.md</code>.</p>
+</section>
 </body>
 </html>

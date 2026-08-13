@@ -105,10 +105,11 @@
 ### QG-009 — Incomplete ecommerce destinations look production-ready
 
 - Severity: P2
-- Evidence: wishlist and flash-sale destinations are publicly linked without a consistent incomplete/disabled contract
+- Status: PARTIAL — wishlist and Flash Sale now have explicit unavailable status regions and disabled empty-state controls; wallet/voucher cards and header integrations already say coming soon
+- Evidence: `ecommerce-smoke.spec.ts` proves the wishlist notice plus disabled filter/view controls and the Flash Sale unavailable notice
 - Expected: implemented destinations, or clearly disabled/labelled placeholders
-- Actual: navigation implies working features
-- Regression layer: route inventory + UI unit tests
+- Actual: the covered routes no longer imply working features; simulated settings and any unreviewed destination remain to audit
+- Regression layer: route inventory + Playwright browser contract
 
 ### QG-010 — Stale lazy chunks crash TestOps after a container rebuild
 
