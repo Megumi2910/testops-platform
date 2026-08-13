@@ -307,6 +307,10 @@
       "role": "Project edit, optimistic version, archived read-only, and duplicate-name browser evidence"
     },
     {
+      "path": "docs/testing/56-phase5-ecommerce-catalog-evidence.md",
+      "role": "Ecommerce category, product detail, search empty state, URL filters, retry, and pagination evidence"
+    },
+    {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",
       "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
     }

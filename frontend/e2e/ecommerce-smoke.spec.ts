@@ -142,6 +142,30 @@ test.describe('ecommerce storefront smoke', () => {
     await expect(page).toHaveURL(/sort=rating/)
   })
 
+  test('public catalog opens a seeded category and product detail', async ({ page }) => {
+    await page.goto(`${ecommerceOrigin}/categories`, { waitUntil: 'networkidle' })
+    await expect(page.getByRole('heading', { name: 'Danh mục sản phẩm', exact: true })).toBeVisible()
+    const category = page.getByText('Thời trang', { exact: true }).first()
+    await expect(category).toBeVisible()
+    await category.click()
+    await expect(page).toHaveURL(/\/category\/\d+$/)
+    await expect(page.getByRole('heading', { name: 'Thời trang', exact: true })).toBeVisible()
+    await expect(page.getByText(/Tìm thấy \d+ sản phẩm/)).toBeVisible()
+
+    await page.goto(`${ecommerceOrigin}/search?q=Áo%20thun`, { waitUntil: 'networkidle' })
+    const product = page.getByText('Áo thun basic cotton', { exact: true }).first()
+    await expect(product).toBeVisible()
+    await product.click()
+    await expect(page).toHaveURL(/\/product\/\d+$/)
+    await expect(page.getByRole('heading', { name: 'Áo thun basic cotton', exact: true })).toBeVisible()
+  })
+
+  test('search shows a stable no-result state for an unknown term', async ({ page }) => {
+    await page.goto(`${ecommerceOrigin}/search?q=phase5-no-such-product-${Date.now()}`, { waitUntil: 'networkidle' })
+    await expect(page.getByRole('heading', { name: 'Không tìm thấy sản phẩm', exact: true })).toBeVisible()
+    await expect(page.getByText('Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm')).toBeVisible()
+  })
+
   test('search exposes an actionable retry after a backend outage', async ({ page }) => {
     let shouldFail = true
     await page.route('**/api/products/**', async (route) => {

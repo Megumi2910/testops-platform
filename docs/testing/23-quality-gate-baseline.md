@@ -56,7 +56,7 @@ Ecommerce already has idempotent development fixtures for one verified customer,
 | Responsive home | Chrome mobile emulation at `320×800`; no transport failure; semantic tree captured | PARTIAL | `QG-006` unnamed controls and non-semantic product cards |
 | Performance | Mobile LCP `939 ms`, CLS `0.00`; no throttling; render delay `771 ms` | PASS WITH RISK | `QG-008` external fonts/images remain nondeterministic and dominate the dependency chain |
 | Accessibility | Mobile Lighthouse accessibility `80`; best practices `81`; SEO `92` | FAIL | `QG-006`, `QG-007` |
-| Search/catalog variants | Stable seeded content is visible | BLOCKED | `QG-B11` category/filter/sort/no-result/URL variants need the repeatable browser suite |
+| Search/catalog variants | The repeatable ecommerce contract covers seeded category navigation, product detail, keyword search, filter/sort URL state, no-result recovery, retry, and pagination | PASS for catalog sub-gate | `QG-B11` catalog/search coverage is closed; email, checkout, messaging, seller/admin, and accessibility gates remain |
 | Auth/email | Existing verified and unverified fixtures are documented | BLOCKED | `QG-B12` Mailpit verification/reset/resend matrix is not attached to the normal QA overlay |
 | Cart/checkout/orders/reviews | Stable cart, completed order, and review fixture exist | BLOCKED | `QG-B13` destructive and concurrency scenarios are restricted to the isolated PostgreSQL harness |
 | Messaging | One deterministic customer–seller thread exists | BLOCKED | `QG-B14` second customer/seller and two-browser orchestration are absent |
