@@ -29,3 +29,5 @@ This keeps authentication at the channel interceptor, where unauthenticated and 
 ## Remaining boundary
 
 This closes live WebSocket send/receive and ownership checks. Reconnect timing, explicit REST-fallback delivery, unread-state assertions, and the native multi-user stress/concurrency harness remain open Phase 5 work. The GitHub Actions account has exhausted its included minutes (`3,000/3,000`), so pushed workflows currently fail before executing a job; local evidence is the authoritative verification until the billing cycle resets or a paid budget is enabled.
+
+The post-push TestOps run `31701107482` confirms this state: all six jobs failed with zero executed steps. It is recorded as an infrastructure/quota limitation, not as a failed messaging assertion.

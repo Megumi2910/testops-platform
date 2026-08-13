@@ -31,3 +31,5 @@ The post-fix combined isolated gate also passed 7 scenarios (Mailpit authenticat
 ## Quality-gate interpretation
 
 `QG-B14` moves from fixture-only coverage to **PARTIAL with live WebSocket delivery proven**. Reconnect behavior, explicit REST fallback, unread badges, and native simultaneous-user stress remain separate cases. GitHub Actions cannot currently provide a remote result because the account has consumed its 3,000 included minutes; the observed failure is quota exhaustion before any job step, not a code assertion.
+
+After this slice was pushed, TestOps workflow `31701107482` completed with all six jobs failed and zero executed steps. This is the current remote-evidence record for the quota block; it does not invalidate the passing local gates above.
