@@ -399,6 +399,18 @@
       "role": "Two-context ecommerce customer cart/order/thread and seller product ownership browser contract"
     },
     {
+      "path": "frontend/e2e/phase5-ecommerce-checkout-concurrency.spec.ts",
+      "role": "Two-user final-unit inventory locking, normal stock rejection, and exact cancellation restoration browser contract"
+    },
+    {
+      "path": "docs/implementation/57-phase5-ecommerce-checkout-concurrency.md",
+      "role": "PostgreSQL row locking, stale Hibernate identity protection, deterministic lock ordering, and QA fixture implementation"
+    },
+    {
+      "path": "docs/testing/66-phase5-ecommerce-checkout-concurrency-evidence.md",
+      "role": "Two-user final-unit checkout evidence, reproduction command, defect history, and QG-B13 interpretation"
+    },
+    {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",
       "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
     }

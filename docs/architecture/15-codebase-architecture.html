@@ -704,5 +704,11 @@
   <p>A live probe found that method security was correct but the REST advice converted <code>AuthorizationDeniedException</code> into HTTP <code>500</code>. <code>RestExceptionHandler</code> now maps Spring Security access denials to <code>403</code> and missing protocol headers to <code>400</code>. Seller product update/delete returns <code>404</code> for foreign ownership, preventing resource enumeration while preserving the mutation guard.</p>
   <p>The permission matrix passed 3 scenarios in 8.4 seconds against the rebuilt isolated stack; the combined authentication, checkout, messaging, role-isolation, and permission regression passed 10 scenarios in 30.9 seconds. Seller/admin writes, seller order transitions, review ownership, and the complete endpoint/UI matrix remain open.</p>
 </section>
+<section aria-labelledby="phase5-ecommerce-checkout-concurrency">
+  <h2 id="phase5-ecommerce-checkout-concurrency">Phase 5 ecommerce final-unit checkout locking (2026-08-13)</h2>
+  <p>Checkout inventory reservations now use <code>ProductRepository.findByIdForUpdate</code> with PostgreSQL <code>PESSIMISTIC_WRITE</code>. Before the lock query, <code>ProductServiceImpl</code> detaches a product that may have been loaded during price validation; this prevents Hibernate's first-level cache from reusing a stale version and converting a normal stock race into a <code>500</code>. Cart checkout and cancellation sort product IDs so multi-product operations acquire locks consistently.</p>
+  <p>The development-only seeder adds <code>MOCK-CONCURRENCY-001</code> with one approved unit. <code>phase5-ecommerce-checkout-concurrency.spec.ts</code> uses two authenticated browser contexts and concurrent buy-now requests, then cancels the winner. A clean isolated run passed in 3.9 seconds: exactly one order committed, the other request returned a normal <code>4xx</code> stock error, stock reached zero, and cancellation restored it to one. The normal development volume was not reset.</p>
+  <p>This closes the QG-B13 concurrency sub-gate. Payment-state transitions, stale-stock UI refresh, and review eligibility remain open; see <code>docs/implementation/57-phase5-ecommerce-checkout-concurrency.md</code> and <code>docs/testing/66-phase5-ecommerce-checkout-concurrency-evidence.md</code>.</p>
+</section>
 </body>
 </html>
