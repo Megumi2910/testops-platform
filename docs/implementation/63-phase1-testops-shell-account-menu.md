@@ -80,7 +80,12 @@ npm run build
 The slice added six assertions across the shell and route-recovery tests (five
 account/drawer cases and one route-error case). The full frontend suite passes
 with 15 test files and 48 tests; lint has no warnings, typecheck succeeds, and
-the Vite production build succeeds.
+the Vite production build succeeds. GitHub Actions run
+[`31785998751`](https://github.com/Megumi2910/testops-platform/actions/runs/31785998751)
+also passed all six required jobs, including the rebuilt enabled,
+local-disabled, and browser-crash E2E profiles. GitHub reported only the
+existing Node.js 20 deprecation annotation for `upload-artifact`; it did not
+fail a gate.
 
 ## Known follow-ups
 

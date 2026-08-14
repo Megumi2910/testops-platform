@@ -28,6 +28,12 @@ npm test -- --run                    PASS (15 files, 48 tests)
 npm run build                        PASS (Vite production build)
 ```
 
+The pushed revision `4ca2d0776fd46db488158fc989afb14d58768c00` passed GitHub
+Actions run [`31785998751`](https://github.com/Megumi2910/testops-platform/actions/runs/31785998751):
+frontend, backend, containers, enabled E2E, local-target-disabled E2E, and
+browser-crash E2E all completed successfully. The only annotations were
+non-blocking Node.js 20 deprecation notices emitted by `upload-artifact`.
+
 Tests run against the checked-out frontend source, not a stale browser tab or
 an old container image. The next live gate must rebuild the QA stack from the
 committed revision and repeat the Chrome DevTools matrix at desktop, tablet,

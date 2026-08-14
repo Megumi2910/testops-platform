@@ -187,4 +187,7 @@ Source-level evidence is documented in
 and [`72-phase1-shell-account-menu.md`](../testing/72-phase1-shell-account-menu.md).
 Frontend lint, typecheck, 48 unit tests, and the production build are the local
 gates for this slice. Automatic stale-chunk reload and the live Chrome DevTools
-matrix remain open for later Phase 1/2 slices.
+matrix remain open for later Phase 1/2 slices. Remote CI run
+[`31785998751`](https://github.com/Megumi2910/testops-platform/actions/runs/31785998751)
+passed all six required jobs for commit `4ca2d077`; the workflow emitted only
+non-blocking `upload-artifact` Node.js 20 deprecation annotations.
