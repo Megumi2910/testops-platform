@@ -137,7 +137,7 @@ release decision until a later run executes.
 ### Rebuild evidence captured
 
 The isolated Compose project `testops-quality-gate` was rebuilt from commit
-`0657c2c0d5363a110c8b2775f69de1d4e8a883aa`. PostgreSQL, Mailpit, pgAdmin,
+`16411c4ab9c5ec3fbea815580f40af26fc49cd20`. PostgreSQL, Mailpit, pgAdmin,
 backend, and frontend reported healthy; `http://localhost:8080/actuator/health`
 and `http://localhost:3000/` both returned HTTP 200. The backend and frontend
 OCI `org.opencontainers.image.revision` labels exactly matched that commit.
