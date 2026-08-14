@@ -1,6 +1,8 @@
 FROM node:24.17.0-alpine3.23 AS build
 
 WORKDIR /app
+ARG VCS_REF=unknown
+ENV VITE_APP_REVISION=$VCS_REF
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .

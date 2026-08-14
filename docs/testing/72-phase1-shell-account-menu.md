@@ -58,6 +58,7 @@ and `320×800`.
 
 This file intentionally does not close QG-005 or QG-010 completely. Form
 autocomplete/field metadata is still a separate accessibility slice. The new
-root recovery page closes the generic-error part of stale chunk handling, but
-the one-time automatic reload and retained-tab deployment test remain Phase 2
-work.
+root recovery page closed the generic-error part of stale chunk handling; the
+Phase 2 slice now covers the one-time revision-aware reload and retained-tab
+chunk-failure regression. A full revision-A/revision-B image swap and live
+Chrome DevTools deployment capture remain operational follow-ups.

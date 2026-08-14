@@ -135,9 +135,9 @@ not as evidence against the shell/account-menu implementation.
 - Reproduction: navigate from the stale tab after the new image starts
 - Expected: one controlled reload or branded recovery boundary
 - Actual (before Phase 1): the browser requests a removed hashed chunk, receives `404`, and React Router renders its default unexpected-error page
-- Phase 1 slice update: the root router now renders a branded recovery page with safe reload/readiness actions and no stack details. The automatic single reload guard and retained-tab deployment proof remain open for Phase 2.
+- Phase 1 slice update: the root router now renders a branded recovery page with safe reload/readiness actions and no stack details. Phase 2 now adds revision-aware lazy imports, one automatic reload per route/revision, and a retained-tab chunk-failure regression. A full two-image A/B deployment swap and live Chrome DevTools proof remain operational follow-ups.
 - Likely subsystem: lazy-import recovery and root route error boundary
-- Regression layer: deployment smoke with retained browser session
+- Regression layer: lazy-import unit test + retained-tab Playwright smoke + deployment smoke with a rebuilt browser session
 
 ### QG-020 — Signed-in Account control appeared inert
 

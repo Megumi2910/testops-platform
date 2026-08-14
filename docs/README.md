@@ -27,6 +27,7 @@ The root [README](../README.md) remains the project entry point. The machine-rea
 - Reproducing release gates: [release-gate verification](implementation/22-release-gate-verification.md) → [ecommerce dogfooding guide](operations/15-ecommerce-dogfooding-guide.md).
 - Running the Milestone 10 quality gate: [operator guide](guides/23-quality-gate-operator-guide.md) → [baseline matrix](testing/23-quality-gate-baseline.md) → [defect ledger](testing/24-defect-ledger.md).
 - Reviewing the Phase 1 shell and account menu: [implementation notes](implementation/63-phase1-testops-shell-account-menu.md) → [test evidence](testing/72-phase1-shell-account-menu.md) → [interactive workflow](implementation/17-ui-to-execution-workflow.html).
+- Reviewing Phase 2 stale-bundle recovery: [implementation notes](implementation/64-phase2-stale-bundle-recovery.md) → [test evidence](testing/73-phase2-stale-bundle-recovery.md) → [interactive workflow](implementation/17-ui-to-execution-workflow.html).
 - Understanding DRAFT saves and API errors: [problem responses and DRAFT validation](implementation/24-problem-contract-and-draft-validation.md).
 - Reviewing tenant, lifecycle, variable, cancellation, and administrator boundaries: [Phase 2 security boundaries](implementation/25-phase-2-security-boundaries.md).
 - Implementing history-preserving suite/case deletion: [definition trash lifecycle backend](implementation/26-definition-trash-backend.md).

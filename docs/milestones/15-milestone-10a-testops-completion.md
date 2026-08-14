@@ -1,6 +1,6 @@
 # Milestone 10A — TestOps first-release completion
 
-## Current slice: Phase 1 shell and account-menu slice
+## Current slice: Phase 2 revision-aware stale-bundle recovery
 
 This document is the current release ledger for Milestone 10A. It replaces the
 Milestone 9 release-candidate document as the source of truth for work on the
@@ -196,3 +196,35 @@ initially exposed one transient Mailpit password-reset E2E failure (33 passed,
 one failed, 32 skipped); rerunning the failed job completed the full enabled
 E2E suite successfully. All six jobs are therefore green on the current
 branch, and the transient result remains recorded for future flake triage.
+
+## Phase 2 slice result — revision-aware stale-bundle recovery
+
+**Status: PASS for this implementation slice.** Lazy route imports now pass
+through `frontend/src/app/lazyWithRecovery.ts`. Vite chunk/preload failures are
+classified before they reach the root error boundary; the first failure stores
+one session-scoped key for the current application revision and route, reloads
+the page once, and then falls back to the branded recovery page if the same
+route still cannot load. The guard prevents an infinite reload loop while
+allowing a different route or a newly deployed revision to recover once.
+
+`VITE_APP_REVISION` is populated from `VCS_REF` in the frontend build and
+Compose/CI pass the checked-out revision through the build. Nginx marks
+`index.html` as non-cacheable while retaining immutable caching for hashed
+assets, so a fresh navigation obtains the current shell without changing API or
+OAuth proxy behavior. The unit suite covers error classification and the
+per-route/revision guard; `frontend/e2e/phase2-stale-bundle.spec.ts` aborts a
+new lazy chunk from a retained tab and verifies the recovery boundary and build
+revision.
+
+The targeted retained-tab Playwright regression passed against the rebuilt
+isolated QA frontend at `http://localhost:3000`; the earlier failure against
+the old image is retained as evidence that the runtime must be rebuilt before
+browser conclusions are trusted.
+
+Implementation and test evidence are recorded in
+[`64-phase2-stale-bundle-recovery.md`](../implementation/64-phase2-stale-bundle-recovery.md)
+and [`73-phase2-stale-bundle-recovery.md`](../testing/73-phase2-stale-bundle-recovery.md).
+The browser test intentionally simulates the removed-chunk condition in one
+image; a full revision-A/revision-B container swap and live Chrome DevTools
+deployment capture remain operational follow-ups before the overall release
+gate can close.

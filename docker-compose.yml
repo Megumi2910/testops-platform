@@ -18,6 +18,8 @@ services:
     image: testops-platform-backend:0.1.0
     build:
       context: ./backend
+      args:
+        VCS_REF: ${VCS_REF:-unknown}
     restart: unless-stopped
     init: true
     shm_size: 1gb
@@ -43,6 +45,8 @@ services:
     image: testops-platform-frontend:0.1.0
     build:
       context: ./frontend
+      args:
+        VCS_REF: ${VCS_REF:-unknown}
     restart: unless-stopped
     env_file:
       - ./frontend/.env

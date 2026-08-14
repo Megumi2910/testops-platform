@@ -62,9 +62,9 @@ that the tab may have an older bundle and offers **Reload application** and
 **Return to readiness**. Other render or route failures get the same safe
 recovery actions without exposing stack traces, tokens, or backend details.
 
-Phase 2 will add the one-reload-per-revision guard and retained-tab deployment
-test. Keeping that policy separate prevents a recovery page from accidentally
-creating a reload loop in this first shell slice.
+The follow-on Phase 2 slice now adds the one-reload-per-revision guard and a
+retained-tab lazy-chunk regression. A full revision-A/revision-B image swap and
+live Chrome DevTools deployment capture remain separate operational evidence.
 
 ## Verification
 
@@ -89,7 +89,8 @@ fail a gate.
 
 ## Known follow-ups
 
-- Add the automatic single reload and `VITE_APP_REVISION` guard in Phase 2.
+- Repeat the stale-bundle check with a real revision-A/revision-B image swap and
+  capture the live Chrome DevTools deployment evidence.
 - Refactor the Account page into the security, login-method, and sessions
   panels described by Phase 3.
 - Run the Chrome DevTools desktop/tablet/320px keyboard matrix against the

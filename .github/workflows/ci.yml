@@ -11,6 +11,9 @@ on:
 permissions:
   contents: read
 
+env:
+  VCS_REF: ${{ github.sha }}
+
 jobs:
   frontend:
     runs-on: ubuntu-24.04

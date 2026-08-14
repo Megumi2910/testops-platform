@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10A Phase 0 passed and the first Phase 1 shell/account-menu slice is verified; stale-bundle reload, account-center, lifecycle, authorization, execution, accessibility, and final browser gates remain ordered follow-up slices",
+  "source_status": "Milestone 10A Phase 0 and the Phase 1 shell/account-menu slice are verified; the Phase 2 stale-bundle recovery slice is implemented and tested, while account-center, lifecycle, authorization, execution, accessibility, and final browser gates remain ordered follow-up slices",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -477,6 +477,18 @@
     {
       "path": "docs/testing/72-phase1-shell-account-menu.md",
       "role": "Phase 1 account-menu, mobile drawer, and branded route-recovery regression evidence"
+    },
+    {
+      "path": "docs/implementation/64-phase2-stale-bundle-recovery.md",
+      "role": "Phase 2 revision-aware lazy-import recovery, build metadata, and cache policy implementation"
+    },
+    {
+      "path": "docs/testing/73-phase2-stale-bundle-recovery.md",
+      "role": "Phase 2 chunk-failure classification, reload guard, retained-tab, and revision evidence"
+    },
+    {
+      "path": "frontend/e2e/phase2-stale-bundle.spec.ts",
+      "role": "Phase 2 retained-tab lazy-chunk recovery browser regression"
     }
   ]
 }
