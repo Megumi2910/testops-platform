@@ -191,3 +191,8 @@ matrix remain open for later Phase 1/2 slices. Remote CI run
 [`31785998751`](https://github.com/Megumi2910/testops-platform/actions/runs/31785998751)
 passed all six required jobs for commit `4ca2d077`; the workflow emitted only
 non-blocking `upload-artifact` Node.js 20 deprecation annotations.
+The documentation-only follow-up run [`31786506438`](https://github.com/Megumi2910/testops-platform/actions/runs/31786506438)
+initially exposed one transient Mailpit password-reset E2E failure (33 passed,
+one failed, 32 skipped); rerunning the failed job completed the full enabled
+E2E suite successfully. All six jobs are therefore green on the current
+branch, and the transient result remains recorded for future flake triage.

@@ -34,6 +34,12 @@ frontend, backend, containers, enabled E2E, local-target-disabled E2E, and
 browser-crash E2E all completed successfully. The only annotations were
 non-blocking Node.js 20 deprecation notices emitted by `upload-artifact`.
 
+The follow-up documentation run [`31786506438`](https://github.com/Megumi2910/testops-platform/actions/runs/31786506438)
+first failed one password-reset test after 33 passing tests; rerunning the
+failed job completed the full enabled E2E suite successfully and left all six
+required jobs green. The first result is retained as a transient Mailpit-flow
+flake to investigate separately, not as a Phase 1 shell regression.
+
 Tests run against the checked-out frontend source, not a stale browser tab or
 an old container image. The next live gate must rebuild the QA stack from the
 committed revision and repeat the Chrome DevTools matrix at desktop, tablet,

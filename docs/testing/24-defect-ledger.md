@@ -18,6 +18,12 @@ active. The public repository's GitHub secret-scanning endpoint is unavailable,
 so the Phase 0 local audit is recorded as a compensating control rather than a
 claim that hosted scanning ran.
 
+The Phase 1 documentation follow-up run `31786506438` briefly failed the
+existing Mailpit password-reset E2E test after 33 passing tests. A failed-job
+rerun passed the complete enabled E2E suite and all other CI jobs were green;
+this is recorded as a transient test-infrastructure/fixture timing signal,
+not as evidence against the shell/account-menu implementation.
+
 ## Confirmed defects
 
 ### QG-001 — Partial DRAFT steps cannot be saved
