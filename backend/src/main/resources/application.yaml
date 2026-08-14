@@ -38,7 +38,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,prometheus
   endpoint:
     health:
       show-details: never
@@ -80,6 +80,9 @@ testops:
       client-id: ${GOOGLE_CLIENT_ID:}
       client-secret: ${GOOGLE_CLIENT_SECRET:}
       redirect-uri: ${FRONTEND_ORIGIN:http://localhost:3000}/login/oauth2/code/google
+      provider-base-uri: ${GOOGLE_PROVIDER_BASE_URI:}
+      public-base-uri: ${GOOGLE_PUBLIC_BASE_URI:}
+      scopes: ${GOOGLE_SCOPES:openid,profile,email}
     frontend-origin: ${FRONTEND_ORIGIN:http://localhost:3000}
     bootstrap:
       enabled: ${BOOTSTRAP_ADMIN_ENABLED:false}
@@ -108,11 +111,18 @@ testops:
     browser: ${PLAYWRIGHT_BROWSER:chromium}
   artifact:
     directory: ${ARTIFACT_DIRECTORY:./artifacts}
+    retention-days: ${ARTIFACT_RETENTION_DAYS:0}
   target:
     allowed-origins: ${TARGET_ALLOWED_ORIGINS:}
+    local-development-enabled: ${TARGET_LOCAL_DEV_ENABLED:false}
+    local-host-alias: ${TARGET_LOCAL_DEV_HOST_ALIAS:host.docker.internal}
   project:
     secret-variables-enabled: ${PROJECT_SECRET_VARIABLES_ENABLED:false}
     variable-key-path: ${PROJECT_VARIABLE_KEY_PATH:}
     variable-key-version: ${PROJECT_VARIABLE_KEY_VERSION:1}
   openapi:
     enabled: ${OPENAPI_ENABLED:false}
+  qa-fixtures:
+    enabled: ${TESTOPS_QA_FIXTURES_ENABLED:false}
+    password-path: ${TESTOPS_QA_FIXTURE_PASSWORD_PATH:/run/secrets/testops/qa-fixture-password}
+    target-origin: ${TESTOPS_QA_TARGET_ORIGIN:http://localhost:3001}

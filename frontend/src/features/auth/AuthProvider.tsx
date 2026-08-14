@@ -39,7 +39,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
       const response = await authApi.verifyEmail({ email, otp })
       setUser(response.user)
     },
-    resendEmail: async (email) => { await authApi.resendEmail(email) },
+    resendEmail: (email) => authApi.resendEmail(email),
+    resendAuthenticatedEmail: () => authApi.resendAuthenticatedEmail(),
     logout: async () => {
       try { await authApi.logout() } finally { authApi.clearAccessToken(); setUser(null) }
     },

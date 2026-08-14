@@ -60,9 +60,33 @@ public class AuthController {
     }
 
     @PostMapping("/email/resend")
-    public ResponseEntity<MessageResponse> resend(@Valid @RequestBody ResendEmailRequest request, HttpServletRequest servletRequest) {
-        service().resendVerification(request.email(), clientIp(servletRequest));
-        return ResponseEntity.accepted().body(new MessageResponse("If the account can be verified, a code has been sent"));
+    public ResponseEntity<ResendVerificationResponse> resend(@Valid @RequestBody ResendEmailRequest request,
+            HttpServletRequest servletRequest) {
+        AuthService.ResendVerificationResult result = service().resendVerification(request.email(), clientIp(servletRequest));
+        return ResponseEntity.accepted().body(resendResponse(result));
+    }
+
+    @PostMapping("/password/reset/request")
+    public ResponseEntity<ResendVerificationResponse> requestPasswordReset(
+            @Valid @RequestBody PasswordResetRequest request, HttpServletRequest servletRequest) {
+        AuthService.ResendVerificationResult result = service().requestPasswordReset(request, clientIp(servletRequest));
+        return ResponseEntity.accepted().body(new ResendVerificationResponse(
+                "If the account can be recovered, a reset code has been sent", result.nextResendAt(),
+                result.retryAfterSeconds()));
+    }
+
+    @PostMapping("/password/reset/confirm")
+    public ResponseEntity<Void> confirmPasswordReset(
+            @Valid @RequestBody PasswordResetConfirmRequest request, HttpServletRequest servletRequest) {
+        service().resetPassword(request, clientIp(servletRequest));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/me/email/resend")
+    public ResponseEntity<ResendVerificationResponse> resendAuthenticated(@AuthenticationPrincipal Jwt jwt,
+            HttpServletRequest servletRequest) {
+        AuthService.ResendVerificationResult result = service().resendVerificationAuthenticated(subject(jwt), clientIp(servletRequest));
+        return ResponseEntity.accepted().body(resendResponse(result));
     }
 
     @PostMapping("/login")
@@ -153,6 +177,11 @@ public class AuthController {
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
                 .header(HttpHeaders.PRAGMA, "no-cache")
                 .body(session.response());
+    }
+
+    private static ResendVerificationResponse resendResponse(AuthService.ResendVerificationResult result) {
+        return new ResendVerificationResponse("If the account can be verified, a code has been sent",
+                result.nextResendAt(), result.retryAfterSeconds());
     }
 
     private String readRefreshCookie(HttpServletRequest request) {

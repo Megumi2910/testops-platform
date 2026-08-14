@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
 
-import type { Providers, UserSummary } from './api'
+import type { Providers, ResendVerificationResponse, UserSummary } from './api'
 
 export type AuthContextValue = {
   user: UserSummary | null
@@ -9,7 +9,8 @@ export type AuthContextValue = {
   login: (email: string, password: string) => Promise<void>
   register: (email: string, displayName: string, password: string) => Promise<void>
   verifyEmail: (email: string, otp: string) => Promise<void>
-  resendEmail: (email: string) => Promise<void>
+  resendEmail: (email: string) => Promise<ResendVerificationResponse>
+  resendAuthenticatedEmail: () => Promise<ResendVerificationResponse>
   logout: () => Promise<void>
 }
 

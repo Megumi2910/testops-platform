@@ -4,12 +4,14 @@ force=false
 generate_bootstrap_password=false
 enable_email_delivery=false
 enable_google=false
+target_allowed_origins=""
 for argument in "$@"; do
   case "$argument" in
     --force) force=true ;;
     --generate-bootstrap-password) generate_bootstrap_password=true ;;
     --enable-email-delivery) enable_email_delivery=true ;;
     --enable-google) enable_google=true ;;
+    --target-allowed-origins) shift; target_allowed_origins="${1:-}" ;;
     *) printf 'Unknown option: %s\n' "$argument" >&2; exit 2 ;;
   esac
 done
@@ -48,5 +50,6 @@ if [[ "$force" == true ]]; then
   pgadmin_env="$root/pgadmin4/.env"
   set_env "$pgadmin_env" PGADMIN_DEFAULT_EMAIL admin@localhost.test
   set_env "$pgadmin_env" PGADMIN_DEFAULT_PASSWORD "$(openssl rand -base64 24 | tr -d '\n')"
+  if [[ -n "$target_allowed_origins" ]]; then set_env "$backend_env" TARGET_ALLOWED_ORIGINS "$target_allowed_origins"; fi
 fi
 echo 'Local files and ignored secrets are ready. Start with: docker compose up --build'

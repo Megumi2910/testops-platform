@@ -1,0 +1,24 @@
+services:
+  mailpit:
+    ports: !override
+      - "8026:8025"
+      - "1026:1025"
+  postgres:
+    ports: !override
+      - "55433:5432"
+  backend:
+    ports: !override
+      - "8181:8080"
+    environment:
+      FRONTEND_ORIGIN: http://localhost:3101
+      TARGET_ALLOWED_ORIGINS: http://localhost:3201
+      TARGET_LOCAL_DEV_ENABLED: "false"
+  frontend:
+    ports: !override
+      - "3101:8080"
+  pgadmin4:
+    ports: !override
+      - "55051:80"
+  target-site:
+    ports: !override
+      - "3202:8080"

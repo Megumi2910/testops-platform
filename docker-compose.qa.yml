@@ -1,0 +1,38 @@
+services:
+  mailpit:
+    image: axllent/mailpit:v1.30.0
+    restart: unless-stopped
+    command: ["--smtp", "0.0.0.0:1025", "--listen", "0.0.0.0:8025"]
+    ports:
+      - "1027:1025"
+      - "8027:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  backend:
+    environment:
+      SPRING_PROFILES_ACTIVE: local-qa
+      AUTH_ENABLED: "true"
+      AUTH_REGISTRATION_ENABLED: "true"
+      EMAIL_DELIVERY_ENABLED: "true"
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
+      MAIL_FROM_ADDRESS: qa@testops.local
+      MAIL_FROM_NAME: TestOps QA
+      MAIL_SMTP_AUTH: "false"
+      MAIL_STARTTLS: "false"
+      TESTOPS_QA_FIXTURES_ENABLED: "true"
+      TESTOPS_QA_FIXTURE_PASSWORD_PATH: /run/secrets/testops/qa-fixture-password
+      TESTOPS_QA_TARGET_ORIGIN: http://localhost:3001
+      TARGET_ALLOWED_ORIGINS: http://localhost:3001
+      TARGET_LOCAL_DEV_ENABLED: "true"
+      TARGET_LOCAL_DEV_HOST_ALIAS: host.docker.internal
+      PROJECT_SECRET_VARIABLES_ENABLED: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy

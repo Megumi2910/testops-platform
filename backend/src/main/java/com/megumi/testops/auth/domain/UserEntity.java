@@ -74,6 +74,13 @@ public class UserEntity {
     public void setPlatformRole(PlatformRole role) { this.platformRole = role; }
     public void setStatus(String status, Instant now) { this.status = status; this.updatedAt = now; }
 
+    public void applyQaFixtureState(PlatformRole role, String status, boolean verified, Instant now) {
+        this.platformRole = role;
+        this.status = status;
+        this.emailVerified = verified;
+        this.updatedAt = now;
+    }
+
     public void markVerified(Instant now) {
         emailVerified = true;
         updatedAt = now;

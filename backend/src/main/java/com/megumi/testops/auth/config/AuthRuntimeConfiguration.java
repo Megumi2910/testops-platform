@@ -139,9 +139,10 @@ public class AuthRuntimeConfiguration {
             com.megumi.testops.auth.repository.OAuthAccountRepository oauthAccounts,
             PasswordEncoder passwordEncoder, OtpHasher otpHasher, EmailDeliveryService emailDelivery,
             JwtTokenService jwtTokens, RefreshTokenService refreshTokens, AuditService audit,
-            AuthRateLimiter rateLimiter, AuthProperties properties, Clock clock) {
+            AuthRateLimiter rateLimiter, AuthProperties properties, Clock clock,
+            com.megumi.testops.auth.service.PlatformPermissionService platformPermissions) {
         return new AuthService(users, credentials, challenges, oauthAccounts, passwordEncoder, otpHasher, emailDelivery,
-                jwtTokens, refreshTokens, audit, rateLimiter, properties, clock);
+                jwtTokens, refreshTokens, audit, rateLimiter, properties, clock, platformPermissions);
     }
 
     private static PrivateKey readPrivateKey(java.nio.file.Path path) throws IOException, GeneralSecurityException {

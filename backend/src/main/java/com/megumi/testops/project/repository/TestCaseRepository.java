@@ -8,6 +8,9 @@ import com.megumi.testops.project.domain.TestCaseEntity;
 
 public interface TestCaseRepository extends JpaRepository<TestCaseEntity, UUID> {
     List<TestCaseEntity> findBySuiteIdAndStatusNotOrderByNameAsc(UUID suiteId, String status);
+    List<TestCaseEntity> findBySuiteIdAndStatusOrderByNameAsc(UUID suiteId, String status);
+    List<TestCaseEntity> findBySuiteIdOrderByNameAsc(UUID suiteId);
     Optional<TestCaseEntity> findByIdAndSuiteId(UUID id, UUID suiteId);
     boolean existsBySuiteIdAndNameIgnoreCase(UUID suiteId, String name);
+    boolean existsBySuiteIdAndNameIgnoreCaseAndStatusNot(UUID suiteId, String name, String status);
 }

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 @ConfigurationProperties(prefix = "testops")
 public record PlatformProperties(Execution execution, Artifact artifact, Target target) {
@@ -14,7 +15,10 @@ public record PlatformProperties(Execution execution, Artifact artifact, Target 
     public PlatformProperties {
         Objects.requireNonNull(execution, "execution properties are required");
         Objects.requireNonNull(artifact, "artifact properties are required");
-        Objects.requireNonNull(target, "target properties are required");
+        // Target configuration is optional for existing deployments and tests. An
+        // empty allowlist keeps the execution guard fail-closed until it is
+        // explicitly configured.
+        target = target == null ? new Target(List.<String>of(), false, "host.docker.internal") : target;
     }
 
     public record Execution(
@@ -52,18 +56,20 @@ public record PlatformProperties(Execution execution, Artifact artifact, Target 
         }
     }
 
-    public record Artifact(Path directory) {
+    public record Artifact(Path directory, @DefaultValue("0") int retentionDays) {
         public Artifact {
             Objects.requireNonNull(directory, "artifact directory is required");
             if (directory.toString().isBlank()) {
                 throw new IllegalArgumentException("artifact directory must not be blank");
             }
+            if (retentionDays < 0) throw new IllegalArgumentException("artifact retention-days must not be negative");
         }
     }
 
-    public record Target(List<String> allowedOrigins) {
+    public record Target(List<String> allowedOrigins, boolean localDevelopmentEnabled, String localHostAlias) {
         public Target {
             allowedOrigins = allowedOrigins == null ? List.of() : List.copyOf(allowedOrigins);
+            localHostAlias = localHostAlias == null || localHostAlias.isBlank() ? "host.docker.internal" : localHostAlias.trim();
             allowedOrigins.forEach(Target::validateOrigin);
         }
 

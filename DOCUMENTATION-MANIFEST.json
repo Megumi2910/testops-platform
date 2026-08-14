@@ -1,9 +1,9 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestones 1 through 5 are implemented as the current foundation; dashboards, scheduling, notifications, distributed workers, and full retention remain planned; source-dependent facts are reconciled after each implementation slice",
+  "source_status": "Milestone 10 Phase 5 adds the quality-gate matrix, role/tenant and execution regression evidence, worker/queue safety, public password recovery, deterministic and real-process browser-crash classification, binary artifact access, dashboard range/performance evidence, role/unverified browser boundaries, deterministic Google OAuth, and project edit/name-conflict coverage; real-provider/Chrome DevTools authentication, deployment-mode crash evidence, broader account/session permutations, and ecommerce release gates remain open",
   "documents": [
     {
-      "path": "docs/00-project-implementation-handbook.md",
+      "path": "docs/implementation/00-project-implementation-handbook.md",
       "role": "Idea, repository map, architecture, vocabulary, and source-reading guide"
     },
     {
@@ -11,44 +11,460 @@
       "role": "Project entry point"
     },
     {
-      "path": "docs/07-backend-code-walkthrough.md",
+      "path": "docs/README.md",
+      "role": "Documentation taxonomy and beginner reading paths"
+    },
+    {
+      "path": "docs/implementation/07-backend-code-walkthrough.md",
       "role": "Java/Spring source walkthrough and backend execution flow"
     },
     {
-      "path": "docs/08-frontend-code-walkthrough.md",
+      "path": "docs/implementation/08-frontend-code-walkthrough.md",
       "role": "React/TypeScript source walkthrough and frontend state flow"
     },
     {
-      "path": "docs/09-database-and-runtime-walkthrough.md",
+      "path": "docs/operations/09-database-and-runtime-walkthrough.md",
       "role": "Flyway, PostgreSQL, Docker Compose, configuration, scripts, and CI"
     },
     {
-      "path": "docs/10-executable-step-language.md",
+      "path": "docs/implementation/10-executable-step-language.md",
       "role": "Test-case and browser-step syntax, validation, interpretation, and safety"
     },
     {
-      "path": "docs/01-technical-specification.md",
+      "path": "docs/architecture/01-technical-specification.md",
       "role": "Product, architecture, domain, UI, and quality model"
     },
     {
-      "path": "docs/02-authentication-and-security.md",
+      "path": "docs/security/02-authentication-and-security.md",
       "role": "JWT, Google OIDC, refresh tokens, authorization, and secrets"
     },
     {
-      "path": "docs/03-data-model-api-and-workflows.md",
+      "path": "docs/architecture/03-data-model-api-and-workflows.md",
       "role": "Schema, constraints, routes, state, normal/failure workflows"
     },
     {
-      "path": "docs/04-operations-scaling-and-maintenance.md",
+      "path": "docs/operations/04-operations-scaling-and-maintenance.md",
       "role": "Runtime, scaling, monitoring, incidents, backups, and upgrades"
     },
     {
-      "path": "docs/05-risks-roadmap-and-decisions.md",
+      "path": "docs/planning/05-risks-roadmap-and-decisions.md",
       "role": "Risk register, roadmap, ADR-style decisions, and change safety"
     },
     {
-      "path": "docs/06-milestone-5-identity-and-authorization.md",
+      "path": "docs/milestones/06-milestone-5-identity-and-authorization.md",
       "role": "Unified accounts, platform/project roles, permissions, admin operations, and migration notes"
+    },
+    {
+      "path": "docs/milestones/11-milestone-6-product-readiness.md",
+      "role": "Registration integrity, self-service onboarding, reporting, dashboard, retention, and operational readiness"
+    },
+    {
+      "path": "docs/milestones/13-guided-local-target-follow-ups.md",
+      "role": "Docker host mapping, browser target checks, structured metadata, editable case authoring, and negative E2E scenarios"
+    },
+    {
+      "path": "docs/operations/16-live-target-recovery.md",
+      "role": "Beginner recovery guide for blocked localhost targets and READY-case reruns"
+    },
+    {
+      "path": "docs/operations/15-ecommerce-dogfooding-guide.md",
+      "role": "Beginner workflow for starting ecommerce, configuring the local bridge, synchronizing the catalog, running cases, and troubleshooting evidence"
+    },
+    {
+      "path": "docs/implementation/17-ui-to-execution-workflow.md",
+      "role": "Step-by-step browser-to-API-to-database-to-worker-to-evidence workflow"
+    },
+    {
+      "path": "docs/implementation/18-feature-implementation-handbook.md",
+      "role": "Source-grounded syntax, implementation, business rules, decisions, and testing guide"
+    },
+    {
+      "path": "docs/implementation/19-ecommerce-browser-smoke.md",
+      "role": "Opt-in Playwright contract for authenticated ecommerce transport, checkout entry, diagnostics, and mobile overflow"
+    },
+    {
+      "path": "docs/implementation/22-release-gate-verification.md",
+      "role": "Reproducible backend, frontend, Compose, Playwright, catalog, and live READY acceptance evidence"
+    },
+    {
+      "path": "docs/implementation/24-problem-contract-and-draft-validation.md",
+      "role": "Status-aware DRAFT and READY validation plus the shared structured API problem contract"
+    },
+    {
+      "path": "docs/implementation/25-phase-2-security-boundaries.md",
+      "role": "Nested ancestry, archived definitions, variable visibility, cancellation ownership, active-admin invariants, and frontend route guards"
+    },
+    {
+      "path": "docs/implementation/26-definition-trash-backend.md",
+      "role": "V021 archive metadata, active-only uniqueness, suite/case lifecycle APIs, restore conflicts, and history retention"
+    },
+    {
+      "path": "docs/implementation/27-definition-trash-ui.md",
+      "role": "Suite/case Trash UI, archived read-only views, accessible restore conflicts, project restoration, and browser evidence"
+    },
+    {
+      "path": "docs/implementation/28-guided-authoring-recovery.md",
+      "role": "Guided case metadata, focused Details validation, stable server-error mapping, and Save & run recovery"
+    },
+    {
+      "path": "docs/implementation/29-case-version-conflicts.md",
+      "role": "Case optimistic-lock comparison, explicit Reload/Retry behavior, and two-tab browser evidence"
+    },
+    {
+      "path": "docs/implementation/30-otp-resend-cooldown.md",
+      "role": "Enumeration-safe OTP resend, serialized cooldown enforcement, frontend countdown, and Mailpit message-count evidence"
+    },
+    {
+      "path": "docs/implementation/31-dashboard-aggregate-queries.md",
+      "role": "Tenant-scoped dashboard aggregation, bounded recent failures, UTC trends, and full-window infrastructure categories"
+    },
+    {
+      "path": "docs/testing/32-dashboard-postgres-regression.md",
+      "role": "Disposable PostgreSQL dashboard regression gate for tenant isolation, time boundaries, recent limits, and full-window category totals"
+    },
+    {
+      "path": "docs/testing/33-project-permission-matrix.md",
+      "role": "Project role permission payload and backend enforcement matrix for managers, testers, viewers, non-members, and administrators"
+    },
+    {
+      "path": "docs/testing/34-authorization-http-regression.md",
+      "role": "HTTP-visible nested-resource isolation, final-project-manager conflicts, and execution cancellation ownership"
+    },
+    {
+      "path": "docs/testing/35-membership-postgres-regression.md",
+      "role": "Disposable PostgreSQL proof for membership transitions, optimistic versions, final-manager retention, and archived-project blocking"
+    },
+    {
+      "path": "docs/testing/37-membership-positive-lifecycle.md",
+      "role": "Positive member add/change/remove service coverage, duplicate and archived-project guards, and role denial evidence"
+    },
+    {
+      "path": "docs/testing/38-definition-lifecycle-browser-evidence.md",
+      "role": "Chrome DevTools evidence for guided draft authoring, case Trash, project Trash listing, and restore-to-DRAFT behavior"
+    },
+    {
+      "path": "docs/testing/39-project-lifecycle-version-evidence.md",
+      "role": "Versioned project archive/restore contract, conflict behavior, and focused browser/backend verification"
+    },
+    {
+      "path": "docs/testing/40-phase5-role-tenant-browser-evidence.md",
+      "role": "Playwright role-control and cross-project nested-resource isolation evidence, E2E Mailpit recovery, and remaining Phase 5 boundaries"
+    },
+    {
+      "path": "docs/implementation/32-auth-session-return-navigation.md",
+      "role": "Phase 5 safe return destinations, session endpoint registration, no-content contracts, and account behavior"
+    },
+    {
+      "path": "docs/testing/41-phase5-auth-session-browser-evidence.md",
+      "role": "Playwright proof for invalid OTP, protected return navigation, individual session revoke, and revoke-all behavior"
+    },
+    {
+      "path": "docs/testing/42-phase5-execution-browser-evidence.md",
+      "role": "Execution cancellation, infrastructure retry, and failure-category browser evidence"
+    },
+    {
+      "path": "docs/testing/43-phase5-dashboard-admin-browser-evidence.md",
+      "role": "Populated dashboard reporting and administrator route-guard browser evidence"
+    },
+    {
+      "path": "docs/testing/44-phase5-worker-queue-evidence.md",
+      "role": "Worker-disabled polling and queue-capacity rejection regression evidence"
+    },
+    {
+      "path": "docs/implementation/37-password-recovery-and-otp-expiry.md",
+      "role": "Password-reset API, challenge lifecycle, session invalidation, migration, and frontend flow"
+    },
+    {
+      "path": "docs/testing/45-phase5-password-recovery-evidence.md",
+      "role": "Password-reset schema, service, frontend, Mailpit, and Playwright evidence"
+    },
+    {
+      "path": "docs/implementation/38-e2e-origin-alignment.md",
+      "role": "Canonical frontend-origin contract for Playwright, CI, OriginGuard, and password-recovery reliability"
+    },
+    {
+      "path": "docs/testing/46-phase5-e2e-origin-regression.md",
+      "role": "Sanitized CI diagnosis and regression evidence for canonical E2E origin alignment"
+    },
+    {
+      "path": "docs/implementation/39-execution-evidence-safety.md",
+      "role": "Worker-only secret evidence suppression and request-level navigation-boundary enforcement"
+    },
+    {
+      "path": "docs/testing/47-phase5-evidence-safety.md",
+      "role": "Playwright proof for secret/non-secret artifact behavior and click/form target escape classification"
+    },
+    {
+      "path": "docs/implementation/40-secret-failure-artifact-authorization.md",
+      "role": "Secret-bearing failure suppression and project-scoped artifact-download authorization"
+    },
+    {
+      "path": "docs/testing/48-phase5-secret-failure-artifact.md",
+      "role": "Focused browser/service evidence for secret failures and non-member artifact denial"
+    },
+    {
+      "path": "docs/implementation/41-browser-crash-and-artifact-access.md",
+      "role": "Playwright browser-crash classification and project-scoped artifact download implementation"
+    },
+    {
+      "path": "docs/testing/49-phase5-browser-crash-artifact-access.md",
+      "role": "Phase 5 evidence for wrapped browser shutdowns and member/non-member screenshot and trace downloads"
+    },
+    {
+      "path": "frontend/e2e/phase5-administrator-crud.spec.ts",
+      "role": "Playwright administrator role/status CRUD and final-active-admin browser contract"
+    },
+    {
+      "path": "frontend/e2e/phase5-account-status.spec.ts",
+      "role": "Playwright locked and disabled account session-denial browser contract"
+    },
+    {
+      "path": "docs/implementation/42-account-status-browser-coverage.md",
+      "role": "Implementation rationale and fixture isolation for locked and disabled account browser coverage"
+    },
+    {
+      "path": "docs/testing/50-phase5-account-status-browser-evidence.md",
+      "role": "Evidence matrix and reproduction guide for locked and disabled account session denial"
+    },
+    {
+      "path": "docs/implementation/43-dashboard-range-and-devtools.md",
+      "role": "URL-backed dashboard reporting windows, stable loading layout, query contract, and Chrome DevTools quality-gate implementation"
+    },
+    {
+      "path": "docs/testing/51-phase5-dashboard-range-devtools.md",
+      "role": "Dashboard range, query-count, accessibility, console, and performance evidence from the rebuilt local stack"
+    },
+    {
+      "path": "frontend/e2e/phase5-unverified-boundary.spec.ts",
+      "role": "Playwright unverified-account recovery banner, restricted navigation, and resend-cooldown contract"
+    },
+    {
+      "path": "docs/implementation/44-role-and-unverified-boundary-browser-coverage.md",
+      "role": "Implementation rationale for project-role admin-route protection and unverified-account recovery"
+    },
+    {
+      "path": "docs/testing/52-phase5-role-unverified-browser-evidence.md",
+      "role": "Role, tenant, administrator-route, and unverified-account browser evidence from the isolated stack"
+    },
+    {
+      "path": "frontend/src/features/dashboard/DashboardPage.test.tsx",
+      "role": "Dashboard reporting-window, three-query, and URL selector regression tests"
+    },
+    {
+      "path": "docs/implementation/36-member-management-ui.md",
+      "role": "Accessible, version-aware project member role changes, removal confirmation, pending locks, and conflict guidance"
+    },
+    {
+      "path": "docs/testing/23-quality-gate-baseline.md",
+      "role": "Revision-verified Chrome DevTools and Playwright baseline matrix for TestOps and ecommerce"
+    },
+    {
+      "path": "docs/testing/24-defect-ledger.md",
+      "role": "Sanitized Milestone 10 defects, blockers, severity, evidence, and regression ownership"
+    },
+    {
+      "path": "docs/guides/23-quality-gate-operator-guide.md",
+      "role": "Beginner-safe QA fixture, rebuild, provenance, evidence, and shutdown procedure"
+    },
+    {
+      "path": "docs/workflows/23-quality-gate-flow.md",
+      "role": "End-to-end quality-gate workflow from source provenance through release decision"
+    },
+    {
+      "path": "frontend/e2e/oauth-provider/index.js",
+      "role": "Disposable deterministic OAuth2 provider used by the isolated Google browser contract"
+    },
+    {
+      "path": "frontend/e2e/phase5-google-boundary.spec.ts",
+      "role": "Deterministic Google sign-in, session refresh, and sanitized callback-failure browser coverage"
+    },
+    {
+      "path": "docs/implementation/45-deterministic-google-provider.md",
+      "role": "Implementation rationale, container/browser networking contract, provider endpoints, and troubleshooting"
+    },
+    {
+      "path": "docs/testing/53-phase5-google-browser-evidence.md",
+      "role": "Google OAuth browser matrix, evidence, protocol diagnosis, and release interpretation"
+    },
+    {
+      "path": "frontend/e2e/zz-phase5-browser-crash.spec.ts",
+      "role": "Opt-in real Chromium process-termination regression and sanitized BROWSER_CRASH assertions"
+    },
+    {
+      "path": "docs/implementation/46-real-browser-crash-regression.md",
+      "role": "Isolated crash-test design, runner hardening, local commands, and failure interpretation"
+    },
+    {
+      "path": "docs/testing/54-phase5-browser-crash-evidence.md",
+      "role": "Fresh-container browser-crash acceptance evidence and QG-B08 release interpretation"
+    },
+    {
+      "path": "docs/implementation/47-phase5-project-edit.md",
+      "role": "Versioned project editing, permission-aware UI, duplicate-name conflicts, and browser evidence"
+    },
+    {
+      "path": "docs/testing/55-phase5-project-edit-evidence.md",
+      "role": "Project edit, optimistic version, archived read-only, and duplicate-name browser evidence"
+    },
+    {
+      "path": "docs/testing/56-phase5-ecommerce-catalog-evidence.md",
+      "role": "Ecommerce category, product detail, search empty state, URL filters, retry, and pagination evidence"
+    },
+    {
+      "path": "docs/implementation/48-phase5-ecommerce-semantic-catalog.md",
+      "role": "Semantic category and product navigation, native controls, focus behavior, and accessibility rationale"
+    },
+    {
+      "path": "docs/testing/57-phase5-ecommerce-semantic-catalog-evidence.md",
+      "role": "Role-based ecommerce category and product navigation evidence and rerun command"
+    },
+    {
+      "path": "docs/implementation/49-phase5-ecommerce-header-accessibility.md",
+      "role": "Ecommerce header labels, disclosure state, keyboard semantics, and unfinished-control behavior"
+    },
+    {
+      "path": "docs/testing/58-phase5-ecommerce-header-evidence.md",
+      "role": "Role-based ecommerce header accessibility and category-link browser evidence"
+    },
+    {
+      "path": "docs/implementation/50-phase5-ecommerce-deterministic-assets.md",
+      "role": "Local SVG storefront artwork, system fonts, same-origin mock product assets, and seeder normalization"
+    },
+    {
+      "path": "docs/testing/59-phase5-ecommerce-deterministic-assets-evidence.md",
+      "role": "Ecommerce same-origin visual-asset network evidence, seeder verification, and rerun commands"
+    },
+    {
+      "path": "docs/implementation/51-phase5-ecommerce-mailpit-auth.md",
+      "role": "Isolated ecommerce Mailpit authentication architecture, browser contract, reset safety, and troubleshooting"
+    },
+    {
+      "path": "docs/testing/60-phase5-ecommerce-mailpit-auth-evidence.md",
+      "role": "Registration verification, unverified resend/cooldown, and password-reset browser evidence against isolated Mailpit"
+    },
+    {
+      "path": "docs/implementation/52-phase5-ecommerce-fixture-matrix.md",
+      "role": "Deterministic ecommerce role, catalog-state, order, cart, and messaging fixture implementation for Phase 5 isolation tests"
+    },
+    {
+      "path": "docs/testing/61-phase5-ecommerce-fixture-evidence.md",
+      "role": "Ecommerce fixture prerequisite evidence, remaining isolation gates, and safe reset rules"
+    },
+    {
+      "path": "docs/implementation/53-phase5-ecommerce-role-isolation.md",
+      "role": "Two-context ecommerce customer and seller ownership browser contract and safe execution guidance"
+    },
+    {
+      "path": "docs/testing/62-phase5-ecommerce-role-isolation-evidence.md",
+      "role": "Ecommerce cross-customer, cross-seller, nested-resource, and thread-visibility browser evidence"
+    },
+    {
+      "path": "docs/implementation/54-phase5-ecommerce-checkout-integrity.md",
+      "role": "Selective checkout, server-side pricing, idempotency replay, cart cleanup, and cancellation-restoration implementation contract"
+    },
+    {
+      "path": "docs/testing/63-phase5-ecommerce-checkout-evidence.md",
+      "role": "Native and isolated-browser checkout integrity evidence with remaining concurrency and payment gates"
+    },
+    {
+      "path": "frontend/e2e/phase5-ecommerce-checkout.spec.ts",
+      "role": "Opt-in ecommerce selective-checkout, idempotency replay, cart cleanup, and cancellation browser contract"
+    },
+    {
+      "path": "docs/implementation/55-phase5-ecommerce-messaging.md",
+      "role": "Ecommerce SockJS/STOMP principal resolution, thread ownership boundary, and live delivery implementation"
+    },
+    {
+      "path": "docs/testing/64-phase5-ecommerce-messaging-evidence.md",
+      "role": "Two-context ecommerce WebSocket delivery evidence with REST fallback intentionally disabled"
+    },
+    {
+      "path": "frontend/e2e/phase5-ecommerce-messaging.spec.ts",
+      "role": "Opt-in ecommerce two-user WebSocket messaging and REST-fallback isolation browser contract"
+    },
+    {
+      "path": "frontend/e2e/phase5-ecommerce-permission-matrix.spec.ts",
+      "role": "Opt-in ecommerce guest, unverified, customer, seller, and administrator authorization browser contract"
+    },
+    {
+      "path": "docs/implementation/56-phase5-ecommerce-permission-matrix.md",
+      "role": "Ecommerce authorization response contract, cross-seller ownership boundary, and role matrix implementation"
+    },
+    {
+      "path": "docs/testing/65-phase5-ecommerce-permission-evidence.md",
+      "role": "Ecommerce permission matrix and 403/404 response evidence from the isolated E2E stack"
+    },
+    {
+      "path": "frontend/e2e/phase5-ecommerce-role-isolation.spec.ts",
+      "role": "Two-context ecommerce customer cart/order/thread and seller product ownership browser contract"
+    },
+    {
+      "path": "frontend/e2e/phase5-ecommerce-checkout-concurrency.spec.ts",
+      "role": "Two-user final-unit inventory locking, normal stock rejection, and exact cancellation restoration browser contract"
+    },
+    {
+      "path": "docs/implementation/57-phase5-ecommerce-checkout-concurrency.md",
+      "role": "PostgreSQL row locking, stale Hibernate identity protection, deterministic lock ordering, and QA fixture implementation"
+    },
+    {
+      "path": "docs/testing/66-phase5-ecommerce-checkout-concurrency-evidence.md",
+      "role": "Two-user final-unit checkout evidence, reproduction command, defect history, and QG-B13 interpretation"
+    },
+    {
+      "path": "docs/implementation/58-phase5-payment-stale-stock.md",
+      "role": "Backend-owned QR payment configuration, stale-cart comparison, and checkout recovery implementation"
+    },
+    {
+      "path": "docs/testing/67-phase5-payment-stale-stock-evidence.md",
+      "role": "QR payment configuration and two-customer stale-stock browser evidence with remaining QG-B13 gates"
+    },
+    {
+      "path": "frontend/e2e/phase5-ecommerce-payment-stale-stock.spec.ts",
+      "role": "Opt-in ecommerce QR payment-state and stale-cart recovery browser contract"
+    },
+    {
+      "path": "docs/implementation/59-phase5-ecommerce-messaging-resilience.md",
+      "role": "Ecommerce SockJS reconnect status, REST fallback, unread synchronization, and read-state behavior"
+    },
+    {
+      "path": "docs/testing/68-phase5-ecommerce-messaging-resilience-evidence.md",
+      "role": "Two-user WebSocket, disconnected REST fallback, unread-filter, and read-state browser evidence"
+    },
+    {
+      "path": "docs/implementation/60-phase5-ecommerce-review-eligibility.md",
+      "role": "Backend-authoritative completed-purchase review eligibility, duplicate protection, and UI ownership flow"
+    },
+    {
+      "path": "docs/testing/69-phase5-ecommerce-review-evidence.md",
+      "role": "Completed-purchaser, duplicate-review, and non-purchaser browser and service evidence"
+    },
+    {
+      "path": "frontend/e2e/phase5-ecommerce-reviews.spec.ts",
+      "role": "Opt-in ecommerce review eligibility, verified-purchase creation, duplicate, and ownership boundary contract"
+    },
+    {
+      "path": "docs/implementation/61-phase5-ecommerce-feature-availability.md",
+      "role": "Truthful unavailable-state behavior for ecommerce wishlist and Flash Sale routes"
+    },
+    {
+      "path": "docs/testing/70-phase5-ecommerce-feature-availability-evidence.md",
+      "role": "Focused browser evidence for disabled wishlist controls and Flash Sale availability messaging"
+    },
+    {
+      "path": "frontend/e2e/ecommerce-smoke.spec.ts",
+      "role": "Ecommerce storefront regression contract including unfinished-destination availability states"
+    },
+    {
+      "path": "docs/implementation/62-phase5-ecommerce-gallery-accessibility.md",
+      "role": "Keyboard-operable ecommerce product-gallery zoom, navigation labels, and focus restoration"
+    },
+    {
+      "path": "docs/testing/71-phase5-ecommerce-gallery-accessibility-evidence.md",
+      "role": "Product-detail gallery dialog semantics, keyboard, and focus-restoration evidence"
+    },
+    {
+      "path": "docs/implementation/17-ui-to-execution-workflow.html",
+      "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
     }
   ]
 }

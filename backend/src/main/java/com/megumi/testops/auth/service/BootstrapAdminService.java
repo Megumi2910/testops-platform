@@ -59,7 +59,9 @@ public class BootstrapAdminService {
         UserEntity user = new UserEntity(email, properties.displayName().trim(),
                 "ACTIVE", true, now);
         user.setPlatformRole(PlatformRole.ADMIN);
-        users.save(user);
+        // Flush the generated user identifier before constructing the shared-primary-key credential.
+        // The credential stores the user ID as its own primary key.
+        user = users.saveAndFlush(user);
         credentials.save(new LocalCredentialEntity(user, passwordEncoder.encode(password), now));
     }
 }

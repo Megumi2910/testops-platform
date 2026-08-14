@@ -1,0 +1,84 @@
+package com.megumi.testops.project.service;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
+
+import com.megumi.testops.project.api.ProjectDtos;
+import com.megumi.testops.shared.api.ApiException;
+
+class DefinitionServiceTest {
+    @Test
+    void acceptsExtendedInteractionAndAssertionActions() {
+        assertDoesNotThrow(() -> DefinitionService.validateStep(step("PRESS", "ROLE", "Search", "BUTTON", "Enter", null)));
+        assertDoesNotThrow(() -> DefinitionService.validateStep(step("HOVER", "TEXT", "Account", null, null, null)));
+        assertDoesNotThrow(() -> DefinitionService.validateStep(step("ASSERT_VALUE", "LABEL", "Email", null, null, "person@example.test")));
+        assertDoesNotThrow(() -> DefinitionService.validateStep(step("ASSERT_ATTRIBUTE", "TEXT", "Cart", null, "aria-label", "Open cart")));
+        assertDoesNotThrow(() -> DefinitionService.validateStep(step("ASSERT_COUNT", "CSS", ".product-card", null, null, "3")));
+        assertDoesNotThrow(() -> DefinitionService.validateStep(step("ASSERT_URL_EQUALS", null, null, null, null, "/checkout")));
+        assertDoesNotThrow(() -> DefinitionService.validateStep(new ProjectDtos.StepRequest(0, "ASSERT_VISIBLE", "TEXT_EXACT", "Products", null, 1, null, null, 5000)));
+        assertDoesNotThrow(() -> DefinitionService.validateStep(new ProjectDtos.StepRequest(0, "NAVIGATE", null, null, null, null, "/", null, 5000, 1280, 720, "vi-VN", "Asia/Ho_Chi_Minh")));
+    }
+
+    @Test
+    void rejectsInvalidCountAndIncompleteAttributeAssertions() {
+        ApiException invalidCount = assertThrows(ApiException.class,
+                () -> DefinitionService.validateStep(step("ASSERT_COUNT", "TEXT", "Product", null, null, "many")));
+        assertEquals("invalid_expected_count", invalidCount.getCode());
+
+        ApiException missingAttributeName = assertThrows(ApiException.class,
+                () -> DefinitionService.validateStep(step("ASSERT_ATTRIBUTE", "TEXT", "Cart", null, "", "Open cart")));
+        assertEquals("attribute_name_required", missingAttributeName.getCode());
+
+        ApiException invalidIndex = assertThrows(ApiException.class,
+                () -> DefinitionService.validateStep(new ProjectDtos.StepRequest(0, "ASSERT_VISIBLE", "TEXT", "Product", null, -1, null, null, 5000)));
+        assertEquals("invalid_locator_index", invalidIndex.getCode());
+
+        ApiException invalidViewport = assertThrows(ApiException.class,
+                () -> DefinitionService.validateStep(new ProjectDtos.StepRequest(0, "NAVIGATE", null, null, null, null, "/", null, 5000, 1280, null, null, null)));
+        assertEquals("viewport_dimensions_required", invalidViewport.getCode());
+
+        ApiException invalidTimezone = assertThrows(ApiException.class,
+                () -> DefinitionService.validateStep(new ProjectDtos.StepRequest(0, "NAVIGATE", null, null, null, null, "/", null, 5000, null, null, null, "Not/AZone")));
+        assertEquals("invalid_timezone", invalidTimezone.getCode());
+    }
+
+    @Test
+    void allowsPartialDraftValuesButRequiresThemForExecutableSteps() {
+        ProjectDtos.StepRequest partialNavigate = step("NAVIGATE", null, null, null, "", null);
+        ProjectDtos.StepRequest partialLocator = step("CLICK", "ROLE", "", "BUTTON", null, null);
+
+        assertDoesNotThrow(() -> DefinitionService.validateDraftStep(partialNavigate));
+        assertDoesNotThrow(() -> DefinitionService.validateDraftStep(partialLocator));
+
+        ApiException inputRequired = assertThrows(ApiException.class,
+                () -> DefinitionService.validateStep(partialNavigate));
+        assertEquals("input_required", inputRequired.getCode());
+        assertEquals("steps[0].inputValue", inputRequired.getPath());
+        assertEquals(0, inputRequired.getStepPosition());
+
+        ApiException locatorRequired = assertThrows(ApiException.class,
+                () -> DefinitionService.validateStep(partialLocator));
+        assertEquals("locator_required", locatorRequired.getCode());
+        assertEquals("steps[0].locatorValue", locatorRequired.getPath());
+    }
+
+    @Test
+    void draftStillRejectsInvalidValuesThatArePresent() {
+        ApiException invalidCount = assertThrows(ApiException.class,
+                () -> DefinitionService.validateDraftStep(step("ASSERT_COUNT", "CSS", ".card", null, null, "many")));
+        assertEquals("invalid_expected_count", invalidCount.getCode());
+
+        ApiException invalidTimezone = assertThrows(ApiException.class,
+                () -> DefinitionService.validateDraftStep(new ProjectDtos.StepRequest(0, "NAVIGATE", null, null,
+                        null, null, null, null, 5000, null, null, null, "Not/AZone")));
+        assertEquals("invalid_timezone", invalidTimezone.getCode());
+    }
+
+    private static ProjectDtos.StepRequest step(String action, String locatorType, String locatorValue, String role,
+            String inputValue, String expectedValue) {
+        return new ProjectDtos.StepRequest(0, action, locatorType, locatorValue, role, inputValue, expectedValue, 5000);
+    }
+}

@@ -34,6 +34,7 @@ public class JwtTokenService {
                 .issuedAt(issuedAt)
                 .expiresAt(expiresAt)
                 .claim("roles", java.util.Set.of(user.getPlatformRole().name()))
+                .claim("email_verified", user.isEmailVerified())
                 .claim("token_version", user.getTokenVersion())
                 .build();
         String token = encoder.encode(JwtEncoderParameters.from(

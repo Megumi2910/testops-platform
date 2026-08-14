@@ -1,14 +1,19 @@
 # TestOps Platform — Managed Browser Testing for an Existing E-commerce Application
 
-> **Documentation status:** Milestones 1–5 are implemented as the current foundation; documentation is kept in sync with the source. Reporting, scheduling, notifications, and distributed execution remain planned.
+> **Documentation status:** Milestone 9 is the release-candidate closure for the combined identity, reporting, guided local-target testing, and workspace work. It adds aggregate onboarding counts, focused frontend route modules, deterministic enabled/disabled E2E gates, and reconciled release documentation. Scheduling, notifications, and distributed execution remain planned.
 >
-> The repository contains the Milestone 1 runtime, the Milestone 2 identity foundation plus stabilization, the Milestone 3 project/test-definition management foundation, and the Milestone 4 queue/runner/web execution workflow. Dashboards, scheduled runs, distributed workers, full artifact retention, and live target probing remain intentionally deferred and are marked as future work in the deep documentation.
+> The repository contains the Milestone 1–8 product foundation and the Milestone 9 release-candidate hardening work. See the release-candidate document for verified commands, remaining environment-dependent checks, and publication boundaries.
 
 TestOps Platform is an internal web application for defining, executing, and reviewing automated browser tests against an existing e-commerce website. It gives administrators, test managers, developers, and testers one place to manage projects, test suites, reusable test cases, Playwright executions, failure evidence, and quality trends.
 
 The difficult part is not opening a browser. The platform must preserve a trustworthy test history while definitions change, isolate browser sessions so tests do not contaminate each other, distinguish product failures from infrastructure failures, and keep authentication consistent across local email/password login and Google sign-in.
 
 The existing e-commerce site is an **external system under test**. TestOps owns test definitions, execution state, results, screenshots, traces, users, permissions, and audit data. It does not own the target website’s deployment, database, inventory, accounts, selectors, or availability.
+
+New to the local workflow? Start with the [Ecommerce dogfooding guide](docs/operations/15-ecommerce-dogfooding-guide.md). It explains the two Docker networks, exact ports and environment variables, target checks, the guided case builder, catalog synchronization, evidence, and safe E2E resets.
+For the exact release-candidate verification commands and current gate evidence, see the [release-gate verification guide](docs/implementation/22-release-gate-verification.md).
+Before changing Milestone 10 behavior, use the [quality-gate operator guide](docs/guides/23-quality-gate-operator-guide.md), then record browser coverage in the [full-system baseline](docs/testing/23-quality-gate-baseline.md) and [defect ledger](docs/testing/24-defect-ledger.md).
+Suite and case deletion is a history-preserving Trash workflow; see the [definition Trash UI guide](docs/implementation/27-definition-trash-ui.md) for archive, read-only, conflict, and restore behavior.
 
 ## Product status
 
@@ -18,6 +23,7 @@ The current implementation milestone provides:
 - React/TypeScript/Vite frontend shell;
 - PostgreSQL and Flyway wiring;
 - a summary Actuator health endpoint;
+- opt-in local-development target bridging with exact allowlist enforcement and browser-based connectivity checks;
 - deterministic Playwright launch verification;
 - Docker Compose services for `postgres`, `backend`, and `frontend`.
 - canonical action/locator step editing with aggregate validation;
@@ -159,7 +165,7 @@ The Milestone 1 foundation pins the following versions in its manifests, lockfil
 | CI/CD | GitHub Actions |
 | API documentation | OpenAPI API metadata is opt-in with `OPENAPI_ENABLED`; Swagger UI is not bundled |
 
-Milestone 4 runs a bounded in-process worker, persists case/step results, exposes execution history/cancellation, and provides the first usable execution workspace. Scheduled runs, dashboards/trends, distributed workers, and full artifact retention remain future work.
+Milestone 4 runs a bounded in-process worker, persists case/step results, exposes execution history/cancellation, and provides the first usable execution workspace. Milestone 6 adds reporting-quality snapshots, dashboard summaries, per-user sessions, self-service project creation, and opt-in artifact retention.
 
 ## Why this shape
 
@@ -198,12 +204,14 @@ testops-platform/
 │   ├── Dockerfile
 │   └── nginx.conf
 ├── docs/
-│   ├── 01-technical-specification.md
-│   ├── 02-authentication-and-security.md
-│   ├── 03-data-model-api-and-workflows.md
-│   ├── 04-operations-scaling-and-maintenance.md
-│   ├── 05-risks-roadmap-and-decisions.md
-│   └── assets/
+│   ├── architecture/
+│   ├── implementation/
+│   ├── operations/
+│   ├── security/
+│   ├── milestones/
+│   ├── planning/
+│   ├── assets/
+│   └── README.md
 ├── artifacts/
 ├── scripts/
 ├── docker-compose.yml
@@ -226,6 +234,8 @@ docker compose up --build
 ```
 
 For an authenticated local workflow, run `scripts/setup-local.ps1` (PowerShell) or `scripts/setup-local.sh` (POSIX shell) first. The scripts generate ignored RSA/crypto files and prompt for a local bootstrap-admin password; they do not reset database volumes or contact the target site. For a non-interactive local setup with password registration and Google enabled, use `scripts/setup-local.ps1 -Force -GenerateBootstrapPassword -EnableEmailDelivery -EnableGoogle` or `scripts/setup-local.sh --force --generate-bootstrap-password --enable-email-delivery --enable-google`. This preserves existing scoped `.env` files, merges the selected auth flags, and stores the generated bootstrap password only in `backend/.secrets/bootstrap-admin-password`.
+
+Project creation also requires an explicit target allowlist. Set it to the HTTP(S) origins that the worker is allowed to visit, for example `scripts/setup-local.ps1 -Force -TargetAllowedOrigins https://staging-shop.example.com` or `scripts/setup-local.sh --force --target-allowed-origins https://staging-shop.example.com`. An empty `TARGET_ALLOWED_ORIGINS` intentionally keeps project creation disabled until an administrator configures a safe target.
 
 Expected local surfaces:
 
@@ -255,19 +265,30 @@ Never commit `.env`, JWT private keys, Google client secrets, access or refresh 
 
 ## Documentation map
 
-1. [Implementation handbook](docs/00-project-implementation-handbook.md) — start here for the idea, repository map, architecture, vocabulary, and a source-reading path.
-2. [Backend code walkthrough](docs/07-backend-code-walkthrough.md) — Java/Spring syntax, configuration, authentication, project services, execution, Playwright, and tests.
-3. [Frontend code walkthrough](docs/08-frontend-code-walkthrough.md) — React/TypeScript syntax, routing, auth bootstrap, API client, forms, queries, and polling.
-4. [Database and runtime walkthrough](docs/09-database-and-runtime-walkthrough.md) — Flyway schema, PostgreSQL relationships, Compose, environment files, scripts, and CI.
-5. [Executable step language](docs/10-executable-step-language.md) — case/step JSON shape, supported actions, locators, variables, URL safety, retries, and results.
-6. [Technical specification](docs/01-technical-specification.md) — product boundary, architecture, domain model, UI, and design rationale.
-7. [Authentication and security](docs/02-authentication-and-security.md) — JWT, refresh rotation, Google OIDC, authorization, secrets, and abuse controls.
-8. [Data, API, and workflows](docs/03-data-model-api-and-workflows.md) — relational model, constraints, routes, state transitions, normal paths, and failure paths.
-9. [Operations, scaling, and maintenance](docs/04-operations-scaling-and-maintenance.md) — local runtime, deployment, workers, queue ownership, observability, incidents, backups, and upgrade policy.
-10. [Risks, roadmap, and decisions](docs/05-risks-roadmap-and-decisions.md) — explicit limitations, delivery sequence, alternatives, tradeoffs, and change-safety notes.
-11. [Identity and authorization milestone](docs/06-milestone-5-identity-and-authorization.md) — unified accounts, platform/project roles, permissions, admin operations, and migration notes.
+1. [Documentation index](docs/README.md) — choose a topic folder and follow a beginner-friendly reading path.
+2. [Implementation handbook](docs/implementation/00-project-implementation-handbook.md) — start here for the idea, repository map, architecture, vocabulary, and a source-reading path.
+3. [Backend code walkthrough](docs/implementation/07-backend-code-walkthrough.md) — Java/Spring syntax, configuration, authentication, project services, execution, Playwright, and tests.
+4. [Frontend code walkthrough](docs/implementation/08-frontend-code-walkthrough.md) — React/TypeScript syntax, routing, auth bootstrap, API client, forms, queries, and polling.
+5. [Database and runtime walkthrough](docs/operations/09-database-and-runtime-walkthrough.md) — Flyway schema, PostgreSQL relationships, Compose, environment files, scripts, and CI.
+6. [Executable step language](docs/implementation/10-executable-step-language.md) — case/step JSON shape, supported actions, locators, variables, URL safety, retries, and results.
+7. [Technical specification](docs/architecture/01-technical-specification.md) — product boundary, architecture, domain model, UI, and design rationale.
+8. [Authentication and security](docs/security/02-authentication-and-security.md) — JWT, refresh rotation, Google OIDC, authorization, secrets, and abuse controls.
+9. [Data, API, and workflows](docs/architecture/03-data-model-api-and-workflows.md) — relational model, constraints, routes, state transitions, normal paths, and failure paths.
+10. [Operations, scaling, and maintenance](docs/operations/04-operations-scaling-and-maintenance.md) — local runtime, deployment, workers, queue ownership, observability, incidents, backups, and upgrade policy.
+11. [Risks, roadmap, and decisions](docs/planning/05-risks-roadmap-and-decisions.md) — explicit limitations, delivery sequence, alternatives, tradeoffs, and change-safety notes.
+12. [Identity and authorization milestone](docs/milestones/06-milestone-5-identity-and-authorization.md) — unified accounts, platform/project roles, permissions, admin operations, and migration notes.
+13. [Product readiness milestone](docs/milestones/11-milestone-6-product-readiness.md) — registration integrity, self-service onboarding, reporting, dashboard, retention, and operational readiness.
+14. [Local target testing guide](docs/operations/12-local-target-testing-guide.md) — Docker host mapping, project setup, target checks, case authoring, and runs.
+15. [Guided local-target follow-ups](docs/milestones/13-guided-local-target-follow-ups.md) — structured metadata, editable case authoring, and negative E2E scenarios.
+16. [Milestone 9 release candidate](docs/milestones/14-milestone-9-release-candidate.md) — repository hygiene, aggregate onboarding, frontend closure, release gates, and beginner-friendly verification commands.
+17. [Live target recovery](docs/operations/16-live-target-recovery.md) — diagnose a blocked localhost target, recreate the backend bridge, refresh target health, and rerun a READY case safely.
+18. [UI-to-execution workflow](docs/implementation/17-ui-to-execution-workflow.md) — follow a user action from React route through HTTP, service, database, worker, target, and evidence.
+19. [Feature implementation handbook](docs/implementation/18-feature-implementation-handbook.md) — learn the TypeScript/React and Java/Spring syntax, validation rules, state machines, and business decisions behind each feature.
+20. [Interactive workflow diagram](docs/implementation/17-ui-to-execution-workflow.html) — pan, zoom, and highlight account, workspace, authoring, execution, and reporting paths.
 
 ## Verification boundary
+
+For the Docker-to-host workflow, guided case authoring, target checks, and troubleshooting, see [Local target testing guide](docs/operations/12-local-target-testing-guide.md) and [Guided local-target follow-ups](docs/milestones/13-guided-local-target-follow-ups.md). For release verification and CI expectations, see [Milestone 9 release candidate](docs/milestones/14-milestone-9-release-candidate.md).
 
 Before describing future product capabilities as implemented, inspect and reconcile:
 
