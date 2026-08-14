@@ -134,10 +134,19 @@ push this branch. A remote CI run must reach actual job steps; an immediate
 zero-step failure is recorded as infrastructure/quota evidence and blocks the
 release decision until a later run executes.
 
+### Rebuild evidence captured
+
+The isolated Compose project `testops-quality-gate` was rebuilt from commit
+`0657c2c0d5363a110c8b2775f69de1d4e8a883aa`. PostgreSQL, Mailpit, pgAdmin,
+backend, and frontend reported healthy; `http://localhost:8080/actuator/health`
+and `http://localhost:3000/` both returned HTTP 200. The backend and frontend
+OCI `org.opencontainers.image.revision` labels exactly matched that commit.
+The normal Compose project was not started and no normal volume was reset.
+
 ## Phase 0 result
 
-**Status: IN PROGRESS until the isolated QA stack, rerun local gates, commit,
-push, and a step-executing Actions run are verified.**
+**Status: IN PROGRESS until the rerun local gates, push, and a step-executing
+Actions run are verified.**
 
 The next allowed slice is Phase 1 (application shell and account menu). It must
 not begin until this Phase 0 result is updated to `PASS` or a concrete external
