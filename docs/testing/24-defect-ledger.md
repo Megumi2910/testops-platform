@@ -7,6 +7,17 @@
 - **P2:** significant accessibility, recovery, reliability, or consistency defect with a workaround.
 - **P3:** low-risk polish or diagnostic improvement.
 
+## Post-merge status interpretation
+
+The defect entries below preserve their original IDs, evidence, and regression
+owners. For the current Milestone 10A release decision, use the [completion
+ledger](../milestones/15-milestone-10a-testops-completion.md): a historical
+resolution is not a substitute for rebuilding the merged revision and rerunning
+the browser gate. QG-005 (form metadata) and QG-010 (stale lazy chunks) remain
+active. The public repository's GitHub secret-scanning endpoint is unavailable,
+so the Phase 0 local audit is recorded as a compensating control rather than a
+claim that hosted scanning ran.
+
 ## Confirmed defects
 
 ### QG-001 — Partial DRAFT steps cannot be saved

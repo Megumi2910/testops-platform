@@ -4,6 +4,14 @@
 
 This document is the canonical browser-testing baseline for TestOps at `http://localhost:3000` and the ecommerce target at `http://localhost:3001`. The baseline was established before lifecycle or product fixes. A failed or blocked row is evidence, not a release waiver. Product work may begin only after every row below is either executed or tied to a defect/blocker ID.
 
+> **Post-merge reconciliation (2026-08-14):** This matrix is historical evidence
+> captured before the Milestone 10A completion branch. The current source,
+> running-image provenance, and release interpretation are recorded in
+> [`docs/milestones/15-milestone-10a-testops-completion.md`](../milestones/15-milestone-10a-testops-completion.md).
+> Rows marked `PASS` here still require a fresh rebuilt runtime when they are
+> part of a release gate; rows marked `PARTIAL` remain open unless that ledger
+> explicitly closes them with new evidence.
+
 The local baseline uses QA-owned records only. It never resets the normal PostgreSQL volumes. Fixture credentials live in ignored secret files or environment variables and are deliberately absent from this document, screenshots, traces, and Git history.
 
 ## Environment provenance

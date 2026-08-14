@@ -8,7 +8,7 @@ This directory is organized by the question a maintainer is trying to answer:
 | [`implementation/`](implementation/) | Source walkthroughs, executable steps, and UI-to-worker behavior | [Implementation handbook](implementation/00-project-implementation-handbook.md) |
 | [`operations/`](operations/) | Runtime, database, target connectivity, and recovery procedures | [Local target testing guide](operations/12-local-target-testing-guide.md) |
 | [`security/`](security/) | Authentication, authorization, secrets, and abuse controls | [Authentication and security](security/02-authentication-and-security.md) |
-| [`milestones/`](milestones/) | Milestone scope, delivery decisions, and release-candidate evidence | [Milestone 9 release candidate](milestones/14-milestone-9-release-candidate.md) |
+| [`milestones/`](milestones/) | Milestone scope, delivery decisions, and release-candidate evidence | [Milestone 10A completion ledger](milestones/15-milestone-10a-testops-completion.md) |
 | [`planning/`](planning/) | Risks, roadmap, alternatives, and change-safety decisions | [Risks, roadmap, and decisions](planning/05-risks-roadmap-and-decisions.md) |
 | [`testing/`](testing/) | Live QA matrices, defect evidence, automation gates, and completion status | [Full-system quality-gate baseline](testing/23-quality-gate-baseline.md) |
 | [`guides/`](guides/) | Beginner-safe setup and operating procedures | [Quality-gate operator guide](guides/23-quality-gate-operator-guide.md) |
@@ -42,6 +42,6 @@ The root [README](../README.md) remains the project entry point. The machine-rea
 - Operating version-aware member role changes and safe removal from the project UI: [member management UI](implementation/36-member-management-ui.md).
 - Designing exact and repeated locators: [executable step language](implementation/10-executable-step-language.md) → [execution correctness](implementation/20-phase-6-execution-correctness.md).
 - Verifying the negative target matrix: use the local-disabled Compose profile described in the [local target guide](operations/12-local-target-testing-guide.md).
-- Reviewing delivery status: milestone 9 release candidate → risks/roadmap/decisions.
+- Reviewing delivery status: [Milestone 10A completion ledger](milestones/15-milestone-10a-testops-completion.md) → risks/roadmap/decisions. The Milestone 9 release-candidate document is retained as historical context.
 
 Paths in this directory are intentionally relative to this index so links continue to work on GitHub and from a checked-out repository.

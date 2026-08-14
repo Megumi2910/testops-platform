@@ -1,8 +1,8 @@
 # TestOps Platform — Managed Browser Testing for an Existing E-commerce Application
 
-> **Documentation status:** Milestone 9 is the release-candidate closure for the combined identity, reporting, guided local-target testing, and workspace work. It adds aggregate onboarding counts, focused frontend route modules, deterministic enabled/disabled E2E gates, and reconciled release documentation. Scheduling, notifications, and distributed execution remain planned.
+> **Documentation status:** Milestone 10A is the TestOps first-release completion track. Its first slice reconciles the merged public `main` revision, CI safety, QA provenance, and release documentation before account, lifecycle, authorization, execution, and accessibility closure work begins.
 >
-> The repository contains the Milestone 1–8 product foundation and the Milestone 9 release-candidate hardening work. See the release-candidate document for verified commands, remaining environment-dependent checks, and publication boundaries.
+> The repository contains the Milestone 1–9 product foundation and the Milestone 10A completion plan. See the [Milestone 10A completion ledger](docs/milestones/15-milestone-10a-testops-completion.md) for the current slice status, evidence, and publication boundary. The former release-candidate document remains historical.
 
 TestOps Platform is an internal web application for defining, executing, and reviewing automated browser tests against an existing e-commerce website. It gives administrators, test managers, developers, and testers one place to manage projects, test suites, reusable test cases, Playwright executions, failure evidence, and quality trends.
 

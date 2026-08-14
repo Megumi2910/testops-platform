@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10 Phase 5 adds the quality-gate matrix, role/tenant and execution regression evidence, worker/queue safety, public password recovery, deterministic and real-process browser-crash classification, binary artifact access, dashboard range/performance evidence, role/unverified browser boundaries, deterministic Google OAuth, and project edit/name-conflict coverage; real-provider/Chrome DevTools authentication, deployment-mode crash evidence, broader account/session permutations, and ecommerce release gates remain open",
+  "source_status": "Milestone 10A Phase 0 is reconciling the merged public main revision, CI least privilege, QA image provenance, and documentation before first-release completion work; account-menu, stale-bundle recovery, account-center, lifecycle, authorization, execution, accessibility, and final browser gates remain ordered follow-up slices",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -61,6 +61,10 @@
     {
       "path": "docs/milestones/13-guided-local-target-follow-ups.md",
       "role": "Docker host mapping, browser target checks, structured metadata, editable case authoring, and negative E2E scenarios"
+    },
+    {
+      "path": "docs/milestones/15-milestone-10a-testops-completion.md",
+      "role": "Canonical Milestone 10A completion ledger, post-merge provenance, public-safety audit, and phase boundary"
     },
     {
       "path": "docs/operations/16-live-target-recovery.md",

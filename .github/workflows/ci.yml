@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
 
+# CI only checks out source, builds disposable images, and publishes test
+# reports. Keep the default token read-only so a future step cannot mutate the
+# repository, releases, or environments without an explicit review.
+permissions:
+  contents: read
+
 jobs:
   frontend:
     runs-on: ubuntu-24.04
