@@ -18,7 +18,7 @@ The local baseline uses QA-owned records only. It never resets the normal Postgr
 
 | Application | Checked revision | Runtime proof | Result |
 | --- | --- | --- | --- |
-| TestOps | Phase 0 source revision (`git rev-parse HEAD`) | Isolated `testops-quality-gate` backend/frontend OCI `org.opencontainers.image.revision` labels match; PostgreSQL, Mailpit, pgAdmin, backend, and frontend report healthy; health/UI probes return 200 | PASS |
+| TestOps | Phase 0 source revision (`git rev-parse HEAD`) | Isolated `testops-quality-gate` backend/frontend OCI `org.opencontainers.image.revision` labels match; PostgreSQL, Mailpit, pgAdmin, backend, and frontend report healthy; health/UI probes return 200; CI run `31782848666` passed all six jobs | PASS |
 | Ecommerce | `7a430eaa48e58c2e144e2034d678aa0616822737` | Backend and frontend OCI revision labels match; Compose reports healthy | PASS |
 
 Run `scripts/setup-quality-gate.ps1` once to create the ignored TestOps fixture secret, rebuild both stacks with revision labels, start the TestOps QA overlay, and invoke `scripts/verify-running-revisions.ps1`. The verifier waits for health and fails when any application image is stale.

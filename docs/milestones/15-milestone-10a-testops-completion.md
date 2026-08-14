@@ -160,8 +160,13 @@ The normal Compose project was not started and no normal volume was reset.
 
 ## Phase 0 result
 
-**Status: IN PROGRESS until the rerun local gates, push, and a step-executing
-Actions run are verified.**
+**Status: PASS for Phase 0.** The completion branch is pushed, the isolated QA
+stack is healthy and revision-matched, frontend and backend unit/package gates
+are green, and remote CI run `31782848666` executed and passed all six jobs.
+
+The full local Testcontainers integration gate remains an environment-specific
+Windows limitation and is covered by the passing Linux CI backend job. This
+does not waive the integration tests in later slices.
 
 The next allowed slice is Phase 1 (application shell and account menu). It must
 not begin until this Phase 0 result is updated to `PASS` or a concrete external
