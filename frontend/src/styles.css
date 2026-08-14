@@ -45,6 +45,11 @@ h2 { margin-bottom: .4rem; font-size: 1.1rem; }
 .form-help { margin: 0; color: #566579; }
 .account-card { display: grid; gap: .5rem; }
 .account-card h2, .account-card p { margin: 0; }
+.account-anchor { scroll-margin-top: 5rem; }
+.account-details { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); margin: 1rem 0 0; }
+.account-details div { background: #f7f9fc; border: 1px solid var(--line); border-radius: .65rem; padding: .75rem; }
+.account-details dt { color: var(--ink-soft); font-size: .82rem; font-weight: 700; }
+.account-details dd { margin: .2rem 0 0; overflow-wrap: anywhere; }
 .inline-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: .75rem; }
 .page-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem; }
 .dashboard-filter { display: grid; gap: .35rem; min-width: 11rem; font-weight: 700; }

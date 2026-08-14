@@ -14,7 +14,7 @@ const baseUser: UserSummary = {
 function renderShell(user: UserSummary | null = baseUser) {
   const context: AuthContextValue = {
     user, providers: null, loading: false, login: vi.fn(), register: vi.fn(), verifyEmail: vi.fn(),
-    resendEmail: vi.fn(), resendAuthenticatedEmail: vi.fn(), logout: vi.fn().mockResolvedValue(undefined),
+    resendEmail: vi.fn(), resendAuthenticatedEmail: vi.fn(), reloadUser: vi.fn(), logout: vi.fn().mockResolvedValue(undefined),
   }
   function LocationProbe() {
     return <output data-testid="location">{useLocation().pathname}</output>

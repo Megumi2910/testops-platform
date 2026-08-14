@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10A Phase 0 and the Phase 1 shell/account-menu slice are verified; the Phase 2 stale-bundle recovery slice is implemented and tested, while account-center, lifecycle, authorization, execution, accessibility, and final browser gates remain ordered follow-up slices",
+  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu, Phase 2 stale-bundle recovery, and the Phase 3 account-security slice are implemented and locally verified; lifecycle, authorization, execution, accessibility, and final browser gates remain ordered follow-up slices",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -489,6 +489,18 @@
     {
       "path": "frontend/e2e/phase2-stale-bundle.spec.ts",
       "role": "Phase 2 retained-tab lazy-chunk recovery browser regression"
+    },
+    {
+      "path": "docs/implementation/65-phase3-account-security.md",
+      "role": "Phase 3 account security panels, identity refresh, credential invalidation, and session recovery implementation"
+    },
+    {
+      "path": "docs/testing/74-phase3-account-security.md",
+      "role": "Phase 3 account password, Google identity, session, deep-link, and accessibility regression evidence"
+    },
+    {
+      "path": "frontend/src/features/auth/AccountPages.test.tsx",
+      "role": "Phase 3 mounted account-center security and session regression tests"
     }
   ]
 }

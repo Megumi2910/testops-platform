@@ -22,6 +22,7 @@ describe('VerifyEmailPage', () => {
       verifyEmail: vi.fn(),
       resendEmail,
       resendAuthenticatedEmail: vi.fn(),
+      reloadUser: vi.fn(),
       logout: vi.fn(),
     }
 
@@ -46,7 +47,7 @@ describe('Google authentication', () => {
       providers: { enabled: true, registrationEnabled: true, emailVerificationEnabled: true, googleEnabled: true },
       loading: false,
       login: vi.fn(), register: vi.fn(), verifyEmail: vi.fn(), resendEmail: vi.fn(),
-      resendAuthenticatedEmail: vi.fn(), logout: vi.fn(),
+      resendAuthenticatedEmail: vi.fn(), reloadUser: vi.fn(), logout: vi.fn(),
     }
     render(<MemoryRouter initialEntries={['/login']}><AuthContext.Provider value={context}><LoginPage /></AuthContext.Provider></MemoryRouter>)
     expect(screen.getByRole('link', { name: 'Continue with Google' })).toHaveAttribute('href', '/oauth2/authorization/google')

@@ -23,6 +23,7 @@ const baseAuth: AuthContextValue = {
   verifyEmail: vi.fn(),
   resendEmail: vi.fn(),
   resendAuthenticatedEmail: vi.fn(),
+  reloadUser: vi.fn(),
   logout: vi.fn(),
 }
 

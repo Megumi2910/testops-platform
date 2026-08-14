@@ -6,6 +6,7 @@ export type AuthContextValue = {
   user: UserSummary | null
   providers: Providers | null
   loading: boolean
+  reloadUser: () => Promise<UserSummary>
   login: (email: string, password: string) => Promise<void>
   register: (email: string, displayName: string, password: string) => Promise<void>
   verifyEmail: (email: string, otp: string) => Promise<void>

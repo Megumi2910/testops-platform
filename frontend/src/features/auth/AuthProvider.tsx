@@ -30,6 +30,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
     user,
     providers,
     loading,
+    reloadUser: async () => {
+      const refreshed = await authApi.me()
+      setUser(refreshed)
+      return refreshed
+    },
     login: async (email, password) => {
       const response = await authApi.login({ email, password })
       setUser(response.user)

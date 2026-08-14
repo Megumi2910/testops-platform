@@ -1,6 +1,6 @@
 # Milestone 10A — TestOps first-release completion
 
-## Current slice: Phase 2 revision-aware stale-bundle recovery
+## Current slice: Phase 3 account security and identity recovery
 
 This document is the current release ledger for Milestone 10A. It replaces the
 Milestone 9 release-candidate document as the source of truth for work on the
@@ -228,3 +228,32 @@ The browser test intentionally simulates the removed-chunk condition in one
 image; a full revision-A/revision-B container swap and live Chrome DevTools
 deployment capture remain operational follow-ups before the overall release
 gate can close.
+
+## Phase 3 slice result — account security and identity recovery
+
+**Status: PASS for this implementation slice.** The shared auth context now
+exposes `reloadUser()`, allowing account mutations to refresh the authoritative
+user summary without duplicating `/auth/me` calls in presentation components.
+The account page is split into overview, login methods, password, password
+setup, and active-session sections with stable deep-link anchors.
+
+Password changes now validate confirmation, protect the submit action while it
+is pending, and sign the browser out to `/login?reason=password-changed` after
+the backend revokes all refresh sessions. Google-only users receive a guided
+Send setup code → Confirm password flow; successful setup refreshes the user
+summary so `PASSWORD` appears without a full reload. Google unlinking uses a
+current-password confirmation dialog and returns to
+`/login?reason=google-unlinked` after session cleanup. Session rows have
+per-action pending states, retryable loading failures, an explicit empty state,
+and `Intl.DateTimeFormat` timestamps; revoke-all returns to
+`/login?reason=sessions-revoked`.
+
+Implementation and regression evidence are recorded in
+[`65-phase3-account-security.md`](../implementation/65-phase3-account-security.md)
+and [`74-phase3-account-security.md`](../testing/74-phase3-account-security.md).
+The local frontend gate is green at 17 test files / 53 tests. Live Chrome
+DevTools verification against a rebuilt QA image, including the account
+security panels and Mailpit password/Google mutation journeys, remains part of
+the complete Phase 3 gate. The focused live Playwright auth/session matrix
+passed 3/3 against the rebuilt QA frontend, including real Mailpit verification
+and session revocation.
