@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10A Phase 0 is reconciling the merged public main revision, CI least privilege, QA image provenance, and documentation before first-release completion work; account-menu, stale-bundle recovery, account-center, lifecycle, authorization, execution, accessibility, and final browser gates remain ordered follow-up slices",
+  "source_status": "Milestone 10A Phase 0 passed and the first Phase 1 shell/account-menu slice is verified; stale-bundle reload, account-center, lifecycle, authorization, execution, accessibility, and final browser gates remain ordered follow-up slices",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -469,6 +469,14 @@
     {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",
       "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
+    },
+    {
+      "path": "docs/implementation/63-phase1-testops-shell-account-menu.md",
+      "role": "Phase 1 shell, account-menu permissions, mobile focus behavior, and route-recovery implementation"
+    },
+    {
+      "path": "docs/testing/72-phase1-shell-account-menu.md",
+      "role": "Phase 1 account-menu, mobile drawer, and branded route-recovery regression evidence"
     }
   ]
 }

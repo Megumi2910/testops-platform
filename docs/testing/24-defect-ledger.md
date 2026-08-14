@@ -128,9 +128,20 @@ claim that hosted scanning ran.
 - Preconditions: keep a browser tab open while replacing the frontend image
 - Reproduction: navigate from the stale tab after the new image starts
 - Expected: one controlled reload or branded recovery boundary
-- Actual: the browser requests a removed hashed chunk, receives `404`, and React Router renders its default unexpected-error page
+- Actual (before Phase 1): the browser requests a removed hashed chunk, receives `404`, and React Router renders its default unexpected-error page
+- Phase 1 slice update: the root router now renders a branded recovery page with safe reload/readiness actions and no stack details. The automatic single reload guard and retained-tab deployment proof remain open for Phase 2.
 - Likely subsystem: lazy-import recovery and root route error boundary
 - Regression layer: deployment smoke with retained browser session
+
+### QG-020 — Signed-in Account control appeared inert
+
+- Severity: P1
+- Status: RESOLVED in the Phase 1 shell slice
+- Preconditions: a verified or unverified user is signed in and viewing any shell route
+- Previous actual: the desktop header rendered a text link to `/account`; users had no discoverable path to security, sessions, verification recovery, administration, or sign-out actions from the top-right control.
+- Resolution: `AppShell` now composes an account menu from the current user and effective platform permissions. Unverified users receive a verification link, administrators receive `/admin/users`, and sign-out clears auth state before navigating to `/login`. The same actions are available in the mobile drawer.
+- Verification: `frontend/src/components/AppShell.test.tsx` covers verified, unverified, administrator, Escape/focus, sign-out, and mobile drawer behavior. Live Chrome DevTools verification is still required against the rebuilt QA image.
+- Regression layer: mounted React tests + Chrome DevTools responsive/keyboard matrix
 
 ### QG-011 — Invalid Details stage does not focus the failing control
 

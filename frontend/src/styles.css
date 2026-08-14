@@ -135,6 +135,17 @@ button:hover:not(:disabled), .button:hover { transform: translateY(-1px); }
 .nav-link:hover, .nav-link.active { background: rgb(255 255 255 / 10%); color: #fff; }
 .nav-menu, .nav-close { display: none; }
 .nav-account-name { max-width: 12rem; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; white-space: nowrap; }
+.account-menu { position: relative; }
+.account-menu-trigger { align-items: center; background: transparent; border: 1px solid transparent; border-radius: .5rem; color: #c8d2e6; cursor: pointer; display: inline-flex; font: inherit; gap: .35rem; max-width: 100%; padding: .55rem .7rem; }
+.account-menu-trigger:hover { background: rgb(255 255 255 / 10%); color: #fff; }
+.account-menu-avatar { align-items: center; background: #3155b8; border-radius: 999px; color: #fff; display: inline-flex; flex: 0 0 auto; font-size: .75rem; font-weight: 800; height: 1.5rem; justify-content: center; width: 1.5rem; }
+.account-menu-panel { background: var(--surface); border: 1px solid var(--line); border-radius: .75rem; box-shadow: var(--shadow-md); color: var(--ink); min-width: 14rem; padding: .4rem; position: absolute; right: 0; top: calc(100% + .45rem); width: min(20rem, calc(100vw - 2rem)); z-index: 20; }
+.account-menu-identity { border-bottom: 1px solid var(--line); display: grid; gap: .15rem; padding: .7rem .75rem; overflow-wrap: anywhere; }
+.account-menu-identity span { color: var(--ink-soft); font-size: .85rem; }
+.account-menu-item { align-items: center; background: transparent; border: 0; border-radius: .45rem; color: var(--ink); display: flex; font: inherit; gap: .45rem; padding: .65rem .75rem; text-align: left; text-decoration: none; width: 100%; }
+.account-menu-item:hover, .account-menu-item:focus-visible { background: #edf3ff; color: var(--brand-strong); }
+.account-menu-signout { border-top: 1px solid var(--line); border-radius: 0; color: var(--danger); margin-top: .3rem; }
+.nav-drawer-backdrop { background: rgb(10 18 32 / 45%); border: 0; display: none; inset: 0; position: fixed; z-index: 11; }
 .verification-banner { align-items: center; background: #fff5d7; border-bottom: 1px solid #f2d27c; color: #6b4e00; display: flex; gap: .35rem; justify-content: center; padding: .7rem 1rem; text-align: center; }
 .verification-banner a { color: #5b4200; font-weight: 800; }
 .content { padding-bottom: 5rem; padding-top: 3rem; }
@@ -240,10 +251,19 @@ th { font-variant-numeric: tabular-nums; }
 @media (max-width: 760px) {
   .topbar-inner { min-height: 3.6rem; }
   .nav-menu { display: inline-flex; }
+  .nav-drawer-backdrop { display: block; }
   .nav-drawer { background: #101827; display: none; inset: 0 0 auto auto; padding: 4rem 1rem 1rem; position: fixed; width: min(20rem, 90vw); z-index: 12; }
   .nav-drawer.open { display: block; }
   .primary-nav { align-items: stretch; flex-direction: column; }
   .primary-nav .nav-link { padding: .8rem; }
+  .account-menu { width: 100%; }
+  .account-menu-trigger { color: #c8d2e6; justify-content: flex-start; padding: .8rem; width: 100%; }
+  .account-menu-panel { background: transparent; border: 0; box-shadow: none; color: #fff; min-width: 0; padding: .25rem 0 0 .5rem; position: static; width: 100%; }
+  .account-menu-identity { border-bottom-color: rgb(255 255 255 / 18%); padding: .55rem .75rem; }
+  .account-menu-identity span { color: #c8d2e6; }
+  .account-menu-item { color: #c8d2e6; }
+  .account-menu-item:hover, .account-menu-item:focus-visible { background: rgb(255 255 255 / 10%); color: #fff; }
+  .account-menu-signout { border-top-color: rgb(255 255 255 / 18%); }
   .nav-close { display: block; position: absolute; right: .7rem; top: .7rem; }
   .content { padding-top: 2rem; }
   .page-heading-actions { justify-content: flex-start; }
@@ -251,3 +271,6 @@ th { font-variant-numeric: tabular-nums; }
   .page-heading h1 { font-size: clamp(2rem, 12vw, 3rem); }
   .verification-banner { align-items: flex-start; flex-direction: column; }
 }
+
+.route-error-page { align-items: center; display: flex; justify-content: center; min-height: 60vh; }
+.route-error-card { max-width: 42rem; width: 100%; }

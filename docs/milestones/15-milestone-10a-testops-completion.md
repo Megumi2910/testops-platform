@@ -1,6 +1,6 @@
 # Milestone 10A — TestOps first-release completion
 
-## Current slice: Phase 0 post-merge reconciliation
+## Current slice: Phase 1 shell and account-menu slice
 
 This document is the current release ledger for Milestone 10A. It replaces the
 Milestone 9 release-candidate document as the source of truth for work on the
@@ -168,6 +168,23 @@ The full local Testcontainers integration gate remains an environment-specific
 Windows limitation and is covered by the passing Linux CI backend job. This
 does not waive the integration tests in later slices.
 
-The next allowed slice is Phase 1 (application shell and account menu). It must
-not begin until this Phase 0 result is updated to `PASS` or a concrete external
-blocker is documented as `BLOCKED`.
+The Phase 0 result is complete and remains the release gate for the branch.
+The first Phase 1 shell slice is now implemented and verified; the remaining
+Phase 1 work continues only after its commit and CI run are recorded below.
+
+## Phase 1 slice result — application shell and account menu
+
+**Status: PASS for this slice.** `AccountPage` now uses the shared lazy-page
+loading boundary. The desktop Account control is an accessible menu with
+identity, security, sessions, verification recovery, administrator-only
+navigation, and sign-out. The mobile drawer has a backdrop, focus containment,
+Escape handling, and body-scroll locking. The root router renders a branded
+recovery page for render/chunk failures instead of the generic React Router
+error view.
+
+Source-level evidence is documented in
+[`63-phase1-testops-shell-account-menu.md`](../implementation/63-phase1-testops-shell-account-menu.md)
+and [`72-phase1-shell-account-menu.md`](../testing/72-phase1-shell-account-menu.md).
+Frontend lint, typecheck, 48 unit tests, and the production build are the local
+gates for this slice. Automatic stale-chunk reload and the live Chrome DevTools
+matrix remain open for later Phase 1/2 slices.

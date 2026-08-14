@@ -4,6 +4,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
 import { PlatformPermissionRoute, ProtectedRoute, VerifiedRoute } from '../features/projects/RouteGuards'
 import { LazyPage } from './LazyPage'
+import { RouteErrorPage } from './RouteErrorPage'
 
 const HomePage = lazy(async () => ({ default: (await import('./pages')).HomePage }))
 const NotFoundPage = lazy(async () => ({ default: (await import('./pages')).NotFoundPage }))
@@ -34,6 +35,7 @@ export const router = createBrowserRouter([
   {
     path: '/',
     element: <AppShell />,
+    errorElement: <RouteErrorPage />,
     children: [
       { index: true, element: <LazyPage><HomePage /></LazyPage> },
       { path: 'login', element: <LazyPage><LoginPage /></LazyPage> },
@@ -42,7 +44,7 @@ export const router = createBrowserRouter([
       { path: 'password-reset', element: <LazyPage><PasswordResetPage /></LazyPage> },
       { path: 'auth/oauth/callback', element: <LazyPage><OAuthCallbackPage /></LazyPage> },
       { element: <ProtectedRoute />, children: [
-        { path: 'account', element: <AccountPage /> },
+        { path: 'account', element: <LazyPage><AccountPage /></LazyPage> },
         { element: <VerifiedRoute />, children: [
         { path: 'dashboard', element: <LazyPage><DashboardPage /></LazyPage> },
         { element: <PlatformPermissionRoute permission="USER_ADMINISTER" />, children: [
