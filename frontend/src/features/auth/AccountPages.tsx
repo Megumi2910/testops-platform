@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useDeferredValue, useEffect, useState, type FormEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
@@ -8,6 +8,7 @@ import { useAuth } from './AuthContext'
 import { Alert, Button, ConfirmDialog, LoadingState, PageHeader } from '../../components/ui'
 
 type AdminUser = { id: string; email: string; displayName: string; status: string; platformRole: string; emailVerified: boolean; createdAt: string; lastLoginAt?: string }
+type AdminUsersResponse = { content: AdminUser[]; page?: number; totalPages?: number; totalElements?: number }
 
 function formatSessionDate(value: string) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
@@ -160,11 +161,16 @@ export function AccountPage() {
 
 export function AdminUsersPage() {
   const [query, setQuery] = useState('')
+  const [page, setPage] = useState(0)
   const [pendingUserId, setPendingUserId] = useState<string | null>(null)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const deferredQuery = useDeferredValue(query)
-  const users = useQuery({ queryKey: ['admin-users', deferredQuery], queryFn: () => apiFetch<{ content: AdminUser[] }>(`/api/v1/admin/users?size=50${deferredQuery ? `&query=${encodeURIComponent(deferredQuery)}` : ''}`) })
+  const users = useQuery({
+    queryKey: ['admin-users', deferredQuery, page],
+    queryFn: () => apiFetch<AdminUsersResponse>(`/api/v1/admin/users?page=${page}&size=25${deferredQuery ? `&query=${encodeURIComponent(deferredQuery)}` : ''}`),
+    placeholderData: keepPreviousData,
+  })
   async function updateUser(id: string, path: string, body: Record<string, string>) {
     setPendingUserId(id)
     setMessage('')
@@ -179,5 +185,6 @@ export function AdminUsersPage() {
       setPendingUserId(null)
     }
   }
-  return <section className="page-stack"><div><p className="eyebrow">Administration</p><h1>Users</h1><p className="lede">Manage platform roles and account status. Project roles remain scoped to each project.</p></div><label className="search-field">Search users<input value={query} onChange={event => setQuery(event.target.value)} placeholder="Email or display name" /></label>{message && <p className="form-help" role="status">{message}</p>}{error && <p className="form-error" role="alert">{error}</p>}<div className="card"><ul className="resource-list">{users.data?.content.map(user => <li key={user.id}><span><strong>{user.displayName}</strong><span className="muted"> · {user.email}</span></span><span className="inline-actions"><select aria-label={`Platform role for ${user.email}`} value={user.platformRole} disabled={pendingUserId === user.id} onChange={event => void updateUser(user.id, 'platform-role', { platformRole: event.target.value })}><option>MEMBER</option><option>ADMIN</option></select><select aria-label={`Account status for ${user.email}`} value={user.status} disabled={pendingUserId === user.id} onChange={event => void updateUser(user.id, 'status', { status: event.target.value })}><option>ACTIVE</option><option>LOCKED</option><option>DISABLED</option></select></span></li>)}</ul>{users.isPending && <p>Loading users…</p>}{users.isError && <p className="form-error" role="alert">Unable to load users.</p>}{users.data && users.data.content.length === 0 && <p className="muted">No users match this search.</p>}</div></section>
+  const totalPages = Math.max(1, users.data?.totalPages ?? 1)
+  return <section className="page-stack"><div><p className="eyebrow">Administration</p><h1>Users</h1><p className="lede">Manage platform roles and account status. Project roles remain scoped to each project.</p></div><label className="search-field" htmlFor="admin-user-search">Search users<input id="admin-user-search" value={query} onChange={event => { setQuery(event.target.value); setPage(0) }} placeholder="Email or display name" autoComplete="off" /></label>{message && <p className="form-help" role="status">{message}</p>}{error && <p className="form-error" role="alert">{error}</p>}<div className="card"><ul className="resource-list">{users.data?.content.map(user => <li key={user.id}><span><strong>{user.displayName}</strong><span className="muted"> · {user.email}</span></span><span className="inline-actions"><select aria-label={`Platform role for ${user.email}`} value={user.platformRole} disabled={pendingUserId === user.id} onChange={event => void updateUser(user.id, 'platform-role', { platformRole: event.target.value })}><option>MEMBER</option><option>ADMIN</option></select><select aria-label={`Account status for ${user.email}`} value={user.status} disabled={pendingUserId === user.id} onChange={event => void updateUser(user.id, 'status', { status: event.target.value })}><option>ACTIVE</option><option>LOCKED</option><option>DISABLED</option></select></span></li>)}</ul>{users.isPending && <LoadingState label="Loading users…" />}{users.isError && <div className="inline-actions"><p className="form-error" role="alert">Unable to load users.</p><Button type="button" variant="secondary" onClick={() => void users.refetch()}>Try again</Button></div>}{users.data && users.data.content.length === 0 && <p className="muted">No users match this search.</p>}{users.data && totalPages > 1 && <nav className="pagination" aria-label="Administration user pages"><Button type="button" variant="secondary" onClick={() => setPage(current => current - 1)} disabled={page === 0 || users.isFetching}>Previous</Button><span aria-live="polite">Page {page + 1} of {totalPages}{users.data.totalElements === undefined ? '' : ` · ${users.data.totalElements} users`}</span><Button type="button" variant="secondary" onClick={() => setPage(current => current + 1)} disabled={page + 1 >= totalPages || users.isFetching}>Next</Button></nav>}</div></section>
 }

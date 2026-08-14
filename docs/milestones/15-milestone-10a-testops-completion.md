@@ -1,6 +1,6 @@
 # Milestone 10A — TestOps first-release completion
 
-## Current slice: Phase 4 project and definition workflow closure
+## Current slice: Phase 5 variables, members, administration, and authorization
 
 This document is the current release ledger for Milestone 10A. It replaces the
 Milestone 9 release-candidate document as the source of truth for work on the
@@ -278,3 +278,19 @@ The focused lifecycle group passed 3 test files / 8 tests. A live
 were stopped before project creation by the QA backend's registration rate limit
 (`429 Too many attempts`). That is an environment-fixture throttle and remains
 an isolated E2E rerun requirement, not a product-pass claim.
+
+## Phase 5 slice result — administration user-list recovery and pagination
+
+**Status: PASS for this implementation slice.** The administrator user page now
+uses the backend's bounded `page`, `size`, and `query` contract, preserves the
+previous page while a new page loads, resets pagination when search changes, and
+offers a retry action after a list failure. Existing route and backend guards
+remain authoritative, and per-user role/status mutations retain their pending
+locks and final-active-administrator protection.
+
+Implementation and regression evidence are recorded in
+[`67-phase5-admin-user-pagination.md`](../implementation/67-phase5-admin-user-pagination.md)
+and [`76-phase5-admin-user-pagination.md`](../testing/76-phase5-admin-user-pagination.md).
+The focused group passed 3 test files / 8 tests. This closes the list recovery
+and pagination slice only; the broader Phase 5 variable secrecy, membership
+isolation, final-admin, and full Chrome DevTools matrix remain open.

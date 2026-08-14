@@ -175,7 +175,7 @@ not as evidence against the shell/account-menu implementation.
 - Verification: Chrome DevTools observed `PUT 409 → GET 200`, focused comparison, `PUT 200` retry, and an independent Reload flow; the QA fixture was restored
 - Regression layer: pure comparison tests + mounted component + two-tab Chrome DevTools journey
 
-### QG-021 — Direct case links ignored archived parent-suite lifecycle
+### QG-027 — Direct case links ignored archived parent-suite lifecycle
 
 - Severity: P1
 - Status: RESOLVED in the Phase 4 project/definition guard slice
@@ -348,6 +348,17 @@ not as evidence against the shell/account-menu implementation.
 - Resolution: `AdminUsersPage` now names both selects by email, disables controls while a mutation is pending, refetches after success, and renders status/error feedback. `AdminUserController` and `AdminUserService` now use the explicit auth-enabled property condition so their routes are registered reliably. The E2E Compose profile exposes only a generated bootstrap password to the CI process; `phase5-administrator-crud.spec.ts` covers positive changes and the final-admin invariant
 - Verification: first local browser run exposed the missing controller mapping. After changing the condition, rebuilding the disposable stack, and recreating the E2E backend/frontend, `phase5-administrator-crud.spec.ts` passed in 4.2 seconds with role/status persistence and final-admin protection. CI run `31609560806` passed backend, frontend, containers, local-disabled E2E, and the full E2E suite for commit `53258e1`
 - Regression layer: Playwright browser journey plus existing `AdminUserServiceTest` and `AdminUsersPage` route guard tests
+
+### QG-028 — Administration user list had no pagination or retry recovery
+
+- Severity: P2
+- Status: RESOLVED in the Phase 5 administration-list slice
+- Preconditions: a platform administrator opens `/admin/users` with more than 50 users or the list request fails
+- Expected: the UI consumes server pagination, keeps search and page state coherent, and offers a retry action after a transient list failure
+- Previous actual: `AdminUsersPage` always requested `size=50`, ignored `totalPages`, and rendered a dead-end error paragraph without recovery
+- Resolution: the query now sends `page`, `size=25`, and deferred `query`; search resets the page, previous data remains visible during fetches, and **Try again** refetches the list
+- Verification: `frontend/src/features/auth/AdminUsersPage.test.tsx` covers page navigation and failed-then-successful retry; backend controller/service already expose bounded page metadata
+- Regression layer: mounted frontend test + administrator Playwright matrix + backend controller contract
 
 ## Coverage blockers
 
