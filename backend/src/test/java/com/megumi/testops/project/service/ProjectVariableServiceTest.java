@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -40,7 +39,7 @@ class ProjectVariableServiceTest {
 
         var response = service.list(jwt, project.getId());
 
-        verify(access).requireProjectRole(eq(project), eq(user), eq(jwt), eq(Set.of("PROJECT_MANAGER")));
+        verify(access).requireProjectPermission(eq(project), eq(user), eq(jwt), eq(ProjectPermission.VARIABLE_VIEW));
         assertEquals(1, response.size());
         assertEquals(null, response.getFirst().value());
     }

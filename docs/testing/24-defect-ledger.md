@@ -360,6 +360,17 @@ not as evidence against the shell/account-menu implementation.
 - Verification: `frontend/src/features/auth/AdminUsersPage.test.tsx` covers page navigation and failed-then-successful retry; backend controller/service already expose bounded page metadata
 - Regression layer: mounted frontend test + administrator Playwright matrix + backend controller contract
 
+### QG-029 — Variable API and direct route did not share the permission contract
+
+- Severity: P2
+- Status: RESOLVED in the Phase 5 variable-permission slice
+- Preconditions: a project member opens `/variables` directly or a role matrix changes without updating the variable service
+- Expected: the API enforces the advertised `VARIABLE_VIEW` and `VARIABLE_MANAGE` capabilities; unauthorized direct links explain the denial without issuing a doomed request; secrets remain masked
+- Previous actual: `ProjectVariableService` repeated a `PROJECT_MANAGER` role check while the project response exposed named variable permissions, and the direct frontend route fetched variables for users who had no visibility navigation
+- Resolution: `ProjectAccessService.requireProjectPermission` now reuses `ProjectService.permissionSet`; variable list/mutations require the corresponding permission, and `VariablesPage` gates the query and renders a back-to-project recovery state
+- Verification: focused backend permission/masking tests passed 20 tests; focused frontend permission/masking/member/route tests passed 3 files / 8 tests
+- Regression layer: backend service tests + mounted frontend route test + Phase 5 role browser matrix
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |

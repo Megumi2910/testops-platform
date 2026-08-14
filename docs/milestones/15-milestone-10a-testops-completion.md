@@ -294,3 +294,20 @@ and [`76-phase5-admin-user-pagination.md`](../testing/76-phase5-admin-user-pagin
 The focused group passed 3 test files / 8 tests. This closes the list recovery
 and pagination slice only; the broader Phase 5 variable secrecy, membership
 isolation, final-admin, and full Chrome DevTools matrix remain open.
+
+## Phase 5 slice result — variable permission contract and direct-link recovery
+
+**Status: PASS for this implementation slice.** Variable list and mutation
+operations now enforce the advertised `VARIABLE_VIEW` and `VARIABLE_MANAGE`
+permissions through the shared project permission policy. This keeps the
+backend guard aligned with the permissions used by project navigation. Direct
+`/variables` links without visibility render an actionable restricted state
+without issuing a request that is guaranteed to fail, and secret values remain
+masked in the rendered list.
+
+Implementation and regression evidence are recorded in
+[`68-phase5-variable-permissions.md`](../implementation/68-phase5-variable-permissions.md)
+and [`77-phase5-variable-permissions.md`](../testing/77-phase5-variable-permissions.md).
+The focused backend group passed 20 tests and the focused frontend group
+passed 3 files / 8 tests. The broader Phase 5 tenant-isolation, final-admin,
+artifact, and Chrome DevTools release matrix remains open.

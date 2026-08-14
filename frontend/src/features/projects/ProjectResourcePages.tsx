@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 
@@ -13,8 +13,9 @@ export function VariablesPage() {
   const { project } = useProjectWorkspace()
   const client = useQueryClient()
   const [deleteKey, setDeleteKey] = useState<string>()
-  const canManage = project.permissions.includes('VARIABLE_MANAGE') && project.status === 'ACTIVE'
-  const query = useQuery({ queryKey: projectKeys.variables(projectId), queryFn: () => projectsApi.variables(projectId) })
+  const canView = project.permissions.includes('VARIABLE_VIEW')
+  const canManage = canView && project.permissions.includes('VARIABLE_MANAGE') && project.status === 'ACTIVE'
+  const query = useQuery({ queryKey: projectKeys.variables(projectId), queryFn: () => projectsApi.variables(projectId), enabled: canView })
   const form = useForm({ defaultValues: { key: '', secret: false, value: '' } })
   const create = useMutation({
     mutationFn: projectsApi.createVariable.bind(null, projectId),
@@ -30,6 +31,13 @@ export function VariablesPage() {
       void client.invalidateQueries({ queryKey: projectKeys.variables(projectId) })
     },
   })
+
+  if (!canView) return <section className="page-stack">
+    <Alert tone="danger" title="Variables are restricted.">
+      <p>Your project role does not include variable visibility.</p>
+      <Link className="button button-secondary" to={`/projects/${projectId}`}>Back to project overview</Link>
+    </Alert>
+  </section>
 
   return <section className="page-stack">
     {canManage && <Card>

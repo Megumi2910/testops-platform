@@ -136,7 +136,7 @@ public class ProjectService {
                 new ProjectDtos.TargetHealthResponse(p.getTargetCheckStatus(), p.getTargetCheckHttpStatus(), p.getTargetCheckedAt(), p.getTargetCheckReason()),
                 projectOnboarding);
     }
-    private static java.util.Set<String> permissionSet(String role, boolean admin) {
+    static java.util.Set<String> permissionSet(String role, boolean admin) {
         if (admin) return java.util.Arrays.stream(ProjectPermission.values()).map(Enum::name).collect(java.util.stream.Collectors.toUnmodifiableSet());
         java.util.EnumSet<ProjectPermission> set = java.util.EnumSet.noneOf(ProjectPermission.class);
         if (role == null) return java.util.Set.of();

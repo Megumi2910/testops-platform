@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu, Phase 2 stale-bundle recovery, Phase 3 account-security, Phase 4 project/definition guards, and the Phase 5 administration list slice are implemented and locally verified; variable secrecy, membership isolation, execution, accessibility, and final browser gates remain ordered follow-up slices",
+  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu, Phase 2 stale-bundle recovery, Phase 3 account-security, Phase 4 project/definition guards, and Phase 5 administration-list and variable-permission slices are implemented and locally verified; membership isolation, execution, accessibility, and final browser gates remain ordered follow-up slices",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -513,6 +513,14 @@
     {
       "path": "docs/testing/76-phase5-admin-user-pagination.md",
       "role": "Phase 5 administrator pagination, retry, and route-guard regression evidence"
+    },
+    {
+      "path": "docs/implementation/68-phase5-variable-permissions.md",
+      "role": "Phase 5 shared variable permission guards, direct-link recovery, and secret masking implementation"
+    },
+    {
+      "path": "docs/testing/77-phase5-variable-permissions.md",
+      "role": "Phase 5 variable permission, direct-link, and secret masking regression evidence"
     },
     {
       "path": "frontend/src/features/auth/AccountPages.test.tsx",
