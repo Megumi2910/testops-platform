@@ -17,6 +17,9 @@ services:
       SPRING_PROFILES_ACTIVE: local-qa
       AUTH_ENABLED: "true"
       AUTH_REGISTRATION_ENABLED: "true"
+      # local-qa creates the administrator and role fixtures itself. Do not
+      # run the first-user bootstrap runner against that already-seeded data.
+      BOOTSTRAP_ADMIN_ENABLED: "false"
       EMAIL_DELIVERY_ENABLED: "true"
       MAIL_HOST: mailpit
       MAIL_PORT: "1025"

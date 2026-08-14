@@ -67,6 +67,16 @@ configuration, and published artifact metadata.
   not proof that history is clean; the local pattern/history audit remains the
   required compensating control until scanning is enabled.
 
+### QA startup correction
+
+The first isolated rebuild exposed a configuration defect: the normal
+`BOOTSTRAP_ADMIN_ENABLED=true` value was inherited by the `local-qa` profile
+after its fixture runner had already created users. The backend correctly
+refused to create a second first user and the health check never became ready.
+The QA overlay now sets `BOOTSTRAP_ADMIN_ENABLED=false`; the fixture runner is
+the sole owner of QA identities. This does not change the normal development
+Compose defaults or production bootstrap behavior.
+
 ### CI hardening applied
 
 `.github/workflows/ci.yml` now declares a top-level default of:
@@ -132,4 +142,3 @@ push, and a step-executing Actions run are verified.**
 The next allowed slice is Phase 1 (application shell and account menu). It must
 not begin until this Phase 0 result is updated to `PASS` or a concrete external
 blocker is documented as `BLOCKED`.
-

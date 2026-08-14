@@ -21,7 +21,7 @@ It then:
 
 1. resolves the TestOps and ecommerce Git revisions;
 2. builds both frontend/backend image pairs with OCI revision labels;
-3. starts TestOps with `docker-compose.qa.yml` and ecommerce with its normal Compose file;
+3. starts TestOps with `docker-compose.qa.yml` and ecommerce with its normal Compose file. The QA overlay disables the normal first-user bootstrap because `local-qa` seeds the administrator and role fixtures itself;
 4. waits for health;
 5. fails if a running image label differs from its repository revision.
 
