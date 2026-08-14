@@ -175,6 +175,19 @@ not as evidence against the shell/account-menu implementation.
 - Verification: Chrome DevTools observed `PUT 409 → GET 200`, focused comparison, `PUT 200` retry, and an independent Reload flow; the QA fixture was restored
 - Regression layer: pure comparison tests + mounted component + two-tab Chrome DevTools journey
 
+### QG-021 — Direct case links ignored archived parent-suite lifecycle
+
+- Severity: P1
+- Status: RESOLVED in the Phase 4 project/definition guard slice
+- Role: project manager or test manager with a bookmarked case URL
+- Preconditions: an active child case remains under an archived suite
+- Reproduction: open `/projects/{projectId}/suites/{suiteId}/cases/{caseId}` directly after archiving the suite
+- Expected: the case is inspectable but read-only; save, run, archive, and child restore controls are unavailable until the suite is restored
+- Previous actual: the case page fetched only the case and derived edit/run permission without loading the parent suite, so it could present enabled controls even though backend writes were rejected with `suite_archived`
+- Resolution: `CasePage` loads the suite lifecycle alongside the case and applies the same active-suite boundary before rendering controls. The archived-suite warning explains the recovery path and static steps remain available.
+- Verification: `frontend/src/features/projects/CasePage.test.tsx` passes the direct-link regression; backend `DefinitionService.activeSuite(...)` remains the authorization authority.
+- Regression layer: mounted frontend test + nested backend service/HTTP coverage + Playwright lifecycle matrix
+
 ### QG-013 — OTP resend leaks account state and is not consistently idempotent
 
 - Severity: P1

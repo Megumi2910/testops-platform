@@ -122,7 +122,7 @@ export function ProjectOverviewPage() {
       {healthGuidance && <Alert tone={healthGuidance.tone} title={healthGuidance.title}>
         <p>{healthGuidance.body}</p>
         {healthGuidance.details && <p><code>{healthGuidance.details}</code></p>}
-        {project.targetOrigin.toLowerCase().startsWith('http://localhost:') && <p><a href="https://github.com/Megumi2910/testops-platform/blob/codex/milestone-9-release-candidate/docs/operations/12-local-target-testing-guide.md" target="_blank" rel="noreferrer">Read the local-target setup guide</a> after updating the backend environment.</p>}
+        {project.targetOrigin.toLowerCase().startsWith('http://localhost:') && <p><a href="https://github.com/Megumi2910/testops-platform/blob/main/docs/operations/12-local-target-testing-guide.md" target="_blank" rel="noreferrer">Read the local-target setup guide</a> after updating the backend environment.</p>}
       </Alert>}
       <ol className="checklist">
         {checklist.map(item => <li key={item.label} className={item.done ? 'done' : ''}>

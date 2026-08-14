@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu, Phase 2 stale-bundle recovery, and the Phase 3 account-security slice are implemented and locally verified; lifecycle, authorization, execution, accessibility, and final browser gates remain ordered follow-up slices",
+  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu, Phase 2 stale-bundle recovery, Phase 3 account-security, and the Phase 4 project/definition guard slice are implemented and locally verified; authorization, execution, accessibility, and final browser gates remain ordered follow-up slices",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -497,6 +497,14 @@
     {
       "path": "docs/testing/74-phase3-account-security.md",
       "role": "Phase 3 account password, Google identity, session, deep-link, and accessibility regression evidence"
+    },
+    {
+      "path": "docs/implementation/66-phase4-project-definition-guards.md",
+      "role": "Phase 4 direct case-link lifecycle guard and canonical local-target guidance implementation"
+    },
+    {
+      "path": "docs/testing/75-phase4-project-definition-guards.md",
+      "role": "Phase 4 archived-parent suite read-only regression and live lifecycle test evidence"
     },
     {
       "path": "frontend/src/features/auth/AccountPages.test.tsx",

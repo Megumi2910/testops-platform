@@ -1,6 +1,6 @@
 # Milestone 10A — TestOps first-release completion
 
-## Current slice: Phase 3 account security and identity recovery
+## Current slice: Phase 4 project and definition workflow closure
 
 This document is the current release ledger for Milestone 10A. It replaces the
 Milestone 9 release-candidate document as the source of truth for work on the
@@ -257,3 +257,24 @@ security panels and Mailpit password/Google mutation journeys, remains part of
 the complete Phase 3 gate. The focused live Playwright auth/session matrix
 passed 3/3 against the rebuilt QA frontend, including real Mailpit verification
 and session revocation.
+
+## Phase 4 slice result — project and definition lifecycle guards
+
+**Status: PASS for this implementation slice.** Direct case URLs now load the
+parent suite lifecycle in parallel with the case and backend action metadata.
+When a suite is archived, the case page explains the parent lifecycle boundary,
+renders its steps read-only, and withholds save, run, archive, and child-restore
+controls until the suite is restored. This mirrors the backend
+`DefinitionService.activeSuite(...)` rule instead of waiting for a rejected
+mutation. The project overview's local-target recovery link now points to the
+canonical `main` documentation path rather than the retired release-candidate
+branch.
+
+Implementation and regression evidence are recorded in
+[`66-phase4-project-definition-guards.md`](../implementation/66-phase4-project-definition-guards.md)
+and [`75-phase4-project-definition-guards.md`](../testing/75-phase4-project-definition-guards.md).
+The focused lifecycle group passed 3 test files / 8 tests. A live
+`definition-lifecycle.spec.ts` run passed its first two journeys; the later two
+were stopped before project creation by the QA backend's registration rate limit
+(`429 Too many attempts`). That is an environment-fixture throttle and remains
+an isolated E2E rerun requirement, not a product-pass claim.

@@ -29,6 +29,10 @@ export function CasePage() {
   const client = useQueryClient()
   const queryKey = ['case', projectId, suiteId, caseId] as const
   const query = useQuery({ queryKey, queryFn: () => projectsApi.getCase(projectId, suiteId, caseId) })
+  // Direct case links must respect the parent suite lifecycle too. Loading
+  // the suite alongside the case keeps the editor read-only before a blocked
+  // mutation reaches the backend.
+  const suiteQuery = useQuery({ queryKey: projectKeys.suite(projectId, suiteId), queryFn: () => projectsApi.getSuite(projectId, suiteId) })
   const options = useQuery({ queryKey: ['platform', 'options'], queryFn: platformApi.options, staleTime: 60_000 })
   const [steps, setSteps] = useState<EditableStep[]>([])
   const [stepErrors, setStepErrors] = useState<Record<string, string>>({})
@@ -39,9 +43,10 @@ export function CasePage() {
   const form = useForm<CaseForm>()
   const definitions = useMemo(() => options.data?.stepActions ?? [], [options.data?.stepActions])
   const archived = query.data?.status === 'ARCHIVED'
+  const suiteArchived = suiteQuery.data?.status === 'ARCHIVED'
   const canManage = project.permissions.includes('DEFINITION_MANAGE') && project.status === 'ACTIVE'
-  const canEdit = canManage && !archived
-  const canRun = project.permissions.includes('EXECUTION_START') && project.status === 'ACTIVE' && !archived
+  const canEdit = canManage && !archived && !suiteArchived
+  const canRun = project.permissions.includes('EXECUTION_START') && project.status === 'ACTIVE' && !archived && !suiteArchived
 
   useEffect(() => {
     if (!query.data) return
@@ -125,8 +130,8 @@ export function CasePage() {
     },
   })
 
-  if (query.isPending || options.isPending) return <Card><LoadingState label="Loading case editor…" /></Card>
-  if (query.isError || !query.data || options.isError) {
+  if (query.isPending || suiteQuery.isPending || options.isPending) return <Card><LoadingState label="Loading case editor…" /></Card>
+  if (query.isError || suiteQuery.isError || !query.data || !suiteQuery.data || options.isError) {
     return <Alert tone="danger" title="Unable to load this case.">Retry after the backend is ready.</Alert>
   }
 
@@ -142,10 +147,12 @@ export function CasePage() {
         {canRun && <Button onClick={() => run.mutate()} busy={run.isPending} disabled={query.data.status !== 'READY'}>Run case</Button>}
         <Link className="button button-secondary" to={`/projects/${projectId}/executions`}>Runs</Link>
         {canEdit && <Button variant="danger" onClick={() => setTrashOpen(true)}>Move to trash</Button>}
-        {canManage && archived && <Button onClick={() => setRestoreOpen(true)}>Restore case</Button>}
+        {canManage && archived && !suiteArchived && <Button onClick={() => setRestoreOpen(true)}>Restore case</Button>}
       </div>
     </div>
-    {!canEdit && <Alert tone="warning" title="Read-only case.">Your project role does not allow definition changes.</Alert>}
+    {suiteArchived
+      ? <Alert tone="warning" title="This case belongs to a suite in Trash.">The archived suite keeps its cases and execution history available, but all child definitions are read-only until the suite is restored.</Alert>
+      : !canEdit && <Alert tone="warning" title="Read-only case.">Your project role does not allow definition changes.</Alert>}
     {run.isError && <Alert tone="danger" title="Unable to queue this case.">Save a valid READY case, then try again.</Alert>}
     {successMessage && <Alert tone="success" title={successMessage}>The latest definition is ready for your next action.</Alert>}
     {latestCase.isError && <Alert tone="danger" title="Unable to load the latest case.">Your changes are still in this editor. Check the connection and save again to retry the comparison.</Alert>}
