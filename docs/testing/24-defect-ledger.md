@@ -371,6 +371,17 @@ not as evidence against the shell/account-menu implementation.
 - Verification: focused backend permission/masking tests passed 20 tests; focused frontend permission/masking/member/route tests passed 3 files / 8 tests
 - Regression layer: backend service tests + mounted frontend route test + Phase 5 role browser matrix
 
+### QG-030 — Members list failure had no in-place recovery
+
+- Severity: P2
+- Status: RESOLVED in the Phase 5 member-list recovery slice
+- Preconditions: an authenticated project member opens `/projects/{id}/members` and the list request fails
+- Expected: the page explains the failure and offers a keyboard-operable retry without losing the project context or changing role controls
+- Previous actual: the page rendered a generic error sentence with no retry action, requiring a route reload
+- Resolution: `MembersPage` now renders an alert beside **Try again** and refetches the same React Query key in place; manager mutation controls and viewer read-only rows are unchanged
+- Verification: focused frontend member/variable/route group passed 3 files / 9 tests
+- Regression layer: mounted frontend test + project-role browser matrix + backend membership tests
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |

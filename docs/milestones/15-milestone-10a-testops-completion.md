@@ -311,3 +311,17 @@ and [`77-phase5-variable-permissions.md`](../testing/77-phase5-variable-permissi
 The focused backend group passed 20 tests and the focused frontend group
 passed 3 files / 8 tests. The broader Phase 5 tenant-isolation, final-admin,
 artifact, and Chrome DevTools release matrix remains open.
+
+## Phase 5 slice result — member-list recovery
+
+**Status: PASS for this implementation slice.** The Members page now exposes
+an in-place **Try again** action after a failed list request. Manager mutation
+controls and viewer read-only rendering remain unchanged, and project/backend
+membership guards continue to enforce tenant scope.
+
+Implementation and regression evidence are recorded in
+[`69-phase5-member-list-recovery.md`](../implementation/69-phase5-member-list-recovery.md)
+and [`78-phase5-member-list-recovery.md`](../testing/78-phase5-member-list-recovery.md).
+The focused group passed 3 files / 9 tests. The broader Phase 5 two-project
+browser matrix, final-admin coverage, artifacts, and Chrome DevTools gate
+remain open.

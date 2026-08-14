@@ -51,6 +51,19 @@ describe('MembersPage', () => {
     expect(screen.queryByRole('button', { name: 'Save role' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument()
   })
+
+  it('offers a retry when the member list request fails', async () => {
+    const membersRequest = vi.spyOn(projectsApi, 'members')
+      .mockRejectedValueOnce(new Error('temporary failure'))
+      .mockResolvedValueOnce(members)
+    renderMembers(project)
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Unable to load members.')
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
+
+    await waitFor(() => expect(screen.getByText('QA tester')).toBeInTheDocument())
+    expect(membersRequest).toHaveBeenCalledTimes(2)
+  })
 })
 
 function renderMembers(contextProject: Project) {

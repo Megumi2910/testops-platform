@@ -117,7 +117,7 @@ export function MembersPage() {
       <h2>Members</h2>
       {error && <Alert tone="danger" title="Membership update failed.">{errorMessage}</Alert>}
       {query.isPending && <LoadingState label="Loading members…" />}
-      {query.isError && <Alert tone="danger" title="Unable to load members.">Try again after the backend is ready.</Alert>}
+      {query.isError && <div className="inline-actions"><Alert tone="danger" title="Unable to load members.">The member list could not be loaded.</Alert><Button type="button" variant="secondary" onClick={() => void query.refetch()}>Try again</Button></div>}
       {query.data?.length
         ? <ul className="resource-list">{query.data.map(member => <MemberListItem key={member.userId} member={member} canManage={canManage}
             busy={update.isPending || remove.isPending}
