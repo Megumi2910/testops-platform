@@ -13,8 +13,9 @@ The defect entries below preserve their original IDs, evidence, and regression
 owners. For the current Milestone 10A release decision, use the [completion
 ledger](../milestones/15-milestone-10a-testops-completion.md): a historical
 resolution is not a substitute for rebuilding the merged revision and rerunning
-the browser gate. QG-005 (form metadata) and QG-010 (stale lazy chunks) remain
-active. The public repository's GitHub secret-scanning endpoint is unavailable,
+the browser gate. QG-005 (form metadata) is resolved in source. QG-010 (stale
+lazy chunks) has source-level recovery coverage, while the two-image deployment
+and live browser evidence remain open. The public repository's GitHub secret-scanning endpoint is unavailable,
 so the Phase 0 local audit is recorded as a compensating control rather than a
 claim that hosted scanning ran.
 
@@ -138,7 +139,7 @@ not as evidence against the shell/account-menu implementation.
 - Reproduction: navigate from the stale tab after the new image starts
 - Expected: one controlled reload or branded recovery boundary
 - Actual (before Phase 1): the browser requests a removed hashed chunk, receives `404`, and React Router renders its default unexpected-error page
-- Phase 1 slice update: the root router now renders a branded recovery page with safe reload/readiness actions and no stack details. Phase 2 now adds revision-aware lazy imports, one automatic reload per route/revision, and a retained-tab chunk-failure regression. A full two-image A/B deployment swap and live Chrome DevTools proof remain operational follow-ups.
+- Phase 1 slice update: the root router now renders a branded recovery page with safe reload/readiness actions and no stack details. Phase 2 now adds revision-aware lazy imports, one automatic reload per route/revision, recognition of the Vite `error loading dynamically imported module` variant, and a manual retry that clears the current marker. A full two-image A/B deployment swap and live Chrome DevTools proof remain operational follow-ups.
 - Likely subsystem: lazy-import recovery and root route error boundary
 - Regression layer: lazy-import unit test + retained-tab Playwright smoke + deployment smoke with a rebuilt browser session
 

@@ -8,11 +8,28 @@ export const applicationRevision = import.meta.env.VITE_APP_REVISION || 'develop
 
 export function isChunkLoadError(error: unknown) {
   if (!(error instanceof Error)) return false
-  return /chunkloaderror|failed to fetch dynamically imported module|importing a module script failed|unable to preload css|module script/i.test(error.message)
+  return /chunkloaderror|failed to fetch dynamically imported module|error loading dynamically imported module|importing a module script failed|unable to preload css|module script/i.test(error.message)
 }
 
 function recoveryKey(route: string) {
   return `${recoveryKeyPrefix}:${applicationRevision}:${route}`
+}
+
+/**
+ * Clear the one-time marker used by automatic stale-bundle recovery. The
+ * branded recovery page calls this before an operator-initiated retry so a
+ * deployment that has just finished can be loaded deliberately without
+ * being blocked by the previous failed attempt.
+ */
+export function clearChunkRecoveryMarker(
+  route = window.location.pathname + window.location.search + window.location.hash,
+) {
+  try {
+    window.sessionStorage.removeItem(recoveryKey(route))
+  } catch {
+    // Storage can be unavailable in privacy-restricted contexts. A manual
+    // reload remains safe even when there is no marker to clear.
+  }
 }
 
 /**

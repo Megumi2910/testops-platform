@@ -1,6 +1,6 @@
 import { isRouteErrorResponse, Link, useRouteError } from 'react-router-dom'
 
-import { applicationRevision, isChunkLoadError } from './lazyWithRecovery'
+import { applicationRevision, clearChunkRecoveryMarker, isChunkLoadError } from './lazyWithRecovery'
 
 function describeRouteError(error: unknown) {
   if (isRouteErrorResponse(error)) {
@@ -16,6 +16,10 @@ function describeRouteError(error: unknown) {
 export function RouteErrorPage() {
   const error = useRouteError()
   const revision = applicationRevision === 'development' ? undefined : applicationRevision
+  const reloadApplication = () => {
+    clearChunkRecoveryMarker()
+    window.location.reload()
+  }
   return (
     <main className="route-error-page" aria-labelledby="route-error-title">
       <section className="card route-error-card">
@@ -23,7 +27,7 @@ export function RouteErrorPage() {
         <h1 id="route-error-title">We couldn’t load this page</h1>
         <p>{describeRouteError(error)}</p>
         <div className="inline-actions">
-          <button className="button" type="button" onClick={() => window.location.reload()}>Reload application</button>
+          <button className="button" type="button" onClick={reloadApplication}>Reload application</button>
           <Link className="button button-secondary" to="/">Return to readiness</Link>
         </div>
         {revision && <p className="route-error-revision">Build revision: <code>{revision}</code></p>}

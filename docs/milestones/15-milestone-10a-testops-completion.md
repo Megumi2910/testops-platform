@@ -455,6 +455,16 @@ semantic tokens. Focused mounted coverage passes 2 files / 3 tests. The
 complete frontend gate and rebuilt Chrome DevTools route matrix remain the
 publication checks for this slice.
 
+### Phase 2 stale-chunk manual recovery follow-up
+
+QG-010 now has source-level recovery coverage for the Vite/Chromium
+`error loading dynamically imported module` variant. The branded recovery page
+clears only the current route/revision's automatic-retry marker before a manual
+reload, preventing an automatic loop while allowing an operator to retry after
+a deployment or proxy/cache correction. Focused lazy-loader and route-error
+tests pass 2 files / 4 tests. The two-image deployment swap and live Chrome
+DevTools retained-tab evidence remain open release-gate work.
+
 ## Phase 5 CI remediation — administrator wording and reset handoff
 
 The first published administrator-conflict slice exposed an enabled-E2E

@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu, Phase 2 stale-bundle recovery, Phase 3 account-security, Phase 4 project/definition guards, Phase 5 administration-list, variable-permission, member-recovery, stale-membership-recovery, administrator-conflict, CI auth-recovery-remediation, nested-isolation, and active-session-context slices are implemented and verified; Phase 6 execution retry-recovery and Phase 7 accessible artifact-preview, authentication field-error, and TestOps form-autocomplete slices are implemented and verified by local gates and CI run 31863227868, while live Chrome DevTools release gates remain ordered follow-up slices",
+  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu, Phase 2 stale-bundle recovery and manual retry, Phase 3 account-security, Phase 4 project/definition guards, Phase 5 administration-list, variable-permission, member-recovery, stale-membership-recovery, administrator-conflict, CI auth-recovery-remediation, nested-isolation, and active-session-context slices are implemented and verified; Phase 6 execution retry-recovery and Phase 7 accessible artifact-preview, authentication field-error, and TestOps form-autocomplete slices are implemented and verified by local gates and CI run 31863227868, while two-image deployment swap and live Chrome DevTools release gates remain ordered follow-up slices",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -609,6 +609,14 @@
     {
       "path": "docs/testing/87-phase7-testops-form-autocomplete.md",
       "role": "Phase 7 TestOps form metadata regression evidence"
+    },
+    {
+      "path": "docs/implementation/79-phase2-stale-chunk-manual-recovery.md",
+      "role": "Phase 2 stale lazy-chunk recognition and manual recovery implementation"
+    },
+    {
+      "path": "docs/testing/88-phase2-stale-chunk-manual-recovery.md",
+      "role": "Phase 2 stale lazy-chunk manual recovery regression evidence"
     },
     {
       "path": "frontend/e2e/phase5-role-matrix.spec.ts",
