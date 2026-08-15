@@ -39,6 +39,16 @@ the backend problem contract already normalizes field paths. This keeps the
 change local, avoids duplicate validation rules, and leaves project forms free
 to use their existing React Hook Form `Field` component.
 
+## Verification evidence
+
+Implementation commit `6af07d1` passed remote CI run
+[`31863227868`](https://github.com/Megumi2910/testops-platform/actions/runs/31863227868).
+All six jobs passed: frontend, backend, containers, enabled E2E,
+local-target-disabled E2E, and browser-crash E2E. GitHub also emitted only a
+non-blocking Node.js 20 deprecation annotation for `actions/upload-artifact`.
+The live Chrome DevTools form and viewport matrix remains a separate release
+gate.
+
 ## Failure and recovery behavior
 
 - A malformed or rejected request still renders the existing sanitized alert.
@@ -57,4 +67,3 @@ to use their existing React Hook Form `Field` component.
 - `frontend/src/features/auth/AuthPages.tsx`
 - `frontend/src/lib/api.ts` (`ApiError.fieldErrors`)
 - `frontend/src/features/auth/AuthPages.test.tsx`
-

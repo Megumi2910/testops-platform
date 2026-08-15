@@ -27,9 +27,13 @@ npm test -- --run                                      PASS (21 files / 67 tests
 npm run build                                           PASS
 ```
 
-The pushed implementation commit's CI run is recorded in the milestone
-document after publication. The live Chrome DevTools route/role/viewport
-matrix remains a separate release gate.
+The implementation commit `6af07d1` passed remote CI run
+[`31863227868`](https://github.com/Megumi2910/testops-platform/actions/runs/31863227868).
+All six jobs passed: frontend, backend, containers, enabled E2E,
+local-target-disabled E2E, and browser-crash E2E. The run included only a
+non-blocking Node.js 20 deprecation annotation for `actions/upload-artifact`.
+The live Chrome DevTools route/role/viewport matrix remains a separate release
+gate.
 
 ## Regression ownership
 
@@ -39,4 +43,3 @@ matrix remains a separate release gate.
 - Browser follow-up: verify focus placement, native validation, screen-reader
   announcements, and mobile keyboard behavior for login, register, verify, and
   reset routes.
-

@@ -439,9 +439,12 @@ Implementation and regression evidence are recorded in
 [`77-phase7-auth-field-error-accessibility.md`](../implementation/77-phase7-auth-field-error-accessibility.md)
 and [`86-phase7-auth-field-error-accessibility.md`](../testing/86-phase7-auth-field-error-accessibility.md).
 The focused test passes 6 tests; the full frontend suite passes 21 files / 67
-tests, with lint, typecheck, and build also passing locally. Remote CI evidence
-is recorded after publication; the live Chrome DevTools form and viewport
-matrix remains open.
+tests, with lint, typecheck, and build also passing locally. Remote CI run
+[`31863227868`](https://github.com/Megumi2910/testops-platform/actions/runs/31863227868)
+passed all six jobs (frontend, backend, containers, enabled E2E,
+local-target-disabled E2E, and browser-crash E2E). The run emitted only a
+non-blocking Node.js 20 deprecation annotation for `actions/upload-artifact`;
+the live Chrome DevTools form and viewport matrix remains open.
 
 ## Phase 5 CI remediation — administrator wording and reset handoff
 

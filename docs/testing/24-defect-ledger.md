@@ -497,7 +497,11 @@ not as evidence against the shell/account-menu implementation.
   `ApiError.fieldErrors` to the matching control while retaining a sanitized
   page-level alert
 - Verification: `AuthPages.test.tsx` proves an invalid reset code is announced
-  beside the input and that the input points to its error description
+  beside the input and that the input points to its error description. Local
+  frontend gates passed, and CI run
+  [`31863227868`](https://github.com/Megumi2910/testops-platform/actions/runs/31863227868)
+  passed all six required jobs; the live Chrome DevTools form and viewport
+  matrix remains open
 - Regression layer: mounted authentication tests plus Chrome DevTools form and
   keyboard matrix
 
