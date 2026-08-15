@@ -21,10 +21,10 @@ category. Unknown categories intentionally use the safe generic fallback.
 
 | Gate | Result |
 | --- | --- |
-| Focused execution tests | PASS — 7 tests |
+| Focused execution tests | PASS — 8 tests |
 | Frontend lint | PASS |
 | Frontend typecheck | PASS |
-| Frontend unit suite | PASS — 21 files / 74 tests |
+| Frontend unit suite | PASS — 21 files / 75 tests |
 | Frontend production build | PASS |
 | Diff whitespace check | PASS |
 
@@ -40,8 +40,12 @@ page. The failure was deterministic and unrelated to target reachability.
 The correction keeps the case-specific explanation and recovery action but
 suppresses the repeated case category label when it matches the execution
 category. A mounted regression now asserts that the label is rendered once.
-The replacement commit must pass the full six-job workflow before this slice
-is considered CI-verified.
+The replacement run
+[`31868169503`](https://github.com/Megumi2910/testops-platform/actions/runs/31868169503)
+passed all six jobs: frontend, backend, Compose health, enabled E2E,
+local-target-disabled E2E, and browser-crash E2E. The slice is therefore
+CI-verified; the live Chrome DevTools category matrix remains a separate
+release-gate activity.
 
 ## Manual Chrome DevTools checklist
 

@@ -63,13 +63,19 @@ assertion case guidance, failed-step rendering, and the existing retry,
 rerun, cancellation, and artifact flows.
 
 ```text
-npm test -- --run src/features/executions/ExecutionPages.test.tsx  # 7 tests
+npm test -- --run src/features/executions/ExecutionPages.test.tsx  # 8 tests
 npm run lint
 npm run typecheck
-npm test -- --run                                             # 21 files / 74 tests
+npm test -- --run                                             # 21 files / 75 tests
 npm run build
 git diff --check
 ```
+
+The replacement GitHub Actions run
+[`31868169503`](https://github.com/Megumi2910/testops-platform/actions/runs/31868169503)
+passed all six required jobs, including the enabled E2E matrix. It verifies
+that the de-duplicated category label works in the rebuilt Compose runtime,
+not only in the mounted frontend test.
 
 ## Follow-up
 

@@ -249,15 +249,19 @@ and retains the case recovery text so browser locators remain unambiguous.
 Implementation and regression evidence are recorded in
 [`82-phase6-failure-guidance.md`](../implementation/82-phase6-failure-guidance.md)
 and [`91-phase6-failure-guidance.md`](../testing/91-phase6-failure-guidance.md).
-The focused execution suite passes 7 tests; the complete frontend suite passes
-21 files / 74 tests, with lint, typecheck, and production build passing. The
+The focused execution suite passes 8 tests; the complete frontend suite passes
+21 files / 75 tests, with lint, typecheck, and production build passing. The
 rebuilt-runtime Chrome DevTools category matrix remains open.
 
 The first implementation push exposed a deterministic enabled-E2E regression:
 the same `TARGET_UNREACHABLE` category was labelled at both execution and case
 level, causing a strict Playwright locator to find two matches. The correction
-keeps both recovery explanations but renders one shared diagnostic label; the
-replacement CI run is required to close the slice.
+keeps both recovery explanations but renders one shared diagnostic label. The
+replacement CI run
+[`31868169503`](https://github.com/Megumi2910/testops-platform/actions/runs/31868169503)
+passed all six required jobs, including enabled E2E, so this source and CI
+slice is closed. The rebuilt-runtime Chrome DevTools category matrix remains
+open as release-gate evidence.
 
 ## Phase 2 slice result — revision-aware stale-bundle recovery
 
