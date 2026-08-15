@@ -263,6 +263,23 @@ passed all six required jobs, including enabled E2E, so this source and CI
 slice is closed. The rebuilt-runtime Chrome DevTools category matrix remains
 open as release-gate evidence.
 
+## Phase 6 slice result — dashboard panel recovery
+
+**Status: PASS for this source and mounted-test slice.** Dashboard summary,
+recent-failure, and infrastructure-category queries now render independent
+error states with panel-specific retry controls. A failed recent-failures
+request no longer presents a misleading green “Clear” badge, and successful
+panels remain visible while another panel is retried.
+
+Implementation and regression evidence are recorded in
+[`83-phase6-dashboard-panel-recovery.md`](../implementation/83-phase6-dashboard-panel-recovery.md)
+and [`92-phase6-dashboard-panel-recovery.md`](../testing/92-phase6-dashboard-panel-recovery.md).
+The focused dashboard suite passes 4 tests; the full frontend suite passes 21
+files / 76 tests, with lint, typecheck, and production build passing. The
+replacement CI run for this documentation update will be recorded after the
+implementation commit. The rebuilt-runtime Chrome DevTools dashboard matrix
+remains open as release-gate evidence.
+
 ## Phase 2 slice result — revision-aware stale-bundle recovery
 
 **Status: PASS for this implementation slice.** Lazy route imports now pass
@@ -481,7 +498,9 @@ Phase 7 live accessibility/browser matrix remain open.
 uses a named dialog region with initial focus on **Close preview**, Escape
 handling, a contained Tab cycle, and focus restoration to the invoking
 artifact button. The existing inline preview, artifact retry behavior, and
-backend evidence policy are unchanged.
+backend evidence policy are unchanged. The close-control handoff now uses a
+layout effect so fast artifact responses cannot expose a visible dialog before
+its initial focus is installed.
 
 Implementation and local regression evidence are recorded in
 [`76-phase7-artifact-preview-dialog.md`](../implementation/76-phase7-artifact-preview-dialog.md)

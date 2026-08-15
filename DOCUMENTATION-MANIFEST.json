@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu and keyboard navigation, Phase 2 stale-bundle recovery and manual retry, Phase 3 account-security, Phase 4 project/definition guards, Phase 5 administration-list, variable-permission, member-recovery, stale-membership-recovery, administrator-conflict, CI auth-recovery-remediation, nested-isolation, and active-session-context slices are implemented and verified; Phase 6 execution retry-recovery, rerun/cancellation recovery, and categorized failure guidance, and Phase 7 accessible artifact-preview, authentication field-error, and TestOps form-autocomplete slices are implemented and verified, including replacement CI run 31868169503; the rebuilt two-image deployment swap and live Chrome DevTools release gates remain ordered follow-up slices",
+  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu and keyboard navigation, Phase 2 stale-bundle recovery and manual retry, Phase 3 account-security, Phase 4 project/definition guards, Phase 5 administration-list, variable-permission, member-recovery, stale-membership-recovery, administrator-conflict, CI auth-recovery-remediation, nested-isolation, and active-session-context slices are implemented and verified; Phase 6 execution retry-recovery, rerun/cancellation recovery, categorized failure guidance, and dashboard panel recovery, and Phase 7 accessible artifact-preview, authentication field-error, and TestOps form-autocomplete slices are implemented and verified, including replacement CI run 31868169503; the rebuilt two-image deployment swap and live Chrome DevTools release gates remain ordered follow-up slices",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -93,6 +93,14 @@
     {
       "path": "docs/testing/91-phase6-failure-guidance.md",
       "role": "Execution failure-category regression evidence and Chrome DevTools checklist"
+    },
+    {
+      "path": "docs/implementation/83-phase6-dashboard-panel-recovery.md",
+      "role": "Independent dashboard panel error states and retry implementation"
+    },
+    {
+      "path": "docs/testing/92-phase6-dashboard-panel-recovery.md",
+      "role": "Dashboard panel retry regression evidence and Chrome DevTools checklist"
     },
     {
       "path": "docs/implementation/18-feature-implementation-handbook.md",

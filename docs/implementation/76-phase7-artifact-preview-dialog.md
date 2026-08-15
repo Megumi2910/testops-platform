@@ -26,6 +26,11 @@ The dialog contains no secret or server error text. Screenshot suppression and
 artifact authorization continue to be decided by the backend and worker; this
 slice changes presentation and keyboard semantics only.
 
+The focus handoff uses React's `useLayoutEffect` so the close control receives
+focus synchronously when the dialog is mounted. This prevents a timing race in
+mounted tests and in fast keyboard activation where the dialog is visible
+before a later passive effect has run.
+
 ## Source anchors
 
 - `frontend/src/features/executions/ExecutionPages.tsx`

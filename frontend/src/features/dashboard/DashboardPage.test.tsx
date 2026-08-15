@@ -55,4 +55,37 @@ describe('DashboardPage', () => {
     expect(screen.getByTestId('location')).toHaveTextContent('range=90')
     await waitFor(() => expect(summary).toHaveBeenCalledWith('2026-05-14T12:00:00.000Z', '2026-08-12T12:00:00.000Z'))
   })
+
+  it('keeps panel failures independent and retries only the selected panel', async () => {
+    const summary = vi.spyOn(dashboardApi, 'summary')
+      .mockRejectedValueOnce(new Error('summary unavailable'))
+      .mockResolvedValueOnce({ totalExecutions: 1, passedCases: 1, failedCases: 0, infrastructureErrors: 0, functionalPassRate: 1, infrastructureErrorRate: 0, from: '', to: '' })
+    const recent = vi.spyOn(dashboardApi, 'recent')
+      .mockRejectedValueOnce(new Error('recent unavailable'))
+      .mockResolvedValueOnce([])
+    const infrastructure = vi.spyOn(dashboardApi, 'infrastructure')
+      .mockRejectedValueOnce(new Error('infrastructure unavailable'))
+      .mockResolvedValueOnce([])
+    renderDashboard()
+
+    expect(await screen.findByRole('button', { name: 'Retry pass-rate reporting' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Retry recent failures' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Retry infrastructure categories' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retry recent failures' }))
+    await waitFor(() => expect(recent).toHaveBeenCalledTimes(2))
+    expect(screen.getByRole('heading', { name: 'Recent failures' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Retry recent failures' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Retry pass-rate reporting' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Retry infrastructure categories' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retry pass-rate reporting' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Retry infrastructure categories' }))
+    await waitFor(() => {
+      expect(summary).toHaveBeenCalledTimes(2)
+      expect(infrastructure).toHaveBeenCalledTimes(2)
+    })
+    expect(screen.getByText('100%')).toBeInTheDocument()
+    expect(screen.getByText('No infrastructure errors')).toBeInTheDocument()
+  })
 })

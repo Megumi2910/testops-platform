@@ -24,12 +24,15 @@ restoration deterministic in jsdom and prevents a false green result caused by
 
 ```text
 cd frontend
-npm test -- --run src/features/executions/ExecutionPages.test.tsx   PASS (3 tests)
+npm test -- --run src/features/executions/ExecutionPages.test.tsx   PASS (8 tests)
 npm run lint                                                     PASS
 npm run typecheck                                                PASS
-npm test -- --run                                               PASS (21 files / 66 tests)
+npm test -- --run                                               PASS (21 files / 76 tests)
 npm run build                                                    PASS
 ```
+
+The dialog focus handoff uses `useLayoutEffect`, making the initial focus
+assertion deterministic even when the artifact request resolves immediately.
 
 Remote CI run
 [`31862272093`](https://github.com/Megumi2910/testops-platform/actions/runs/31862272093)
