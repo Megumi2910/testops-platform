@@ -17,6 +17,7 @@ and browser-crash E2E. The enabled E2E suite found:
 | Focused AuthPages and AdminUsersPage tests | 2 files, 8 tests passed |
 | Administrator conflict message | Stable phrase retained; recovery action included |
 | Reset handoff | Email carried through a non-secret query parameter |
+| Browser URL assertion | Accepts `/login` with the documented `email` query |
 | Password field | Not persisted or placed in the URL |
 | Browser regression | Must be rerun in the next CI workflow before this slice is closed |
 

@@ -96,7 +96,7 @@ test('verified account can reset its password through the Mailpit code', async (
   await page.getByRole('button', { name: 'Reset password' }).click()
   await expect(page.getByRole('status')).toContainText('Password reset')
   await page.getByRole('link', { name: 'Back to sign in' }).click()
-  await expect(page).toHaveURL(/\/login$/)
+  await expect(page).toHaveURL(/\/login(?:\?.*)?$/)
   const loginEmail = page.getByRole('textbox', { name: 'Email' })
   await loginEmail.fill(email)
   await expect(loginEmail).toHaveValue(email)

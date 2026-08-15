@@ -43,5 +43,5 @@ user returns to Sign in.
   prefilled and the password empty.
 - The reset flow remains generic for unknown accounts and continues to use
   server retry windows.
-- The browser suite must pass without a permanently failed test or a flaky
-  first attempt.
+- The browser suite accepts the intentional `/login?email=...` handoff and
+  must pass without a permanently failed test or a flaky first attempt.
