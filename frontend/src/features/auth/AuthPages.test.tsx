@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { AuthContext, type AuthContextValue } from './AuthContext'
 import { LoginPage, OAuthCallbackPage, PasswordResetPage, VerifyEmailPage } from './AuthPages'
 import { authApi } from './api'
+import { ApiError } from '../../lib/api'
 
 describe('VerifyEmailPage', () => {
   it('uses the server retry window to disable repeated resend requests', async () => {
@@ -51,6 +52,8 @@ describe('Google authentication', () => {
     }
     render(<MemoryRouter initialEntries={['/login']}><AuthContext.Provider value={context}><LoginPage /></AuthContext.Provider></MemoryRouter>)
     expect(screen.getByRole('link', { name: 'Continue with Google' })).toHaveAttribute('href', '/oauth2/authorization/google')
+    expect(screen.getByLabelText('Email')).toHaveAttribute('autocomplete', 'email')
+    expect(screen.getByLabelText('Password')).toHaveAttribute('autocomplete', 'current-password')
   })
 
   it('keeps provider errors generic on the callback page', async () => {
@@ -61,6 +64,28 @@ describe('Google authentication', () => {
 })
 
 describe('PasswordResetPage', () => {
+  it('associates server reset-code errors with the invalid field', async () => {
+    vi.spyOn(authApi, 'requestPasswordReset').mockResolvedValue({
+      message: 'If the account can be recovered, a reset code has been sent',
+      nextResendAt: '2026-08-12T12:00:30Z',
+      retryAfterSeconds: 0,
+    })
+    vi.spyOn(authApi, 'confirmPasswordReset').mockRejectedValue(new ApiError(400, 'The reset code is invalid.', { errors: { otp: 'Enter the six-digit code from your email.' } }))
+    render(<MemoryRouter initialEntries={['/password-reset']}><PasswordResetPage /></MemoryRouter>)
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Email' }), { target: { value: 'qa@example.com' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Send reset code' }))
+    await screen.findByRole('textbox', { name: 'Reset code' })
+    fireEvent.change(screen.getByRole('textbox', { name: 'Reset code' }), { target: { value: '123456' } })
+    fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'new-correct-horse-battery-staple' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Reset password' }))
+
+    const otp = await screen.findByRole('textbox', { name: 'Reset code' })
+    await waitFor(() => expect(otp).toHaveAttribute('aria-invalid', 'true'))
+    expect(otp).toHaveAttribute('aria-describedby', 'reset-otp-error')
+    expect(screen.getByText('Enter the six-digit code from your email.')).toBeVisible()
+  })
+
   it('preserves the reset email when returning to sign in', async () => {
     const context: AuthContextValue = {
       user: null,

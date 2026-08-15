@@ -484,6 +484,23 @@ not as evidence against the shell/account-menu implementation.
 - Regression layer: mounted React test plus Chrome DevTools accessibility and
   responsive matrix
 
+### QG-038 — Authentication field errors were not associated with controls
+
+- Severity: P2
+- Status: RESOLVED in the Phase 7 auth-field accessibility slice
+- Preconditions: a login, verification, or password-reset request returns a
+  structured field violation
+- Previous actual: the page showed a generic alert, but the affected input had
+  no stable id, invalid state, or description relationship
+- Resolution: `AuthField` supplies stable labels, standard autocomplete tokens,
+  `aria-invalid`, and `aria-describedby`; `AuthPages` maps normalized
+  `ApiError.fieldErrors` to the matching control while retaining a sanitized
+  page-level alert
+- Verification: `AuthPages.test.tsx` proves an invalid reset code is announced
+  beside the input and that the input points to its error description
+- Regression layer: mounted authentication tests plus Chrome DevTools form and
+  keyboard matrix
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |

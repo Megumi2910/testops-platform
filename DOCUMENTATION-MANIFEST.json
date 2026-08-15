@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu, Phase 2 stale-bundle recovery, Phase 3 account-security, Phase 4 project/definition guards, Phase 5 administration-list, variable-permission, member-recovery, stale-membership-recovery, administrator-conflict, CI auth-recovery-remediation, nested-isolation, and active-session-context slices are implemented and verified; Phase 6 execution retry-recovery and Phase 7 accessible artifact-preview slices are implemented and verified by local gates plus CI run 31862272093, while live Chrome DevTools release gates remain ordered follow-up slices",
+  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu, Phase 2 stale-bundle recovery, Phase 3 account-security, Phase 4 project/definition guards, Phase 5 administration-list, variable-permission, member-recovery, stale-membership-recovery, administrator-conflict, CI auth-recovery-remediation, nested-isolation, and active-session-context slices are implemented and verified; Phase 6 execution retry-recovery and Phase 7 accessible artifact-preview plus authentication field-error slices are implemented and verified by local gates, while live Chrome DevTools release gates remain ordered follow-up slices",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -593,6 +593,14 @@
     {
       "path": "docs/testing/85-phase7-artifact-preview-dialog.md",
       "role": "Phase 7 screenshot preview keyboard and focus regression evidence"
+    },
+    {
+      "path": "docs/implementation/77-phase7-auth-field-error-accessibility.md",
+      "role": "Phase 7 authentication field labels, autocomplete, and structured error association implementation"
+    },
+    {
+      "path": "docs/testing/86-phase7-auth-field-error-accessibility.md",
+      "role": "Phase 7 authentication field-error accessibility regression evidence"
     },
     {
       "path": "frontend/e2e/phase5-role-matrix.spec.ts",

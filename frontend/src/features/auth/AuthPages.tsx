@@ -6,18 +6,24 @@ import { useAuth } from './AuthContext'
 import { ApiError } from '../../lib/api'
 import { Button } from '../../components/ui'
 import { safeReturnTo } from './returnTo'
+import { AuthField } from './AuthField'
 
 function useFormError() {
   const [error, setError] = useState('')
-  return { error, setError, clear: () => setError('') }
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  return { error, setError, fieldErrors, setFieldErrors, clear: () => { setError(''); setFieldErrors({}) } }
 }
 function problemMessage(caught: unknown, fallback: string) { if (caught instanceof ApiError && caught.correlationId) return `${caught.message} (reference ${caught.correlationId})`; return caught instanceof Error ? caught.message : fallback }
+function captureFormError(caught: unknown, fallback: string, setError: (message: string) => void, setFieldErrors: (errors: Record<string, string>) => void) {
+  if (caught instanceof ApiError) setFieldErrors(caught.fieldErrors)
+  setError(problemMessage(caught, fallback))
+}
 
 export function LoginPage() {
   const { login, providers, user } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { error, setError, clear } = useFormError()
+  const { error, setError, fieldErrors, setFieldErrors, clear } = useFormError()
   const [email, setEmail] = useState(searchParams.get('email') ?? '')
   const [password, setPassword] = useState('')
   const [pending, setPending] = useState(false)
@@ -25,12 +31,12 @@ export function LoginPage() {
   async function submit(event: FormEvent) {
     event.preventDefault(); clear()
     setPending(true)
-    try { await login(email, password); navigate(safeReturnTo(searchParams.get('returnTo'))) } catch (caught) { setError(problemMessage(caught, 'Unable to sign in')) } finally { setPending(false) }
+    try { await login(email, password); navigate(safeReturnTo(searchParams.get('returnTo'))) } catch (caught) { captureFormError(caught, 'Unable to sign in', setError, setFieldErrors) } finally { setPending(false) }
   }
   return <AuthCard title="Sign in" subtitle="Use your TestOps account to continue.">
     <form className="form-stack" onSubmit={submit}>
-      <label>Email<input name="email" type="email" autoComplete="email" spellCheck={false} required value={email} onChange={(event) => setEmail(event.target.value)} /></label>
-      <label>Password<input name="password" type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} /></label>
+      <AuthField id="login-email" label="Email" name="email" type="email" autoComplete="email" spellCheck={false} required value={email} onChange={(event) => setEmail(event.target.value)} error={fieldErrors.email} />
+      <AuthField id="login-password" label="Password" name="password" type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} error={fieldErrors.password} />
       {error && <p className="form-error" role="alert">{error}</p>}
       <Button type="submit" busy={pending}>Sign in</Button>
       <p className="form-help"><Link to="/password-reset">Forgot your password?</Link></p>
@@ -43,7 +49,7 @@ export function LoginPage() {
 export function RegisterPage() {
   const { register, providers } = useAuth()
   const navigate = useNavigate()
-  const { error, setError, clear } = useFormError()
+  const { error, setError, fieldErrors, setFieldErrors, clear } = useFormError()
   const [form, setForm] = useState({ email: '', displayName: '', password: '' })
   const [sent, setSent] = useState(false)
   const [pending, setPending] = useState(false)
@@ -51,14 +57,14 @@ export function RegisterPage() {
     event.preventDefault(); clear()
     setPending(true)
     try { await register(form.email, form.displayName, form.password); setSent(true); navigate(`/verify-email?email=${encodeURIComponent(form.email)}`) }
-    catch (caught) { setError(problemMessage(caught, 'Unable to register')) } finally { setPending(false) }
+    catch (caught) { captureFormError(caught, 'Unable to register', setError, setFieldErrors) } finally { setPending(false) }
   }
   if (!providers?.registrationEnabled && !sent) return <AuthCard title="Registration unavailable" subtitle="An administrator has not enabled new accounts yet." />
   return <AuthCard title="Create your account" subtitle="We will email a six-digit verification code before your first session.">
     <form className="form-stack" onSubmit={submit}>
-      <label>Display name<input name="displayName" autoComplete="name" required minLength={2} maxLength={100} value={form.displayName} onChange={(event) => setForm({ ...form, displayName: event.target.value })} /></label>
-      <label>Email<input name="email" type="email" autoComplete="email" spellCheck={false} required value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} /></label>
-      <label>Password<input name="password" type="password" autoComplete="new-password" minLength={12} required value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} /></label>
+      <AuthField id="register-display-name" label="Display name" name="displayName" autoComplete="name" required minLength={2} maxLength={100} value={form.displayName} onChange={(event) => setForm({ ...form, displayName: event.target.value })} error={fieldErrors.displayName} />
+      <AuthField id="register-email" label="Email" name="email" type="email" autoComplete="email" spellCheck={false} required value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} error={fieldErrors.email} />
+      <AuthField id="register-password" label="Password" name="password" type="password" autoComplete="new-password" minLength={12} required value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} error={fieldErrors.password} />
       {error && <p className="form-error" role="alert">{error}</p>}
       <Button type="submit" busy={pending}>Send verification code</Button>
       <p className="form-help">Already registered? <Link to="/login">Sign in</Link>.</p>
@@ -70,7 +76,7 @@ export function VerifyEmailPage() {
   const { verifyEmail, resendEmail, resendAuthenticatedEmail, user } = useAuth()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { error, setError, clear } = useFormError()
+  const { error, setError, fieldErrors, setFieldErrors, clear } = useFormError()
   const [email, setEmail] = useState(searchParams.get('email') ?? '')
   const [otp, setOtp] = useState('')
   const [message, setMessage] = useState('')
@@ -95,7 +101,7 @@ export function VerifyEmailPage() {
   async function verify(event: FormEvent) {
     event.preventDefault(); clear()
     setPending(true)
-    try { await verifyEmail(email, otp); navigate(returnTo) } catch (caught) { setError(caught instanceof Error ? caught.message : 'Unable to verify email') } finally { setPending(false) }
+    try { await verifyEmail(email, otp); navigate(returnTo) } catch (caught) { captureFormError(caught, 'Unable to verify email', setError, setFieldErrors) } finally { setPending(false) }
   }
   async function resend() {
     clear(); setMessage('')
@@ -105,12 +111,12 @@ export function VerifyEmailPage() {
       setRetryAfterSeconds(response.retryAfterSeconds)
       setMessage(response.message)
     }
-    catch (caught) { setError(caught instanceof Error ? caught.message : 'Unable to resend code') } finally { setResendPending(false) }
+    catch (caught) { captureFormError(caught, 'Unable to resend code', setError, setFieldErrors) } finally { setResendPending(false) }
   }
   return <AuthCard title="Verify your email" subtitle="Enter the six-digit code sent to your inbox. Codes expire after ten minutes.">
     <form className="form-stack" onSubmit={verify}>
-      <label>Email<input name="email" type="email" autoComplete="email" spellCheck={false} required value={email} onChange={(event) => setEmail(event.target.value)} /></label>
-      <label>Verification code<input name="otp" inputMode="numeric" autoComplete="one-time-code" spellCheck={false} pattern="[0-9]{6}" maxLength={6} required value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, ''))} /></label>
+      <AuthField id="verify-email" label="Email" name="email" type="email" autoComplete="email" spellCheck={false} required value={email} onChange={(event) => setEmail(event.target.value)} error={fieldErrors.email} />
+      <AuthField id="verify-otp" label="Verification code" name="otp" inputMode="numeric" autoComplete="one-time-code" spellCheck={false} pattern="[0-9]{6}" maxLength={6} required value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, ''))} error={fieldErrors.otp} />
       {error && <p className="form-error" role="alert">{error}</p>}
       {message && <p className="form-help" role="status">{message}</p>}
       <Button type="submit" busy={pending}>Verify and sign in</Button>
@@ -125,7 +131,7 @@ export function VerifyEmailPage() {
 export function PasswordResetPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { error, setError, clear } = useFormError()
+  const { error, setError, fieldErrors, setFieldErrors, clear } = useFormError()
   const [email, setEmail] = useState(searchParams.get('email') ?? '')
   const [otp, setOtp] = useState('')
   const [password, setPassword] = useState('')
@@ -143,24 +149,24 @@ export function PasswordResetPage() {
     try {
       const response = await authApi.requestPasswordReset(email)
       setMessage(response.message); setRetryAfterSeconds(response.retryAfterSeconds); setSent(true)
-    } catch (caught) { setError(problemMessage(caught, 'Unable to request a reset code')) } finally { setPending(false) }
+    } catch (caught) { captureFormError(caught, 'Unable to request a reset code', setError, setFieldErrors) } finally { setPending(false) }
   }
   async function confirm(event: FormEvent) {
     event.preventDefault(); clear(); setPending(true)
     try { await authApi.confirmPasswordReset({ email, otp, password }); setMessage('Password reset. You can now sign in.'); setSent(false); setOtp(''); setPassword('') }
-    catch (caught) { setError(problemMessage(caught, 'Unable to reset your password')) } finally { setPending(false) }
+    catch (caught) { captureFormError(caught, 'Unable to reset your password', setError, setFieldErrors) } finally { setPending(false) }
   }
   return <AuthCard title="Reset your password" subtitle="We will email a six-digit code to your verified account. Codes expire after ten minutes.">
     {!sent ? <form className="form-stack" onSubmit={requestCode}>
-      <label>Email<input name="email" type="email" autoComplete="email" spellCheck={false} required value={email} onChange={event => setEmail(event.target.value)} /></label>
+      <AuthField id="reset-request-email" label="Email" name="email" type="email" autoComplete="email" spellCheck={false} required value={email} onChange={event => setEmail(event.target.value)} error={fieldErrors.email} />
       {error && <p className="form-error" role="alert">{error}</p>}
       {message && <p className="form-help" role="status">{message}</p>}
       <Button type="submit" busy={pending}>Send reset code</Button>
       <p className="form-help"><Link to={`/login?email=${encodeURIComponent(email)}`}>Back to sign in</Link></p>
     </form> : <form className="form-stack" onSubmit={confirm}>
-      <label>Email<input name="email" type="email" autoComplete="email" spellCheck={false} required value={email} onChange={event => setEmail(event.target.value)} /></label>
-      <label>Reset code<input name="otp" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={otp} onChange={event => setOtp(event.target.value.replace(/\D/g, ''))} /></label>
-      <label>New password<input name="password" type="password" autoComplete="new-password" minLength={12} required value={password} onChange={event => setPassword(event.target.value)} /></label>
+      <AuthField id="reset-email" label="Email" name="email" type="email" autoComplete="email" spellCheck={false} required value={email} onChange={event => setEmail(event.target.value)} error={fieldErrors.email} />
+      <AuthField id="reset-otp" label="Reset code" name="otp" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={otp} onChange={event => setOtp(event.target.value.replace(/\D/g, ''))} error={fieldErrors.otp} />
+      <AuthField id="reset-password" label="New password" name="password" type="password" autoComplete="new-password" minLength={12} required value={password} onChange={event => setPassword(event.target.value)} error={fieldErrors.password} />
       {error && <p className="form-error" role="alert">{error}</p>}
       {message && <p className="form-help" role="status">{message}</p>}
       <Button type="submit" busy={pending}>Reset password</Button>

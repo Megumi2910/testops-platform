@@ -427,6 +427,22 @@ passes all six required jobs (frontend, backend, containers, enabled E2E,
 local-target-disabled E2E, and browser-crash E2E). The live Chrome DevTools
 desktop/tablet/320×800 accessibility and performance matrix remains open.
 
+## Phase 7 slice result — authentication field-error accessibility
+
+**Status: PASS for this implementation slice.** Public authentication inputs
+now use stable label associations and standard autocomplete tokens. Structured
+backend field violations are connected to the affected control with
+`aria-invalid` and `aria-describedby`, while the existing page-level alert
+remains sanitized and recoverable.
+
+Implementation and regression evidence are recorded in
+[`77-phase7-auth-field-error-accessibility.md`](../implementation/77-phase7-auth-field-error-accessibility.md)
+and [`86-phase7-auth-field-error-accessibility.md`](../testing/86-phase7-auth-field-error-accessibility.md).
+The focused test passes 6 tests; the full frontend suite passes 21 files / 67
+tests, with lint, typecheck, and build also passing locally. Remote CI evidence
+is recorded after publication; the live Chrome DevTools form and viewport
+matrix remains open.
+
 ## Phase 5 CI remediation — administrator wording and reset handoff
 
 The first published administrator-conflict slice exposed an enabled-E2E
