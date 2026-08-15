@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu, Phase 2 stale-bundle recovery, Phase 3 account-security, Phase 4 project/definition guards, and Phase 5 administration-list, variable-permission, member-recovery, stale-membership-recovery, administrator-conflict, CI auth-recovery-remediation, nested-isolation, and active-session-context slices are implemented and verified; execution, accessibility, and final browser gates remain ordered follow-up slices",
+  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu, Phase 2 stale-bundle recovery, Phase 3 account-security, Phase 4 project/definition guards, Phase 5 administration-list, variable-permission, member-recovery, stale-membership-recovery, administrator-conflict, CI auth-recovery-remediation, nested-isolation, and active-session-context slices are implemented and verified; the Phase 6 execution retry-recovery slice is implemented with local evidence while remote and browser gates remain ordered follow-up slices",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -573,6 +573,18 @@
     {
       "path": "docs/testing/83-phase5-session-context.md",
       "role": "Phase 5 active-session context regression evidence and focused test procedure"
+    },
+    {
+      "path": "docs/implementation/75-phase6-execution-retry-recovery.md",
+      "role": "Phase 6 execution list/detail and artifact retry-recovery implementation"
+    },
+    {
+      "path": "docs/testing/84-phase6-execution-retry-recovery.md",
+      "role": "Phase 6 execution retry-recovery regression evidence and rerun commands"
+    },
+    {
+      "path": "frontend/src/features/executions/ExecutionPages.test.tsx",
+      "role": "Phase 6 mounted execution list/detail and artifact retry regression tests"
     },
     {
       "path": "frontend/e2e/phase5-role-matrix.spec.ts",

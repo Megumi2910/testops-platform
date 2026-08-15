@@ -451,6 +451,19 @@ not as evidence against the shell/account-menu implementation.
 - Regression layer: mounted frontend account-center test; edge forwarding and
   session ownership remain in the backend/browser authentication gates
 
+### QG-036 — Execution evidence failures had no in-place recovery
+
+- Severity: P2
+- Status: RESOLVED in the Phase 6 execution retry-recovery slice
+- Preconditions: an authenticated member opens Runs or an execution detail
+  page while the backend or artifact storage is temporarily unavailable
+- Previous actual: list/detail errors offered only explanatory text, and a
+  failed screenshot/trace request had no user-facing state or retry path
+- Resolution: list and detail queries expose a pending-aware **Try again**
+  action; artifact requests show a sanitized error and retry the same artifact
+  identifier without leaving the page
+- Regression layer: mounted React tests plus the Phase 7 browser matrix
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |
