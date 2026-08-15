@@ -19,7 +19,7 @@ and browser-crash E2E. The enabled E2E suite found:
 | Reset handoff | Email carried through a non-secret query parameter |
 | Browser URL assertion | Accepts `/login` with the documented `email` query |
 | Password field | Not persisted or placed in the URL |
-| Browser regression | Must be rerun in the next CI workflow before this slice is closed |
+| Browser regression | CI run `31858093963` passed all six jobs; enabled E2E completed without failure or flake |
 
 Focused command:
 
@@ -39,7 +39,8 @@ Tests       8 passed
 4. Confirm the email is prefilled, the password is empty, and the URL contains
    no OTP or password.
 5. Run the complete enabled E2E suite and confirm there is no failed or flaky
-   test before continuing to the next Phase 5 slice.
+   test before continuing to the next Phase 5 slice. This was completed by CI
+   run `31858093963`.
 
 This remediation does not close the broader Milestone 10A browser, account,
 accessibility, or execution gates.

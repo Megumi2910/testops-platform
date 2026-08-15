@@ -368,5 +368,6 @@ placed in the URL.
 Implementation and evidence are recorded in
 [`72-ci-auth-recovery-remediation.md`](../implementation/72-ci-auth-recovery-remediation.md)
 and [`81-ci-auth-recovery-remediation.md`](../testing/81-ci-auth-recovery-remediation.md).
-The focused remediation suite passed 2 files / 8 tests; the full enabled E2E
-workflow must pass without flake before this slice is considered published.
+The focused remediation suite passed 2 files / 8 tests. CI run `31858093963`
+then passed all six jobs, including the enabled 67-test E2E workflow without a
+failure or flake.

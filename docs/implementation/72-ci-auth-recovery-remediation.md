@@ -45,3 +45,6 @@ user returns to Sign in.
   server retry windows.
 - The browser suite accepts the intentional `/login?email=...` handoff and
   must pass without a permanently failed test or a flaky first attempt.
+
+The corrected CI run `31858093963` passed all six jobs, including the enabled
+67-test Playwright suite, with no failed or flaky tests.

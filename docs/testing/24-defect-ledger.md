@@ -407,12 +407,12 @@ not as evidence against the shell/account-menu implementation.
 ### QG-033 — CI exposed administrator wording drift and password-reset handoff flake
 
 - Severity: P2
-- Status: FIXED locally; awaiting a clean enabled-E2E rerun
+- Status: RESOLVED in the CI auth-recovery remediation slice
 - Preconditions: administrator conflict browser assertion or password-reset completion followed by return to Sign in
 - Expected: stable final-admin wording remains discoverable; reset email survives the route transition without persisting credentials
 - Actual: the first message omitted the browser contract phrase; reset email state could be lost across navigation in one CI attempt
 - Resolution: retain the invariant phrase in the actionable message; carry only the email through `/login?email=...`, initialize the login field from it, and update the browser assertion to accept the documented query
-- Verification: AuthPages/AdminUsersPage focused suite passed 8/8; full CI rerun required
+- Verification: AuthPages/AdminUsersPage focused suite passed 8/8; CI run `31858093963` passed all six jobs and the enabled E2E suite without failure or flake
 - Regression layer: mounted frontend + enabled Playwright E2E + Mailpit recovery flow
 
 ## Coverage blockers
