@@ -58,7 +58,7 @@ describe('AdminUsersPage', () => {
 
     fireEvent.change(await screen.findByRole('combobox', { name: 'Platform role for qa@example.com' }), { target: { value: 'MEMBER' } })
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('Keep another active administrator active before demoting or disabling this account.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('The final active administrator cannot be demoted or disabled.')
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 })

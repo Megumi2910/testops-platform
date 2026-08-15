@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu, Phase 2 stale-bundle recovery, Phase 3 account-security, Phase 4 project/definition guards, and Phase 5 administration-list, variable-permission, member-recovery, stale-membership-recovery, and administrator-conflict slices are implemented and locally verified; membership isolation, execution, accessibility, and final browser gates remain ordered follow-up slices",
+  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu, Phase 2 stale-bundle recovery, Phase 3 account-security, Phase 4 project/definition guards, and Phase 5 administration-list, variable-permission, member-recovery, stale-membership-recovery, administrator-conflict, and CI auth-recovery-remediation slices are implemented and locally verified; the remediation awaits a clean enabled-E2E rerun while membership isolation, execution, accessibility, and final browser gates remain ordered follow-up slices",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -545,6 +545,14 @@
     {
       "path": "docs/testing/80-phase5-admin-conflict-guidance.md",
       "role": "Phase 5 final-active-administrator conflict and administration boundary regression evidence"
+    },
+    {
+      "path": "docs/implementation/72-ci-auth-recovery-remediation.md",
+      "role": "Phase 5 CI administrator wording stability and password-reset email handoff implementation"
+    },
+    {
+      "path": "docs/testing/81-ci-auth-recovery-remediation.md",
+      "role": "Phase 5 CI remediation diagnosis and administrator/password-recovery regression evidence"
     },
     {
       "path": "frontend/src/features/auth/AccountPages.test.tsx",

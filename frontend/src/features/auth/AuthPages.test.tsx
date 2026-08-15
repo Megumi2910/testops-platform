@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
 import { AuthContext, type AuthContextValue } from './AuthContext'
@@ -61,6 +61,31 @@ describe('Google authentication', () => {
 })
 
 describe('PasswordResetPage', () => {
+  it('preserves the reset email when returning to sign in', async () => {
+    const context: AuthContextValue = {
+      user: null,
+      providers: { enabled: true, registrationEnabled: true, emailVerificationEnabled: true, googleEnabled: false },
+      loading: false,
+      login: vi.fn(), register: vi.fn(), verifyEmail: vi.fn(), resendEmail: vi.fn(),
+      resendAuthenticatedEmail: vi.fn(), reloadUser: vi.fn(), logout: vi.fn(),
+    }
+    render(
+      <MemoryRouter initialEntries={['/password-reset']}>
+        <AuthContext.Provider value={context}>
+          <Routes>
+            <Route path="/password-reset" element={<PasswordResetPage />} />
+            <Route path="/login" element={<LoginPage />} />
+          </Routes>
+        </AuthContext.Provider>
+      </MemoryRouter>,
+    )
+
+    await fireEvent.change(screen.getByRole('textbox', { name: 'Email' }), { target: { value: 'qa@example.com' } })
+    fireEvent.click(screen.getByRole('link', { name: 'Back to sign in' }))
+
+    expect(screen.getByRole('textbox', { name: 'Email' })).toHaveValue('qa@example.com')
+  })
+
   it('moves from a generic reset request to the code form and confirms the new password', async () => {
     const request = vi.spyOn(authApi, 'requestPasswordReset').mockResolvedValue({
       message: 'If the account can be recovered, a reset code has been sent',

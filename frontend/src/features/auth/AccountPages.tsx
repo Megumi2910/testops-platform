@@ -13,7 +13,7 @@ type AdminUsersResponse = { content: AdminUser[]; page?: number; totalPages?: nu
 function adminMutationError(cause: unknown) {
   if (!(cause instanceof ApiError)) return 'Unable to update this user.'
   switch (cause.code) {
-    case 'final_active_admin': return 'Keep another active administrator active before demoting or disabling this account.'
+    case 'final_active_admin': return 'The final active administrator cannot be demoted or disabled. Keep another active administrator active before trying again.'
     case 'user_not_found': return 'This account no longer exists. Refresh the list and try again.'
     case 'invalid_platform_role': return 'Choose a supported platform role and try again.'
     case 'invalid_account_status': return 'Choose a supported account status and try again.'

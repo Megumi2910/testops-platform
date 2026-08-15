@@ -18,7 +18,7 @@ export function LoginPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { error, setError, clear } = useFormError()
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(searchParams.get('email') ?? '')
   const [password, setPassword] = useState('')
   const [pending, setPending] = useState(false)
   if (user) return <NavigateHome returnTo={searchParams.get('returnTo')} />
@@ -156,7 +156,7 @@ export function PasswordResetPage() {
       {error && <p className="form-error" role="alert">{error}</p>}
       {message && <p className="form-help" role="status">{message}</p>}
       <Button type="submit" busy={pending}>Send reset code</Button>
-      <p className="form-help"><Link to="/login">Back to sign in</Link></p>
+      <p className="form-help"><Link to={`/login?email=${encodeURIComponent(email)}`}>Back to sign in</Link></p>
     </form> : <form className="form-stack" onSubmit={confirm}>
       <label>Email<input name="email" type="email" autoComplete="email" spellCheck={false} required value={email} onChange={event => setEmail(event.target.value)} /></label>
       <label>Reset code<input name="otp" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={otp} onChange={event => setOtp(event.target.value.replace(/\D/g, ''))} /></label>
@@ -165,7 +165,7 @@ export function PasswordResetPage() {
       {message && <p className="form-help" role="status">{message}</p>}
       <Button type="submit" busy={pending}>Reset password</Button>
       <Button type="button" variant="secondary" disabled={retryAfterSeconds > 0 || pending} onClick={() => { setSent(false); setMessage('') }}>{retryAfterSeconds > 0 ? `Request again in ${retryAfterSeconds}s` : 'Request a new code'}</Button>
-      <p className="form-help"><button className="link-button" type="button" onClick={() => navigate('/login')}>Back to sign in</button></p>
+      <p className="form-help"><button className="link-button" type="button" onClick={() => navigate(`/login?email=${encodeURIComponent(email)}`)}>Back to sign in</button></p>
     </form>}
   </AuthCard>
 }

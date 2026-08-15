@@ -355,3 +355,18 @@ and [`80-phase5-admin-conflict-guidance.md`](../testing/80-phase5-admin-conflict
 The focused administrator suite passed 1 file / 3 tests. The broader Phase 5
 browser matrix, account permutations, artifacts, and Chrome DevTools gate
 remain open.
+
+## Phase 5 CI remediation — administrator wording and reset handoff
+
+The first published administrator-conflict slice exposed an enabled-E2E
+contract mismatch and a flaky password-reset return to Sign in. The UI now
+retains the stable `final active administrator` wording while adding the
+recovery action, and password-reset links preserve only the entered email in
+`/login?email=...`. Passwords, OTPs, tokens, and server details are never
+placed in the URL.
+
+Implementation and evidence are recorded in
+[`72-ci-auth-recovery-remediation.md`](../implementation/72-ci-auth-recovery-remediation.md)
+and [`81-ci-auth-recovery-remediation.md`](../testing/81-ci-auth-recovery-remediation.md).
+The focused remediation suite passed 2 files / 8 tests; the full enabled E2E
+workflow must pass without flake before this slice is considered published.
