@@ -463,7 +463,9 @@ clears only the current route/revision's automatic-retry marker before a manual
 reload, preventing an automatic loop while allowing an operator to retry after
 a deployment or proxy/cache correction. Focused lazy-loader and route-error
 tests pass 2 files / 4 tests. The two-image deployment swap and live Chrome
-DevTools retained-tab evidence remain open release-gate work.
+DevTools retained-tab evidence remain open release-gate work. Commit `9dd6465`
+passed all six required CI jobs in
+[`31865017062`](https://github.com/Megumi2910/testops-platform/actions/runs/31865017062).
 
 ## Phase 5 CI remediation — administrator wording and reset handoff
 

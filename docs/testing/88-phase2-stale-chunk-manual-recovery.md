@@ -22,6 +22,21 @@ publication gate. The Playwright retained-tab smoke verifies the current
 single-image failure simulation; the two-image deployment swap and Chrome
 DevTools retained-tab capture are still operational follow-ups.
 
+## Publication evidence
+
+Commit `9dd6465` passed the complete CI workflow in run
+[`31865017062`](https://github.com/Megumi2910/testops-platform/actions/runs/31865017062):
+
+- `frontend` — lint, typecheck, 68 unit tests, and production build: PASS
+- `backend` — Maven verification: PASS
+- `containers` — Compose configuration, build, and health smoke: PASS
+- `e2e` — enabled target suite: PASS
+- `e2e-local-disabled` — local-target policy suite: PASS
+- `e2e-browser-crash` — browser-crash recovery suite: PASS
+
+GitHub emitted only the existing non-blocking Node.js 20 deprecation
+annotation for `actions/upload-artifact@v4`.
+
 ## Regression ownership
 
 - Automatic marker and error recognition: `lazyWithRecovery.test.ts`

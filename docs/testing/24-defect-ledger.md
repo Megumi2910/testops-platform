@@ -139,7 +139,7 @@ not as evidence against the shell/account-menu implementation.
 - Reproduction: navigate from the stale tab after the new image starts
 - Expected: one controlled reload or branded recovery boundary
 - Actual (before Phase 1): the browser requests a removed hashed chunk, receives `404`, and React Router renders its default unexpected-error page
-- Phase 1 slice update: the root router now renders a branded recovery page with safe reload/readiness actions and no stack details. Phase 2 now adds revision-aware lazy imports, one automatic reload per route/revision, recognition of the Vite `error loading dynamically imported module` variant, and a manual retry that clears the current marker. A full two-image A/B deployment swap and live Chrome DevTools proof remain operational follow-ups.
+- Phase 1 slice update: the root router now renders a branded recovery page with safe reload/readiness actions and no stack details. Phase 2 now adds revision-aware lazy imports, one automatic reload per route/revision, recognition of the Vite `error loading dynamically imported module` variant, and a manual retry that clears the current marker. Local gates and CI run [`31865017062`](https://github.com/Megumi2910/testops-platform/actions/runs/31865017062) pass all six jobs. A full two-image A/B deployment swap and live Chrome DevTools proof remain operational follow-ups.
 - Likely subsystem: lazy-import recovery and root route error boundary
 - Regression layer: lazy-import unit test + retained-tab Playwright smoke + deployment smoke with a rebuilt browser session
 
