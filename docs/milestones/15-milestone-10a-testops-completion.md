@@ -281,6 +281,22 @@ Implementation commit `12ae233` passed all six required jobs in CI run
 including enabled E2E. The rebuilt-runtime Chrome DevTools dashboard matrix
 remains open as release-gate evidence.
 
+## Phase 6 slice result — daily dashboard trends
+
+**Status: PASS for this source and mounted-test slice.** The dashboard now
+consumes the existing tenant-scoped trends endpoint and presents exact UTC
+daily counts for passed, failed, and infrastructure-error cases in a semantic
+table. Trend loading, empty, error, and retry states remain independent from
+summary metrics, recent failures, and infrastructure categories.
+
+Implementation and regression evidence are recorded in
+[`84-phase6-dashboard-trends.md`](../implementation/84-phase6-dashboard-trends.md)
+and [`93-phase6-dashboard-trends.md`](../testing/93-phase6-dashboard-trends.md).
+The focused dashboard suite passes 4 tests; the full frontend suite passes 21
+files / 76 tests, with lint, typecheck, and production build passing. The
+rebuilt-runtime Chrome DevTools trend and responsive matrix remains open as
+release-gate evidence.
+
 ## Phase 2 slice result — revision-aware stale-bundle recovery
 
 **Status: PASS for this implementation slice.** Lazy route imports now pass
