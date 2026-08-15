@@ -415,6 +415,23 @@ not as evidence against the shell/account-menu implementation.
 - Verification: AuthPages/AdminUsersPage focused suite passed 8/8; CI run `31858093963` passed all six jobs and the enabled E2E suite without failure or flake
 - Regression layer: mounted frontend + enabled Playwright E2E + Mailpit recovery flow
 
+### QG-034 — Nested project/suite/case substitution lacked complete regression coverage
+
+- Severity: P1
+- Status: RESOLVED in source; remote browser/backend verification pending for this slice
+- Preconditions: an authenticated project member substitutes a suite or case UUID from another project or suite
+- Expected: the request returns a non-disclosing `404`, performs no definition mutation or queue write, and a later
+  legitimate case remains usable
+- Previous actual: source lookups were parent-scoped, but the release matrix only proved a foreign suite substitution;
+  foreign-case read, mutation, and queue paths were not independently guarded by regression tests
+- Resolution: `DefinitionSecurityTest` covers foreign-case reads and updates, `ExecutionServiceTest` covers foreign-case
+  queueing before the queue guard, and `phase5-role-matrix.spec.ts` exercises two real projects and READY cases through
+  the UI
+- Verification: frontend lint, typecheck, 20-file/62-test unit suite, production build, documentation links, and
+  Playwright test discovery passed. Focused backend and browser evidence must be recorded by the next Linux CI run
+  because the Windows Maven wrapper fails before Maven starts
+- Regression layer: backend service tests plus Playwright role/tenant matrix
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |

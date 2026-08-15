@@ -356,6 +356,24 @@ The focused administrator suite passed 1 file / 3 tests. The broader Phase 5
 browser matrix, account permutations, artifacts, and Chrome DevTools gate
 remain open.
 
+## Phase 5 slice result — nested tenant-isolation regression coverage
+
+**Status: PARTIAL pending remote verification.** The existing project-scoped
+suite and suite-scoped case guards were verified rather than rewritten. New
+backend tests cover foreign-case reads, updates, and queueing before any step,
+queue, or execution side effect. The role matrix now creates two real projects
+and READY cases, substitutes a foreign case UUID in a local URL, expects a
+non-disclosing `404`, and proves the legitimate case still opens afterward.
+
+Implementation and test evidence are recorded in
+[`73-phase5-nested-tenant-isolation.md`](../implementation/73-phase5-nested-tenant-isolation.md)
+and [`82-phase5-nested-tenant-isolation.md`](../testing/82-phase5-nested-tenant-isolation.md).
+The frontend typecheck, unit suite (20 files / 62 tests), and production build
+passed. Documentation manifest/link checks and Playwright test discovery also
+passed. The focused backend command could not start on Windows because the
+existing `mvnw.cmd` PowerShell bootstrap fails before Maven is invoked; Linux
+CI is the required backend/browser evidence for this slice.
+
 ## Phase 5 CI remediation — administrator wording and reset handoff
 
 The first published administrator-conflict slice exposed an enabled-E2E

@@ -557,6 +557,18 @@
     {
       "path": "frontend/src/features/auth/AccountPages.test.tsx",
       "role": "Phase 3 mounted account-center security and session regression tests"
+    },
+    {
+      "path": "docs/implementation/73-phase5-nested-tenant-isolation.md",
+      "role": "Phase 5 parent-scoped project/suite/case isolation contract and regression implementation"
+    },
+    {
+      "path": "docs/testing/82-phase5-nested-tenant-isolation.md",
+      "role": "Phase 5 nested tenant-isolation scenario matrix, evidence interpretation, and rerun commands"
+    },
+    {
+      "path": "frontend/e2e/phase5-role-matrix.spec.ts",
+      "role": "Phase 5 role matrix including foreign suite and foreign case substitution journeys"
     }
   ]
 }

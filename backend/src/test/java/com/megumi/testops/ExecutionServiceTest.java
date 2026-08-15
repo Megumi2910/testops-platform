@@ -191,6 +191,21 @@ class ExecutionServiceTest {
     }
 
     @Test
+    void rejectsQueueingACaseFromAnotherSuiteBeforeTakingTheQueueGuard() {
+        UUID caseId = UUID.randomUUID();
+        UUID key = UUID.randomUUID();
+        when(cases.findByIdAndSuiteId(caseId, suite.getId())).thenReturn(Optional.empty());
+
+        ApiException error = assertThrows(ApiException.class,
+                () -> service.queueCase(jwt, project.getId(), suite.getId(), caseId, key));
+
+        assertEquals("case_not_found", error.getCode());
+        assertEquals(404, error.getStatus().value());
+        verify(queueGuard, never()).lockGuard();
+        verify(executions, never()).save(any());
+    }
+
+    @Test
     void downloadsArtifactForProjectMemberAndRejectsPurgedContent() {
         UUID key = UUID.randomUUID();
         ExecutionEntity execution = new ExecutionEntity(project, suite, user, 1, key, Instant.now());
