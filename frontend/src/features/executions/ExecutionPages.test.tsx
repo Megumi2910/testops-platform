@@ -118,4 +118,46 @@ describe('execution detail recovery', () => {
     await waitFor(() => expect(artifact).toHaveBeenCalledTimes(2))
     expect(artifact).toHaveBeenLastCalledWith('/api/v1/projects/project-1/executions/execution-1/artifacts/artifact-1')
   })
+
+  it('shows category-specific recovery guidance for infrastructure failures', async () => {
+    vi.spyOn(projectsApi, 'execution').mockResolvedValue(execution({
+      status: 'ERROR',
+      infrastructureErrorCategory: 'TARGET_UNREACHABLE',
+      errorMessage: 'Connection refused',
+      cases: [],
+    }))
+    renderPage('/projects/project-1/executions/execution-1', <ExecutionDetailPage />)
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Target unreachable')
+    expect(screen.getByText(/Start the target, verify its port and target check/)).toBeInTheDocument()
+    expect(screen.getByText('Category: TARGET_UNREACHABLE')).toBeInTheDocument()
+  })
+
+  it('shows case-level assertion recovery without exposing a generic worker message', async () => {
+    vi.spyOn(projectsApi, 'execution').mockResolvedValue(execution({
+      status: 'FAILED',
+      cases: [{
+        id: 'case-result-1',
+        caseId: 'case-1',
+        caseName: 'Homepage smoke',
+        status: 'FAILED',
+        attemptCount: 1,
+        errorCategory: 'ASSERTION_FAILURE',
+        errorMessage: 'Expected text was not visible',
+        failedStepPosition: 1,
+        steps: [
+          { position: 0, action: 'NAVIGATE', status: 'PASSED', durationMs: 30 },
+          { position: 1, action: 'ASSERT_VISIBLE', status: 'FAILED', durationMs: 12, errorMessage: 'Expected text was not visible' },
+        ],
+      }],
+      failedCases: 1,
+    }))
+    renderPage('/projects/project-1/executions/execution-1', <ExecutionDetailPage />)
+
+    expect(await screen.findByRole('heading', { name: 'Homepage smoke' })).toBeInTheDocument()
+    expect(screen.getByText('Assertion failed.')).toBeInTheDocument()
+    expect(screen.getByText(/Check the expected value and confirm the target data/)).toBeInTheDocument()
+    expect(screen.getByText('Category: ASSERTION_FAILURE')).toBeInTheDocument()
+    expect(screen.getByText('2. ASSERT_VISIBLE')).toBeInTheDocument()
+  })
 })

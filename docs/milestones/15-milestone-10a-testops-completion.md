@@ -1,6 +1,6 @@
 # Milestone 10A — TestOps first-release completion
 
-## Current slice: Phase 6 execution rerun and cancellation recovery
+## Current slice: Phase 6 execution failure guidance
 
 This document is the current release ledger for Milestone 10A. It replaces the
 Milestone 9 release-candidate document as the source of truth for work on the
@@ -233,6 +233,23 @@ files / 72 tests, with lint, typecheck, and production build passing. The
 CI run [`31866759003`](https://github.com/Megumi2910/testops-platform/actions/runs/31866759003)
 passed all six required jobs for commit `7205b29`. The rebuilt-runtime Chrome
 DevTools execution matrix and broader Phase 6 release gate remain open.
+
+## Phase 6 slice result — categorized execution failure guidance
+
+**Status: PASS for this source and mounted-test slice.** Execution detail now
+uses the persisted failure category to explain whether an operator is facing an
+assertion, locator, target, navigation-policy, timeout, browser, definition,
+or worker problem. Infrastructure alerts and individual case results each show
+the category, a sanitized explanation, and a recommended recovery action. A
+missing or newly introduced category falls back to safe generic guidance rather
+than guessing that the target is unreachable.
+
+Implementation and regression evidence are recorded in
+[`82-phase6-failure-guidance.md`](../implementation/82-phase6-failure-guidance.md)
+and [`91-phase6-failure-guidance.md`](../testing/91-phase6-failure-guidance.md).
+The focused execution suite passes 7 tests; the complete frontend suite passes
+21 files / 74 tests, with lint, typecheck, and production build passing. The
+rebuilt-runtime Chrome DevTools category matrix remains open.
 
 ## Phase 2 slice result — revision-aware stale-bundle recovery
 
