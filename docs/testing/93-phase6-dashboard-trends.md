@@ -22,6 +22,14 @@
 | Frontend production build | PASS |
 | Diff whitespace check | PASS |
 
+## Remote CI
+
+Commit `d9aba24` passed all six required jobs in CI run
+[`31869900629`](https://github.com/Megumi2910/testops-platform/actions/runs/31869900629):
+frontend, backend, containers, enabled E2E, local-target-disabled E2E, and
+browser-crash E2E. The run produced only the known `actions/upload-artifact`
+Node 20 deprecation annotations.
+
 ## Manual Chrome DevTools checklist
 
 After rebuilding the QA stack:

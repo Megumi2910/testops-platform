@@ -293,9 +293,13 @@ Implementation and regression evidence are recorded in
 [`84-phase6-dashboard-trends.md`](../implementation/84-phase6-dashboard-trends.md)
 and [`93-phase6-dashboard-trends.md`](../testing/93-phase6-dashboard-trends.md).
 The focused dashboard suite passes 4 tests; the full frontend suite passes 21
-files / 76 tests, with lint, typecheck, and production build passing. The
-rebuilt-runtime Chrome DevTools trend and responsive matrix remains open as
-release-gate evidence.
+files / 76 tests, with lint, typecheck, and production build passing. Commit
+`d9aba24` then passed all six required jobs in CI run
+[`31869900629`](https://github.com/Megumi2910/testops-platform/actions/runs/31869900629),
+including enabled, local-target-disabled, and browser-crash E2E. The run
+emitted only the existing `actions/upload-artifact` Node 20 deprecation
+annotations. The rebuilt-runtime Chrome DevTools trend and responsive matrix
+remains open as release-gate evidence.
 
 ## Phase 2 slice result — revision-aware stale-bundle recovery
 

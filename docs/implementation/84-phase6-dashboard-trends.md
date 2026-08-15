@@ -39,6 +39,10 @@ npm run build
 git diff --check
 ```
 
-The full six-job CI workflow is required after the implementation commit. A
-rebuilt Chrome DevTools pass should confirm table headings, UTC labels, mobile
-overflow, and retry network isolation.
+The implementation commit `d9aba24` passed the full six-job CI workflow in
+run [`31869900629`](https://github.com/Megumi2910/testops-platform/actions/runs/31869900629):
+frontend, backend, containers, enabled E2E, local-target-disabled E2E, and
+browser-crash E2E. The workflow emitted only the existing `upload-artifact`
+Node 20 deprecation annotations; no job or test failed. A rebuilt Chrome
+DevTools pass should still confirm table headings, UTC labels, mobile overflow,
+and retry network isolation before the broader release gate closes.
