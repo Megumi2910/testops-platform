@@ -197,6 +197,21 @@ one failed, 32 skipped); rerunning the failed job completed the full enabled
 E2E suite successfully. All six jobs are therefore green on the current
 branch, and the transient result remains recorded for future flake triage.
 
+## Phase 1 follow-up slice — account-menu keyboard navigation
+
+**Status: PASS for this source and mounted-test slice.** The signed-in account
+trigger now opens from ArrowDown on the first action or ArrowUp on the last
+action. While open, Tab wraps from the last menu item to the first and
+Shift+Tab wraps in the opposite direction; Escape still restores focus to the
+trigger. The implementation keeps the existing native links, permission-aware
+items, outside-click handling, and mobile drawer behavior.
+
+Implementation and regression evidence are recorded in
+[`80-phase1-account-menu-keyboard.md`](../implementation/80-phase1-account-menu-keyboard.md)
+and [`89-phase1-account-menu-keyboard.md`](../testing/89-phase1-account-menu-keyboard.md).
+The focused AppShell suite passes 7 tests. Rebuilt-runtime Chrome DevTools
+verification remains part of the broader Phase 1 accessibility gate.
+
 ## Phase 2 slice result — revision-aware stale-bundle recovery
 
 **Status: PASS for this implementation slice.** Lazy route imports now pass

@@ -151,6 +151,11 @@ not as evidence against the shell/account-menu implementation.
 - Previous actual: the desktop header rendered a text link to `/account`; users had no discoverable path to security, sessions, verification recovery, administration, or sign-out actions from the top-right control.
 - Resolution: `AppShell` now composes an account menu from the current user and effective platform permissions. Unverified users receive a verification link, administrators receive `/admin/users`, and sign-out clears auth state before navigating to `/login`. The same actions are available in the mobile drawer.
 - Verification: `frontend/src/components/AppShell.test.tsx` covers verified, unverified, administrator, Escape/focus, sign-out, and mobile drawer behavior; `RouteErrorPage.test.tsx` covers chunk recovery. CI run `31785998751` passed all six jobs for the implementation commit. Live Chrome DevTools verification is still required against the rebuilt QA image.
+- Keyboard follow-up: the trigger now opens with ArrowDown/ArrowUp and the
+  menu wraps Tab and Shift+Tab at its first and last actions. The focused
+  mounted regression is documented in
+  [`account-menu keyboard evidence`](89-phase1-account-menu-keyboard.md); the
+  rebuilt-runtime Chrome DevTools matrix remains open.
 - Regression layer: mounted React tests + Chrome DevTools responsive/keyboard matrix
 
 ### QG-011 — Invalid Details stage does not focus the failing control

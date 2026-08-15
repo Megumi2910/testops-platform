@@ -53,6 +53,27 @@ describe('AppShell account navigation', () => {
     expect(trigger).toHaveFocus()
   })
 
+  it('opens from the trigger with ArrowDown and wraps Tab focus inside the menu', async () => {
+    renderShell()
+    const trigger = screen.getByRole('button', { name: 'Open account menu for QA User' })
+    fireEvent.keyDown(trigger, { key: 'ArrowDown' })
+    await waitFor(() => expect(screen.getByRole('menuitem', { name: 'Account security' })).toHaveFocus())
+
+    const signOut = screen.getByRole('menuitem', { name: 'Sign out' })
+    signOut.focus()
+    fireEvent.keyDown(document, { key: 'Tab' })
+    expect(screen.getByRole('menuitem', { name: 'Account security' })).toHaveFocus()
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true })
+    expect(signOut).toHaveFocus()
+  })
+
+  it('opens from the trigger with ArrowUp and focuses the last menu item', async () => {
+    renderShell()
+    const trigger = screen.getByRole('button', { name: 'Open account menu for QA User' })
+    fireEvent.keyDown(trigger, { key: 'ArrowUp' })
+    await waitFor(() => expect(screen.getByRole('menuitem', { name: 'Sign out' })).toHaveFocus())
+  })
+
   it('signs out and navigates to login from the menu', async () => {
     const { context } = renderShell()
     fireEvent.click(screen.getByRole('button', { name: 'Open account menu for QA User' }))

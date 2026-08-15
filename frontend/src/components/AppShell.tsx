@@ -23,12 +23,15 @@ function AccountMenu({ onNavigate }: { onNavigate: () => void }) {
   const triggerRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const menuWasOpenRef = useRef(false)
+  const initialFocusRef = useRef<'first' | 'last'>('first')
 
   useEffect(() => { setOpen(false) }, [location.pathname, location.hash])
 
   useEffect(() => {
     if (!open) return undefined
-    menuItems(menuRef.current)[0]?.focus()
+    const items = menuItems(menuRef.current)
+    items[initialFocusRef.current === 'last' ? items.length - 1 : 0]?.focus()
+    initialFocusRef.current = 'first'
     const handlePointerDown = (event: PointerEvent) => {
       if (!menuRef.current?.parentElement?.contains(event.target as Node)) setOpen(false)
     }
@@ -39,8 +42,20 @@ function AccountMenu({ onNavigate }: { onNavigate: () => void }) {
         triggerRef.current?.focus()
         return
       }
-      if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return
       const items = menuItems(menuRef.current)
+      if (event.key === 'Tab') {
+        if (items.length === 0) return
+        const currentIndex = items.indexOf(document.activeElement as HTMLElement)
+        if (currentIndex === -1 || (event.shiftKey && currentIndex === 0)) {
+          event.preventDefault()
+          items[items.length - 1].focus()
+        } else if (!event.shiftKey && currentIndex === items.length - 1) {
+          event.preventDefault()
+          items[0].focus()
+        }
+        return
+      }
+      if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return
       const currentIndex = Math.max(items.indexOf(document.activeElement as HTMLElement), 0)
       const nextIndex = event.key === 'ArrowDown'
         ? (currentIndex + 1) % items.length
@@ -99,6 +114,13 @@ function AccountMenu({ onNavigate }: { onNavigate: () => void }) {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls="account-menu"
+        onKeyDown={(event) => {
+          if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault()
+            initialFocusRef.current = event.key === 'ArrowUp' ? 'last' : 'first'
+            setOpen(true)
+          }
+        }}
         onClick={() => setOpen((current) => !current)}
       >
         <span className="account-menu-avatar" aria-hidden="true">{user.displayName.trim().charAt(0).toUpperCase() || '?'}</span>
