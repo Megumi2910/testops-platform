@@ -24,6 +24,12 @@
 | Frontend production build | PASS |
 | Diff whitespace check | PASS |
 
+The implementation commit `12ae233` passed the six-job CI run
+[`31869102692`](https://github.com/Megumi2910/testops-platform/actions/runs/31869102692):
+frontend, backend, Compose health, enabled E2E, local-target-disabled E2E, and
+browser-crash E2E. The run also covers the deterministic artifact-preview
+focus handoff included in the same commit.
+
 ## Manual Chrome DevTools checklist
 
 After rebuilding the QA stack, use the Network panel to fail each dashboard

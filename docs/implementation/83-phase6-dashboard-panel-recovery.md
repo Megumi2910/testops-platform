@@ -48,6 +48,8 @@ npm run build
 git diff --check
 ```
 
-The full six-job GitHub Actions workflow is required after the implementation
-commit; the live Chrome DevTools dashboard matrix remains a separate release
-gate.
+Implementation commit `12ae233` passed all six required jobs in CI run
+[`31869102692`](https://github.com/Megumi2910/testops-platform/actions/runs/31869102692),
+including the full enabled E2E suite. The same run also verifies the artifact
+preview focus-timing hardening shipped with this slice. The live Chrome
+DevTools dashboard matrix remains a separate release gate.

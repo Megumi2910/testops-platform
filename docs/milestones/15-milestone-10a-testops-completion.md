@@ -275,9 +275,10 @@ Implementation and regression evidence are recorded in
 [`83-phase6-dashboard-panel-recovery.md`](../implementation/83-phase6-dashboard-panel-recovery.md)
 and [`92-phase6-dashboard-panel-recovery.md`](../testing/92-phase6-dashboard-panel-recovery.md).
 The focused dashboard suite passes 4 tests; the full frontend suite passes 21
-files / 76 tests, with lint, typecheck, and production build passing. The
-replacement CI run for this documentation update will be recorded after the
-implementation commit. The rebuilt-runtime Chrome DevTools dashboard matrix
+files / 76 tests, with lint, typecheck, and production build passing.
+Implementation commit `12ae233` passed all six required jobs in CI run
+[`31869102692`](https://github.com/Megumi2910/testops-platform/actions/runs/31869102692),
+including enabled E2E. The rebuilt-runtime Chrome DevTools dashboard matrix
 remains open as release-gate evidence.
 
 ## Phase 2 slice result — revision-aware stale-bundle recovery
