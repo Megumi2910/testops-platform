@@ -11,6 +11,8 @@
    generic worker message.
 3. The existing execution list/detail retry, suite rerun, cancellation retry,
    and artifact retry paths remain green.
+4. A repeated execution/case category is labelled once while the case still
+   retains its category-specific recovery guidance.
 
 The guidance map is pure and can be extended when the backend adds a new
 category. Unknown categories intentionally use the safe generic fallback.
@@ -25,6 +27,21 @@ category. Unknown categories intentionally use the safe generic fallback.
 | Frontend unit suite | PASS — 21 files / 74 tests |
 | Frontend production build | PASS |
 | Diff whitespace check | PASS |
+
+## CI regression and correction
+
+The first pushed implementation run `31867772629` passed five required jobs
+but the enabled E2E job failed in
+`phase5-execution-matrix.spec.ts`. The new execution-level and case-level
+alerts both rendered `Category: TARGET_UNREACHABLE`, so Playwright’s strict
+`getByText(/TARGET_UNREACHABLE/)` locator correctly rejected the ambiguous
+page. The failure was deterministic and unrelated to target reachability.
+
+The correction keeps the case-specific explanation and recovery action but
+suppresses the repeated case category label when it matches the execution
+category. A mounted regression now asserts that the label is rendered once.
+The replacement commit must pass the full six-job workflow before this slice
+is considered CI-verified.
 
 ## Manual Chrome DevTools checklist
 

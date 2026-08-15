@@ -40,6 +40,11 @@ continues to be shown separately when the backend provides one.
 2. Each case result highlights its own category, failed position, step
    duration, and sanitized message.
 
+When the case category is identical to the execution-level infrastructure
+category, the case keeps the detailed recovery guidance but does not repeat the
+diagnostic label. This avoids noisy pages and keeps strict browser locators
+unambiguous when several cases fail for the same worker reason.
+
 The category is displayed as a stable diagnostic label so operators can use it
 when opening a defect without copying sensitive request data.
 

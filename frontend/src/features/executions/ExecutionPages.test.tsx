@@ -133,6 +133,29 @@ describe('execution detail recovery', () => {
     expect(screen.getByText('Category: TARGET_UNREACHABLE')).toBeInTheDocument()
   })
 
+  it('does not repeat an execution category in every matching case result', async () => {
+    vi.spyOn(projectsApi, 'execution').mockResolvedValue(execution({
+      status: 'ERROR',
+      infrastructureErrorCategory: 'TARGET_UNREACHABLE',
+      cases: [{
+        id: 'case-result-1',
+        caseId: 'case-1',
+        caseName: 'Homepage smoke',
+        status: 'ERROR',
+        attemptCount: 2,
+        errorCategory: 'TARGET_UNREACHABLE',
+        errorMessage: 'Connection refused',
+        steps: [],
+      }],
+      errorCases: 1,
+    }))
+    renderPage('/projects/project-1/executions/execution-1', <ExecutionDetailPage />)
+
+    await screen.findByRole('heading', { name: 'Homepage smoke' })
+    expect(screen.getAllByText('Category: TARGET_UNREACHABLE')).toHaveLength(1)
+    expect(screen.getAllByText('Target unreachable.')).toHaveLength(2)
+  })
+
   it('shows case-level assertion recovery without exposing a generic worker message', async () => {
     vi.spyOn(projectsApi, 'execution').mockResolvedValue(execution({
       status: 'FAILED',
