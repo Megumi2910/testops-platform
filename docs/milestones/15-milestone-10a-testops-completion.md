@@ -376,6 +376,20 @@ command remains unavailable on Windows because the existing `mvnw.cmd`
 PowerShell bootstrap fails before Maven is invoked; Linux CI is the
 authoritative backend/browser evidence.
 
+## Phase 5 slice result — active-session context
+
+**Status: PASS for this implementation slice.** The account center now shows
+the optional client IP returned with each active session, while preserving
+safe `Unknown browser` and `IP Unavailable` fallbacks when a proxy omits
+context. Existing revoke and revoke-all semantics are unchanged.
+
+Implementation and test evidence are recorded in
+[`74-phase5-session-context.md`](../implementation/74-phase5-session-context.md)
+and [`83-phase5-session-context.md`](../testing/83-phase5-session-context.md).
+The focused AccountPage suite covers both populated and missing IP branches;
+the broader Google, locked/disabled, and Chrome DevTools session matrix
+remains open.
+
 ## Phase 5 CI remediation — administrator wording and reset handoff
 
 The first published administrator-conflict slice exposed an enabled-E2E

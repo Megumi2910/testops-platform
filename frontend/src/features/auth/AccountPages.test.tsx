@@ -75,4 +75,19 @@ describe('AccountPage', () => {
     expect(context.logout).toHaveBeenCalledTimes(1)
     await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/login?reason=google-unlinked'))
   })
+
+  it('shows session context without failing when the client IP is unavailable', async () => {
+    vi.spyOn(authApi, 'sessions').mockResolvedValue([
+      { familyId: 'family-1', userAgent: 'Chrome on Windows', issuedAt: '2026-08-15T08:00:00Z', expiresAt: '2026-08-22T08:00:00Z', createdIp: '192.0.2.10' },
+      { familyId: 'family-2', userAgent: '', issuedAt: '2026-08-15T09:00:00Z', expiresAt: '2026-08-22T09:00:00Z' },
+    ])
+    renderAccount()
+
+    const sessionRows = await screen.findAllByRole('listitem')
+    expect(sessionRows).toHaveLength(2)
+    expect(sessionRows[0]).toHaveTextContent('Chrome on Windows')
+    expect(sessionRows[0]).toHaveTextContent('IP 192.0.2.10')
+    expect(sessionRows[1]).toHaveTextContent('Unknown browser')
+    expect(sessionRows[1]).toHaveTextContent('IP Unavailable')
+  })
 })

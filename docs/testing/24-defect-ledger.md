@@ -433,6 +433,24 @@ not as evidence against the shell/account-menu implementation.
   evidence only
 - Regression layer: backend service tests plus Playwright role/tenant matrix
 
+### QG-035 — Active-session context omitted the optional client IP
+
+- Severity: P2
+- Status: RESOLVED for the account-center presentation slice
+- Preconditions: an authenticated user has multiple active sessions and the
+  session API returns `createdIp` for some rows but not others
+- Expected: each row shows the available browser, issue/expiry, and IP
+  context; missing optional values use a clear fallback without failing the
+  page
+- Previous actual: `AccountPage` discarded `createdIp`, making sessions harder
+  to distinguish during account-security review
+- Resolution: render `IP <value>` or `IP Unavailable`, while retaining the
+  existing browser fallback and revoke controls
+- Verification: `AccountPages.test.tsx` covers both populated and omitted IP
+  values using documentation-only test addresses
+- Regression layer: mounted frontend account-center test; edge forwarding and
+  session ownership remain in the backend/browser authentication gates
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |
