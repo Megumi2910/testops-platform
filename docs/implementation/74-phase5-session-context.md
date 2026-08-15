@@ -55,6 +55,11 @@ belong to the current user.
 This keeps the account center resilient when a proxy, privacy policy, or
 future provider removes the optional field.
 
+The pushed implementation commit `87d4429` was verified by CI run
+`31860303253`. All six jobs passed: frontend, backend, Compose containers,
+enabled E2E, local-target-disabled E2E, and browser-crash E2E. The remote
+Linux backend/browser run is authoritative for this slice.
+
 ## Follow-up
 
 The remaining Phase 5 account work is live Chrome DevTools proof for Google,

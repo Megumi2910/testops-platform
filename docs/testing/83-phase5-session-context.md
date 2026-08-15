@@ -38,6 +38,7 @@ stored in the repository or test evidence.
 ## Release status
 
 The session-context presentation slice is complete after the focused test and
-the required CI gates pass. Google-provider, locked/disabled, and live Chrome
-DevTools session permutations remain tracked under `QG-B01`, `QG-B02`, and
-`QG-B10`.
+the required CI gates pass. CI run `31860303253` passed all six required jobs
+for commit `87d4429`, including the enabled Playwright suite. Google-provider,
+locked/disabled, and live Chrome DevTools session permutations remain tracked
+under `QG-B01`, `QG-B02`, and `QG-B10`.

@@ -387,8 +387,9 @@ Implementation and test evidence are recorded in
 [`74-phase5-session-context.md`](../implementation/74-phase5-session-context.md)
 and [`83-phase5-session-context.md`](../testing/83-phase5-session-context.md).
 The focused AccountPage suite covers both populated and missing IP branches;
-the broader Google, locked/disabled, and Chrome DevTools session matrix
-remains open.
+CI run `31860303253` passed all six required jobs for commit `87d4429`,
+including the enabled Playwright suite. The broader Google, locked/disabled,
+and Chrome DevTools session matrix remains open.
 
 ## Phase 5 CI remediation — administrator wording and reset handoff
 
