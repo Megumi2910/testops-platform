@@ -1,6 +1,6 @@
 # Milestone 10A — TestOps first-release completion
 
-## Current slice: Phase 5 variables, members, administration, and authorization
+## Current slice: Phase 6 execution rerun and cancellation recovery
 
 This document is the current release ledger for Milestone 10A. It replaces the
 Milestone 9 release-candidate document as the source of truth for work on the
@@ -214,6 +214,24 @@ passed all six CI jobs in run
 [`31865910829`](https://github.com/Megumi2910/testops-platform/actions/runs/31865910829).
 Rebuilt-runtime Chrome DevTools verification remains part of the broader Phase
 1 accessibility gate.
+
+## Phase 6 slice result — execution rerun and cancellation recovery
+
+**Status: PASS for this source and mounted-test slice.** Execution detail now
+offers **Run current suite again** only when the execution has a suite and the
+active project grants `EXECUTION_START`. Queueing uses the current suite
+endpoint, invalidates the run list, and navigates to the new execution instead
+of mutating or replaying historical evidence. Cancellation and rerun failures
+are inline, sanitized, and retryable; pending controls prevent duplicate
+requests.
+
+Implementation and test evidence are recorded in
+[`81-phase6-execution-rerun-recovery.md`](../implementation/81-phase6-execution-rerun-recovery.md)
+and [`90-phase6-execution-rerun-recovery.md`](../testing/90-phase6-execution-rerun-recovery.md).
+The focused execution suite passes 5 tests; the full frontend suite passes 21
+files / 72 tests, with lint, typecheck, and production build passing. The
+rebuilt-runtime Chrome DevTools execution matrix and broader Phase 6 release
+gate remain open.
 
 ## Phase 2 slice result — revision-aware stale-bundle recovery
 

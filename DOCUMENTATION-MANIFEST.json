@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu and keyboard navigation, Phase 2 stale-bundle recovery and manual retry, Phase 3 account-security, Phase 4 project/definition guards, Phase 5 administration-list, variable-permission, member-recovery, stale-membership-recovery, administrator-conflict, CI auth-recovery-remediation, nested-isolation, and active-session-context slices are implemented and verified; Phase 6 execution retry-recovery and Phase 7 accessible artifact-preview, authentication field-error, and TestOps form-autocomplete slices are implemented and verified by local gates and CI run 31865910829, while two-image deployment swap and live Chrome DevTools release gates remain ordered follow-up slices",
+  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu and keyboard navigation, Phase 2 stale-bundle recovery and manual retry, Phase 3 account-security, Phase 4 project/definition guards, Phase 5 administration-list, variable-permission, member-recovery, stale-membership-recovery, administrator-conflict, CI auth-recovery-remediation, nested-isolation, and active-session-context slices are implemented and verified; Phase 6 execution retry-recovery, rerun/cancellation recovery, and Phase 7 accessible artifact-preview, authentication field-error, and TestOps form-autocomplete slices are implemented and verified by local gates, while the rebuilt two-image deployment swap and live Chrome DevTools release gates remain ordered follow-up slices",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -77,6 +77,14 @@
     {
       "path": "docs/implementation/17-ui-to-execution-workflow.md",
       "role": "Step-by-step browser-to-API-to-database-to-worker-to-evidence workflow"
+    },
+    {
+      "path": "docs/implementation/81-phase6-execution-rerun-recovery.md",
+      "role": "Permission-aware suite rerun and cancellation error recovery implementation"
+    },
+    {
+      "path": "docs/testing/90-phase6-execution-rerun-recovery.md",
+      "role": "Execution rerun/cancellation regression evidence and manual checklist"
     },
     {
       "path": "docs/implementation/18-feature-implementation-handbook.md",

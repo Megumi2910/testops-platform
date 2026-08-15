@@ -5,7 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import * as api from '../../lib/api'
-import { projectsApi, type Execution } from '../projects/api'
+import { projectsApi, type Execution, type Project } from '../projects/api'
 import { ExecutionDetailPage, ExecutionsPage } from './ExecutionPages'
 
 afterEach(() => {
@@ -29,8 +29,21 @@ const execution = (overrides: Partial<Execution> = {}): Execution => ({
   ...overrides,
 })
 
-function renderPage(path: string, page: ReactNode) {
+const project = (permissions: Project['permissions'] = ['EXECUTION_START']): Project => ({
+  id: 'project-1',
+  name: 'QA project',
+  targetOrigin: 'http://localhost:3001',
+  status: 'ACTIVE',
+  version: 1,
+  createdAt: '2026-08-15T10:00:00Z',
+  updatedAt: '2026-08-15T10:00:00Z',
+  permissions,
+  onboarding: { suiteCount: 1, caseCount: 1, readyCaseCount: 1, executionCount: 1 },
+})
+
+function renderPage(path: string, page: ReactNode, projectData = project()) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
+  vi.spyOn(projectsApi, 'get').mockResolvedValue(projectData)
   return render(<QueryClientProvider client={client}><MemoryRouter initialEntries={[path]}><Routes><Route path="/projects/:projectId/executions" element={page} /><Route path="/projects/:projectId/executions/:executionId" element={page} /></Routes></MemoryRouter></QueryClientProvider>)
 }
 
@@ -49,6 +62,29 @@ describe('execution history recovery', () => {
 })
 
 describe('execution detail recovery', () => {
+  it('offers a permission-aware action to run the current suite again', async () => {
+    const detail = execution({ status: 'FAILED', suiteId: 'suite-1' })
+    vi.spyOn(projectsApi, 'execution').mockResolvedValue(detail)
+    let resolveQueue: (value: { executionId: string; status: string }) => void = () => undefined
+    const queue = vi.spyOn(projectsApi, 'queueSuite').mockReturnValue(new Promise(resolve => { resolveQueue = resolve }))
+    renderPage('/projects/project-1/executions/execution-1', <ExecutionDetailPage />)
+
+    const rerun = await screen.findByRole('button', { name: 'Run current suite again' })
+    fireEvent.click(rerun)
+
+    await waitFor(() => expect(queue).toHaveBeenCalledWith('project-1', 'suite-1'))
+    expect(rerun).toBeDisabled()
+    resolveQueue({ executionId: 'execution-2', status: 'QUEUED' })
+  })
+
+  it('hides the suite rerun action when execution permission is absent', async () => {
+    vi.spyOn(projectsApi, 'execution').mockResolvedValue(execution({ suiteId: 'suite-1' }))
+    renderPage('/projects/project-1/executions/execution-1', <ExecutionDetailPage />, project([]))
+
+    await screen.findByRole('heading', { name: 'PASSED' })
+    expect(screen.queryByRole('button', { name: 'Run current suite again' })).not.toBeInTheDocument()
+  })
+
   it('offers an in-place retry when the execution detail cannot load', async () => {
     const detail = vi.spyOn(projectsApi, 'execution').mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(execution())
     renderPage('/projects/project-1/executions/execution-1', <ExecutionDetailPage />)
