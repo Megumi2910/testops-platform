@@ -53,7 +53,10 @@ npm run build
 ```
 
 The focused execution suite passes 5 tests. The complete frontend suite passes
-21 files / 72 tests, with lint, typecheck, and production build passing.
+21 files / 72 tests, with lint, typecheck, and production build passing. CI
+run [31866759003](https://github.com/Megumi2910/testops-platform/actions/runs/31866759003)
+passed backend, frontend, containers, enabled E2E, local-disabled E2E, and
+browser-crash jobs for commit `7205b29`.
 
 ## Remaining release work
 

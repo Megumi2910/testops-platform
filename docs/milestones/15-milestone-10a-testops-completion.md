@@ -230,8 +230,9 @@ Implementation and test evidence are recorded in
 and [`90-phase6-execution-rerun-recovery.md`](../testing/90-phase6-execution-rerun-recovery.md).
 The focused execution suite passes 5 tests; the full frontend suite passes 21
 files / 72 tests, with lint, typecheck, and production build passing. The
-rebuilt-runtime Chrome DevTools execution matrix and broader Phase 6 release
-gate remain open.
+CI run [`31866759003`](https://github.com/Megumi2910/testops-platform/actions/runs/31866759003)
+passed all six required jobs for commit `7205b29`. The rebuilt-runtime Chrome
+DevTools execution matrix and broader Phase 6 release gate remain open.
 
 ## Phase 2 slice result — revision-aware stale-bundle recovery
 

@@ -20,6 +20,7 @@
 | Frontend typecheck | PASS |
 | Frontend unit suite | PASS — 21 files / 72 tests |
 | Frontend production build | PASS |
+| Required CI workflow | PASS — run [31866759003](https://github.com/Megumi2910/testops-platform/actions/runs/31866759003), all 6 jobs |
 
 ## Manual regression checklist
 
@@ -38,5 +39,6 @@
 
 ## Release interpretation
 
-These are source and mounted-component results. They do not replace the live
-Chrome DevTools role/viewport matrix or the rebuilt-container execution gate.
+The source and mounted-component results plus CI run `31866759003` are green.
+They do not replace the live Chrome DevTools role/viewport matrix or the
+rebuilt-container execution gate.
