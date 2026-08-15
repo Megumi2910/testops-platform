@@ -41,7 +41,7 @@
 </head>
 <body>
 <header class="bar">
-  <div><h1>TestOps — UI to execution workflow</h1><div class="sub">routes · API contracts · domain services · PostgreSQL · isolated Chromium · evidence · Milestone 10A Phase 6 execution retry-recovery slice</div></div>
+  <div><h1>TestOps — UI to execution workflow</h1><div class="sub">routes · API contracts · domain services · PostgreSQL · isolated Chromium · evidence · Milestone 10A Phase 7 accessible artifact-preview slice</div></div>
   <div class="spacer"></div>
   <div class="chips" id="flows"><button class="chip on" data-flow="all">Everything</button><button class="chip" data-flow="account">Account</button><button class="chip" data-flow="workspace">Workspace</button><button class="chip" data-flow="author">Author</button><button class="chip" data-flow="lifecycle">Trash &amp; restore</button><button class="chip" data-flow="execute">Execute</button><button class="chip" data-flow="report">Report</button><a class="chip" href="../testing/23-quality-gate-baseline.md">QA baseline</a></div>
   <button class="theme" id="themeToggle" type="button">Theme</button>
@@ -116,7 +116,7 @@
     worker:['Worker lifecycle','backend/src/main/java/com/megumi/testops/execution/service/ExecutionWorker.java','The worker claims queued rows, updates heartbeats, observes cancellation, and delegates each case to the Playwright runner.'],
     chromium:['Browser runner','backend/src/main/java/com/megumi/testops/execution/runner/PlaywrightCaseRunner.java','A fresh context executes each ordered action, resolves safe navigation, times every step, sanitizes errors, and captures eligible evidence.'],
     outcomes:['Outcomes','execution/domain + ExecutionRunService','Assertion/locator failures become FAILED; target, browser, timeout, and policy failures become ERROR; cancellation stays CANCELLED.'],
-    evidence:['Evidence','backend/src/main/java/com/megumi/testops/execution/runner/ArtifactWriter.java · frontend/src/features/executions/ExecutionPages.tsx','Binary files are written below a normalized root; PostgreSQL keeps type, hash, size, step position, and retention metadata. The detail UI previews eligible screenshots, downloads traces, and retries transient blob failures without exposing server or secret content.'],
+    evidence:['Evidence','backend/src/main/java/com/megumi/testops/execution/runner/ArtifactWriter.java · frontend/src/features/executions/ExecutionPages.tsx','Binary files are written below a normalized root; PostgreSQL keeps type, hash, size, step position, and retention metadata. The detail UI previews eligible screenshots in a named, keyboard-operable dialog, downloads traces, and retries transient blob failures without exposing server or secret content.'],
     db:['Database','backend/src/main/resources/db/migration + repositories','Flyway creates users, projects, definitions, queue/results, variables, artifacts, and target health. JPA validates mappings at startup.'],
     artifacts:['Artifact volume','ARTIFACT_DIRECTORY / artifacts_data','Screenshots and traces are files, not database blobs. The API streams them after project membership is checked.'],
     bridge:['Local target bridge','host.docker.internal + ManagedChromium','The browser preserves localhost while Docker resolves it to the host. Local mode requires TARGET_LOCAL_DEV_ENABLED and an exact allowlist entry.'],

@@ -466,6 +466,20 @@ not as evidence against the shell/account-menu implementation.
   retry scenarios; CI run `31861395936` passes all six required jobs
 - Regression layer: mounted React tests plus the Phase 7 browser matrix
 
+### QG-037 — Screenshot previews were not keyboard-accessible
+
+- Severity: P2
+- Status: RESOLVED in the Phase 7 artifact-preview dialog slice
+- Preconditions: an authenticated member opens a successful screenshot artifact
+  from an execution detail page
+- Previous actual: the image rendered in an inline block with a close button,
+  but no dialog semantics, initial focus, Escape handling, or focus restoration
+- Resolution: `ArtifactPreview` exposes a named modal region, focuses its close
+  control, traps Tab, closes on Escape, and restores focus to the invoking
+  artifact button
+- Regression layer: mounted React test plus Chrome DevTools accessibility and
+  responsive matrix
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |
