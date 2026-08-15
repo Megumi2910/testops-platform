@@ -301,6 +301,20 @@ emitted only the existing `actions/upload-artifact` Node 20 deprecation
 annotations. The rebuilt-runtime Chrome DevTools trend and responsive matrix
 remains open as release-gate evidence.
 
+## Phase 6 slice result — UTC reporting display and table semantics
+
+**Status: PASS for this source and mounted-test slice.** Dashboard reporting
+boundaries now use an explicit UTC date formatter, preventing a browser's local
+timezone from shifting the visible day. Execution-history headers now declare
+their column scope for assistive technology without changing the lightweight
+summary contract or navigation behavior.
+
+Implementation and regression evidence are recorded in
+[`85-phase6-dashboard-utc-display.md`](../implementation/85-phase6-dashboard-utc-display.md)
+and [`94-phase6-dashboard-utc-display.md`](../testing/94-phase6-dashboard-utc-display.md).
+The focused and full frontend gates, rebuilt-runtime Chrome DevTools check,
+and CI evidence are recorded after this slice completes.
+
 ## Phase 2 slice result — revision-aware stale-bundle recovery
 
 **Status: PASS for this implementation slice.** Lazy route imports now pass

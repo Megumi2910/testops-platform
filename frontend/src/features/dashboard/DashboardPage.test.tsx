@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { dashboardApi } from './api'
 import { DashboardPage } from './DashboardPage'
 import { dashboardWindow } from './dashboardWindow'
+import { formatDashboardDate } from './dashboardFormatting'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -38,6 +39,10 @@ describe('dashboardWindow', () => {
 })
 
 describe('DashboardPage', () => {
+  it('formats reporting bounds as UTC dates instead of the browser local timezone', () => {
+    expect(formatDashboardDate('2026-08-05T23:00:00-05:00')).toBe(formatDashboardDate('2026-08-06T04:00:00Z'))
+  })
+
   it('fetches the dashboard panels for the selected URL range and updates it accessibly', async () => {
     vi.setSystemTime(new Date('2026-08-12T12:00:00Z'))
     const summary = vi.spyOn(dashboardApi, 'summary').mockResolvedValue({ totalExecutions: 2, passedCases: 1, failedCases: 1, infrastructureErrors: 0, functionalPassRate: .5, infrastructureErrorRate: 0, from: '', to: '' })

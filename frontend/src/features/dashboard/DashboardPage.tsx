@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link, useSearchParams } from 'react-router-dom'
 import { dashboardApi } from './api'
 import { dashboardWindow } from './dashboardWindow'
+import { formatDashboardDate } from './dashboardFormatting'
 import { Alert, Card, EmptyState, LoadingState, PageHeader, StatusBadge } from '../../components/ui'
 
 function DashboardPanelError({ title, retryLabel, onRetry }: { title: string; retryLabel: string; onRetry: () => void }) {
@@ -29,7 +30,7 @@ export function DashboardPage() {
   const trendDate = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeZone: 'UTC' })
   return <section className="page-stack" aria-busy={isLoading}>
     <PageHeader eyebrow="Reporting" title="Execution dashboard" description="A UTC view across projects you can access." actions={<label className="dashboard-filter" htmlFor="dashboard-range">Reporting period<select id="dashboard-range" name="range" aria-label="Reporting period" value={selection} onChange={event => setRange(event.target.value)}><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option>{selection === 'custom' && <option value="custom">Custom URL range</option>}</select></label>} />
-    <p className="form-help" aria-live="polite">Showing {new Date(from).toLocaleDateString()} – {new Date(to).toLocaleDateString()} (UTC)</p>
+    <p className="form-help" aria-live="polite">Showing {formatDashboardDate(from)} – {formatDashboardDate(to)} (UTC)</p>
     <div className="metric-grid" aria-label="Dashboard metrics">
       <Card>{summary.isPending ? <LoadingState label="Loading pass rate…" /> : summary.isError ? <DashboardPanelError title="Pass-rate reporting is unavailable." retryLabel="Retry pass-rate reporting" onRetry={() => void summary.refetch()} /> : summary.data ? <><p className="eyebrow">Functional pass rate</p><p className="metric-value">{formatPercent(summary.data.functionalPassRate)}</p><p className="muted">{formatNumber.format(summary.data.passedCases)} passed · {formatNumber.format(summary.data.failedCases)} failed</p></> : <p className="muted">Pass-rate data is unavailable.</p>}</Card>
       <Card>{summary.isPending ? <LoadingState label="Loading infrastructure rate…" /> : summary.isError ? <p className="muted">Summary report unavailable. Use the pass-rate panel to retry.</p> : summary.data ? <><p className="eyebrow">Infrastructure error rate</p><p className="metric-value">{formatPercent(summary.data.infrastructureErrorRate)}</p><p className="muted">{formatNumber.format(summary.data.infrastructureErrors)} infrastructure errors</p></> : <p className="muted">Infrastructure-rate data is unavailable.</p>}</Card>
