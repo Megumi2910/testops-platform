@@ -97,7 +97,7 @@ export function EditProjectPage() {
     <form className="form-stack" onSubmit={form.handleSubmit(values => mutation.mutate(values))}>
       <Field label="Name" error={form.formState.errors.name?.message}><input autoComplete="organization" {...form.register('name')} /></Field>
       <Field label="Description" error={form.formState.errors.description?.message}><textarea {...form.register('description')} rows={4} /></Field>
-      <Field label="Target origin" help="The origin must remain in the backend allowlist." error={form.formState.errors.targetOrigin?.message}><input type="url" {...form.register('targetOrigin')} /></Field>
+      <Field label="Target origin" help="The origin must remain in the backend allowlist." error={form.formState.errors.targetOrigin?.message}><input type="url" autoComplete="off" {...form.register('targetOrigin')} /></Field>
       {mutation.isError && <p className="form-error" role="alert" aria-live="polite">{errorMessage}</p>}
       <div className="inline-actions"><Button type="submit" busy={mutation.isPending}>{mutation.isPending ? 'Saving…' : 'Save changes'}</Button><Link className="button button-secondary" to={root}>Cancel</Link></div>
     </form>

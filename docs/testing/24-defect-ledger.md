@@ -86,10 +86,13 @@ not as evidence against the shell/account-menu implementation.
 ### QG-005 — TestOps form fields omit autocomplete metadata
 
 - Severity: P2
+- Status: RESOLVED in the Phase 7 definition-form metadata slice
 - Evidence: Chrome DevTools issue on authenticated case editor
 - Expected: identity and reusable form fields provide appropriate names/autocomplete semantics
-- Actual: Chrome reports a form-field metadata issue
-- Regression layer: accessibility/component tests
+- Previous actual: definition fields such as case name/retry count, suite names, target origin, and variable values omitted an explicit autocomplete policy
+- Resolution: non-personal TestOps definition fields now declare `autocomplete="off"`; project identity keeps the standard `organization` token and member identity keeps `email`. This prevents browser autofill heuristics from treating test definitions and secret-variable inputs as personal credentials.
+- Verification: mounted CasePage and VariablesPage tests assert the metadata on case and variable controls; the full frontend lint, typecheck, unit, and build gates remain required before publication
+- Regression layer: accessibility/component tests plus Chrome DevTools form metadata matrix
 
 ### QG-006 — Ecommerce header and remaining controls are not fully semantic
 

@@ -164,12 +164,12 @@ export function CasePage() {
       onRetry={() => save.mutate({ values: form.getValues(), expectedVersion: versionConflict.version })}
     />}
     <form className="form-stack" onSubmit={form.handleSubmit(values => { setSuccessMessage(undefined); save.mutate({ values }) })}>
-      <label>Name<input disabled={!canEdit} {...form.register('name', { required: 'Name is required' })} />{form.formState.errors.name && <small className="form-error">{form.formState.errors.name.message}</small>}</label>
+      <label>Name<input disabled={!canEdit} autoComplete="off" {...form.register('name', { required: 'Name is required' })} />{form.formState.errors.name && <small className="form-error">{form.formState.errors.name.message}</small>}</label>
       <label>Description<textarea disabled={!canEdit} rows={4} {...form.register('description')} /></label>
       <div className="inline-form">
         <label>Status<select disabled={!canEdit} {...form.register('status')}><option>DRAFT</option><option>READY</option></select></label>
         <label>Priority<select disabled={!canEdit} {...form.register('priority')}><option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select></label>
-        <label>Retry count<input disabled={!canEdit} type="number" min={0} max={5} {...form.register('retryCount', { valueAsNumber: true })} /></label>
+        <label>Retry count<input disabled={!canEdit} type="number" autoComplete="off" min={0} max={5} {...form.register('retryCount', { valueAsNumber: true })} /></label>
       </div>
       <label>Tags<input disabled={!canEdit} autoComplete="off" placeholder="P0, smoke" {...form.register('tags')} /></label>
       <label className="checkbox-field"><input disabled={!canEdit} type="checkbox" {...form.register('dataIsolation')} />Use a fresh isolated browser context for this case</label>

@@ -31,6 +31,8 @@ describe('VariablesPage', () => {
     expect(await screen.findByText('PASSWORD')).toBeInTheDocument()
     expect(screen.getByText('••••••••')).toBeInTheDocument()
     expect(screen.queryByText('super-secret')).not.toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Variable key' })).toHaveAttribute('autocomplete', 'off')
+    expect(screen.getByRole('textbox', { name: 'Variable value' })).toHaveAttribute('autocomplete', 'off')
   })
 })
 

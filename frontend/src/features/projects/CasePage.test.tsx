@@ -59,6 +59,8 @@ describe('CasePage lifecycle guard', () => {
     expect(screen.queryByRole('button', { name: 'Move to trash' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Save case and steps' })).not.toBeInTheDocument()
     expect(screen.getByLabelText('Name')).toBeDisabled()
+    expect(screen.getByLabelText('Name')).toHaveAttribute('autocomplete', 'off')
+    expect(screen.getByLabelText('Retry count')).toHaveAttribute('autocomplete', 'off')
     expect(screen.getByRole('heading', { name: 'Steps' })).toBeInTheDocument()
   })
 })

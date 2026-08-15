@@ -40,8 +40,8 @@ export function SuitesPage() {
     {canManage && <Card>
       <div className="section-heading"><div><p className="eyebrow">Definitions</p><h2>Create a suite</h2></div></div>
       <form className="inline-form" onSubmit={form.handleSubmit(values => mutation.mutate(values))}>
-        <label>Suite name<input aria-label="Suite name" placeholder="Checkout smoke…" {...form.register('name')} /></label>
-        <label>Description<input aria-label="Suite description" placeholder="What does this suite cover…" {...form.register('description')} /></label>
+        <label>Suite name<input aria-label="Suite name" autoComplete="off" placeholder="Checkout smoke…" {...form.register('name')} /></label>
+        <label>Description<input aria-label="Suite description" autoComplete="off" placeholder="What does this suite cover…" {...form.register('description')} /></label>
         <Button type="submit" busy={mutation.isPending}>Add suite</Button>
       </form>
       {form.formState.errors.name && <p className="form-error" role="alert">{form.formState.errors.name.message}</p>}
@@ -120,7 +120,7 @@ export function SuitePage() {
       </div>
     </div>
     {editing && <form className="form-stack definition-edit" onSubmit={form.handleSubmit(values => update.mutate(values))}>
-      <label>Suite name<input autoFocus {...form.register('name')} /></label>
+      <label>Suite name<input autoFocus autoComplete="off" {...form.register('name')} /></label>
       <label>Description<textarea rows={4} {...form.register('description')} /></label>
       {form.formState.errors.name && <p className="form-error" role="alert">{form.formState.errors.name.message}</p>}
       {update.isError && <p className="form-error" role="alert">{update.error instanceof ApiError ? update.error.message : 'Unable to update this suite.'}</p>}

@@ -44,8 +44,8 @@ export function VariablesPage() {
       <h2>Add variable</h2>
       <p className="form-help">Secret values are write-only and require the server feature flag and key.</p>
       <form className="inline-form" onSubmit={form.handleSubmit(values => create.mutate(values))}>
-        <label>Variable key<input aria-label="Variable key" placeholder="BASE_URL…" {...form.register('key')} /></label>
-        <label>Variable value<input aria-label="Variable value" placeholder="Value…" type={form.watch('secret') ? 'password' : 'text'} {...form.register('value')} /></label>
+        <label>Variable key<input aria-label="Variable key" autoComplete="off" placeholder="BASE_URL…" {...form.register('key')} /></label>
+        <label>Variable value<input aria-label="Variable value" autoComplete="off" placeholder="Value…" type={form.watch('secret') ? 'password' : 'text'} {...form.register('value')} /></label>
         <label className="checkbox"><input type="checkbox" {...form.register('secret')} /> Secret</label>
         <Button type="submit" busy={create.isPending}>Save variable</Button>
       </form>

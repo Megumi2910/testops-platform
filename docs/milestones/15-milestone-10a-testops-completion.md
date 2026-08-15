@@ -446,6 +446,15 @@ local-target-disabled E2E, and browser-crash E2E). The run emitted only a
 non-blocking Node.js 20 deprecation annotation for `actions/upload-artifact`;
 the live Chrome DevTools form and viewport matrix remains open.
 
+### Phase 7 form metadata follow-up
+
+QG-005 is now resolved in source for the TestOps definition workflow. Case,
+suite, target-origin, and variable controls declare explicit non-personal
+`autocomplete="off"` metadata while account and member identity fields retain
+semantic tokens. Focused mounted coverage passes 2 files / 3 tests. The
+complete frontend gate and rebuilt Chrome DevTools route matrix remain the
+publication checks for this slice.
+
 ## Phase 5 CI remediation — administrator wording and reset handoff
 
 The first published administrator-conflict slice exposed an enabled-E2E
