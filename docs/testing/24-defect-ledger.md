@@ -462,6 +462,8 @@ not as evidence against the shell/account-menu implementation.
 - Resolution: list and detail queries expose a pending-aware **Try again**
   action; artifact requests show a sanitized error and retry the same artifact
   identifier without leaving the page
+- Verification: `ExecutionPages.test.tsx` passes list, detail, and screenshot
+  retry scenarios; CI run `31861395936` passes all six required jobs
 - Regression layer: mounted React tests plus the Phase 7 browser matrix
 
 ## Coverage blockers

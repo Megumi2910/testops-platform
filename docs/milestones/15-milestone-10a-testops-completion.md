@@ -393,7 +393,7 @@ and Chrome DevTools session matrix remains open.
 
 ## Phase 6 slice result — execution retry recovery
 
-**Status: IMPLEMENTED; remote verification pending.** The Runs page and
+**Status: PASS for this implementation slice.** The Runs page and
 execution detail page now provide an in-place retry for failed execution
 queries. Screenshot and trace actions have pending protection, and artifact
 failures expose only a sanitized message plus a retry for the same artifact.
@@ -403,9 +403,11 @@ unchanged.
 Implementation and local regression evidence are recorded in
 [`75-phase6-execution-retry-recovery.md`](../implementation/75-phase6-execution-retry-recovery.md)
 and [`84-phase6-execution-retry-recovery.md`](../testing/84-phase6-execution-retry-recovery.md).
-The focused suite passes 3 tests; frontend lint and typecheck pass. The full
-frontend/build and required remote CI result will be appended after the
-publication commit.
+The focused suite passes 3 tests, the full frontend suite passes 21 files / 66
+tests, the production build passes, and CI run
+[`31861395936`](https://github.com/Megumi2910/testops-platform/actions/runs/31861395936)
+passes all six required jobs. The broader Phase 6 execution semantics and
+Phase 7 live accessibility/browser matrix remain open.
 
 ## Phase 5 CI remediation — administrator wording and reset handoff
 

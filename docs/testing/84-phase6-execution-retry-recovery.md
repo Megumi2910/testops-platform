@@ -26,11 +26,16 @@ cd frontend
 npm test -- --run src/features/executions/ExecutionPages.test.tsx   PASS (3 tests)
 npm run lint                                                     PASS
 npm run typecheck                                                PASS
+npm test -- --run                                               PASS (21 files / 66 tests)
+npm run build                                                    PASS
 ```
 
-The full frontend suite, production build, remote CI run, and any browser
-matrix evidence are recorded in the Milestone 10A completion ledger when this
-slice is published.
+Remote GitHub Actions run [`31861395936`](https://github.com/Megumi2910/testops-platform/actions/runs/31861395936)
+passed all six required jobs for commit `fe3bf34`: frontend, backend,
+containers, enabled E2E, local-disabled E2E, and browser-crash E2E. The run
+also verifies the new test file in the frontend suite and rebuilds the isolated
+Compose profiles. This is CI evidence for the slice, not a replacement for the
+remaining live Chrome DevTools accessibility/performance gate.
 
 ## Regression ownership
 
@@ -39,4 +44,3 @@ slice is published.
 - Browser follow-up: Phase 7 must still verify keyboard focus, mobile layout,
   screenshot dialog behavior, and trace-download authorization in a rebuilt
   environment.
-

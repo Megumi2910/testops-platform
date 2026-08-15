@@ -58,7 +58,6 @@ execution page has changed.
 - detail failure → in-place retry → execution status;
 - screenshot failure → sanitized artifact error → retry → accessible preview.
 
-The slice-local test, lint, and typecheck gates pass locally. The published CI
-run is recorded in the paired testing document and the Milestone 10A ledger
-after the commit is available remotely.
-
+The slice-local test, lint, and typecheck gates pass locally. The full frontend
+suite and production build also pass, and the published CI run is recorded in
+the paired testing document and the Milestone 10A ledger.
