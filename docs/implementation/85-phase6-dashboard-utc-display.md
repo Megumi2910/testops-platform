@@ -44,3 +44,9 @@ git diff --check
 The rebuilt Chrome DevTools matrix should still verify a non-UTC browser,
 keyboard table navigation, and the mobile `320×800` layout before the overall
 release gate closes.
+
+Commit `5c23300` passed all six required CI jobs in run
+[`31870802458`](https://github.com/Megumi2910/testops-platform/actions/runs/31870802458):
+frontend, backend, containers, enabled E2E, local-target-disabled E2E, and
+browser-crash E2E. Only the existing `actions/upload-artifact` Node 20
+deprecation annotations were emitted.

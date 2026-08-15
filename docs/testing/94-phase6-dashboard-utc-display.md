@@ -19,6 +19,13 @@ the accessible names or navigation links.
 | Focused execution tests | PASS — 8 tests |
 | Frontend lint/typecheck/unit/build | PASS — 21 files / 77 tests |
 | Diff whitespace check | PASS |
+
+## Remote CI
+
+Commit `5c23300` passed all six required jobs in CI run
+[`31870802458`](https://github.com/Megumi2910/testops-platform/actions/runs/31870802458).
+The only annotations were the known `actions/upload-artifact` Node 20
+deprecation notices; no test or job failed.
 | Chrome DevTools non-UTC display | Release-gate follow-up |
 
 ## Manual Chrome DevTools cases

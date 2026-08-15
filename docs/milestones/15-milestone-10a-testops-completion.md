@@ -312,8 +312,15 @@ summary contract or navigation behavior.
 Implementation and regression evidence are recorded in
 [`85-phase6-dashboard-utc-display.md`](../implementation/85-phase6-dashboard-utc-display.md)
 and [`94-phase6-dashboard-utc-display.md`](../testing/94-phase6-dashboard-utc-display.md).
-The focused and full frontend gates, rebuilt-runtime Chrome DevTools check,
-and CI evidence are recorded after this slice completes.
+The focused dashboard suite passes 5 tests, the focused execution suite passes
+8 tests, and the full frontend suite passes 21 files / 77 tests with lint,
+typecheck, and production build passing. Commit `5c23300` passed all six
+required jobs in CI run
+[`31870802458`](https://github.com/Megumi2910/testops-platform/actions/runs/31870802458),
+including enabled, local-target-disabled, and browser-crash E2E. The run
+emitted only the existing `actions/upload-artifact` Node 20 deprecation
+annotations. The rebuilt-runtime Chrome DevTools check remains open as
+release-gate evidence.
 
 ## Phase 2 slice result — revision-aware stale-bundle recovery
 
