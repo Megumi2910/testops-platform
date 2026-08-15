@@ -325,3 +325,18 @@ and [`78-phase5-member-list-recovery.md`](../testing/78-phase5-member-list-recov
 The focused group passed 3 files / 9 tests. The broader Phase 5 two-project
 browser matrix, final-admin coverage, artifacts, and Chrome DevTools gate
 remain open.
+
+## Phase 5 slice result — membership stale-version recovery
+
+**Status: PASS for this implementation slice.** Membership mutations now
+refresh exact project and member queries after a `stale_version` conflict, so
+operators receive current data before retrying. The same exact-key refresh
+also removes duplicate member-list requests caused by invalidating a child key
+and its parent key together.
+
+Implementation and regression evidence are recorded in
+[`70-phase5-membership-stale-recovery.md`](../implementation/70-phase5-membership-stale-recovery.md)
+and [`79-phase5-membership-stale-recovery.md`](../testing/79-phase5-membership-stale-recovery.md).
+The focused Members page suite passed 1 file / 5 tests. The broader Phase 5
+two-project browser matrix, final-admin coverage, artifacts, and Chrome
+DevTools gate remain open.

@@ -76,8 +76,11 @@ export function MembersPage() {
   const query = useQuery({ queryKey: projectKeys.members(projectId), queryFn: () => projectsApi.members(projectId) })
   const form = useForm({ defaultValues: { email: '', role: 'TESTER' } })
   const refresh = () => {
-    void client.invalidateQueries({ queryKey: projectKeys.members(projectId) })
-    void client.invalidateQueries({ queryKey: projectKeys.detail(projectId) })
+    void client.invalidateQueries({ queryKey: projectKeys.members(projectId), exact: true })
+    void client.invalidateQueries({ queryKey: projectKeys.detail(projectId), exact: true })
+  }
+  const recoverFromStaleVersion = (cause: Error) => {
+    if (cause instanceof ApiError && cause.code === 'stale_version') refresh()
   }
   const add = useMutation({
     mutationFn: (values: { email: string; role: string }) => projectsApi.addMember(projectId, { ...values, projectVersion: project.version }),
@@ -85,10 +88,12 @@ export function MembersPage() {
       form.reset()
       refresh()
     },
+    onError: recoverFromStaleVersion,
   })
   const update = useMutation({
     mutationFn: ({ member, role }: { member: Member; role: string }) => projectsApi.updateMember(projectId, member.userId, { role, projectVersion: project.version }),
     onSuccess: refresh,
+    onError: recoverFromStaleVersion,
   })
   const remove = useMutation({
     mutationFn: (member: Member) => projectsApi.removeMember(projectId, member.userId, project.version),
@@ -96,6 +101,7 @@ export function MembersPage() {
       setRemoveTarget(undefined)
       refresh()
     },
+    onError: recoverFromStaleVersion,
   })
   const error = add.error ?? update.error ?? remove.error
   const errorMessage = error instanceof ApiError && error.code === 'final_project_manager'

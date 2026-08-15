@@ -64,6 +64,22 @@ describe('MembersPage', () => {
     await waitFor(() => expect(screen.getByText('QA tester')).toBeInTheDocument())
     expect(membersRequest).toHaveBeenCalledTimes(2)
   })
+
+  it('refreshes membership data after a stale-version mutation failure', async () => {
+    const membersRequest = vi.spyOn(projectsApi, 'members')
+      .mockResolvedValueOnce(members)
+      .mockResolvedValueOnce(members)
+    vi.spyOn(projectsApi, 'updateMember').mockRejectedValue(
+      new ApiError(409, 'The project changed', { code: 'stale_version' }),
+    )
+    renderMembers(project)
+
+    fireEvent.change(await screen.findByRole('combobox', { name: 'Role for QA tester' }), { target: { value: 'VIEWER' } })
+    fireEvent.click(screen.getAllByRole('button', { name: 'Save role' })[1])
+
+    expect(await screen.findByText('The project changed. Reloaded data is required before trying again.')).toBeInTheDocument()
+    await waitFor(() => expect(membersRequest).toHaveBeenCalledTimes(2))
+  })
 })
 
 function renderMembers(contextProject: Project) {

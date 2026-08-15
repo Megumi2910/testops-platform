@@ -382,6 +382,17 @@ not as evidence against the shell/account-menu implementation.
 - Verification: focused frontend member/variable/route group passed 3 files / 9 tests
 - Regression layer: mounted frontend test + project-role browser matrix + backend membership tests
 
+### QG-031 — Stale membership conflicts did not refresh current data
+
+- Severity: P2
+- Status: RESOLVED in the Phase 5 membership stale-recovery slice
+- Preconditions: two project managers submit membership changes using different project versions
+- Expected: the stale `409` remains understandable, current project/member data is refreshed, and recovery does not issue duplicate list requests
+- Previous actual: the UI displayed “Reloaded data is required” but did not refresh the project or member queries; invalidating the member key and its parent project key also caused repeated member requests
+- Resolution: all membership mutation errors with `stale_version` now refresh the exact project/member keys; parent-key invalidation no longer cascades into a second member refetch
+- Verification: `MembersPage.test.tsx` passed 5/5, including one post-conflict member refetch
+- Regression layer: mounted frontend test + two-tab optimistic-version browser matrix + backend membership tests
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |
