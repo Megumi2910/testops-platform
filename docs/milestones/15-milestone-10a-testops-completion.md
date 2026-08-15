@@ -358,7 +358,7 @@ remain open.
 
 ## Phase 5 slice result — nested tenant-isolation regression coverage
 
-**Status: PARTIAL pending remote verification.** The existing project-scoped
+**Status: PASS for this implementation slice.** The existing project-scoped
 suite and suite-scoped case guards were verified rather than rewritten. New
 backend tests cover foreign-case reads, updates, and queueing before any step,
 queue, or execution side effect. The role matrix now creates two real projects
@@ -370,9 +370,11 @@ Implementation and test evidence are recorded in
 and [`82-phase5-nested-tenant-isolation.md`](../testing/82-phase5-nested-tenant-isolation.md).
 The frontend typecheck, unit suite (20 files / 62 tests), and production build
 passed. Documentation manifest/link checks and Playwright test discovery also
-passed. The focused backend command could not start on Windows because the
-existing `mvnw.cmd` PowerShell bootstrap fails before Maven is invoked; Linux
-CI is the required backend/browser evidence for this slice.
+passed. CI run `31859393419` passed all six required jobs, including backend
+Maven verification and the full enabled Playwright suite. The focused backend
+command remains unavailable on Windows because the existing `mvnw.cmd`
+PowerShell bootstrap fails before Maven is invoked; Linux CI is the
+authoritative backend/browser evidence.
 
 ## Phase 5 CI remediation — administrator wording and reset handoff
 

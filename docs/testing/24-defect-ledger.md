@@ -418,7 +418,7 @@ not as evidence against the shell/account-menu implementation.
 ### QG-034 — Nested project/suite/case substitution lacked complete regression coverage
 
 - Severity: P1
-- Status: RESOLVED in source; remote browser/backend verification pending for this slice
+- Status: RESOLVED
 - Preconditions: an authenticated project member substitutes a suite or case UUID from another project or suite
 - Expected: the request returns a non-disclosing `404`, performs no definition mutation or queue write, and a later
   legitimate case remains usable
@@ -428,8 +428,9 @@ not as evidence against the shell/account-menu implementation.
   queueing before the queue guard, and `phase5-role-matrix.spec.ts` exercises two real projects and READY cases through
   the UI
 - Verification: frontend lint, typecheck, 20-file/62-test unit suite, production build, documentation links, and
-  Playwright test discovery passed. Focused backend and browser evidence must be recorded by the next Linux CI run
-  because the Windows Maven wrapper fails before Maven starts
+  Playwright test discovery passed. CI run `31859393419` passed all six required jobs, including backend Maven
+  verification and the full enabled Playwright suite; the Windows wrapper limitation is recorded as local environment
+  evidence only
 - Regression layer: backend service tests plus Playwright role/tenant matrix
 
 ## Coverage blockers

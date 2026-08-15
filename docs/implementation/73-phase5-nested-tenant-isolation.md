@@ -66,11 +66,13 @@ definition directly through SQL.
 - Frontend production build: passed.
 - Frontend lint: passed after removing an unused foreign-suite variable in the
   new test.
+- CI run `31859393419` passed all six required jobs, including backend Maven
+  verification and the full enabled Playwright suite.
 - Backend focused Maven test command: blocked locally by the repository's
   `mvnw.cmd` PowerShell bootstrap (`Cannot index into a null array`) before
   Maven starts. This is an environment/tooling limitation; the unchanged
-  backend wrapper and file mode are preserved. CI remains the authoritative
-  Linux Maven gate.
+  backend wrapper and file mode are preserved. CI run `31859393419` is the
+  authoritative Linux Maven gate for this slice.
 
 ## Design trade-off
 

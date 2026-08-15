@@ -42,7 +42,9 @@ stuck in an error state for resources they do own.
 
 The frontend lint, typecheck, 20-file/62-test unit suite, production build,
 documentation manifest parse, link check, and Playwright test discovery all
-pass. The focused backend command could not start on the current Windows
-machine because `mvnw.cmd` fails in its PowerShell bootstrap before invoking
-Maven. The remote Linux CI gate is required to record the final backend and
-browser result for this slice.
+pass. CI run `31859393419` passed all six required jobs, including backend
+Maven verification, Compose health, local-disabled target coverage, browser
+crash coverage, and the full enabled Playwright suite. The focused backend
+command still cannot start on the current Windows machine because `mvnw.cmd`
+fails in its PowerShell bootstrap before invoking Maven; CI supplies the
+authoritative Linux result.
