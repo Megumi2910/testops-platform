@@ -15,6 +15,11 @@ by the application. It enters the menu from the desktop trigger, asserts the
 initial focus position for both arrow directions, and verifies both Tab
 boundaries without depending on a browser's native Tab simulation.
 
+The implementation commit `dfc5d36` also passed the complete CI workflow:
+[`31865910829`](https://github.com/Megumi2910/testops-platform/actions/runs/31865910829).
+Backend, frontend, containers, enabled E2E, local-disabled E2E, and
+browser-crash E2E were all successful.
+
 ## Manual Chrome DevTools follow-up
 
 Against a rebuilt TestOps image, repeat this short matrix at desktop and

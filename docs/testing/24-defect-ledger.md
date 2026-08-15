@@ -155,7 +155,9 @@ not as evidence against the shell/account-menu implementation.
   menu wraps Tab and Shift+Tab at its first and last actions. The focused
   mounted regression is documented in
   [`account-menu keyboard evidence`](89-phase1-account-menu-keyboard.md); the
-  rebuilt-runtime Chrome DevTools matrix remains open.
+  implementation commit `dfc5d36` passed all six CI jobs in run
+  [`31865910829`](https://github.com/Megumi2910/testops-platform/actions/runs/31865910829).
+  The rebuilt-runtime Chrome DevTools matrix remains open.
 - Regression layer: mounted React tests + Chrome DevTools responsive/keyboard matrix
 
 ### QG-011 — Invalid Details stage does not focus the failing control

@@ -209,8 +209,11 @@ items, outside-click handling, and mobile drawer behavior.
 Implementation and regression evidence are recorded in
 [`80-phase1-account-menu-keyboard.md`](../implementation/80-phase1-account-menu-keyboard.md)
 and [`89-phase1-account-menu-keyboard.md`](../testing/89-phase1-account-menu-keyboard.md).
-The focused AppShell suite passes 7 tests. Rebuilt-runtime Chrome DevTools
-verification remains part of the broader Phase 1 accessibility gate.
+The focused AppShell suite passes 7 tests. Implementation commit `dfc5d36`
+passed all six CI jobs in run
+[`31865910829`](https://github.com/Megumi2910/testops-platform/actions/runs/31865910829).
+Rebuilt-runtime Chrome DevTools verification remains part of the broader Phase
+1 accessibility gate.
 
 ## Phase 2 slice result — revision-aware stale-bundle recovery
 

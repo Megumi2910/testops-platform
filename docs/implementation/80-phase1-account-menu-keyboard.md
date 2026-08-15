@@ -53,6 +53,8 @@ cd frontend
 npm test -- --run src/components/AppShell.test.tsx
 ```
 
-Full frontend lint, typecheck, unit, and build gates remain required before
-publishing the slice. Live Chrome DevTools verification against a rebuilt
-container is still part of the broader Milestone 10A release gate.
+Full frontend lint, typecheck, unit, and build gates passed locally. The pushed
+implementation commit `dfc5d36` passed all six CI jobs in run
+[`31865910829`](https://github.com/Megumi2910/testops-platform/actions/runs/31865910829).
+Live Chrome DevTools verification against a rebuilt container is still part of
+the broader Milestone 10A release gate.
