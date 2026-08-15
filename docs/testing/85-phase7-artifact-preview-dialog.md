@@ -31,8 +31,13 @@ npm test -- --run                                               PASS (21 files /
 npm run build                                                    PASS
 ```
 
-The required remote CI run and final browser-matrix evidence are appended to
-this document after the publication commit.
+Remote CI run
+[`31862272093`](https://github.com/Megumi2910/testops-platform/actions/runs/31862272093)
+passed all six required jobs: frontend, backend, containers, enabled E2E,
+local-target-disabled E2E, and browser-crash E2E. The run emitted only the
+non-blocking `upload-artifact` Node.js 20 deprecation annotation. The final
+Chrome DevTools desktop/tablet/320×800 accessibility and performance matrix
+remains a release-level follow-up.
 
 ## Regression ownership
 
@@ -41,4 +46,3 @@ this document after the publication commit.
 - Browser follow-up: verify dialog focus in Chrome DevTools at desktop,
   tablet, and `320×800`, including screen-reader tree and no horizontal
   overflow.
-

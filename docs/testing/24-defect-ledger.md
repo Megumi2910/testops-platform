@@ -477,6 +477,10 @@ not as evidence against the shell/account-menu implementation.
 - Resolution: `ArtifactPreview` exposes a named modal region, focuses its close
   control, traps Tab, closes on Escape, and restores focus to the invoking
   artifact button
+- Verification: `ExecutionPages.test.tsx` passes the named-dialog, initial
+  focus, Escape, and focus-restoration scenarios; CI run
+  [`31862272093`](https://github.com/Megumi2910/testops-platform/actions/runs/31862272093)
+  passes all six required jobs
 - Regression layer: mounted React test plus Chrome DevTools accessibility and
   responsive matrix
 

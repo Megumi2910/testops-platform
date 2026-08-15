@@ -411,7 +411,7 @@ Phase 7 live accessibility/browser matrix remain open.
 
 ## Phase 7 slice result — accessible artifact preview
 
-**Status: IMPLEMENTED; remote verification pending.** Screenshot evidence now
+**Status: PASS for this implementation slice.** Screenshot evidence now
 uses a named dialog region with initial focus on **Close preview**, Escape
 handling, a contained Tab cycle, and focus restoration to the invoking
 artifact button. The existing inline preview, artifact retry behavior, and
@@ -420,8 +420,12 @@ backend evidence policy are unchanged.
 Implementation and local regression evidence are recorded in
 [`76-phase7-artifact-preview-dialog.md`](../implementation/76-phase7-artifact-preview-dialog.md)
 and [`85-phase7-artifact-preview-dialog.md`](../testing/85-phase7-artifact-preview-dialog.md).
-The focused and full frontend suites, lint, typecheck, and build pass locally;
-remote CI and live Chrome DevTools evidence are appended after publication.
+The focused and full frontend suites, lint, typecheck, and build pass locally.
+Remote CI run
+[`31862272093`](https://github.com/Megumi2910/testops-platform/actions/runs/31862272093)
+passes all six required jobs (frontend, backend, containers, enabled E2E,
+local-target-disabled E2E, and browser-crash E2E). The live Chrome DevTools
+desktop/tablet/320×800 accessibility and performance matrix remains open.
 
 ## Phase 5 CI remediation — administrator wording and reset handoff
 

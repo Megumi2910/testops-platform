@@ -47,5 +47,7 @@ access.
 ## Verification
 
 The focused artifact test and the complete frontend gates pass locally. Remote
-CI evidence is appended to the paired testing document after publication.
-
+CI run [`31862272093`](https://github.com/Megumi2910/testops-platform/actions/runs/31862272093)
+also passed all six required jobs: frontend, backend, containers, enabled E2E,
+local-target-disabled E2E, and browser-crash E2E. The remaining live Chrome
+DevTools accessibility/performance matrix is a separate release gate.
