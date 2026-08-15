@@ -340,3 +340,18 @@ and [`79-phase5-membership-stale-recovery.md`](../testing/79-phase5-membership-s
 The focused Members page suite passed 1 file / 5 tests. The broader Phase 5
 two-project browser matrix, final-admin coverage, artifacts, and Chrome
 DevTools gate remain open.
+
+## Phase 5 slice result — administrator conflict guidance
+
+**Status: PASS for this implementation slice.** The administration page now
+maps the structured `final_active_admin` response to clear guidance that keeps
+another active administrator in place. Known missing-user and validation codes
+also receive stable, sanitized messages; the backend remains authoritative for
+the concurrent invariant.
+
+Implementation and regression evidence are recorded in
+[`71-phase5-admin-conflict-guidance.md`](../implementation/71-phase5-admin-conflict-guidance.md)
+and [`80-phase5-admin-conflict-guidance.md`](../testing/80-phase5-admin-conflict-guidance.md).
+The focused administrator suite passed 1 file / 3 tests. The broader Phase 5
+browser matrix, account permutations, artifacts, and Chrome DevTools gate
+remain open.

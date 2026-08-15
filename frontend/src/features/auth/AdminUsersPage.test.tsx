@@ -47,4 +47,18 @@ describe('AdminUsersPage', () => {
     expect(await screen.findByText('QA User')).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
+
+  it('explains the final-active-administrator protection', async () => {
+    const admin = { ...user, platformRole: 'ADMIN' }
+    const fetchMock = vi.fn()
+      .mockImplementationOnce(() => json({ content: [admin], page: 0, totalElements: 1, totalPages: 1 }))
+      .mockImplementationOnce(() => json({ code: 'final_active_admin', detail: 'The final active administrator cannot be demoted' }, 409))
+    vi.stubGlobal('fetch', fetchMock)
+    renderPage()
+
+    fireEvent.change(await screen.findByRole('combobox', { name: 'Platform role for qa@example.com' }), { target: { value: 'MEMBER' } })
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Keep another active administrator active before demoting or disabling this account.')
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
 })

@@ -393,6 +393,17 @@ not as evidence against the shell/account-menu implementation.
 - Verification: `MembersPage.test.tsx` passed 5/5, including one post-conflict member refetch
 - Regression layer: mounted frontend test + two-tab optimistic-version browser matrix + backend membership tests
 
+### QG-032 — Final administrator conflicts lacked stable UI guidance
+
+- Severity: P2
+- Status: RESOLVED in the Phase 5 administrator-conflict slice
+- Preconditions: a platform administrator attempts to demote or disable the only active administrator
+- Expected: the server rejects the unsafe mutation and the UI explains that another active administrator must remain
+- Previous actual: the page displayed the raw server message without a stable, actionable mapping for the structured error code
+- Resolution: `AdminUsersPage` maps `final_active_admin`, missing-user, and known validation codes to concise sanitized guidance while keeping the server invariant authoritative
+- Verification: `AdminUsersPage.test.tsx` passed 3/3, including the structured `409 final_active_admin` response
+- Regression layer: mounted frontend test + administrator browser matrix + backend final-admin service tests
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |

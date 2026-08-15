@@ -10,6 +10,17 @@ import { Alert, Button, ConfirmDialog, LoadingState, PageHeader } from '../../co
 type AdminUser = { id: string; email: string; displayName: string; status: string; platformRole: string; emailVerified: boolean; createdAt: string; lastLoginAt?: string }
 type AdminUsersResponse = { content: AdminUser[]; page?: number; totalPages?: number; totalElements?: number }
 
+function adminMutationError(cause: unknown) {
+  if (!(cause instanceof ApiError)) return 'Unable to update this user.'
+  switch (cause.code) {
+    case 'final_active_admin': return 'Keep another active administrator active before demoting or disabling this account.'
+    case 'user_not_found': return 'This account no longer exists. Refresh the list and try again.'
+    case 'invalid_platform_role': return 'Choose a supported platform role and try again.'
+    case 'invalid_account_status': return 'Choose a supported account status and try again.'
+    default: return cause.message || 'Unable to update this user.'
+  }
+}
+
 function formatSessionDate(value: string) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
 }
@@ -180,7 +191,7 @@ export function AdminUsersPage() {
       setMessage('User updated.')
       await users.refetch()
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : 'Unable to update this user.')
+      setError(adminMutationError(cause))
     } finally {
       setPendingUserId(null)
     }

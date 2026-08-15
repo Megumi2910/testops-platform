@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu, Phase 2 stale-bundle recovery, Phase 3 account-security, Phase 4 project/definition guards, and Phase 5 administration-list, variable-permission, member-recovery, and stale-membership-recovery slices are implemented and locally verified; membership isolation, execution, accessibility, and final browser gates remain ordered follow-up slices",
+  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu, Phase 2 stale-bundle recovery, Phase 3 account-security, Phase 4 project/definition guards, and Phase 5 administration-list, variable-permission, member-recovery, stale-membership-recovery, and administrator-conflict slices are implemented and locally verified; membership isolation, execution, accessibility, and final browser gates remain ordered follow-up slices",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -537,6 +537,14 @@
     {
       "path": "docs/testing/79-phase5-membership-stale-recovery.md",
       "role": "Phase 5 stale membership recovery and duplicate-refetch regression evidence"
+    },
+    {
+      "path": "docs/implementation/71-phase5-admin-conflict-guidance.md",
+      "role": "Phase 5 final-active-administrator conflict mapping and sanitized UI guidance implementation"
+    },
+    {
+      "path": "docs/testing/80-phase5-admin-conflict-guidance.md",
+      "role": "Phase 5 final-active-administrator conflict and administration boundary regression evidence"
     },
     {
       "path": "frontend/src/features/auth/AccountPages.test.tsx",
