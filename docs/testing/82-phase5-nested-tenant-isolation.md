@@ -45,6 +45,8 @@ documentation manifest parse, link check, and Playwright test discovery all
 pass. CI run `31859393419` passed all six required jobs, including backend
 Maven verification, Compose health, local-disabled target coverage, browser
 crash coverage, and the full enabled Playwright suite. The focused backend
-command still cannot start on the current Windows machine because `mvnw.cmd`
-fails in its PowerShell bootstrap before invoking Maven; CI supplies the
-authoritative Linux result.
+command was historically blocked on the Windows machine because `mvnw.cmd`
+failed in its PowerShell bootstrap before invoking Maven. The wrapper cache
+fix and Testcontainers Docker API compatibility configuration now make the
+full `mvnw.cmd -B -ntp verify` gate pass locally; CI remains the authoritative
+regression result for the original slice.

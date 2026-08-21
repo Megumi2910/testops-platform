@@ -68,11 +68,12 @@ definition directly through SQL.
   new test.
 - CI run `31859393419` passed all six required jobs, including backend Maven
   verification and the full enabled Playwright suite.
-- Backend focused Maven test command: blocked locally by the repository's
-  `mvnw.cmd` PowerShell bootstrap (`Cannot index into a null array`) before
-  Maven starts. This is an environment/tooling limitation; the unchanged
-  backend wrapper and file mode are preserved. CI run `31859393419` is the
-  authoritative Linux Maven gate for this slice.
+- Historical note: the focused Maven command was initially blocked locally by
+  the repository's `mvnw.cmd` PowerShell bootstrap (`Cannot index into a null
+  array`) before Maven started. The wrapper now handles normal cache folders,
+  and the Failsafe Docker API compatibility property lets Testcontainers use
+  Docker Desktop 4.79+. The current full `mvnw.cmd -B -ntp verify` gate passes
+  with 144 unit tests and 10 integration tests.
 
 ## Design trade-off
 

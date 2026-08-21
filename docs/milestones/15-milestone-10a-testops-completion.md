@@ -150,13 +150,11 @@ The normal Compose project was not started and no normal volume was reset.
   (`13` files / `42` tests), and `npm run build` all pass.
 - Backend unit/package gate: `.\mvnw.cmd -B -DskipITs verify` passes with
   `136` tests and zero failures.
-- Full backend `.\mvnw.cmd -B verify` reaches the integration phase but the
-  Windows Java process cannot discover Docker through Testcontainers, even
-  though the same Docker Desktop engine serves Compose. It fails before a
-  PostgreSQL container is created with `Could not find a valid Docker
-  environment`. This is an environment blocker for the local integration gate,
-  not a product assertion failure; CI's Linux runner and the isolated QA
-  Compose health gate remain required evidence.
+- Full backend `.\mvnw.cmd -B -ntp verify` now passes locally with Docker
+  Desktop. The Maven wrapper handles a normal Windows cache directory, and the
+  Failsafe Testcontainers client negotiates Docker API `1.40` or newer. The
+  run reports `144` unit tests plus `10` integration tests, with zero failures,
+  zero errors, and one expected skip.
 
 ## Phase 0 result
 
@@ -164,9 +162,10 @@ The normal Compose project was not started and no normal volume was reset.
 stack is healthy and revision-matched, frontend and backend unit/package gates
 are green, and remote CI run `31782848666` executed and passed all six jobs.
 
-The full local Testcontainers integration gate remains an environment-specific
-Windows limitation and is covered by the passing Linux CI backend job. This
-does not waive the integration tests in later slices.
+The full local Testcontainers integration gate is now green on Windows with
+Docker Desktop. The wrapper and API-version fixes are documented in the
+[quality-gate operator guide](../guides/23-quality-gate-operator-guide.md).
+This does not waive the integration tests in later slices.
 
 The Phase 0 result is complete and remains the release gate for the branch.
 The first Phase 1 shell slice is now implemented and verified; the remaining
@@ -496,10 +495,9 @@ and [`82-phase5-nested-tenant-isolation.md`](../testing/82-phase5-nested-tenant-
 The frontend typecheck, unit suite (20 files / 62 tests), and production build
 passed. Documentation manifest/link checks and Playwright test discovery also
 passed. CI run `31859393419` passed all six required jobs, including backend
-Maven verification and the full enabled Playwright suite. The focused backend
-command remains unavailable on Windows because the existing `mvnw.cmd`
-PowerShell bootstrap fails before Maven is invoked; Linux CI is the
-authoritative backend/browser evidence.
+Maven verification and the full enabled Playwright suite. The earlier Windows
+wrapper failure is closed by the Maven cache and Docker API compatibility
+follow-up; the current full backend gate is now green locally as well.
 
 ## Phase 5 slice result — active-session context
 
@@ -609,3 +607,19 @@ and [`81-ci-auth-recovery-remediation.md`](../testing/81-ci-auth-recovery-remedi
 The focused remediation suite passed 2 files / 8 tests. CI run `31858093963`
 then passed all six jobs, including the enabled 67-test E2E workflow without a
 failure or flake.
+
+## Phase 7 slice result — readiness contrast correction
+
+**Status: PASS for this implementation slice.** Chrome Lighthouse found two
+low-contrast colors on the public readiness shell. The eyebrow now uses the
+strong brand token and the footer uses a readable neutral. No route, API, or
+authentication behavior changed.
+
+Implementation and regression evidence are recorded in
+[`86-phase7-testops-readiness-contrast.md`](../implementation/86-phase7-testops-readiness-contrast.md)
+and
+[`95-phase7-testops-readiness-contrast.md`](../testing/95-phase7-testops-readiness-contrast.md).
+Frontend lint, typecheck, 21 files / 77 tests, and production build pass. The
+rebuilt frontend is healthy and Chrome DevTools Lighthouse reports desktop
+accessibility `100`. The remaining live role, mobile, and retained-tab release
+matrix is still required before Milestone 10A can be marked complete.

@@ -516,6 +516,20 @@ not as evidence against the shell/account-menu implementation.
 - Regression layer: mounted authentication tests plus Chrome DevTools form and
   keyboard matrix
 
+### QG-039 — Readiness shell text failed contrast checks
+
+- Severity: P2
+- Status: RESOLVED in the Phase 7 readiness contrast slice
+- Preconditions: rebuilt TestOps frontend, guest readiness route
+- Previous actual: Lighthouse measured `.eyebrow` at `4.02:1` and the footer at
+  `3.55:1` against the readiness background
+- Resolution: the eyebrow uses the stronger brand token and the footer uses a
+  readable neutral that both meet WCAG AA normal-text contrast
+- Verification: frontend lint, typecheck, 21 files / 77 tests, and production
+  build pass; rebuilt Chrome DevTools Lighthouse desktop accessibility is `100`
+- Regression layer: frontend gates plus Chrome DevTools/Lighthouse readiness
+  snapshot
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |

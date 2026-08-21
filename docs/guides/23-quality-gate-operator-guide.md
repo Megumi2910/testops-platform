@@ -25,6 +25,40 @@ It then:
 4. waits for health;
 5. fails if a running image label differs from its repository revision.
 
+## Backend verification on Windows and Docker Desktop
+
+Run the backend gate from the backend directory:
+
+```powershell
+cd D:\Projects\testops-platform\backend
+.\mvnw.cmd -B -ntp verify
+```
+
+Docker Desktop must be running. The Maven wrapper now handles a normal (non-junction)
+`MAVEN_USER_HOME` correctly, so it can download Maven into a local `.m2` directory
+without the PowerShell `Cannot index into a null array` failure.
+
+The integration tests use Testcontainers. Docker Desktop 4.79 and newer require
+Docker API 1.40 or newer, while older Testcontainers clients defaulted to API 1.32.
+The Failsafe configuration pins the client to API 1.40 through the
+`testcontainers.docker.api.version` Maven property. It is intentionally configurable
+for CI or an older Docker engine:
+
+```powershell
+.\mvnw.cmd -B -ntp -Dtestcontainers.docker.api.version=1.41 verify
+```
+
+Do not hard-code a Windows named pipe in the project. Testcontainers should use the
+active Docker context (`docker context show`) and the Maven property only controls
+the negotiated API version. If Docker is unavailable, start Docker Desktop and run
+the command again; do not reset the normal database volume. Testcontainers creates
+and removes disposable PostgreSQL containers for the integration tests.
+
+Successful output ends with `BUILD SUCCESS` and reports 144 unit tests plus the
+integration suite. A few connection-validation warnings can appear while a disposable
+database is being stopped during test teardown; they are non-failing if Failsafe
+reports zero failures and zero errors.
+
 ## Verify without rebuilding
 
 ```powershell
