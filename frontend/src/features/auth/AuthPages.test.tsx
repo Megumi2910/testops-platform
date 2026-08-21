@@ -71,7 +71,14 @@ describe('PasswordResetPage', () => {
       retryAfterSeconds: 0,
     })
     vi.spyOn(authApi, 'confirmPasswordReset').mockRejectedValue(new ApiError(400, 'The reset code is invalid.', { errors: { otp: 'Enter the six-digit code from your email.' } }))
-    render(<MemoryRouter initialEntries={['/password-reset']}><PasswordResetPage /></MemoryRouter>)
+    render(
+      <MemoryRouter initialEntries={['/password-reset']}>
+        <Routes>
+          <Route path="/password-reset" element={<PasswordResetPage />} />
+          <Route path="/login" element={<LoginPage />} />
+        </Routes>
+      </MemoryRouter>,
+    )
 
     fireEvent.change(screen.getByRole('textbox', { name: 'Email' }), { target: { value: 'qa@example.com' } })
     fireEvent.click(screen.getByRole('button', { name: 'Send reset code' }))
@@ -118,7 +125,23 @@ describe('PasswordResetPage', () => {
       retryAfterSeconds: 30,
     })
     const confirm = vi.spyOn(authApi, 'confirmPasswordReset').mockResolvedValue(undefined)
-    render(<MemoryRouter initialEntries={['/password-reset']}><PasswordResetPage /></MemoryRouter>)
+    const context: AuthContextValue = {
+      user: null,
+      providers: { enabled: true, registrationEnabled: true, emailVerificationEnabled: true, googleEnabled: false },
+      loading: false,
+      login: vi.fn(), register: vi.fn(), verifyEmail: vi.fn(), resendEmail: vi.fn(),
+      resendAuthenticatedEmail: vi.fn(), reloadUser: vi.fn(), logout: vi.fn(),
+    }
+    render(
+      <MemoryRouter initialEntries={['/password-reset']}>
+        <AuthContext.Provider value={context}>
+          <Routes>
+            <Route path="/password-reset" element={<PasswordResetPage />} />
+            <Route path="/login" element={<LoginPage />} />
+          </Routes>
+        </AuthContext.Provider>
+      </MemoryRouter>,
+    )
 
     await fireEvent.change(screen.getByRole('textbox', { name: 'Email' }), { target: { value: 'qa@example.com' } })
     fireEvent.click(screen.getByRole('button', { name: 'Send reset code' }))
@@ -131,8 +154,26 @@ describe('PasswordResetPage', () => {
     await waitFor(() => expect(confirm).toHaveBeenCalledWith({
       email: 'qa@example.com', otp: '123456', password: 'new-correct-horse-battery-staple',
     }))
-    expect(screen.getByRole('status')).toHaveTextContent('Password reset')
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Sign in' })).toBeVisible())
+    expect(screen.getByRole('status')).toHaveTextContent('Your password was updated')
+    expect(screen.getByRole('textbox', { name: 'Email' })).toHaveValue('qa@example.com')
     request.mockRestore()
     confirm.mockRestore()
+  })
+
+  it.each([
+    ['password-changed', 'Sign in again with your new password.'],
+    ['google-unlinked', 'Google was removed and all other sessions were signed out.'],
+    ['sessions-revoked', 'All refresh sessions were revoked. Sign in again to continue.'],
+  ])('shows the %s recovery notice on sign in', (reason, message) => {
+    const context: AuthContextValue = {
+      user: null,
+      providers: { enabled: true, registrationEnabled: true, emailVerificationEnabled: true, googleEnabled: false },
+      loading: false,
+      login: vi.fn(), register: vi.fn(), verifyEmail: vi.fn(), resendEmail: vi.fn(),
+      resendAuthenticatedEmail: vi.fn(), reloadUser: vi.fn(), logout: vi.fn(),
+    }
+    render(<MemoryRouter initialEntries={[`/login?reason=${reason}`]}><AuthContext.Provider value={context}><LoginPage /></AuthContext.Provider></MemoryRouter>)
+    expect(screen.getByRole('status')).toHaveTextContent(message)
   })
 })

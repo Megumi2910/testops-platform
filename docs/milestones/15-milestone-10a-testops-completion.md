@@ -1,6 +1,6 @@
 # Milestone 10A — TestOps first-release completion
 
-## Current slice: rebuilt-runtime shell and stale-bundle browser gate
+## Current slice: Phase 3 password-reset handoff and account recovery notices
 
 This document is the current release ledger for Milestone 10A. It replaces the
 Milestone 9 release-candidate document as the source of truth for work on the
@@ -613,6 +613,24 @@ and
 This closes the current-image shell/account smoke gate. It does not close the
 operational two-image revision-A/revision-B deployment swap or the complete
 Milestone 10A Chrome DevTools matrix.
+
+## Phase 3 slice result — password-reset handoff and account recovery notices
+
+**Status: PASS for this implementation slice.** A successful password reset
+now navigates to `/login?reason=password-reset&email=...`; the sign-in page
+shows an accessible, sanitized success notice and preserves only the email.
+The same notice pattern now explains password changes, Google unlinking, and
+session revocation. No backend contract changed.
+
+Implementation and test evidence are recorded in
+[`88-phase3-password-reset-handoff.md`](../implementation/88-phase3-password-reset-handoff.md)
+and
+[`97-phase3-password-reset-handoff.md`](../testing/97-phase3-password-reset-handoff.md).
+The full frontend gate passed 21 files / 80 tests, lint, typecheck, and build;
+the isolated Mailpit Playwright auth/session matrix passed 7 tests. Chrome
+DevTools confirmed the rebuilt login notice and expected anonymous refresh
+`401`; no application exception was observed. Remaining Phase 3 work includes
+the broader account mutation and role/browser matrix.
 
 ## Phase 5 CI remediation — administrator wording and reset handoff
 

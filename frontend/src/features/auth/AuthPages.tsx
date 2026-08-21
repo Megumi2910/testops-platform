@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { authApi } from './api'
 import { useAuth } from './AuthContext'
 import { ApiError } from '../../lib/api'
-import { Button } from '../../components/ui'
+import { Alert, Button } from '../../components/ui'
 import { safeReturnTo } from './returnTo'
 import { AuthField } from './AuthField'
 
@@ -19,6 +19,16 @@ function captureFormError(caught: unknown, fallback: string, setError: (message:
   setError(problemMessage(caught, fallback))
 }
 
+function loginNotice(reason: string | null) {
+  switch (reason) {
+    case 'password-changed': return { title: 'Password changed', message: 'Sign in again with your new password.' }
+    case 'password-reset': return { title: 'Password reset', message: 'Your password was updated. Sign in to continue.' }
+    case 'google-unlinked': return { title: 'Google unlinked', message: 'Google was removed and all other sessions were signed out.' }
+    case 'sessions-revoked': return { title: 'Sessions revoked', message: 'All refresh sessions were revoked. Sign in again to continue.' }
+    default: return null
+  }
+}
+
 export function LoginPage() {
   const { login, providers, user } = useAuth()
   const navigate = useNavigate()
@@ -27,6 +37,7 @@ export function LoginPage() {
   const [email, setEmail] = useState(searchParams.get('email') ?? '')
   const [password, setPassword] = useState('')
   const [pending, setPending] = useState(false)
+  const notice = loginNotice(searchParams.get('reason'))
   if (user) return <NavigateHome returnTo={searchParams.get('returnTo')} />
   async function submit(event: FormEvent) {
     event.preventDefault(); clear()
@@ -35,6 +46,7 @@ export function LoginPage() {
   }
   return <AuthCard title="Sign in" subtitle="Use your TestOps account to continue.">
     <form className="form-stack" onSubmit={submit}>
+      {notice && <Alert tone="success" title={notice.title}>{notice.message}</Alert>}
       <AuthField id="login-email" label="Email" name="email" type="email" autoComplete="email" spellCheck={false} required value={email} onChange={(event) => setEmail(event.target.value)} error={fieldErrors.email} />
       <AuthField id="login-password" label="Password" name="password" type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} error={fieldErrors.password} />
       {error && <p className="form-error" role="alert">{error}</p>}
@@ -153,7 +165,7 @@ export function PasswordResetPage() {
   }
   async function confirm(event: FormEvent) {
     event.preventDefault(); clear(); setPending(true)
-    try { await authApi.confirmPasswordReset({ email, otp, password }); setMessage('Password reset. You can now sign in.'); setSent(false); setOtp(''); setPassword('') }
+    try { await authApi.confirmPasswordReset({ email, otp, password }); navigate(`/login?reason=password-reset&email=${encodeURIComponent(email)}`, { replace: true }) }
     catch (caught) { captureFormError(caught, 'Unable to reset your password', setError, setFieldErrors) } finally { setPending(false) }
   }
   return <AuthCard title="Reset your password" subtitle="We will email a six-digit code to your verified account. Codes expire after ten minutes.">

@@ -278,7 +278,7 @@ not as evidence against the shell/account-menu implementation.
 - Reproduction: verify an account, request a password reset, and persist a `PASSWORD_RESET` challenge
 - Previous actual: the service returned a database check-constraint error because `email_verification_challenges_purpose_check` still allowed only `REGISTRATION` and `ADD_PASSWORD`
 - Resolution: `V022__password_reset_challenge_purpose.sql` replaces the named PostgreSQL constraint with the three supported purposes; the public reset endpoints are permit-all and return the documented generic/204 contracts
-- Verification: `AuthServiceRecoveryTest` passed 3 tests; the rebuilt E2E stack ran all 4 `auth-recovery.spec.ts` scenarios successfully, including Mailpit reset delivery and sign-in using the new password
+- Verification: `AuthServiceRecoveryTest` passed 3 tests; the rebuilt E2E stack ran all 4 `auth-recovery.spec.ts` scenarios successfully, including Mailpit reset delivery, the new `/login?reason=password-reset&email=...` handoff, and sign-in using the new password. Frontend regression evidence is recorded in `docs/testing/97-phase3-password-reset-handoff.md`.
 - Regression layer: migration, service, frontend, and Playwright/Mailpit browser tests
 
 ### QG-020 — CI password-recovery run used a non-canonical browser origin
