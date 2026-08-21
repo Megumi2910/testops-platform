@@ -14,8 +14,9 @@ owners. For the current Milestone 10A release decision, use the [completion
 ledger](../milestones/15-milestone-10a-testops-completion.md): a historical
 resolution is not a substitute for rebuilding the merged revision and rerunning
 the browser gate. QG-005 (form metadata) is resolved in source. QG-010 (stale
-lazy chunks) has source-level recovery coverage, while the two-image deployment
-and live browser evidence remain open. The public repository's GitHub secret-scanning endpoint is unavailable,
+lazy chunks) now has source, isolated Playwright, and rebuilt-runtime smoke
+evidence; the true two-image deployment swap remains open. The public
+repository's GitHub secret-scanning endpoint is unavailable,
 so the Phase 0 local audit is recorded as a compensating control rather than a
 claim that hosted scanning ran.
 
@@ -139,7 +140,7 @@ not as evidence against the shell/account-menu implementation.
 - Reproduction: navigate from the stale tab after the new image starts
 - Expected: one controlled reload or branded recovery boundary
 - Actual (before Phase 1): the browser requests a removed hashed chunk, receives `404`, and React Router renders its default unexpected-error page
-- Phase 1 slice update: the root router now renders a branded recovery page with safe reload/readiness actions and no stack details. Phase 2 now adds revision-aware lazy imports, one automatic reload per route/revision, recognition of the Vite `error loading dynamically imported module` variant, and a manual retry that clears the current marker. Local gates and CI run [`31865017062`](https://github.com/Megumi2910/testops-platform/actions/runs/31865017062) pass all six jobs. A full two-image A/B deployment swap and live Chrome DevTools proof remain operational follow-ups.
+- Phase 1 slice update: the root router now renders a branded recovery page with safe reload/readiness actions and no stack details. Phase 2 now adds revision-aware lazy imports, one automatic reload per route/revision, recognition of the Vite `error loading dynamically imported module` variant, and a manual retry that clears the current marker. Local gates and CI run [`31865017062`](https://github.com/Megumi2910/testops-platform/actions/runs/31865017062) pass all six jobs. The rebuilt `testops-live-gate` runtime then passed the retained-tab simulation and account-shell browser smoke; only the true two-image A/B deployment swap remains operational follow-up.
 - Likely subsystem: lazy-import recovery and root route error boundary
 - Regression layer: lazy-import unit test + retained-tab Playwright smoke + deployment smoke with a rebuilt browser session
 
@@ -150,7 +151,7 @@ not as evidence against the shell/account-menu implementation.
 - Preconditions: a verified or unverified user is signed in and viewing any shell route
 - Previous actual: the desktop header rendered a text link to `/account`; users had no discoverable path to security, sessions, verification recovery, administration, or sign-out actions from the top-right control.
 - Resolution: `AppShell` now composes an account menu from the current user and effective platform permissions. Unverified users receive a verification link, administrators receive `/admin/users`, and sign-out clears auth state before navigating to `/login`. The same actions are available in the mobile drawer.
-- Verification: `frontend/src/components/AppShell.test.tsx` covers verified, unverified, administrator, Escape/focus, sign-out, and mobile drawer behavior; `RouteErrorPage.test.tsx` covers chunk recovery. CI run `31785998751` passed all six jobs for the implementation commit. Live Chrome DevTools verification is still required against the rebuilt QA image.
+- Verification: `frontend/src/components/AppShell.test.tsx` covers verified, unverified, administrator, Escape/focus, sign-out, and mobile drawer behavior; `RouteErrorPage.test.tsx` covers chunk recovery. CI run `31785998751` passed all six jobs for the implementation commit. The rebuilt `testops-live-gate` Chrome DevTools smoke confirmed the account menu, mobile drawer, account security route, no console errors, and mobile Lighthouse accessibility `100`.
 - Keyboard follow-up: the trigger now opens with ArrowDown/ArrowUp and the
   menu wraps Tab and Shift+Tab at its first and last actions. The focused
   mounted regression is documented in

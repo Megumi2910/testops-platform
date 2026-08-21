@@ -1,6 +1,6 @@
 # Milestone 10A — TestOps first-release completion
 
-## Current slice: Phase 6 execution failure guidance
+## Current slice: rebuilt-runtime shell and stale-bundle browser gate
 
 This document is the current release ledger for Milestone 10A. It replaces the
 Milestone 9 release-candidate document as the source of truth for work on the
@@ -591,6 +591,28 @@ tests pass 2 files / 4 tests. The two-image deployment swap and live Chrome
 DevTools retained-tab evidence remain open release-gate work. Commit `9dd6465`
 passed all six required CI jobs in
 [`31865017062`](https://github.com/Megumi2910/testops-platform/actions/runs/31865017062).
+
+## Phase 1/2 slice result — rebuilt-runtime shell and browser gate
+
+**Status: PASS for the rebuilt-runtime smoke slice.** The isolated
+`testops-live-gate` Compose project was rebuilt from commit `8d85c03`; the
+frontend and backend OCI revision labels matched the checked-out revision. The
+focused Playwright group passed all six scenarios covering stale-chunk recovery,
+OTP recovery, protected deep links, sessions, deterministic Google sign-in, and
+sanitized OAuth failure.
+
+Chrome DevTools verified the signed-in account menu, Escape focus restoration,
+the mobile navigation dialog at `320×800`, the Account security route, and
+console/network behavior. Mobile Lighthouse accessibility and best-practices
+scores were both `100`, and the document had no horizontal overflow. The
+sanitized implementation and test records are in
+[`87-phase1-2-live-runtime-browser-gate.md`](../implementation/87-phase1-2-live-runtime-browser-gate.md)
+and
+[`96-phase1-2-live-runtime-browser-gate.md`](../testing/96-phase1-2-live-runtime-browser-gate.md).
+
+This closes the current-image shell/account smoke gate. It does not close the
+operational two-image revision-A/revision-B deployment swap or the complete
+Milestone 10A Chrome DevTools matrix.
 
 ## Phase 5 CI remediation — administrator wording and reset handoff
 
