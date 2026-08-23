@@ -75,7 +75,7 @@ if ($Force -or -not (Test-Path -LiteralPath $backendEnv)) {
 
 if ($Force) {
     $pgadminEnv = Join-Path $root 'pgadmin4/.env'
-    Set-EnvValue $pgadminEnv 'PGADMIN_DEFAULT_EMAIL' 'admin@localhost.test'
+    Set-EnvValue $pgadminEnv 'PGADMIN_DEFAULT_EMAIL' 'admin@testops.example.com'
     Set-EnvValue $pgadminEnv 'PGADMIN_DEFAULT_PASSWORD' (New-RandomBase64 24)
 }
 if ($Force -and $TargetAllowedOrigins.Count -gt 0) {

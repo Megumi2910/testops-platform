@@ -66,8 +66,18 @@ Assert-True ($rebuildOutput -match [regex]::Escape("VCS_REF=$revision")) 'rebuil
 $rebuildSource = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'rebuild-quality-gate.ps1') -Raw
 Assert-True ($rebuildSource -match "Command = 'ps'.*Arguments = @\('-a'\)") `
     'startup failure diagnostics inspect only the caller-supplied Compose project'
-Assert-True ($rebuildSource -match "Command = 'logs'.*'--tail', '200'.*'backend'.*'frontend'") `
-    'startup failure diagnostics retain bounded application logs'
+Assert-True ($rebuildSource -match "Command = 'logs'.*'--tail', '200'.*'backend'.*'frontend'.*'pgadmin4'.*'mailpit'") `
+    'startup failure diagnostics retain bounded logs for every gated service'
+
+$pgadminEmail = 'admin@testops.example.com'
+$pgadminExample = Get-Content -LiteralPath (Join-Path $root 'pgadmin4\.env.example') -Raw
+Assert-True ($pgadminExample -match "(?m)^PGADMIN_DEFAULT_EMAIL=$([regex]::Escape($pgadminEmail))$") `
+    'tracked PgAdmin defaults use an accepted non-reserved placeholder address'
+foreach ($setupScript in @('setup-local.ps1', 'setup-local.sh')) {
+    $setupSource = Get-Content -LiteralPath (Join-Path $PSScriptRoot $setupScript) -Raw
+    Assert-True ($setupSource -match [regex]::Escape($pgadminEmail)) `
+        "$setupScript preserves the validator-compatible PgAdmin identity"
+}
 
 $teardownOutput = (& (Join-Path $PSScriptRoot 'teardown-quality-gate.ps1') -ProjectName $project `
     -ComposeFiles @('docker-compose.yml', 'docker-compose.qa.yml') -RemoveVolumes -DryRun 6>&1) | Out-String

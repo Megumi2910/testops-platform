@@ -52,7 +52,7 @@ try {
     Write-Warning "Isolated TestOps startup failed; emitting project-scoped status and bounded service logs before teardown."
     foreach ($diagnostic in @(
         @{ Command = 'ps'; Arguments = @('-a'); Activity = "Inspect failed TestOps project $ProjectName" },
-        @{ Command = 'logs'; Arguments = @('--no-color', '--tail', '200', 'postgres', 'backend', 'frontend', 'mailpit'); Activity = "Read failed TestOps service logs for $ProjectName" }
+        @{ Command = 'logs'; Arguments = @('--no-color', '--tail', '200', 'postgres', 'backend', 'frontend', 'pgadmin4', 'mailpit'); Activity = "Read failed TestOps service logs for $ProjectName" }
     )) {
         try {
             Invoke-ComposeChecked -Repository $testopsRepository -ComposeProject $ProjectName -Files $ComposeFiles `

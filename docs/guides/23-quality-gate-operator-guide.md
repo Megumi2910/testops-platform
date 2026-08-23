@@ -8,6 +8,41 @@ The quality-gate overlay gives beginners a repeatable TestOps role matrix withou
 
 The overlay adds a TestOps-only Mailpit instance on `http://localhost:8027`. It does not replace the ecommerce isolated E2E Mailpit on `8025`, and it does not reset either normal database.
 
+## Primary candidate gate
+
+Run the aggregate gate from the repository root with an explicit project name
+that is not the repository's default Compose project:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1 `
+  -ProjectName testops-m10a-verify -NoBrowser
+```
+
+The gate installs the locked frontend dependencies, runs lint, typecheck, unit
+tests, and the production build, runs the complete Maven verification, checks
+every supported Compose configuration, audits the orchestration/revision/docs/
+secret contracts, builds revision-labelled images, waits for health, verifies
+the running OCI labels, and tears down only the named disposable project.
+
+`-NoBrowser` adds a temporary Compose override with no published host ports.
+It still proves image build, startup, health, and revision provenance. Omit the
+switch only when the enabled E2E ports are available and the complete browser
+matrix is intended. If tracked candidate source is dirty, the script delegates
+to a validated temporary detached worktree at `git rev-parse HEAD`; local
+formatting and documentation drafts therefore cannot silently enter an image
+labelled as the committed candidate.
+
+The aggregate script always attempts project-scoped teardown in `finally`.
+When startup fails it emits bounded `ps` and service-log diagnostics for that
+same project before cleanup. It never targets the developer's default Compose
+project.
+
+PgAdmin rejects special-use domains such as `.invalid`, `.test`, and `localhost`
+at startup. The tracked template therefore uses the non-secret placeholder
+`admin@testops.example.com`; keep the address under a normal public suffix when
+customizing `pgadmin4/.env`. A PgAdmin restart is a gate failure, and its bounded
+logs are included in the startup diagnostics.
+
 ## First setup
 
 ```powershell
@@ -97,7 +132,11 @@ Expected ecommerce endpoints:
 ## Safe shutdown
 
 ```powershell
-docker compose -f docker-compose.yml -f docker-compose.qa.yml down
+.\scripts\teardown-quality-gate.ps1 `
+  -ProjectName testops-quality-gate `
+  -ComposeFiles @('docker-compose.yml', 'docker-compose.qa.yml')
 ```
 
-This stops the TestOps QA overlay but preserves named database and artifact volumes. Ecommerce can remain running for target testing.
+This stops only the named TestOps QA project and preserves its named database
+and artifact volumes. Add `-RemoveVolumes` only for an explicitly disposable
+gate project. Ecommerce can remain running for target testing.
