@@ -70,8 +70,8 @@ Assert-True ($rebuildSource -match "Command = 'logs'.*'--tail', '200'.*'backend'
     'startup failure diagnostics retain bounded logs for every gated service'
 
 $pgadminEmail = 'admin@testops.example.com'
-$pgadminExample = Get-Content -LiteralPath (Join-Path $root 'pgadmin4\.env.example') -Raw
-Assert-True ($pgadminExample -match "(?m)^PGADMIN_DEFAULT_EMAIL=$([regex]::Escape($pgadminEmail))$") `
+$pgadminExample = @(Get-Content -LiteralPath (Join-Path $root 'pgadmin4\.env.example'))
+Assert-True ($pgadminExample -contains "PGADMIN_DEFAULT_EMAIL=$pgadminEmail") `
     'tracked PgAdmin defaults use an accepted non-reserved placeholder address'
 foreach ($setupScript in @('setup-local.ps1', 'setup-local.sh')) {
     $setupSource = Get-Content -LiteralPath (Join-Path $PSScriptRoot $setupScript) -Raw
