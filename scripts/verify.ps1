@@ -1,6 +1,7 @@
 param(
     [string]$ProjectName = 'testops-local-verify',
-    [switch]$NoBrowser
+    [switch]$NoBrowser,
+    [switch]$CleanWorktree
 )
 
 $ErrorActionPreference = 'Stop'
@@ -8,6 +9,51 @@ $root = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $backend = Join-Path $root 'backend'
 $frontend = Join-Path $root 'frontend'
 . (Join-Path $PSScriptRoot 'quality-gate-common.ps1')
+
+function Invoke-FromCleanCandidateWorktree {
+    $sourcePaths = @(
+        '.github/workflows/ci.yml',
+        'backend',
+        'frontend',
+        'scripts',
+        'docker-compose.yml',
+        'docker-compose.qa.yml',
+        'docker-compose.e2e.yml',
+        'docker-compose.e2e-local-disabled.yml'
+    )
+    $status = Invoke-CheckedNative -FilePath 'git' `
+        -Arguments (@('-C', $root, 'status', '--porcelain', '--untracked-files=all', '--') + $sourcePaths) `
+        -Activity 'Inspect candidate source worktree' -CaptureOutput
+    if ([string]::IsNullOrWhiteSpace($status)) { return $false }
+
+    $revision = Get-GitRevision -RepositoryRoot $root
+    $tempRoot = [IO.Path]::GetFullPath((Join-Path ([IO.Path]::GetTempPath()) `
+        ("testops-verify-{0}" -f [Guid]::NewGuid().ToString('N'))))
+    $tempPrefix = [IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\') + '\testops-verify-'
+    if (-not $tempRoot.StartsWith($tempPrefix, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "Refusing to create a verification worktree outside the validated temp prefix: $tempRoot"
+    }
+
+    Write-Host "Candidate source is dirty; verifying clean revision $revision in $tempRoot"
+    Invoke-CheckedNative -FilePath 'git' -Arguments @('-C', $root, 'worktree', 'add', '--detach', $tempRoot, $revision) `
+        -Activity 'Create clean candidate verification worktree' | Out-Host
+    try {
+        $childArguments = @{
+            ProjectName = $ProjectName
+            CleanWorktree = $true
+        }
+        if ($NoBrowser) { $childArguments['NoBrowser'] = $true }
+        & (Join-Path $tempRoot 'scripts\verify.ps1') @childArguments | Out-Host
+    } finally {
+        Invoke-CheckedNative -FilePath 'git' -Arguments @('-C', $root, 'worktree', 'remove', '--force', $tempRoot) `
+            -Activity 'Remove clean candidate verification worktree' | Out-Host
+    }
+    return $true
+}
+
+if (-not $CleanWorktree -and (Invoke-FromCleanCandidateWorktree)) {
+    return
+}
 
 function Invoke-GateStep {
     param([string]$Name, [scriptblock]$Action)
