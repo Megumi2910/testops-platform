@@ -40,6 +40,13 @@ if ($env:ComSpec) {
     } 'exit code 7'
 }
 
+$randomA = New-CryptographicRandomBytes -Length 32
+$randomB = New-CryptographicRandomBytes -Length 32
+Assert-True ($randomA.Length -eq 32 -and $randomB.Length -eq 32) `
+    'portable cryptographic random generation returns the requested length'
+Assert-True ([Convert]::ToBase64String($randomA) -ne [Convert]::ToBase64String($randomB)) `
+    'independent cryptographic random values are not reused'
+
 foreach ($command in @('build', 'up', 'down')) {
     $arguments = New-ComposeArguments -ProjectName $project -RepositoryRoot $root `
         -ComposeFiles @('docker-compose.yml', 'docker-compose.qa.yml') -Command $command

@@ -130,6 +130,45 @@ function Invoke-CheckedNative {
     if ($CaptureOutput) { return ($output -join [Environment]::NewLine).Trim() }
 }
 
+function New-CryptographicRandomBytes {
+    param([Parameter(Mandatory = $true)][ValidateRange(1, 1048576)][int]$Length)
+
+    $bytes = New-Object byte[] $Length
+    $generator = [Security.Cryptography.RandomNumberGenerator]::Create()
+    try {
+        $generator.GetBytes($bytes)
+    } finally {
+        $generator.Dispose()
+    }
+    return ,$bytes
+}
+
+function New-RsaPemKeyPair {
+    param(
+        [Parameter(Mandatory = $true)][string]$PrivateKeyPath,
+        [Parameter(Mandatory = $true)][string]$PublicKeyPath
+    )
+
+    if (-not (Get-Command 'node' -ErrorAction SilentlyContinue)) {
+        throw 'Node.js is required to generate portable PKCS#8 and X.509 local RSA key material.'
+    }
+    $generator = @'
+const { generateKeyPairSync } = require('node:crypto');
+const { writeFileSync } = require('node:fs');
+const [privateKeyPath, publicKeyPath] = process.argv.slice(1);
+const { privateKey, publicKey } = generateKeyPairSync('rsa', {
+  modulusLength: 2048,
+  privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+  publicKeyEncoding: { type: 'spki', format: 'pem' },
+});
+writeFileSync(privateKeyPath, privateKey, { mode: 0o600 });
+writeFileSync(publicKeyPath, publicKey, { mode: 0o600 });
+'@
+    Invoke-CheckedNative -FilePath 'node' `
+        -Arguments @('-e', $generator, $PrivateKeyPath, $PublicKeyPath) `
+        -Activity 'Generate local RSA key material'
+}
+
 function Get-GitRevision {
     param([Parameter(Mandatory = $true)][string]$RepositoryRoot)
 

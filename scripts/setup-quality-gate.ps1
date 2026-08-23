@@ -5,13 +5,13 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
+. (Join-Path $PSScriptRoot 'quality-gate-common.ps1')
 $secretDirectory = Join-Path $root 'backend\.secrets'
 $qaPasswordPath = Join-Path $secretDirectory 'qa-fixture-password'
 
 if (-not (Test-Path -LiteralPath $qaPasswordPath)) {
     New-Item -ItemType Directory -Force -Path $secretDirectory | Out-Null
-    $bytes = New-Object byte[] 36
-    [Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
+    $bytes = New-CryptographicRandomBytes -Length 36
     [IO.File]::WriteAllText($qaPasswordPath, [Convert]::ToBase64String($bytes))
     Write-Host "Created ignored QA fixture password: $qaPasswordPath"
 }
