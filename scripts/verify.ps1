@@ -35,7 +35,10 @@ function Invoke-FromCleanCandidateWorktree {
     }
 
     Write-Host "Candidate source is dirty; verifying clean revision $revision in $tempRoot"
-    Invoke-CheckedNative -FilePath 'git' -Arguments @('-C', $root, 'worktree', 'add', '--detach', $tempRoot, $revision) `
+    # Windows PowerShell promotes Git's informational stderr ("Preparing worktree")
+    # to a terminating error while ErrorActionPreference is Stop. Quiet mode keeps
+    # the native exit code authoritative for this lifecycle operation.
+    Invoke-CheckedNative -FilePath 'git' -Arguments @('-C', $root, 'worktree', 'add', '--quiet', '--detach', $tempRoot, $revision) `
         -Activity 'Create clean candidate verification worktree' | Out-Host
     try {
         $childArguments = @{
