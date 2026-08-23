@@ -107,14 +107,27 @@ function Invoke-CheckedNative {
         return
     }
 
-    if ($CaptureOutput) {
-        $output = @(& $FilePath @Arguments)
-        if ($LASTEXITCODE -ne 0) { throw "$Activity failed with exit code $LASTEXITCODE ($invocation)" }
-        return ($output -join [Environment]::NewLine).Trim()
+    # Windows PowerShell 5.1 surfaces native stderr as ErrorRecord instances.
+    # With the repository-wide Stop preference, harmless progress and warning
+    # output from Git, npm, Maven, and Docker would otherwise abort a successful
+    # command. Merge stderr into the diagnostic stream and decide success only
+    # from the native process exit code.
+    $previousErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        if ($CaptureOutput) {
+            $output = @(& $FilePath @Arguments 2>&1 | ForEach-Object { $_.ToString() })
+            $exitCode = $LASTEXITCODE
+        } else {
+            & $FilePath @Arguments 2>&1 | ForEach-Object { Write-Output ($_.ToString()) }
+            $exitCode = $LASTEXITCODE
+        }
+    } finally {
+        $ErrorActionPreference = $previousErrorActionPreference
     }
 
-    & $FilePath @Arguments
-    if ($LASTEXITCODE -ne 0) { throw "$Activity failed with exit code $LASTEXITCODE ($invocation)" }
+    if ($exitCode -ne 0) { throw "$Activity failed with exit code $exitCode ($invocation)" }
+    if ($CaptureOutput) { return ($output -join [Environment]::NewLine).Trim() }
 }
 
 function Get-GitRevision {

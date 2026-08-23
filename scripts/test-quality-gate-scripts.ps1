@@ -28,6 +28,18 @@ Assert-Throws { Assert-IsolatedComposeProjectName -ProjectName $defaultProject -
 Assert-Throws { Assert-IsolatedComposeProjectName -ProjectName 'UPPERCASE' -RepositoryRoot $root } 'lowercase'
 Assert-Throws { Assert-IsolatedComposeProjectName -ProjectName 'bad project' -RepositoryRoot $root } 'lowercase'
 
+if ($env:ComSpec) {
+    $diagnosticOutput = Invoke-CheckedNative -FilePath $env:ComSpec `
+        -Arguments @('/d', '/c', 'echo expected-diagnostic 1>&2 & exit /b 0') `
+        -Activity 'Exercise successful native stderr' -CaptureOutput
+    Assert-True ($diagnosticOutput -match 'expected-diagnostic') `
+        'native stderr remains diagnostic when the process exits successfully'
+    Assert-Throws {
+        Invoke-CheckedNative -FilePath $env:ComSpec -Arguments @('/d', '/c', 'exit /b 7') `
+            -Activity 'Exercise failing native exit code'
+    } 'exit code 7'
+}
+
 foreach ($command in @('build', 'up', 'down')) {
     $arguments = New-ComposeArguments -ProjectName $project -RepositoryRoot $root `
         -ComposeFiles @('docker-compose.yml', 'docker-compose.qa.yml') -Command $command
