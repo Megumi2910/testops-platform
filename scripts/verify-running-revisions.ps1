@@ -34,9 +34,10 @@ function Assert-ServiceRevision {
             throw "$Service must resolve to exactly one running container in $ComposeProject; found $($containerIds.Count)."
         }
         $containerId = $containerIds[0]
-        $actualRevision = Invoke-CheckedNative -FilePath 'docker' `
-            -Arguments @('inspect', '--format', '{{ index .Config.Labels "org.opencontainers.image.revision" }}', $containerId) `
-            -Activity "Read $Service OCI revision" -CaptureOutput
+        $inspectionJson = Invoke-CheckedNative -FilePath 'docker' `
+            -Arguments @('inspect', $containerId) -Activity "Read $Service container metadata" -CaptureOutput
+        $contractState = Get-DockerContainerContractState -InspectJson $inspectionJson
+        $actualRevision = $contractState.Revision
 
         # Validate immutable provenance before waiting on health so a stale or
         # unlabeled container fails immediately instead of consuming timeout.
@@ -46,9 +47,9 @@ function Assert-ServiceRevision {
         $deadline = [DateTimeOffset]::UtcNow.AddSeconds($TimeoutSeconds)
         $health = ''
         do {
-            $health = Invoke-CheckedNative -FilePath 'docker' `
-                -Arguments @('inspect', '--format', '{{if .State.Health}}{{.State.Health.Status}}{{else}}missing{{end}}', $containerId) `
-                -Activity "Read $Service health" -CaptureOutput
+            $inspectionJson = Invoke-CheckedNative -FilePath 'docker' `
+                -Arguments @('inspect', $containerId) -Activity "Read $Service container metadata" -CaptureOutput
+            $health = (Get-DockerContainerContractState -InspectJson $inspectionJson).Health
             if ($health -eq 'healthy') { break }
             if ($health -in @('unhealthy', 'missing')) {
                 Assert-RevisionHealthContract -Service $Service -ExpectedRevision $Revision `

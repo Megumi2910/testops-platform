@@ -23,6 +23,8 @@ tests, and the production build, runs the complete Maven verification, checks
 every supported Compose configuration, audits the orchestration/revision/docs/
 secret contracts, builds revision-labelled images, waits for health, verifies
 the running OCI labels, and tears down only the named disposable project.
+The provenance verifier reads structured `docker inspect` JSON so the same
+label and health contract works under Windows PowerShell and newer PowerShell.
 
 `-NoBrowser` adds a temporary Compose override with no published host ports.
 It still proves image build, startup, health, and revision provenance. Omit the

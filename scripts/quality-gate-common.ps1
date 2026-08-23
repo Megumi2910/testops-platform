@@ -130,6 +130,50 @@ function Invoke-CheckedNative {
     if ($CaptureOutput) { return ($output -join [Environment]::NewLine).Trim() }
 }
 
+function Get-DockerContainerContractState {
+    param([Parameter(Mandatory = $true)][string]$InspectJson)
+
+    try {
+        # Windows PowerShell 5.1 can preserve a top-level JSON array as one
+        # pipeline object. Assign first, then normalize so one container means
+        # one array element consistently across PowerShell editions.
+        $parsed = ConvertFrom-Json -InputObject $InspectJson -ErrorAction Stop
+        $containers = @($parsed)
+    } catch {
+        throw 'Docker inspect did not return valid JSON.'
+    }
+    if ($containers.Count -ne 1 -or $null -eq $containers[0]) {
+        throw "Docker inspect must describe exactly one container; found $($containers.Count)."
+    }
+
+    $container = $containers[0]
+    $revision = ''
+    $configProperty = $container.PSObject.Properties['Config']
+    if ($configProperty -and $configProperty.Value) {
+        $labelsProperty = $configProperty.Value.PSObject.Properties['Labels']
+        if ($labelsProperty -and $labelsProperty.Value) {
+            $revisionProperty = $labelsProperty.Value.PSObject.Properties['org.opencontainers.image.revision']
+            if ($revisionProperty) { $revision = [string]$revisionProperty.Value }
+        }
+    }
+
+    $health = 'missing'
+    $stateProperty = $container.PSObject.Properties['State']
+    if ($stateProperty -and $stateProperty.Value) {
+        $healthProperty = $stateProperty.Value.PSObject.Properties['Health']
+        if ($healthProperty -and $healthProperty.Value) {
+            $statusProperty = $healthProperty.Value.PSObject.Properties['Status']
+            if ($statusProperty -and -not [string]::IsNullOrWhiteSpace([string]$statusProperty.Value)) {
+                $health = [string]$statusProperty.Value
+            }
+        }
+    }
+    return [pscustomobject]@{
+        Revision = $revision.Trim()
+        Health = $health.Trim()
+    }
+}
+
 function New-CryptographicRandomBytes {
     param([Parameter(Mandatory = $true)][ValidateRange(1, 1048576)][int]$Length)
 

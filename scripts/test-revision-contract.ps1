@@ -17,6 +17,26 @@ function Assert-Throws {
 }
 
 $revision = '0123456789abcdef0123456789abcdef01234567'
+$inspectJson = @"
+[{"Config":{"Labels":{"org.opencontainers.image.revision":"$revision"}},"State":{"Health":{"Status":"healthy"}}}]
+"@
+$contractState = Get-DockerContainerContractState -InspectJson $inspectJson
+if ($contractState.Revision -ne $revision -or $contractState.Health -ne 'healthy') {
+    throw 'Docker inspect JSON did not preserve revision and health provenance.'
+}
+$assertions++
+
+$missingHealth = Get-DockerContainerContractState -InspectJson `
+    '[{"Config":{"Labels":{}},"State":{}}]'
+if ($missingHealth.Revision -ne '' -or $missingHealth.Health -ne 'missing') {
+    throw 'Docker inspect JSON did not fail closed for missing provenance and health.'
+}
+$assertions++
+
+Assert-Throws {
+    Get-DockerContainerContractState -InspectJson 'not-json'
+} 'valid JSON'
+
 Assert-RevisionHealthContract -Service 'backend' -ExpectedRevision $revision -ActualRevision $revision -Health 'healthy'
 $assertions++
 

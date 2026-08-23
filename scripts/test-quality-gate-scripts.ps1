@@ -69,6 +69,12 @@ Assert-True ($rebuildSource -match "Command = 'ps'.*Arguments = @\('-a'\)") `
 Assert-True ($rebuildSource -match "Command = 'logs'.*'--tail', '200'.*'backend'.*'frontend'.*'pgadmin4'.*'mailpit'") `
     'startup failure diagnostics retain bounded logs for every gated service'
 
+$revisionVerifierSource = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'verify-running-revisions.ps1') -Raw
+Assert-True ($revisionVerifierSource -match 'Get-DockerContainerContractState') `
+    'running revision verification parses structured Docker inspection data'
+Assert-True ($revisionVerifierSource -notmatch "'--format'") `
+    'running revision verification avoids platform-sensitive Go-template quoting'
+
 $pgadminEmail = 'admin@testops.example.com'
 $pgadminExample = @(Get-Content -LiteralPath (Join-Path $root 'pgadmin4\.env.example'))
 Assert-True ($pgadminExample -contains "PGADMIN_DEFAULT_EMAIL=$pgadminEmail") `
