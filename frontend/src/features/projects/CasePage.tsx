@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useBlocker, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 
@@ -40,6 +40,7 @@ export function CasePage() {
   const [trashOpen, setTrashOpen] = useState(false)
   const [restoreOpen, setRestoreOpen] = useState(false)
   const [versionConflict, setVersionConflict] = useState<TestCase>()
+  const allowNavigation = useRef(false)
   const form = useForm<CaseForm>()
   const definitions = useMemo(() => options.data?.stepActions ?? [], [options.data?.stepActions])
   const archived = query.data?.status === 'ARCHIVED'
@@ -47,6 +48,10 @@ export function CasePage() {
   const canManage = project.permissions.includes('DEFINITION_MANAGE') && project.status === 'ACTIVE'
   const canEdit = canManage && !archived && !suiteArchived
   const canRun = project.permissions.includes('EXECUTION_START') && project.status === 'ACTIVE' && !archived && !suiteArchived
+  const currentStepsSignature = useMemo(() => JSON.stringify(serializeSteps(steps)), [steps])
+  const savedStepsSignature = query.data ? JSON.stringify(query.data.steps.map((step, position) => ({ ...step, position }))) : ''
+  const dirty = Boolean(query.data) && canEdit && (form.formState.isDirty || currentStepsSignature !== savedStepsSignature)
+  const blocker = useBlocker(({ currentLocation, nextLocation }) => Boolean(dirty) && !allowNavigation.current && currentLocation.pathname !== nextLocation.pathname)
 
   useEffect(() => {
     if (!query.data) return
@@ -61,6 +66,13 @@ export function CasePage() {
       dataIsolation: query.data.dataIsolation,
     })
   }, [form, query.data])
+
+  useEffect(() => {
+    if (!dirty) return undefined
+    const handler = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = '' }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [dirty])
 
   const latestCase = useMutation({
     mutationFn: () => projectsApi.getCase(projectId, suiteId, caseId),
@@ -107,6 +119,7 @@ export function CasePage() {
     mutationFn: () => projectsApi.queueCase(projectId, suiteId, caseId),
     onSuccess: result => {
       void client.invalidateQueries({ queryKey: projectKeys.executions(projectId) })
+      allowNavigation.current = true
       navigate(`/projects/${projectId}/executions/${result.executionId}`)
     },
   })
@@ -117,6 +130,7 @@ export function CasePage() {
       void client.invalidateQueries({ queryKey: projectKeys.cases(projectId, suiteId) })
       void client.invalidateQueries({ queryKey: projectKeys.trash(projectId) })
       setTrashOpen(false)
+      allowNavigation.current = true
       navigate(`/projects/${projectId}/trash`)
     },
   })
@@ -179,6 +193,7 @@ export function CasePage() {
     {canEdit
       ? <GuidedStepEditor steps={steps} onChange={setSteps} definitions={definitions} locatorTypes={options.data.supportedLocatorTypes} roles={options.data.supportedLocatorRoles ?? []} errors={stepErrors} />
       : <StaticStepList steps={query.data.steps} />}
+    <ConfirmDialog open={blocker.state === 'blocked'} title="Leave without saving?" description="Your case changes will be lost if you leave this page." confirmLabel="Leave page" onClose={() => blocker.reset?.()} onConfirm={() => blocker.proceed?.()} />
     <ConfirmDialog open={trashOpen} title={`Move ${query.data.name} to Trash?`} description="The case becomes read-only and cannot run. Its steps and execution history remain available." confirmLabel="Move to trash" busy={archive.isPending} onClose={() => setTrashOpen(false)} onConfirm={() => archive.mutate()} />
     <RestoreDefinitionDialog open={restoreOpen} kind="case" currentName={query.data.name} busy={restore.isPending} error={restore.error} onClose={() => { setRestoreOpen(false); restore.reset() }} onRestore={name => restore.mutate(name)} />
   </Card>

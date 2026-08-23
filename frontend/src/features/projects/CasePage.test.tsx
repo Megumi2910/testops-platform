@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { createMemoryRouter, Outlet, RouterProvider } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { platformApi, projectsApi, type Project, type TestCase } from './api'
@@ -52,7 +52,8 @@ describe('CasePage lifecycle guard', () => {
     })
 
     const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
-    render(<QueryClientProvider client={client}><MemoryRouter initialEntries={['/projects/project-1/suites/suite-1/cases/case-1']}><Routes><Route path="/projects/:projectId" element={<Outlet context={{ project, root: '/projects/project-1' }} />}><Route path="suites/:suiteId/cases/:caseId" element={<CasePage />} /></Route></Routes></MemoryRouter></QueryClientProvider>)
+    const router = createMemoryRouter([{ path: '/projects/:projectId', element: <Outlet context={{ project, root: '/projects/project-1' }} />, children: [{ path: 'suites/:suiteId/cases/:caseId', element: <CasePage /> }] }], { initialEntries: ['/projects/project-1/suites/suite-1/cases/case-1'] })
+    render(<QueryClientProvider client={client}><RouterProvider router={router} /></QueryClientProvider>)
 
     expect(await screen.findByText('This case belongs to a suite in Trash.')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Run case' })).not.toBeInTheDocument()
@@ -62,5 +63,29 @@ describe('CasePage lifecycle guard', () => {
     expect(screen.getByLabelText('Name')).toHaveAttribute('autocomplete', 'off')
     expect(screen.getByLabelText('Retry count')).toHaveAttribute('autocomplete', 'off')
     expect(screen.getByRole('heading', { name: 'Steps' })).toBeInTheDocument()
+  })
+
+  it('blocks internal navigation after case edits until the user confirms', async () => {
+    vi.spyOn(projectsApi, 'getCase').mockResolvedValue(testCase)
+    vi.spyOn(projectsApi, 'getSuite').mockResolvedValue({ id: 'suite-1', projectId: project.id, name: 'Checkout', status: 'ACTIVE', version: 3 })
+    vi.spyOn(platformApi, 'options').mockResolvedValue({
+      targetAllowedOrigins: [], targetConfigured: true, projectCreationEnabled: true, reportingAvailable: true, secretVariablesEnabled: true, executionWorkerEnabled: true,
+      supportedStepActions: ['NAVIGATE'], supportedLocatorTypes: [], supportedLocatorRoles: [],
+      stepActions: [{ action: 'NAVIGATE', label: 'Navigate', locator: false, input: true, expected: false, role: false, help: '/', inputRequirement: 'REQUIRED' }],
+    })
+
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
+    const router = createMemoryRouter([{ path: '/projects/:projectId', element: <Outlet context={{ project, root: '/projects/project-1' }} />, children: [
+      { path: 'suites/:suiteId/cases/:caseId', element: <CasePage /> },
+      { path: 'executions', element: <p>Runs page</p> },
+    ] }], { initialEntries: ['/projects/project-1/suites/suite-1/cases/case-1'] })
+    render(<QueryClientProvider client={client}><RouterProvider router={router} /></QueryClientProvider>)
+
+    const name = await screen.findByLabelText('Name')
+    fireEvent.change(name, { target: { value: 'Updated homepage smoke' } })
+    fireEvent.click(screen.getByRole('link', { name: 'Runs' }))
+
+    expect(await screen.findByRole('dialog', { name: 'Leave without saving?' })).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/projects/project-1/suites/suite-1/cases/case-1')
   })
 })

@@ -1,6 +1,6 @@
 # Milestone 10A — TestOps first-release completion
 
-## Current slice: Phase 3 password-reset handoff and account recovery notices
+## Current slice: Phase 4 existing case editor navigation guard
 
 This document is the current release ledger for Milestone 10A. It replaces the
 Milestone 9 release-candidate document as the source of truth for work on the
@@ -631,6 +631,21 @@ the isolated Mailpit Playwright auth/session matrix passed 7 tests. Chrome
 DevTools confirmed the rebuilt login notice and expected anonymous refresh
 `401`; no application exception was observed. Remaining Phase 3 work includes
 the broader account mutation and role/browser matrix.
+
+## Phase 4 slice result — existing case editor navigation guard
+
+**Status: PASS for this implementation slice.** Existing case pages now warn
+before losing unsaved metadata or ordered-step edits through internal links or
+browser refresh. Intentional post-run and move-to-trash navigation remains
+unblocked, while archived and read-only cases stay quiet.
+
+Implementation and regression evidence are recorded in
+[`89-phase4-case-editor-navigation-guard.md`](../implementation/89-phase4-case-editor-navigation-guard.md)
+and
+[`98-phase4-case-editor-navigation-guard.md`](../testing/98-phase4-case-editor-navigation-guard.md).
+The focused CasePage suite passed 2 tests; frontend lint and typecheck passed.
+The broader Phase 4 project, Trash, guided-builder, and browser matrix remains
+open.
 
 ## Phase 5 CI remediation — administrator wording and reset handoff
 
