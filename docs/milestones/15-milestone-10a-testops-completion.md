@@ -710,3 +710,36 @@ The machine receipts are recorded under
 `.agent/plans/testops-m10a-completion-20260823/receipts/P5/`. This phase does not
 claim the retained revision-A/revision-B browser swap; that proof is the current
 Phase 6 slice.
+
+## Phase 6 revision-A foundation — retained deployment provenance
+
+**Status: SOURCE FOUNDATION PASS; LIVE A/B PROOF OPEN.** The frontend image now
+renders the exact full `VCS_REF` into `X-TestOps-Revision` for the SPA shell,
+hashed assets, and static `404` responses. API, OAuth, login-OAuth, and Actuator
+responses remain unstamped. Index, SPA, and asset locations repeat the security
+headers that Nginx would otherwise stop inheriting after a location-level
+`add_header` directive.
+
+The new retained-swap runner requires distinct adjacent commits, clean detached
+worktrees/build contexts, marker absence in A and presence in B, exact OCI and
+response identities, predicate-driven health coordination, retained client-side
+**Sign in** navigation, exactly one old-chunk `404`, exactly one document reload,
+the revision-A recovery marker, the revision-B page marker, and a stable final B
+document. It merges sanitized counts/revisions/booleans into the shared ignored
+P6 evidence file and emits query-backed pipeline evidence only after a real
+successful run. Dry run cannot satisfy AC1.
+
+Fresh foundation checks pass:
+
+- revision/header contract: 31 assertions;
+- orchestration/config contract: 82 assertions;
+- frontend typecheck and lint.
+
+Implementation and evidence boundaries are recorded in
+[`90-phase6-retained-deployment-foundation.md`](../implementation/90-phase6-retained-deployment-foundation.md)
+and
+[`99-phase6-retained-deployment-foundation.md`](../testing/99-phase6-retained-deployment-foundation.md).
+Formal P6 AC1 remains unchecked until the adjacent revision-B marker commit
+exists and `scripts/verify-retained-swap.ps1` completes live. The account-shell,
+account-security, and combined Playwright/Chrome DevTools criteria are also
+separate open P6 work.

@@ -107,3 +107,14 @@ docker compose config --quiet
 ```
 
 The original baseline backend verification passed with 59 tests. After the Phase 2–5 repairs, the current backend unit/package gate passes 111 tests, including ancestry, membership, and cancellation assertions beyond the prior 101-test gate. The focused authorization slice passes 22 tests, and the positive membership lifecycle slice passes its focused `ProjectMembershipSecurityTest` and `ProjectAccessServiceTest` gate. The isolated PostgreSQL gate additionally passes all 7 `ApplicationContextIT` cases on a clean V021 schema. Both Compose configurations parsed, both stacks became healthy, and all four application images matched their checked-out revisions at baseline capture.
+
+## Phase 6 retained-deployment foundation reconciliation
+
+The current completion branch adds the full-SHA frontend response contract and
+the true retained A/B orchestrator described in
+[`90-phase6-retained-deployment-foundation.md`](../implementation/90-phase6-retained-deployment-foundation.md).
+Focused source contracts pass 31 revision/header and 82 orchestration/config
+assertions. This does not revise the historical runtime rows above: the live
+adjacent A/B swap and combined browser/DevTools P6 evidence are still open and
+must be recorded in the Milestone 10A ledger before release interpretation
+changes.

@@ -1,6 +1,6 @@
 # TestOps Platform — Managed Browser Testing for an Existing E-commerce Application
 
-> **Documentation status:** Milestone 10A is the TestOps first-release completion track. The completion branch is closed through the isolated P5 candidate gate; retained-deployment, browser matrices, accessibility/performance, and final release evidence remain tracked work.
+> **Documentation status:** Milestone 10A is the TestOps first-release completion track. The completion branch is closed through the isolated P5 candidate gate. The P6 retained-deployment source foundation is implemented and contract-tested; its live adjacent A/B swap, browser matrices, accessibility/performance, and final release evidence remain tracked work.
 >
 > The repository contains the Milestone 1–9 product foundation and the Milestone 10A completion plan. See the [Milestone 10A completion ledger](docs/milestones/15-milestone-10a-testops-completion.md) for the current slice status, evidence, and publication boundary. The former release-candidate document remains historical.
 

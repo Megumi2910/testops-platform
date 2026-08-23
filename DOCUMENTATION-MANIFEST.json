@@ -2,7 +2,7 @@
   "classification": "Full product/application implementation specification",
   "verified_revision": "106ae5e0b1e073f3b1559074e4db9f41bdc248ec",
   "verified_at": "2026-08-23",
-  "source_status": "Milestone 10A completion-branch source is reconciled through the isolated P5 candidate gate. The visual portal, architecture report, API catalog/handbook, beginner manual, workflow guide, and feature/business-logic handbook describe the current V001-V023 source contract. Screenshots remain explicitly labelled with their ded01b87 capture revision; retained-deployment and later browser evidence remain open P6-P10 work rather than implied completion.",
+  "source_status": "Milestone 10A committed runtime evidence is reconciled through the isolated P5 candidate gate. The P6 retained-deployment source foundation is implemented and focused-contract tested, but its adjacent live A/B result remains open. The visual portal, architecture report, API catalog/handbook, beginner manual, workflow guide, and feature/business-logic handbook describe the current V001-V023 source contract. Screenshots remain explicitly labelled with their ded01b87 capture revision; later browser evidence remains open P6-P10 work rather than implied completion.",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -679,6 +679,18 @@
       "role": "Phase 7 TestOps readiness contrast regression evidence",
       "status": "current",
       "source": ["frontend/src/styles.css", "frontend/package.json", "Chrome DevTools Lighthouse"]
+    },
+    {
+      "path": "docs/implementation/90-phase6-retained-deployment-foundation.md",
+      "role": "Phase 6 exact frontend revision and retained A/B orchestration design",
+      "status": "current",
+      "source": ["frontend/Dockerfile", "frontend/nginx.conf", "frontend/e2e/retained-swap.spec.ts", "scripts/verify-retained-swap.ps1"]
+    },
+    {
+      "path": "docs/testing/99-phase6-retained-deployment-foundation.md",
+      "role": "Phase 6 retained-deployment foundation contract evidence and live-proof boundary",
+      "status": "current",
+      "source": ["scripts/test-revision-contract.ps1", "scripts/test-quality-gate-scripts.ps1"]
     },
     {
       "path": "frontend/e2e/phase5-role-matrix.spec.ts",

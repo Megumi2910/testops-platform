@@ -2,6 +2,11 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'quality-gate-common.ps1')
 
 $assertions = 0
+function Assert-True {
+    param([bool]$Condition, [string]$Message)
+    if (-not $Condition) { throw "Assertion failed: $Message" }
+    $script:assertions++
+}
 function Assert-Throws {
     param([scriptblock]$Action, [string]$MessagePattern)
     try {
@@ -14,6 +19,22 @@ function Assert-Throws {
         return
     }
     throw "Expected an error matching '$MessagePattern'."
+}
+
+function Get-NginxLocationBlock {
+    param([string]$Source, [string]$Marker)
+    $start = $Source.IndexOf($Marker, [StringComparison]::Ordinal)
+    if ($start -lt 0) { throw "Nginx location was not found: $Marker" }
+    $brace = $Source.IndexOf('{', $start)
+    $depth = 0
+    for ($index = $brace; $index -lt $Source.Length; $index++) {
+        if ($Source[$index] -eq '{') { $depth++ }
+        if ($Source[$index] -eq '}') {
+            $depth--
+            if ($depth -eq 0) { return $Source.Substring($start, $index - $start + 1) }
+        }
+    }
+    throw "Nginx location was not closed: $Marker"
 }
 
 $revision = '0123456789abcdef0123456789abcdef01234567'
@@ -57,6 +78,30 @@ foreach ($health in @('', 'missing', 'created', 'running', 'starting', 'unhealth
     Assert-Throws {
         Assert-RevisionHealthContract -Service 'backend' -ExpectedRevision $revision -ActualRevision $revision -Health $health
     } 'health contract failed'
+}
+
+$frontendDockerfile = Get-Content -Raw -LiteralPath (Join-Path (Split-Path -Parent $PSScriptRoot) 'frontend\Dockerfile')
+Assert-True ($frontendDockerfile -match 'ENV TESTOPS_REVISION=\$VCS_REF') `
+    'frontend runtime receives the exact VCS_REF value'
+Assert-True ($frontendDockerfile -match 'COPY nginx\.conf /etc/nginx/templates/default\.conf\.template') `
+    'frontend Nginx configuration is rendered through the runtime template contract'
+
+$nginxSource = Get-Content -Raw -LiteralPath (Join-Path (Split-Path -Parent $PSScriptRoot) 'frontend\nginx.conf')
+$revisionHeader = 'add_header X-TestOps-Revision "${TESTOPS_REVISION}" always;'
+$securityHeaders = @(
+    'add_header X-Content-Type-Options "nosniff" always;',
+    'add_header Referrer-Policy "strict-origin-when-cross-origin" always;'
+)
+foreach ($marker in @('location = /index.html', 'location / {', 'location ~* \.')) {
+    $block = Get-NginxLocationBlock -Source $nginxSource -Marker $marker
+    Assert-True ($block.Contains($revisionHeader)) "$marker stamps the exact frontend revision with always"
+    foreach ($securityHeader in $securityHeaders) {
+        Assert-True ($block.Contains($securityHeader)) "$marker preserves $securityHeader despite add_header inheritance"
+    }
+}
+foreach ($marker in @('location /api/', 'location /oauth2/', 'location /login/oauth2/', 'location = /actuator/health', 'location /actuator/')) {
+    $block = Get-NginxLocationBlock -Source $nginxSource -Marker $marker
+    Assert-True (-not $block.Contains('X-TestOps-Revision')) "$marker remains outside frontend revision provenance"
 }
 
 Write-Host "Revision and health contract PASS assertions=$assertions"

@@ -1,5 +1,11 @@
 # Release-gate verification
 
+> **Current completion-track note:** this guide records the Milestone 9 gate.
+> For current clean-worktree candidate verification use the
+> [quality-gate operator guide](../guides/23-quality-gate-operator-guide.md).
+> The Phase 6 true retained A/B design and its still-open live boundary are in
+> [the retained-deployment foundation](90-phase6-retained-deployment-foundation.md).
+
 > **Historical evidence:** The counts, migration boundary, ecommerce catalog
 > runs, and Windows Docker limitation below describe the candidate captured at
 > the time of this document. They are not the current Milestone 10A release

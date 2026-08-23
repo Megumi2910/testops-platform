@@ -115,6 +115,79 @@ Expected ecommerce endpoints:
 - UI and same-origin API: `http://localhost:3001`
 - backend: `http://localhost:8081`
 
+## Retained revision A/B deployment gate
+
+After revision A (the retained-deployment foundation) and its adjacent revision
+B (the `AuthPages` diagnostic marker) are committed, run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-retained-swap.ps1 `
+  -ProjectName testops-m10a-gate
+```
+
+The command uses clean detached worktrees and a disposable project with a
+random loopback frontend port. It verifies full-SHA ancestry, source delta,
+image labels, shell/asset/static-404 headers, proxy exclusions, one old-chunk
+`404`, one document reload, the A recovery marker, the B diagnostic marker,
+and post-reload stability. Raw coordination/report data stays in ignored
+locations. Only a successful live run emits the query-backed `pipeline-run`
+manifest and merges the sanitized swap block into
+`artifacts/browser-evidence/P6.json`.
+
+Use `-DryRun` only to inspect revision selection and orchestration. Dry run is
+not release evidence and intentionally emits no `EVIDENCE_JSON` line.
+
+## Validate sanitized browser evidence
+
+Browser runs produce a small JSON summary for the release gate; they must not
+turn Playwright traces, DevTools payloads, cookies, credentials, one-time codes,
+or request/response bodies into committed evidence. Store the summary at
+`artifacts/browser-evidence/P6.json` through `P9.json` (ignored) or at
+`docs/testing/browser-evidence/P6.json` through `P9.json` (tracked), then run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File scripts/assert-browser-evidence.ps1 -Phase P6
+```
+
+Use `-ManifestPath` only when an orchestration run writes another tracked or
+ignored repository path. Untracked, non-ignored summaries fail closed. The
+validator also rejects files outside the repository, reparse points, oversized
+JSON, unknown schema fields, raw sensitive-field names, bearer/JWT-shaped
+values, and origin paths containing query or fragment data.
+
+Schema version `1` records an exact full `source_sha`, UTC capture time,
+`sanitized: true`, and both `playwright-mcp` and `chrome-devtools-mcp` run IDs.
+Every required case/viewport row must be `passed`, have at least one assertion,
+and have zero failed assertions; the root assertion count must equal the row
+sum. P6 covers the guest/unverified/verified/administrator shell at 1440×900,
+768×1024, and 320×800, plus the retained swap and account-security boundaries.
+P7 and P8 use their authorization/resource and builder/execution matrices at
+1440×900. P9 repeats its accessibility, keyboard, form/error, dialog, route,
+and performance summaries at all three viewports. The exact stable case IDs are
+the source-controlled contract in `scripts/assert-browser-evidence.ps1`.
+
+Expected HTTP failures are safe only when the allowlist and observation use the
+same case ID, method, origin-relative path template, 4xx status, and problem
+code. Every allowlisted tuple must be observed, and every observed negative must
+be allowlisted. Unexpected failures/500s, console errors, uncaught exceptions,
+page errors, detected secrets, cross-tenant leaks, and cross-origin leaks must
+all be zero.
+
+P6 additionally requires adjacent, repository-known revisions A and B. Its OCI
+labels and shell/static response-header summaries must equal the corresponding
+full revision, proxied responses must remain unstamped, and the summary retains
+only sanitized initial/final asset paths. The retained A tab must keep its
+recovery marker, the final page must expose the B marker, and the run must record
+exactly one document reload and one allowlisted old-chunk JavaScript 404 with no
+loop. These are validation rules for captured evidence, not a substitute for
+running the two-image browser swap. Exercise the fail-closed schema itself with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File scripts/test-browser-evidence-contract.ps1
+```
+
 ## QA ownership rules
 
 - Use the two `[QA]` TestOps projects and prefix generated names with `[QA-RUN-<date>]`.
