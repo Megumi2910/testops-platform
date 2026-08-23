@@ -64,27 +64,63 @@ export function PageHeader({ eyebrow, title, description, actions }: { eyebrow?:
   return <div className="page-heading"><div className="page-heading-copy">{eyebrow && <p className="eyebrow">{eyebrow}</p>}<h1>{title}</h1>{description && <p className="lede">{description}</p>}</div>{actions && <div className="page-heading-actions">{actions}</div>}</div>
 }
 
+const dialogFocusableSelector = 'button:not([disabled]):not([tabindex="-1"]), input:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), textarea:not([disabled]):not([tabindex="-1"]), a[href]:not([tabindex="-1"])'
+
+function dialogFocusables(dialog: HTMLElement | null) {
+  return Array.from(dialog?.querySelectorAll<HTMLElement>(dialogFocusableSelector) ?? [])
+}
+
 export function ConfirmDialog({ open, title, description, confirmLabel = 'Confirm', confirmVariant = 'danger', busy = false, children, onConfirm, onClose }: { open: boolean; title: string; description: string; confirmLabel?: string; confirmVariant?: ButtonVariant; busy?: boolean; children?: ReactNode; onConfirm: () => void; onClose: () => void }) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const previousFocus = useRef<HTMLElement | null>(null)
+  const busyRef = useRef(busy)
+  const onCloseRef = useRef(onClose)
+  busyRef.current = busy
+  onCloseRef.current = onClose
+
   useEffect(() => {
     if (!open) return undefined
     previousFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    const focusable = () => Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href]') ?? [])
-    focusable()[0]?.focus()
+    const focusable = () => dialogFocusables(dialogRef.current)
+    const focusInsideDialog = (preferLast = false) => {
+      const items = focusable()
+      const target = preferLast ? items.at(-1) : items[0]
+      const focusTarget = target ?? dialogRef.current
+      focusTarget?.focus()
+    }
+    focusInsideDialog()
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !busy) onClose()
+      if (event.key === 'Escape' && !busyRef.current) onCloseRef.current()
       if (event.key !== 'Tab') return
       const items = focusable()
-      if (items.length === 0) return
+      if (items.length === 0) {
+        event.preventDefault()
+        dialogRef.current?.focus()
+        return
+      }
       const first = items[0]
       const last = items[items.length - 1]
+      if (!items.includes(document.activeElement as HTMLElement)) {
+        event.preventDefault()
+        focusInsideDialog(event.shiftKey)
+        return
+      }
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
       if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
     }
     document.addEventListener('keydown', handleKeyDown)
-    return () => { document.removeEventListener('keydown', handleKeyDown); previousFocus.current?.focus() }
-  }, [busy, onClose, open])
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      if (previousFocus.current?.isConnected) previousFocus.current.focus()
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    const items = dialogFocusables(dialogRef.current)
+    if (!items.includes(document.activeElement as HTMLElement)) (items[0] ?? dialogRef.current)?.focus()
+  }, [busy, open])
+
   if (!open) return null
-  return <div className="dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) onClose() }}><div ref={dialogRef} className="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-description"><div className="dialog-header"><h2 id="dialog-title">{title}</h2><IconButton label="Close dialog" onClick={onClose} disabled={busy}><Icon name="close" size={18} /></IconButton></div><p id="dialog-description">{description}</p>{children}<div className="dialog-actions"><Button variant="ghost" onClick={onClose} disabled={busy}>Cancel</Button><Button variant={confirmVariant} busy={busy} onClick={onConfirm}>{confirmLabel}</Button></div></div></div>
+  return <div ref={dialogRef} className="dialog-backdrop" role="dialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-description" tabIndex={-1}><button type="button" aria-label="Dismiss dialog" tabIndex={-1} disabled={busy} onClick={onClose} style={{ background: 'transparent', border: 0, cursor: 'default', inset: 0, padding: 0, position: 'absolute', transform: 'none', zIndex: 0 }} /><div className="dialog" style={{ position: 'relative', zIndex: 1 }}><div className="dialog-header"><h2 id="dialog-title">{title}</h2><IconButton label="Close dialog" onClick={onClose} disabled={busy}><Icon name="close" size={18} /></IconButton></div><p id="dialog-description">{description}</p>{children}<div className="dialog-actions"><Button variant="ghost" onClick={onClose} disabled={busy}>Cancel</Button><Button variant={confirmVariant} busy={busy} onClick={onConfirm}>{confirmLabel}</Button></div></div></div>
 }

@@ -146,7 +146,7 @@ public class ProjectService {
         if ("TESTER".equals(role)) set.addAll(java.util.EnumSet.of(ProjectPermission.EXECUTION_START, ProjectPermission.EXECUTION_CANCEL_OWN));
         return set.stream().map(Enum::name).collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
-    private static ProjectDtos.MemberResponse memberResponse(ProjectMemberEntity m) { return new ProjectDtos.MemberResponse(m.getUser().getId(), m.getUser().getEmail(), m.getUser().getDisplayName(), m.getRole(), m.getVersion(), m.getAssignedBy() == null ? null : m.getAssignedBy().getId()); }
+    private static ProjectDtos.MemberResponse memberResponse(ProjectMemberEntity m) { return new ProjectDtos.MemberResponse(m.getUser().getId(), m.getUser().getEmail(), m.getUser().getDisplayName(), m.getRole(), m.getVersion(), m.getAssignedBy() == null ? null : m.getAssignedBy().getId(), permissionSet(m.getRole(), false)); }
     private static void requireVersion(long current, Long expected) { if (expected != null && current != expected) throw error(HttpStatus.CONFLICT, "stale_version", "The resource changed; reload and try again"); }
     private static String role(String value) { String role = value == null ? "" : value.trim().toUpperCase(Locale.ROOT); if (!java.util.Set.of("PROJECT_MANAGER", "TEST_MANAGER", "TESTER", "VIEWER").contains(role)) throw error(HttpStatus.BAD_REQUEST, "invalid_project_role", "Role must be PROJECT_MANAGER, TEST_MANAGER, TESTER, or VIEWER"); return role; }
     private static void ensureActive(ProjectEntity p) { if ("ARCHIVED".equals(p.getStatus())) throw error(HttpStatus.CONFLICT, "project_archived", "Archived projects are read-only"); }

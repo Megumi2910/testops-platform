@@ -76,7 +76,7 @@ export function RegisterPage() {
     <form className="form-stack" onSubmit={submit}>
       <AuthField id="register-display-name" label="Display name" name="displayName" autoComplete="name" required minLength={2} maxLength={100} value={form.displayName} onChange={(event) => setForm({ ...form, displayName: event.target.value })} error={fieldErrors.displayName} />
       <AuthField id="register-email" label="Email" name="email" type="email" autoComplete="email" spellCheck={false} required value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} error={fieldErrors.email} />
-      <AuthField id="register-password" label="Password" name="password" type="password" autoComplete="new-password" minLength={12} required value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} error={fieldErrors.password} />
+      <AuthField id="register-password" label="Password" name="password" type="password" autoComplete="new-password" minLength={12} maxLength={128} required value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} error={fieldErrors.password} />
       {error && <p className="form-error" role="alert">{error}</p>}
       <Button type="submit" busy={pending}>Send verification code</Button>
       <p className="form-help">Already registered? <Link to="/login">Sign in</Link>.</p>
@@ -178,7 +178,7 @@ export function PasswordResetPage() {
     </form> : <form className="form-stack" onSubmit={confirm}>
       <AuthField id="reset-email" label="Email" name="email" type="email" autoComplete="email" spellCheck={false} required value={email} onChange={event => setEmail(event.target.value)} error={fieldErrors.email} />
       <AuthField id="reset-otp" label="Reset code" name="otp" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required value={otp} onChange={event => setOtp(event.target.value.replace(/\D/g, ''))} error={fieldErrors.otp} />
-      <AuthField id="reset-password" label="New password" name="password" type="password" autoComplete="new-password" minLength={12} required value={password} onChange={event => setPassword(event.target.value)} error={fieldErrors.password} />
+      <AuthField id="reset-password" label="New password" name="password" type="password" autoComplete="new-password" minLength={12} maxLength={128} required value={password} onChange={event => setPassword(event.target.value)} error={fieldErrors.password} />
       {error && <p className="form-error" role="alert">{error}</p>}
       {message && <p className="form-help" role="status">{message}</p>}
       <Button type="submit" busy={pending}>Reset password</Button>

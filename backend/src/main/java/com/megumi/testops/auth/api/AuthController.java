@@ -134,9 +134,11 @@ public class AuthController {
     }
 
     @PostMapping("/me/password/challenge")
-    public ResponseEntity<MessageResponse> passwordChallenge(@AuthenticationPrincipal Jwt jwt, HttpServletRequest request) {
-        service().beginPasswordSetup(subject(jwt), clientIp(request));
-        return ResponseEntity.accepted().body(new MessageResponse("Check your email for a verification code"));
+    public ResponseEntity<ResendVerificationResponse> passwordChallenge(@AuthenticationPrincipal Jwt jwt,
+            HttpServletRequest request) {
+        AuthService.ResendVerificationResult result = service().beginPasswordSetup(subject(jwt), clientIp(request));
+        return ResponseEntity.accepted().body(new ResendVerificationResponse(
+                "Check your email for a verification code", result.nextResendAt(), result.retryAfterSeconds()));
     }
 
     @PostMapping("/me/password/confirm")

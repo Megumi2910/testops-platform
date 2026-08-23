@@ -22,4 +22,7 @@ public interface ExecutionRepository extends JpaRepository<ExecutionEntity, UUID
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select e from ExecutionEntity e where e.id = :id")
     Optional<ExecutionEntity> lockById(UUID id);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select e from ExecutionEntity e where e.project.id = :projectId and e.id = :id")
+    Optional<ExecutionEntity> lockByProjectIdAndId(UUID projectId, UUID id);
 }

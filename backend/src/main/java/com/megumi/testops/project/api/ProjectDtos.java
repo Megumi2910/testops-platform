@@ -26,9 +26,14 @@ public final class ProjectDtos {
     public record TargetCheckResponse(UUID projectId, String status, Integer httpStatus, Instant checkedAt, String reason) { }
     public record MemberRequest(@NotBlank @Size(max = 254) String email, @NotBlank String role, Long projectVersion) { }
     public record MemberRoleRequest(@NotBlank String role, Long projectVersion) { }
-    public record MemberResponse(UUID userId, String email, String displayName, String role, long version, UUID assignedBy) { }
+    public record MemberResponse(UUID userId, String email, String displayName, String role, long version,
+            UUID assignedBy, Set<String> permissions) { }
     public record VariableRequest(@NotBlank @Pattern(regexp = "[A-Za-z][A-Za-z0-9_]{1,63}") String key,
-            @NotNull Boolean secret, @Size(max = 10000) String value, Long projectVersion) { }
+            @NotNull Boolean secret, @Size(max = 10000) String value, Long projectVersion, Long variableVersion) {
+        public VariableRequest(String key, Boolean secret, String value, Long projectVersion) {
+            this(key, secret, value, projectVersion, null);
+        }
+    }
     public record VariableResponse(String key, boolean secret, String value, long version) { }
     public record SuiteRequest(@NotBlank @Size(max = 160) String name, @Size(max = 2000) String description, Long projectVersion) { }
     public record SuiteResponse(UUID id, UUID projectId, String name, String description, String status, long version,

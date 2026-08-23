@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { Alert, ConfirmDialog } from '../../components/ui'
 import { ApiError } from '../../lib/api'
+import { ProjectErrorAlert } from './ProjectErrorAlert'
 
 type RestoreDialogProps = {
   open: boolean
@@ -29,8 +30,8 @@ export function RestoreDefinitionDialog({ open, kind, currentName, busy, error, 
     onClose={onClose}
     onConfirm={() => onRestore(name.trim() === currentName ? undefined : name.trim())}
   >
-    {conflict && <Alert tone="warning" title="That name is already active.">Choose a different name to restore this {kind} safely.</Alert>}
+    {conflict && <Alert tone="warning" title="That name is already active.">Choose a different name to restore this {kind} safely.{error instanceof ApiError && error.correlationId && <span className="form-help"> Reference: <code>{error.correlationId}</code></span>}</Alert>}
     <label className="dialog-field" htmlFor="restore-definition-name">Restore name<input id="restore-definition-name" name="restoreName" autoComplete="off" value={name} maxLength={kind === 'suite' ? 160 : 200} onChange={event => setName(event.target.value)} disabled={busy} /></label>
-    {error && !conflict && <p className="form-error" role="alert">{error.message}</p>}
+    {error && !conflict && <ProjectErrorAlert title={`Unable to restore this ${kind}.`} error={error} fallback={`The ${kind} remains archived.`} retryLabel={`Retry restore ${kind}`} busy={busy} onRetry={() => onRestore(name.trim() === currentName ? undefined : name.trim())} />}
   </ConfirmDialog>
 }

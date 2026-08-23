@@ -4,6 +4,10 @@ export type ExecutionFailureGuidance = {
   recovery: string
 }
 
+export type ExecutionQueueGuidance = ExecutionFailureGuidance & {
+  retryable: boolean
+}
+
 const guidance: Record<string, ExecutionFailureGuidance> = {
   ASSERTION_FAILURE: {
     title: 'Assertion failed',
@@ -62,3 +66,43 @@ export function getExecutionFailureGuidance(category?: string): ExecutionFailure
   if (!category) return fallback
   return guidance[category.toUpperCase()] ?? fallback
 }
+
+const terminalExecutionStatuses = new Set(['PASSED', 'FAILED', 'ERROR', 'CANCELLED'])
+
+export function executionDetailRefetchInterval(execution?: Pick<ExecutionSummary, 'status'>) {
+  return execution && !terminalExecutionStatuses.has(execution.status) ? 2000 : false
+}
+
+const queueGuidance: Record<string, ExecutionQueueGuidance> = {
+  execution_worker_disabled: {
+    title: 'Execution worker is disabled',
+    detail: 'The definition is ready, but this environment is not currently accepting browser runs.',
+    recovery: 'Ask a platform administrator to enable the execution worker, then try again.',
+    retryable: true,
+  },
+  execution_queue_full: {
+    title: 'Execution queue is full',
+    detail: 'All available queue slots are currently occupied by other runs.',
+    recovery: 'Wait for an active run to finish or be cancelled, then try again.',
+    retryable: true,
+  },
+  no_ready_cases: {
+    title: 'No READY cases are available',
+    detail: 'The selected definition no longer contains a case that is ready to execute.',
+    recovery: 'Review the case definitions, resolve validation issues, and save at least one case as READY.',
+    retryable: false,
+  },
+}
+
+const queueFallback: ExecutionQueueGuidance = {
+  title: 'Unable to queue this run',
+  detail: 'The execution service did not accept the run request.',
+  recovery: 'Review the server message, confirm the definition is still active, and try again.',
+  retryable: true,
+}
+
+export function getExecutionQueueGuidance(code?: string): ExecutionQueueGuidance {
+  if (!code) return queueFallback
+  return queueGuidance[code.toLowerCase()] ?? queueFallback
+}
+import type { ExecutionSummary } from '../projects/api'

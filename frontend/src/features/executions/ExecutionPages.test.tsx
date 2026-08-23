@@ -1,12 +1,13 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { type ReactNode } from 'react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import * as api from '../../lib/api'
-import { projectsApi, type Execution, type Project } from '../projects/api'
+import { projectsApi, type Execution, type ExecutionQueued, type Project } from '../projects/api'
 import { ExecutionDetailPage, ExecutionsPage } from './ExecutionPages'
+import { executionDetailRefetchInterval } from './executionGuidance'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -17,6 +18,7 @@ const execution = (overrides: Partial<Execution> = {}): Execution => ({
   id: 'execution-1',
   projectId: 'project-1',
   status: 'PASSED',
+  canCancel: false,
   totalCases: 0,
   completedCases: 0,
   passedCases: 0,
@@ -62,19 +64,25 @@ describe('execution history recovery', () => {
 })
 
 describe('execution detail recovery', () => {
+  it('polls only known active executions and never loops an empty or failed detail query', () => {
+    expect(executionDetailRefetchInterval()).toBe(false)
+    expect(executionDetailRefetchInterval({ status: 'ERROR' })).toBe(false)
+    expect(executionDetailRefetchInterval({ status: 'QUEUED' })).toBe(2000)
+  })
+
   it('offers a permission-aware action to run the current suite again', async () => {
     const detail = execution({ status: 'FAILED', suiteId: 'suite-1' })
     vi.spyOn(projectsApi, 'execution').mockResolvedValue(detail)
-    let resolveQueue: (value: { executionId: string; status: string }) => void = () => undefined
+    let resolveQueue: (value: ExecutionQueued) => void = () => undefined
     const queue = vi.spyOn(projectsApi, 'queueSuite').mockReturnValue(new Promise(resolve => { resolveQueue = resolve }))
     renderPage('/projects/project-1/executions/execution-1', <ExecutionDetailPage />)
 
-    const rerun = await screen.findByRole('button', { name: 'Run current suite again' })
+    const rerun = await screen.findByRole('button', { name: 'Run suite again' })
     fireEvent.click(rerun)
 
     await waitFor(() => expect(queue).toHaveBeenCalledWith('project-1', 'suite-1'))
     expect(rerun).toBeDisabled()
-    resolveQueue({ executionId: 'execution-2', status: 'QUEUED' })
+    resolveQueue({ executionId: 'execution-2', status: 'QUEUED', canCancel: true })
   })
 
   it('hides the suite rerun action when execution permission is absent', async () => {
@@ -82,7 +90,40 @@ describe('execution detail recovery', () => {
     renderPage('/projects/project-1/executions/execution-1', <ExecutionDetailPage />, project([]))
 
     await screen.findByRole('heading', { name: 'PASSED' })
-    expect(screen.queryByRole('button', { name: 'Run current suite again' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Run suite again' })).not.toBeInTheDocument()
+  })
+
+  it('does not offer a second suite run while the current execution is active', async () => {
+    vi.spyOn(projectsApi, 'execution').mockResolvedValue(execution({ status: 'RUNNING', suiteId: 'suite-1' }))
+    renderPage('/projects/project-1/executions/execution-1', <ExecutionDetailPage />)
+
+    await screen.findByRole('heading', { name: 'RUNNING' })
+    expect(screen.queryByRole('button', { name: 'Run suite again' })).not.toBeInTheDocument()
+  })
+
+  it.each([
+    { canCancel: true, expected: true },
+    { canCancel: false, expected: false },
+  ])('uses server-computed canCancel=$canCancel without deriving requester authorization', async ({ canCancel, expected }) => {
+    vi.spyOn(projectsApi, 'execution').mockResolvedValue(execution({ status: 'QUEUED', canCancel }))
+    renderPage('/projects/project-1/executions/execution-1', <ExecutionDetailPage />, project([]))
+
+    await screen.findByRole('heading', { name: 'QUEUED' })
+    if (expected) expect(screen.getByRole('button', { name: 'Cancel run' })).toBeInTheDocument()
+    else expect(screen.queryByRole('button', { name: 'Cancel run' })).not.toBeInTheDocument()
+  })
+
+  it('explains queue saturation when a permitted suite rerun is rejected', async () => {
+    vi.spyOn(projectsApi, 'execution').mockResolvedValue(execution({ status: 'FAILED', suiteId: 'suite-1' }))
+    vi.spyOn(projectsApi, 'queueSuite').mockRejectedValue(new api.ApiError(429, 'The execution queue is full', { code: 'execution_queue_full', correlationId: 'corr-queue-full' }))
+    renderPage('/projects/project-1/executions/execution-1', <ExecutionDetailPage />)
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Run suite again' }))
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('Execution queue is full.')
+    expect(alert).toHaveTextContent('Wait for an active run to finish or be cancelled')
+    expect(alert).toHaveTextContent('corr-queue-full')
   })
 
   it('offers an in-place retry when the execution detail cannot load', async () => {
@@ -97,7 +138,7 @@ describe('execution detail recovery', () => {
   })
 
   it('explains artifact failures and retries the same artifact request', async () => {
-    const detail = execution({ artifacts: [{ id: 'artifact-1', type: 'SCREENSHOT', contentType: 'image/png', byteSize: 1024, sha256: 'hash', secretSuppressed: false, createdAt: '2026-08-15T10:00:01Z', stepPosition: 0 }] })
+    const detail = execution({ artifacts: [{ id: 'artifact-1', type: 'SCREENSHOT', contentType: 'image/png', byteSize: 1024, sha256: 'hash', secretSuppressed: false, createdAt: '2026-08-15T10:00:01Z', stepPosition: 0, downloadFilename: 'checkout-homepage-execution-screenshot.png' }] })
     vi.spyOn(projectsApi, 'execution').mockResolvedValue(detail)
     const artifact = vi.spyOn(api, 'apiBlobFetch').mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(new Blob(['image'], { type: 'image/png' }))
     vi.stubGlobal('URL', { createObjectURL: vi.fn(() => 'blob:execution-preview'), revokeObjectURL: vi.fn() })
@@ -109,8 +150,10 @@ describe('execution detail recovery', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('The artifact could not be loaded.')
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
 
-    const preview = await screen.findByRole('dialog', { name: 'Screenshot execution-1' })
+    const preview = await screen.findByRole('dialog', { name: 'Screenshot · step 1' })
     expect(preview).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Close preview' })).toHaveFocus()
+    fireEvent.keyDown(document, { key: 'Tab' })
     expect(screen.getByRole('button', { name: 'Close preview' })).toHaveFocus()
     fireEvent.keyDown(document, { key: 'Escape' })
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
@@ -133,6 +176,65 @@ describe('execution detail recovery', () => {
     expect(screen.getByText('Category: TARGET_UNREACHABLE')).toBeInTheDocument()
   })
 
+  it('renders immutable run snapshots and lifecycle times', async () => {
+    vi.spyOn(projectsApi, 'execution').mockResolvedValue(execution({
+      suiteNameSnapshot: 'Checkout smoke',
+      targetOriginSnapshot: 'https://storefront.example.test',
+      browser: 'chromium',
+      startedAt: '2026-08-15T10:00:01Z',
+      finishedAt: '2026-08-15T10:00:05Z',
+    }))
+    renderPage('/projects/project-1/executions/execution-1', <ExecutionDetailPage />)
+
+    const details = (await screen.findByRole('heading', { name: 'Run details' })).closest('section')
+    expect(details).not.toBeNull()
+    expect(within(details!).getByText('Checkout smoke')).toBeInTheDocument()
+    expect(within(details!).getByText('https://storefront.example.test')).toBeInTheDocument()
+    expect(within(details!).getByText('chromium')).toBeInTheDocument()
+    expect(within(details!).getByText('Queued')).toBeInTheDocument()
+    expect(within(details!).getByText('Started')).toBeInTheDocument()
+    expect(within(details!).getByText('Finished')).toBeInTheDocument()
+  })
+
+  it('uses the server-provided safe filename when downloading a trace', async () => {
+    const filename = 'checkout-homepage-a1b2c3d4-step-1-trace.zip'
+    vi.spyOn(projectsApi, 'execution').mockResolvedValue(execution({ artifacts: [{
+      id: 'trace-1', type: 'TRACE', contentType: 'application/zip', byteSize: 2048, sha256: 'hash', secretSuppressed: false,
+      createdAt: '2026-08-15T10:00:01Z', stepPosition: 0, downloadFilename: filename,
+    }] }))
+    vi.spyOn(api, 'apiBlobFetch').mockResolvedValue(new Blob(['trace'], { type: 'application/zip' }))
+    vi.stubGlobal('URL', { createObjectURL: vi.fn(() => 'blob:execution-trace'), revokeObjectURL: vi.fn() })
+    let downloadedFilename = ''
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) { downloadedFilename = this.download })
+    renderPage('/projects/project-1/executions/execution-1', <ExecutionDetailPage />)
+
+    expect(await screen.findByText(filename)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Download trace' }))
+
+    await waitFor(() => expect(downloadedFilename).toBe(filename))
+  })
+
+  it('renders suppression and purge reasons without artifact actions', async () => {
+    vi.spyOn(projectsApi, 'execution').mockResolvedValue(execution({
+      cases: [{
+        id: 'case-result-1', caseId: 'case-1', caseName: 'Checkout with secret', status: 'PASSED', attemptCount: 1,
+        evidenceSuppressed: true, evidenceSuppressionReason: 'SECRET_VARIABLE_USED', steps: [],
+      }],
+      artifacts: [
+        { id: 'screenshot-1', caseResultId: 'case-result-1', type: 'SCREENSHOT', contentType: 'image/png', byteSize: 0, sha256: 'hash', secretSuppressed: true, createdAt: '2026-08-15T10:00:01Z', downloadFilename: 'suppressed.png' },
+        { id: 'trace-1', type: 'TRACE', contentType: 'application/zip', byteSize: 2048, sha256: 'hash', secretSuppressed: false, createdAt: '2026-07-01T10:00:01Z', purgedAt: '2026-08-15T10:00:01Z', purgeReason: 'RETENTION_POLICY', downloadFilename: 'checkout-trace.zip' },
+      ],
+    }))
+    renderPage('/projects/project-1/executions/execution-1', <ExecutionDetailPage />)
+
+    await screen.findByRole('heading', { name: 'Artifacts' })
+    expect(screen.getAllByText(/SECRET_VARIABLE_USED/).length).toBeGreaterThan(0)
+    expect(screen.getByText(/RETENTION_POLICY/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Preview screenshot' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Download trace' })).not.toBeInTheDocument()
+    expect(screen.getAllByText('Unavailable')).toHaveLength(2)
+  })
+
   it('does not repeat an execution category in every matching case result', async () => {
     vi.spyOn(projectsApi, 'execution').mockResolvedValue(execution({
       status: 'ERROR',
@@ -145,6 +247,7 @@ describe('execution detail recovery', () => {
         attemptCount: 2,
         errorCategory: 'TARGET_UNREACHABLE',
         errorMessage: 'Connection refused',
+        evidenceSuppressed: false,
         steps: [],
       }],
       errorCases: 1,
@@ -168,6 +271,7 @@ describe('execution detail recovery', () => {
         errorCategory: 'ASSERTION_FAILURE',
         errorMessage: 'Expected text was not visible',
         failedStepPosition: 1,
+        evidenceSuppressed: false,
         steps: [
           { position: 0, action: 'NAVIGATE', status: 'PASSED', durationMs: 30 },
           { position: 1, action: 'ASSERT_VISIBLE', status: 'FAILED', durationMs: 12, errorMessage: 'Expected text was not visible' },

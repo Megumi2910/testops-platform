@@ -2,6 +2,7 @@ package com.megumi.testops.auth.service;
 
 import java.security.SecureRandom;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.UUID;
@@ -90,12 +91,13 @@ public class AuthService {
         audit.record(user, "REGISTRATION_REQUESTED", true, ip, null, null);
     }
 
-    @Transactional
+    @Transactional(dontRollbackOn = AuthException.class)
     public SessionResult verifyEmail(VerifyEmailRequest request, String userAgent, String ip) {
-        UserEntity user = userByEmail(request.email());
+        UserEntity user = users.findByEmailForUpdate(normalizeEmail(request.email()))
+                .orElseThrow(() -> otpException("verification_unavailable"));
         EmailVerificationChallengeEntity challenge = challenges
                 .findTopByUserIdAndPurposeAndConsumedAtIsNullAndInvalidatedAtIsNullOrderByIssuedAtDesc(user.getId(), "REGISTRATION")
-                .orElseThrow(() -> new AuthException(HttpStatus.BAD_REQUEST, "verification_unavailable", "Verification code is invalid or expired"));
+                .orElseThrow(() -> otpException("verification_unavailable"));
         Instant now = Instant.now(clock);
         if (!challenge.isActive(now) || !otpHasher.matches(user.getEmail(), request.otp(), challenge.getOtpHash())) {
             challenge.failAttempt();
@@ -103,7 +105,7 @@ public class AuthService {
                 challenge.invalidate(now, "MAX_ATTEMPTS");
             }
             audit.record(user, "EMAIL_VERIFICATION_FAILED", false, ip, userAgent, null);
-            throw new AuthException(HttpStatus.BAD_REQUEST, "verification_invalid", "Verification code is invalid or expired");
+            throw otpException("verification_invalid");
         }
         challenge.consume(now);
         user.markVerified(now);
@@ -170,20 +172,20 @@ public class AuthService {
 
     @Transactional(dontRollbackOn = AuthException.class)
     public void resetPassword(PasswordResetConfirmRequest request, String ip) {
-        UserEntity user = users.findByEmail(normalizeEmail(request.email())).orElseThrow(
-                () -> new AuthException(HttpStatus.BAD_REQUEST, "verification_invalid", "Verification code is invalid or expired"));
+        UserEntity user = users.findByEmailForUpdate(normalizeEmail(request.email())).orElseThrow(
+                () -> otpException("verification_invalid"));
         if (!user.isEmailVerified() || !"ACTIVE".equals(user.getStatus())) {
-            throw new AuthException(HttpStatus.BAD_REQUEST, "verification_invalid", "Verification code is invalid or expired");
+            throw otpException("verification_invalid");
         }
         EmailVerificationChallengeEntity challenge = challenges
                 .findTopByUserIdAndPurposeAndConsumedAtIsNullAndInvalidatedAtIsNullOrderByIssuedAtDesc(user.getId(), "PASSWORD_RESET")
-                .orElseThrow(() -> new AuthException(HttpStatus.BAD_REQUEST, "verification_invalid", "Verification code is invalid or expired"));
+                .orElseThrow(() -> otpException("verification_invalid"));
         Instant now = Instant.now(clock);
         if (!challenge.isActive(now) || !otpHasher.matches(user.getEmail(), request.otp(), challenge.getOtpHash())) {
             challenge.failAttempt();
             if (challenge.getFailedAttempts() >= challenge.getMaxAttempts()) challenge.invalidate(now, "MAX_ATTEMPTS");
             audit.record(user, "PASSWORD_RESET_FAILED", false, ip, null, null);
-            throw new AuthException(HttpStatus.BAD_REQUEST, "verification_invalid", "Verification code is invalid or expired");
+            throw otpException("verification_invalid");
         }
         challenge.consume(now);
         LocalCredentialEntity credential = credentials.findByUserId(user.getId()).orElse(null);
@@ -219,7 +221,10 @@ public class AuthService {
     }
 
     private static ResendVerificationResult cooldownFrom(Instant now, Instant nextResendAt) {
-        long seconds = Math.max(0, java.time.Duration.between(now, nextResendAt).toSeconds());
+        Duration remaining = Duration.between(now, nextResendAt);
+        long seconds = remaining.isNegative() || remaining.isZero()
+                ? 0
+                : remaining.getSeconds() + (remaining.getNano() == 0 ? 0 : 1);
         return new ResendVerificationResult(nextResendAt, seconds);
     }
 
@@ -315,26 +320,56 @@ public class AuthService {
     public void changePassword(UUID userId, String currentPassword, String newPassword) {
         UserEntity user = userById(userId);
         LocalCredentialEntity credential = credentials.findByUserId(userId).orElseThrow(() -> new AuthException(HttpStatus.CONFLICT, "password_not_configured", "This account does not have a password login"));
-        if (!passwordEncoder.matches(currentPassword, credential.getPasswordHash())) throw new AuthException(HttpStatus.UNAUTHORIZED, "password_invalid", "Current password is incorrect");
+        if (!passwordEncoder.matches(currentPassword, credential.getPasswordHash())) {
+            throw new AuthException(HttpStatus.UNAUTHORIZED, "password_invalid", "Current password is incorrect",
+                    "currentPassword");
+        }
         credential.changePassword(passwordEncoder.encode(newPassword), Instant.now(clock));
         user.incrementTokenVersion(Instant.now(clock));
         refreshTokens.revokeAll(user, "PASSWORD_CHANGED");
     }
 
-    @Transactional
-    public void beginPasswordSetup(UUID userId, String ip) {
-        UserEntity user = userById(userId);
-        if (credentials.existsByUserId(userId)) throw new AuthException(HttpStatus.CONFLICT, "password_already_configured", "This account already has a password login");
+    @Transactional(dontRollbackOn = AuthException.class)
+    public ResendVerificationResult beginPasswordSetup(UUID userId, String ip) {
+        rateLimiter.check("otp-resend-ip", ip, properties.limits().otpResendIpAttempts(),
+                properties.limits().otpResendIpWindow());
         Instant now = Instant.now(clock);
+        UserEntity user = users.findByIdForUpdate(userId)
+                .orElseThrow(() -> new AuthException(HttpStatus.UNAUTHORIZED, "user_not_found", "User was not found"));
+        if (credentials.existsByUserId(userId)) throw new AuthException(HttpStatus.CONFLICT, "password_already_configured", "This account already has a password login");
+        EmailVerificationChallengeEntity previous = challenges
+                .findTopByUserIdAndPurposeAndConsumedAtIsNullAndInvalidatedAtIsNullOrderByIssuedAtDesc(
+                        userId, "ADD_PASSWORD")
+                .orElse(null);
+        if (previous != null && previous.getResendAvailableAt().isAfter(now)) {
+            return cooldownFrom(now, previous.getResendAvailableAt());
+        }
+        if (challenges.countByUserIdAndPurposeAndIssuedAtAfter(userId, "ADD_PASSWORD",
+                now.minus(Duration.ofHours(1))) >= properties.email().maxSendsPerHour()) {
+            throw new AuthException(HttpStatus.TOO_MANY_REQUESTS, "verification_rate_limited",
+                    "Verification email limit reached; try again later");
+        }
+        if (previous != null) {
+            previous.invalidate(now, "RESENT_ADD_PASSWORD");
+            challenges.flush();
+        }
         issueAndSendChallenge(user, "ADD_PASSWORD", ip, now);
+        return cooldownFrom(now, now.plus(properties.email().resendDelay()));
     }
 
-    @Transactional
+    @Transactional(dontRollbackOn = AuthException.class)
     public void confirmPasswordSetup(UUID userId, String otp, String password) {
-        UserEntity user = userById(userId);
-        EmailVerificationChallengeEntity challenge = challenges.findTopByUserIdAndPurposeAndConsumedAtIsNullAndInvalidatedAtIsNullOrderByIssuedAtDesc(userId, "ADD_PASSWORD").orElseThrow(() -> new AuthException(HttpStatus.BAD_REQUEST, "verification_unavailable", "Verification code is invalid or expired"));
+        UserEntity user = users.findByIdForUpdate(userId)
+                .orElseThrow(() -> new AuthException(HttpStatus.UNAUTHORIZED, "user_not_found", "User was not found"));
+        EmailVerificationChallengeEntity challenge = challenges.findTopByUserIdAndPurposeAndConsumedAtIsNullAndInvalidatedAtIsNullOrderByIssuedAtDesc(userId, "ADD_PASSWORD").orElseThrow(() -> otpException("verification_unavailable"));
         Instant now = Instant.now(clock);
-        if (!challenge.isActive(now) || !otpHasher.matches(user.getEmail(), otp, challenge.getOtpHash())) throw new AuthException(HttpStatus.BAD_REQUEST, "verification_invalid", "Verification code is invalid or expired");
+        if (!challenge.isActive(now) || !otpHasher.matches(user.getEmail(), otp, challenge.getOtpHash())) {
+            challenge.failAttempt();
+            if (challenge.getFailedAttempts() >= challenge.getMaxAttempts()) {
+                challenge.invalidate(now, "MAX_ATTEMPTS");
+            }
+            throw otpException("verification_invalid");
+        }
         challenge.consume(now); credentials.save(new LocalCredentialEntity(user, passwordEncoder.encode(password), now));
     }
 
@@ -342,7 +377,10 @@ public class AuthService {
     public void unlinkGoogle(UUID userId, String currentPassword) {
         UserEntity user = userById(userId);
         LocalCredentialEntity credential = credentials.findByUserId(userId).orElseThrow(() -> new AuthException(HttpStatus.CONFLICT, "password_required", "Set a password before unlinking Google"));
-        if (!passwordEncoder.matches(currentPassword, credential.getPasswordHash())) throw new AuthException(HttpStatus.UNAUTHORIZED, "password_invalid", "Current password is incorrect");
+        if (!passwordEncoder.matches(currentPassword, credential.getPasswordHash())) {
+            throw new AuthException(HttpStatus.UNAUTHORIZED, "password_invalid", "Current password is incorrect",
+                    "currentPassword");
+        }
         oauthAccounts.findByUserIdAndProvider(userId, "GOOGLE").ifPresent(oauthAccounts::delete);
         user.incrementTokenVersion(Instant.now(clock)); refreshTokens.revokeAll(user, "GOOGLE_UNLINKED");
     }
@@ -367,6 +405,7 @@ public class AuthService {
             challenge.markDeliveryAttempt(now, true);
         } catch (RuntimeException exception) {
             challenge.markDeliveryAttempt(now, false);
+            challenge.invalidate(now, "DELIVERY_FAILED");
             throw exception;
         }
     }
@@ -382,16 +421,16 @@ public class AuthService {
             challenge.markDeliveryAttempt(now, true);
         } catch (RuntimeException exception) {
             challenge.markDeliveryAttempt(now, false);
+            challenge.invalidate(now, "DELIVERY_FAILED");
             throw exception;
         }
     }
 
-    private UserEntity userByEmail(String email) {
-        return users.findByEmail(normalizeEmail(email))
-                .orElseThrow(() -> new AuthException(HttpStatus.BAD_REQUEST, "verification_unavailable", "Verification code is invalid or expired"));
-    }
-
     private UserEntity userById(UUID id) { return users.findById(id).orElseThrow(() -> new AuthException(HttpStatus.UNAUTHORIZED, "user_not_found", "User was not found")); }
+
+    private static AuthException otpException(String code) {
+        return new AuthException(HttpStatus.BAD_REQUEST, code, "Verification code is invalid or expired", "otp");
+    }
 
     private static String normalizeEmail(String email) { return email.trim().toLowerCase(Locale.ROOT); }
 

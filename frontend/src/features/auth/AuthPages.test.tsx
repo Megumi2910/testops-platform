@@ -3,7 +3,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
 import { AuthContext, type AuthContextValue } from './AuthContext'
-import { LoginPage, OAuthCallbackPage, PasswordResetPage, VerifyEmailPage } from './AuthPages'
+import { LoginPage, OAuthCallbackPage, PasswordResetPage, RegisterPage, VerifyEmailPage } from './AuthPages'
 import { authApi } from './api'
 import { ApiError } from '../../lib/api'
 
@@ -63,6 +63,22 @@ describe('Google authentication', () => {
   })
 })
 
+describe('Password constraints', () => {
+  it('keeps registration passwords within the server-supported range', () => {
+    const context: AuthContextValue = {
+      user: null,
+      providers: { enabled: true, registrationEnabled: true, emailVerificationEnabled: true, googleEnabled: false },
+      loading: false,
+      login: vi.fn(), register: vi.fn(), verifyEmail: vi.fn(), resendEmail: vi.fn(),
+      resendAuthenticatedEmail: vi.fn(), reloadUser: vi.fn(), logout: vi.fn(),
+    }
+    render(<MemoryRouter><AuthContext.Provider value={context}><RegisterPage /></AuthContext.Provider></MemoryRouter>)
+
+    expect(screen.getByLabelText('Password')).toHaveAttribute('minlength', '12')
+    expect(screen.getByLabelText('Password')).toHaveAttribute('maxlength', '128')
+  })
+})
+
 describe('PasswordResetPage', () => {
   it('associates server reset-code errors with the invalid field', async () => {
     vi.spyOn(authApi, 'requestPasswordReset').mockResolvedValue({
@@ -83,6 +99,8 @@ describe('PasswordResetPage', () => {
     fireEvent.change(screen.getByRole('textbox', { name: 'Email' }), { target: { value: 'qa@example.com' } })
     fireEvent.click(screen.getByRole('button', { name: 'Send reset code' }))
     await screen.findByRole('textbox', { name: 'Reset code' })
+    expect(screen.getByLabelText('New password')).toHaveAttribute('minlength', '12')
+    expect(screen.getByLabelText('New password')).toHaveAttribute('maxlength', '128')
     fireEvent.change(screen.getByRole('textbox', { name: 'Reset code' }), { target: { value: '123456' } })
     fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'new-correct-horse-battery-staple' } })
     fireEvent.click(screen.getByRole('button', { name: 'Reset password' }))

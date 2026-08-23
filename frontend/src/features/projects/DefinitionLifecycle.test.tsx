@@ -29,4 +29,21 @@ describe('definition restore dialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Restore suite' }))
     expect(onRestore).toHaveBeenCalledWith(undefined)
   })
+
+  it('shows a correlation reference and offers an explicit retry for recoverable restore failures', () => {
+    const onRestore = vi.fn()
+    render(<RestoreDefinitionDialog
+      open
+      kind="suite"
+      currentName="Smoke"
+      busy={false}
+      error={new ApiError(503, 'Restore unavailable', { correlationId: 'corr-suite-restore' })}
+      onClose={() => undefined}
+      onRestore={onRestore}
+    />)
+
+    expect(screen.getByText('corr-suite-restore')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Retry restore suite' }))
+    expect(onRestore).toHaveBeenCalledWith(undefined)
+  })
 })

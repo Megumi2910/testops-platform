@@ -1,12 +1,15 @@
 package com.megumi.testops.auth.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -19,6 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -55,7 +59,7 @@ class AuthServiceRecoveryTest {
     @Test
     void expiredRegistrationOtpIsRejectedEvenWhenTheHashMatches() {
         EmailVerificationChallengeEntity challenge = mock(EmailVerificationChallengeEntity.class);
-        when(users.findByEmail("qa@example.com")).thenReturn(Optional.of(user));
+        when(users.findByEmailForUpdate("qa@example.com")).thenReturn(Optional.of(user));
         when(challenges.findTopByUserIdAndPurposeAndConsumedAtIsNullAndInvalidatedAtIsNullOrderByIssuedAtDesc(user.getId(), "REGISTRATION"))
                 .thenReturn(Optional.of(challenge));
         when(challenge.isActive(NOW)).thenReturn(false);
@@ -68,8 +72,23 @@ class AuthServiceRecoveryTest {
 
         assertEquals("verification_invalid", error.getCode());
         assertEquals(HttpStatus.BAD_REQUEST, error.getStatus());
+        assertEquals("otp", error.getPath());
+        verify(users).findByEmailForUpdate("qa@example.com");
         verify(challenge).failAttempt();
         verify(audit).record(user, "EMAIL_VERIFICATION_FAILED", false, "192.0.2.10", "test", null);
+    }
+
+    @Test
+    void unavailableRegistrationOtpTargetsOtpField() {
+        when(users.findByEmailForUpdate("qa@example.com")).thenReturn(Optional.of(user));
+        when(challenges.findTopByUserIdAndPurposeAndConsumedAtIsNullAndInvalidatedAtIsNullOrderByIssuedAtDesc(
+                user.getId(), "REGISTRATION")).thenReturn(Optional.empty());
+
+        AuthException error = assertThrows(AuthException.class,
+                () -> service.verifyEmail(new VerifyEmailRequest("qa@example.com", "123456"), "test", "192.0.2.13"));
+
+        assertEquals("verification_unavailable", error.getCode());
+        assertEquals("otp", error.getPath());
     }
 
     @Test
@@ -86,7 +105,7 @@ class AuthServiceRecoveryTest {
 
     @Test
     void verifiedPasswordResetReplacesCredentialAndRevokesSessions() {
-        when(users.findByEmail("qa@example.com")).thenReturn(Optional.of(user));
+        when(users.findByEmailForUpdate("qa@example.com")).thenReturn(Optional.of(user));
         EmailVerificationChallengeEntity challenge = mock(EmailVerificationChallengeEntity.class);
         when(challenges.findTopByUserIdAndPurposeAndConsumedAtIsNullAndInvalidatedAtIsNullOrderByIssuedAtDesc(user.getId(), "PASSWORD_RESET"))
                 .thenReturn(Optional.of(challenge));
@@ -104,6 +123,71 @@ class AuthServiceRecoveryTest {
         verify(credentials.findByUserId(user.getId()).orElseThrow()).changePassword("new-hash", NOW);
         verify(refreshTokens).revokeAll(user, "PASSWORD_RESET");
         verify(audit).record(user, "PASSWORD_RESET_SUCCEEDED", true, "192.0.2.12", null, null);
+        verify(users).findByEmailForUpdate("qa@example.com");
+    }
+
+    @Test
+    void invalidPasswordResetOtpTargetsOtpField() {
+        when(users.findByEmailForUpdate("qa@example.com")).thenReturn(Optional.of(user));
+        when(challenges.findTopByUserIdAndPurposeAndConsumedAtIsNullAndInvalidatedAtIsNullOrderByIssuedAtDesc(
+                user.getId(), "PASSWORD_RESET")).thenReturn(Optional.empty());
+
+        AuthException error = assertThrows(AuthException.class,
+                () -> service.resetPassword(new PasswordResetConfirmRequest(
+                        "qa@example.com", "654321", "new-correct-horse-battery-staple"), "192.0.2.14"));
+
+        assertEquals("verification_invalid", error.getCode());
+        assertEquals("otp", error.getPath());
+    }
+
+    @Test
+    void fifthPasswordResetAttemptInvalidatesChallengeUnderUserLock() {
+        when(users.findByEmailForUpdate("qa@example.com")).thenReturn(Optional.of(user));
+        EmailVerificationChallengeEntity challenge = spy(new EmailVerificationChallengeEntity(
+                user, "PASSWORD_RESET", "reset-hash", NOW.minusSeconds(1), NOW.plusSeconds(600),
+                NOW.plusSeconds(30), "192.0.2.16"));
+        for (int attempt = 0; attempt < 4; attempt++) challenge.failAttempt();
+        when(challenges.findTopByUserIdAndPurposeAndConsumedAtIsNullAndInvalidatedAtIsNullOrderByIssuedAtDesc(
+                user.getId(), "PASSWORD_RESET")).thenReturn(Optional.of(challenge));
+        when(otpHasher.matches("qa@example.com", "000000", "reset-hash")).thenReturn(false);
+
+        AuthException error = assertThrows(AuthException.class,
+                () -> service.resetPassword(new PasswordResetConfirmRequest(
+                        "qa@example.com", "000000", "new-correct-horse-battery-staple"), "192.0.2.16"));
+
+        assertEquals("verification_invalid", error.getCode());
+        assertEquals(5, challenge.getFailedAttempts());
+        assertFalse(challenge.isActive(NOW));
+        verify(users).findByEmailForUpdate("qa@example.com");
+        verify(challenge).invalidate(NOW, "MAX_ATTEMPTS");
+    }
+
+    @Test
+    void passwordResetDeliveryFailureIsInvalidatedAndRetrySendsAgain() {
+        when(users.findByEmailForUpdate("qa@example.com")).thenReturn(Optional.of(user));
+        when(challenges.findTopByUserIdAndPurposeAndConsumedAtIsNullAndInvalidatedAtIsNullOrderByIssuedAtDesc(
+                user.getId(), "PASSWORD_RESET")).thenReturn(Optional.empty());
+        when(challenges.countByUserIdAndPurposeAndIssuedAtAfter(any(), anyString(), any())).thenReturn(0L);
+        when(otpHasher.hash(anyString(), anyString())).thenReturn("reset-hash");
+        doThrow(new AuthException(HttpStatus.SERVICE_UNAVAILABLE, "email_delivery_unavailable",
+                "Password recovery is temporarily unavailable"))
+                .doNothing()
+                .when(emailDelivery).sendPasswordResetCode(anyString(), anyString(), anyString(), any());
+
+        assertThrows(AuthException.class,
+                () -> service.requestPasswordReset(new PasswordResetRequest("qa@example.com"), "192.0.2.15"));
+        AuthService.ResendVerificationResult retry = service.requestPasswordReset(
+                new PasswordResetRequest("qa@example.com"), "192.0.2.15");
+
+        assertEquals(30, retry.retryAfterSeconds());
+        ArgumentCaptor<EmailVerificationChallengeEntity> saved =
+                ArgumentCaptor.forClass(EmailVerificationChallengeEntity.class);
+        verify(challenges, times(2)).save(saved.capture());
+        assertEquals("FAILED", saved.getAllValues().get(0).getDeliveryStatus());
+        assertFalse(saved.getAllValues().get(0).isActive(NOW));
+        assertEquals("SENT", saved.getAllValues().get(1).getDeliveryStatus());
+        verify(emailDelivery, times(2)).sendPasswordResetCode(anyString(), anyString(), anyString(), any());
+        verify(audit).record(user, "PASSWORD_RESET_REQUESTED", true, "192.0.2.15", null, null);
     }
 
     private static UserEntity user(boolean verified, String status) {
