@@ -63,6 +63,12 @@ Assert-True ($rebuildOutput -match 'docker compose -p testops-script-contract .*
 Assert-True ($rebuildOutput -match 'docker compose -p testops-script-contract .* up') 'startup dry run is project-scoped'
 Assert-True ($rebuildOutput -match [regex]::Escape("VCS_REF=$revision")) 'rebuild dry run pins the requested revision'
 
+$rebuildSource = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'rebuild-quality-gate.ps1') -Raw
+Assert-True ($rebuildSource -match "Command = 'ps'.*Arguments = @\('-a'\)") `
+    'startup failure diagnostics inspect only the caller-supplied Compose project'
+Assert-True ($rebuildSource -match "Command = 'logs'.*'--tail', '200'.*'backend'.*'frontend'") `
+    'startup failure diagnostics retain bounded application logs'
+
 $teardownOutput = (& (Join-Path $PSScriptRoot 'teardown-quality-gate.ps1') -ProjectName $project `
     -ComposeFiles @('docker-compose.yml', 'docker-compose.qa.yml') -RemoveVolumes -DryRun 6>&1) | Out-String
 Assert-True ($teardownOutput -match 'docker compose -p testops-script-contract .* down') 'teardown dry run is project-scoped'

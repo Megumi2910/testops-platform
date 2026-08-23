@@ -43,9 +43,26 @@ $Revision = $Revision.ToLowerInvariant()
 Invoke-ComposeChecked -Repository $testopsRepository -ComposeProject $ProjectName -Files $ComposeFiles `
     -Command 'build' -CommandArguments @('--build-arg', "VCS_REF=$Revision") `
     -Activity "Build isolated TestOps project $ProjectName"
-Invoke-ComposeChecked -Repository $testopsRepository -ComposeProject $ProjectName -Files $ComposeFiles `
-    -Command 'up' -CommandArguments @('-d', '--wait', '--wait-timeout', '180') `
-    -Activity "Start isolated TestOps project $ProjectName"
+try {
+    Invoke-ComposeChecked -Repository $testopsRepository -ComposeProject $ProjectName -Files $ComposeFiles `
+        -Command 'up' -CommandArguments @('-d', '--wait', '--wait-timeout', '180') `
+        -Activity "Start isolated TestOps project $ProjectName"
+} catch {
+    $startupFailure = $_
+    Write-Warning "Isolated TestOps startup failed; emitting project-scoped status and bounded service logs before teardown."
+    foreach ($diagnostic in @(
+        @{ Command = 'ps'; Arguments = @('-a'); Activity = "Inspect failed TestOps project $ProjectName" },
+        @{ Command = 'logs'; Arguments = @('--no-color', '--tail', '200', 'postgres', 'backend', 'frontend', 'mailpit'); Activity = "Read failed TestOps service logs for $ProjectName" }
+    )) {
+        try {
+            Invoke-ComposeChecked -Repository $testopsRepository -ComposeProject $ProjectName -Files $ComposeFiles `
+                -Command $diagnostic.Command -CommandArguments $diagnostic.Arguments -Activity $diagnostic.Activity
+        } catch {
+            Write-Warning "Unable to collect $($diagnostic.Command) diagnostics for ${ProjectName}: $($_.Exception.Message)"
+        }
+    }
+    throw $startupFailure
+}
 
 if (-not $SkipEcommerce) {
     if (-not (Test-Path -LiteralPath $EcommerceRepository)) {
