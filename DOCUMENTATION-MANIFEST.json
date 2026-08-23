@@ -1,6 +1,8 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10A Phase 0, Phase 1 shell/account-menu and keyboard navigation, Phase 2 stale-bundle recovery and manual retry, Phase 3 account-security, Phase 4 project/definition guards, Phase 5 administration-list, variable-permission, member-recovery, stale-membership-recovery, administrator-conflict, CI auth-recovery-remediation, nested-isolation, and active-session-context slices are implemented and verified; Phase 6 execution retry-recovery, rerun/cancellation recovery, categorized failure guidance, dashboard panel recovery, daily dashboard trends, and UTC reporting display, and Phase 7 accessible artifact-preview, authentication field-error, and TestOps form-autocomplete slices are implemented and verified, including CI run 31870802458; the rebuilt two-image deployment swap and live Chrome DevTools release gates remain ordered follow-up slices",
+  "verified_revision": "106ae5e0b1e073f3b1559074e4db9f41bdc248ec",
+  "verified_at": "2026-08-23",
+  "source_status": "Milestone 10A completion-branch source is reconciled through the isolated P5 candidate gate. The visual portal, architecture report, API catalog/handbook, beginner manual, workflow guide, and feature/business-logic handbook describe the current V001-V023 source contract. Screenshots remain explicitly labelled with their ded01b87 capture revision; retained-deployment and later browser evidence remain open P6-P10 work rather than implied completion.",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -667,8 +669,78 @@
       "role": "Phase 1 account-menu keyboard regression evidence and Chrome DevTools follow-up matrix"
     },
     {
+      "path": "docs/implementation/86-phase7-testops-readiness-contrast.md",
+      "role": "Phase 7 TestOps readiness contrast correction implementation",
+      "status": "current",
+      "source": ["frontend/src/styles.css", "Chrome DevTools Lighthouse"]
+    },
+    {
+      "path": "docs/testing/95-phase7-testops-readiness-contrast.md",
+      "role": "Phase 7 TestOps readiness contrast regression evidence",
+      "status": "current",
+      "source": ["frontend/src/styles.css", "frontend/package.json", "Chrome DevTools Lighthouse"]
+    },
+    {
       "path": "frontend/e2e/phase5-role-matrix.spec.ts",
       "role": "Phase 5 role matrix including foreign suite and foreign case substitution journeys"
+    },
+    {
+      "path": "docs/index.html",
+      "role": "Canonical offline visual report portal and reader paths",
+      "status": "current",
+      "source": ["README.md", "docs/README.md", "docs/architecture/15-codebase-architecture.html"]
+    },
+    {
+      "path": "docs/reference/api-catalog.json",
+      "role": "Machine-readable current controller endpoint catalog",
+      "status": "current",
+      "source": ["backend/src/main/java/com/megumi/testops/*/api", "backend/src/main/java/com/megumi/testops/*/dto"]
+    },
+    {
+      "path": "docs/reference/api-reference.html",
+      "role": "Generated API handbook with safe request examples",
+      "status": "current",
+      "generated_by": "scripts/docs/build-report.mjs"
+    },
+    {
+      "path": "docs/guides/testops-user-manual.html",
+      "role": "Beginner click-by-click user manual with verified readiness screenshot",
+      "status": "current",
+      "screenshots": [
+        "docs/assets/screenshots/testops/readiness.png",
+        "docs/assets/screenshots/testops/sign-in.png",
+        "docs/assets/screenshots/testops/register.png"
+      ]
+    },
+    {
+      "path": "docs/workflows/ui-to-execution-workflow.html",
+      "role": "Canonical UI-to-controller-to-worker workflow explanation",
+      "status": "current"
+    },
+    {
+      "path": "docs/implementation/feature-code-and-business-logic.html",
+      "role": "Feature ownership, syntax, business rules, and maintainer checklist",
+      "status": "current"
+    },
+    {
+      "path": "docs/planning/86-documentation-truth-audit.md",
+      "role": "Source/runtime/documentation reconciliation ledger",
+      "status": "current"
+    },
+    {
+      "path": "scripts/docs/build-report.mjs",
+      "role": "Deterministic API handbook generator",
+      "status": "tooling"
+    },
+    {
+      "path": "scripts/docs/serve-report.mjs",
+      "role": "Dependency-free local documentation server",
+      "status": "tooling"
+    },
+    {
+      "path": "scripts/docs/verify-report.mjs",
+      "role": "HTML, endpoint, migration, and route drift verification",
+      "status": "tooling"
     }
   ]
 }

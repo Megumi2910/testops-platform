@@ -1,6 +1,6 @@
 # Milestone 10A — TestOps first-release completion
 
-## Current slice: Phase 4 existing case editor navigation guard
+## Current slice: Phase 6 retained deployment and account-shell proof
 
 This document is the current release ledger for Milestone 10A. It replaces the
 Milestone 9 release-candidate document as the source of truth for work on the
@@ -678,3 +678,35 @@ Frontend lint, typecheck, 21 files / 77 tests, and production build pass. The
 rebuilt frontend is healthy and Chrome DevTools Lighthouse reports desktop
 accessibility `100`. The remaining live role, mobile, and retained-tab release
 matrix is still required before Milestone 10A can be marked complete.
+
+## Completion pass P5 — isolated revision-matched verification harness
+
+**Status: PASS for the isolated candidate-gate phase.** The aggregate Windows
+entry point now verifies a clean committed candidate in a validated detached
+worktree, uses an explicit non-default Compose project, supports an unpublished
+port mode, and tears down only that disposable project and its volumes. Startup
+failure diagnostics are project-scoped and include every selected service.
+
+The tracked PgAdmin credentials now use a validator-compatible non-secret
+placeholder. This closes the real pgAdmin 9.16 restart discovered by the gate;
+reserved `.invalid`, `.test`, and `localhost` addresses are rejected before its
+health check can pass. Running revision verification parses structured Docker
+inspection JSON, avoiding Windows PowerShell Go-template quoting while still
+failing closed for a missing/mismatched full SHA or unhealthy service.
+
+Formal P5 evidence was captured for committed revision
+`106ae5e0b1e073f3b1559074e4db9f41bdc248ec`:
+
+- aggregate gate: frontend lint/typecheck/build and 24 files / 131 tests,
+  complete Maven verification, five Compose configurations, documentation and
+  secret audits, revision-pinned image build, all selected services healthy,
+  OCI revision provenance, and scoped teardown;
+- orchestration contract: 55 assertions;
+- revision/health contract: 15 assertions;
+- secret-safety audit: 625 files, zero public artifact publishers, and four
+  ignored local artifact roots.
+
+The machine receipts are recorded under
+`.agent/plans/testops-m10a-completion-20260823/receipts/P5/`. This phase does not
+claim the retained revision-A/revision-B browser swap; that proof is the current
+Phase 6 slice.

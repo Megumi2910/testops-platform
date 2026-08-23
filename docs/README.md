@@ -1,5 +1,18 @@
 # TestOps documentation
 
+## Visual report portal
+
+Start with the offline [TestOps visual system report](index.html). It links the current architecture, API handbook, beginner manual, UI-to-execution workflow, and feature/business-logic handbook. The pages work from `file://` and from a local static server:
+
+```powershell
+node scripts/docs/serve-report.mjs
+# open http://localhost:4173/
+```
+
+The machine-readable [API catalog](reference/api-catalog.json) is generated into the [API handbook](reference/api-reference.html). The [source truth audit](planning/86-documentation-truth-audit.md) records what was verified live and what was unavailable, rather than presenting missing runtime evidence as complete.
+
+For the current committed candidate gate, start with the [quality-gate operator guide](guides/23-quality-gate-operator-guide.md) and reconcile the result in the [Milestone 10A completion ledger](milestones/15-milestone-10a-testops-completion.md). The Milestone 9 release guide is historical evidence.
+
 This directory is organized by the question a maintainer is trying to answer:
 
 | Folder | Use it for | Start with |
@@ -44,6 +57,7 @@ The root [README](../README.md) remains the project entry point. The machine-rea
 - Reviewing execution list/detail and artifact retry recovery: [implementation notes](implementation/75-phase6-execution-retry-recovery.md) → [test evidence](testing/84-phase6-execution-retry-recovery.md) → [interactive workflow](implementation/17-ui-to-execution-workflow.html).
 - Reviewing accessible screenshot previews: [implementation notes](implementation/76-phase7-artifact-preview-dialog.md) → [test evidence](testing/85-phase7-artifact-preview-dialog.md) → [interactive workflow](implementation/17-ui-to-execution-workflow.html).
 - Reviewing authentication field-error accessibility: [implementation notes](implementation/77-phase7-auth-field-error-accessibility.md) → [test evidence](testing/86-phase7-auth-field-error-accessibility.md) → [interactive workflow](implementation/17-ui-to-execution-workflow.html).
+- Reviewing TestOps readiness contrast and Lighthouse evidence: [implementation notes](implementation/86-phase7-testops-readiness-contrast.md) → [test evidence](testing/95-phase7-testops-readiness-contrast.md) → [defect ledger](testing/24-defect-ledger.md).
 - Understanding DRAFT saves and API errors: [problem responses and DRAFT validation](implementation/24-problem-contract-and-draft-validation.md).
 - Reviewing tenant, lifecycle, variable, cancellation, and administrator boundaries: [Phase 2 security boundaries](implementation/25-phase-2-security-boundaries.md).
 - Implementing history-preserving suite/case deletion: [definition trash lifecycle backend](implementation/26-definition-trash-backend.md).
