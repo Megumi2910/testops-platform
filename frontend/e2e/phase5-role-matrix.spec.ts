@@ -86,7 +86,7 @@ test('project roles expose only their permitted definition and execution control
     await expect(account.page.getByRole('heading', { name: new RegExp(`Phase 5 role suite ${runId}`) })).toBeVisible()
     await expect(account.page.getByRole('link', { name: 'New case', exact: true })).toHaveCount(expectations.canCreate ? 1 : 0)
     await expect(account.page.getByRole('button', { name: 'Run ready cases', exact: true })).toHaveCount(expectations.canRun ? 1 : 0)
-    await expect(account.page.getByRole('link', { name: 'Members', exact: true })).toHaveCount(0)
+    await expect(account.page.getByRole('link', { name: 'Members', exact: true })).toHaveCount(1)
     await expect(account.page.getByRole('link', { name: 'Admin', exact: true })).toHaveCount(0)
     await account.page.goto('/admin/users')
     await expect(account.page).toHaveURL(/\/dashboard$/)

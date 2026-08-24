@@ -51,3 +51,9 @@ adapter with `-Kind security-test`, while its proof map requires the normalized
 `LOCAL_EVIDENCE_KIND_OVERRIDE=integration-test` compatibility switch; it is
 unset by default and changes neither the command contract nor ordinary evidence
 emission.
+
+The retained phase-5 browser checks use the current confirmation-dialog and
+per-user feedback contracts for administrator role/status changes; this keeps
+the regression suite aligned with the P7 security UI while preserving its
+authorization assertions. The role matrix also retains the read-only Members
+navigation for every project member, as required by the workspace contract.
