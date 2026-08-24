@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type PropsWithChildren } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react'
 
 import { ApiError } from '../../lib/api'
 import { authApi, type Providers, type UserSummary } from './api'
@@ -8,6 +8,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<UserSummary | null>(null)
   const [providers, setProviders] = useState<Providers | null>(null)
   const [loading, setLoading] = useState(true)
+  const sessionHydrated = useRef(false)
 
   const bootstrap = useCallback(async () => {
     try {
@@ -18,7 +19,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setUser(refreshed.user)
     } catch (error) {
       authApi.clearAccessToken()
-      if (!(error instanceof ApiError) || error.status !== 404) setUser(null)
+      // OAuth callbacks can hydrate the session while the one-time bootstrap
+      // refresh is still settling. Do not let that stale failure erase the
+      // user that reloadUser() has already adopted.
+      if (!sessionHydrated.current && (!(error instanceof ApiError) || error.status !== 404)) setUser(null)
     } finally {
       setLoading(false)
     }
@@ -32,22 +36,26 @@ export function AuthProvider({ children }: PropsWithChildren) {
     loading,
     reloadUser: async () => {
       const refreshed = await authApi.me()
+      sessionHydrated.current = true
       setUser(refreshed)
       return refreshed
     },
     login: async (email, password) => {
       const response = await authApi.login({ email, password })
+      sessionHydrated.current = true
       setUser(response.user)
     },
     register: async (email, displayName, password) => { await authApi.register({ email, displayName, password }) },
     verifyEmail: async (email, otp) => {
       const response = await authApi.verifyEmail({ email, otp })
+      sessionHydrated.current = true
       setUser(response.user)
     },
     resendEmail: (email) => authApi.resendEmail(email),
     resendAuthenticatedEmail: () => authApi.resendAuthenticatedEmail(),
     logout: async () => {
-      try { await authApi.logout() } finally { authApi.clearAccessToken(); setUser(null) }
+      authApi.clearAccessToken()
+      try { await authApi.logout() } finally { sessionHydrated.current = false; setUser(null) }
     },
   }), [loading, providers, user])
 

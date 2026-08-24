@@ -62,3 +62,12 @@ root recovery page closed the generic-error part of stale chunk handling; the
 Phase 2 slice now covers the one-time revision-aware reload and retained-tab
 chunk-failure regression. A full revision-A/revision-B image swap and live
 Chrome DevTools deployment capture remain operational follow-ups.
+
+## Phase 6 follow-on evidence
+
+The focused AppShell suite now contains 13 passing cases, and the new
+Playwright specification lists nine tests spanning six exact validator case
+IDs at three viewports. This supersedes the earlier source-level gap list but
+does not retroactively turn the historical Phase 1 browser result into a full
+P6 pass. The current matrix and sanitized evidence boundary are recorded in
+[`100-phase6-account-shell-matrix.md`](100-phase6-account-shell-matrix.md).

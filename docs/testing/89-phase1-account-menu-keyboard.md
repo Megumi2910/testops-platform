@@ -44,3 +44,11 @@ This is a source-level and mounted-test PASS for the keyboard follow-up. The
 overall Milestone 10A release remains PARTIAL until the rebuilt runtime passes
 the live Chrome DevTools matrix, retained-tab deployment test, role matrix, and
 the remaining release thresholds.
+
+## Phase 6 follow-on evidence
+
+The current implementation expands the focused mounted result from seven to
+13 tests and adds Enter/Space, Home/End, nested Escape, bidirectional drawer
+Tab, and exact `1440×900`/`768×1024`/`320×800` Playwright coverage. See
+[`100-phase6-account-shell-matrix.md`](100-phase6-account-shell-matrix.md) for
+the source-verified result and the still-open live evidence boundary.

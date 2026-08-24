@@ -340,11 +340,18 @@ if ($LASTEXITCODE -ne 0) {
     Fail-EvidenceValidation 'manifest.source_sha must be the current commit or one of its ancestors'
 }
 Assert-Boolean -Value $manifest.sanitized -Expected $true -Context 'manifest.sanitized'
-if (-not ($manifest.generated_at_utc -is [string]) -or $manifest.generated_at_utc -cnotmatch '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,7})?Z$') {
+$generatedAtText = if ($manifest.generated_at_utc -is [DateTime]) {
+    $manifest.generated_at_utc.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+} elseif ($manifest.generated_at_utc -is [DateTimeOffset]) {
+    $manifest.generated_at_utc.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
+} else {
+    [string]$manifest.generated_at_utc
+}
+if ($generatedAtText -notmatch '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,7})?Z$') {
     Fail-EvidenceValidation 'manifest.generated_at_utc must be an ISO-8601 UTC timestamp ending in Z'
 }
 $generatedAt = [DateTimeOffset]::MinValue
-if (-not [DateTimeOffset]::TryParse($manifest.generated_at_utc, [ref]$generatedAt)) {
+if (-not [DateTimeOffset]::TryParse($generatedAtText, [ref]$generatedAt)) {
     Fail-EvidenceValidation 'manifest.generated_at_utc is not a valid timestamp'
 }
 if ($generatedAt -gt [DateTimeOffset]::UtcNow.AddMinutes(5)) {

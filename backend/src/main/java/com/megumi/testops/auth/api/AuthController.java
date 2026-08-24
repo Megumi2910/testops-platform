@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.megumi.testops.auth.config.AuthProperties;
 import com.megumi.testops.auth.service.AuthException;
 import com.megumi.testops.auth.service.AuthService;
+import com.megumi.testops.auth.service.GoogleLinkIntentSession;
 import com.megumi.testops.auth.service.OriginGuard;
 import com.megumi.testops.auth.service.RefreshCookieFactory;
 
@@ -163,7 +164,7 @@ public class AuthController {
     public ResponseEntity<java.util.Map<String, String>> googleLinkIntent(@AuthenticationPrincipal Jwt jwt, HttpServletRequest request) {
         if (jwt == null) throw new AuthException(org.springframework.http.HttpStatus.UNAUTHORIZED, "authentication_required", "Authentication is required");
         if (!properties.google().enabled()) throw new AuthException(org.springframework.http.HttpStatus.NOT_FOUND, "google_disabled", "Google sign-in is not enabled");
-        request.getSession(true).setAttribute("TESTOPS_GOOGLE_LINK_USER", jwt.getSubject());
+        GoogleLinkIntentSession.setUser(request, jwt.getSubject());
         return ResponseEntity.ok(java.util.Map.of("authorizationUrl", "/oauth2/authorization/google"));
     }
 

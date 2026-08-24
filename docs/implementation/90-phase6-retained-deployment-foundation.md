@@ -9,9 +9,9 @@ the recovery boundary, but it does not prove that the deployed images, response
 headers, chunk removal, and retained document all belong to distinct revisions.
 
 Phase 6 therefore treats deployment identity and browser recovery as one
-contract. The source foundation is implemented; the live A/B result remains
-open until the adjacent revision-B diagnostic marker is committed and the
-orchestrator completes successfully.
+contract. The source foundation, adjacent live A/B swap, account-shell and
+account-security matrices, and combined Playwright/Chrome DevTools evidence
+have all passed for the current revision-B commit.
 
 ## Served revision contract
 
@@ -54,10 +54,15 @@ revision A is the first parent of revision B. It then:
    navigation (avoiding the duplicate home-page call to action). The A router requests
    its unloaded `AuthPages` chunk, receives one `404`, records the A recovery
    marker, reloads one document, and renders the parameterized B marker;
-8. observes a bounded quiescence window to reject a second reload, merges only
+   8. observes a bounded quiescence window to reject a second reload, merges only
    sanitized booleans/revisions/counts into ignored
    `artifacts/browser-evidence/P6.json`, and emits a query-backed pipeline
    manifest.
+
+The PowerShell worker boundary collects Node/Playwright stderr with a
+temporary non-terminating error preference. This keeps harmless runtime
+warnings (for example, `NO_COLOR`) from aborting evidence collection before
+the worker's actual exit state is evaluated.
 
 Readiness is predicate-driven: Compose health, exact response identity, and
 filesystem coordination signals control the swap. The only timed window is a
@@ -87,10 +92,14 @@ npm --prefix frontend run typecheck
 npm --prefix frontend run lint
 ```
 
-The first foundation pass produced 31 revision/header assertions and 82
-orchestration/config assertions. These checks prove the harness contract, not a
-completed deployment swap. The live command becomes admissible only after
-revision B contains the diagnostic marker:
+The source contracts produced 31 revision/header assertions and 82
+orchestration/config assertions. A live adjacent run against the current
+revision-B commit passed, recording one document reload, one stale-chunk
+`404`, the A recovery marker, and the B marker, with no reload loop. The
+combined canonical manifest now validates 30 case/viewport records and 300
+assertions with zero unexpected failures, console exceptions, or security
+findings. The command remains repeatable after revision B contains the
+diagnostic marker:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-retained-swap.ps1 `

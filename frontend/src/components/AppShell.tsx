@@ -56,7 +56,13 @@ function AccountMenu({ onNavigate }: { onNavigate: () => void }) {
         return
       }
       if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return
-      const currentIndex = Math.max(items.indexOf(document.activeElement as HTMLElement), 0)
+      if (!menuRef.current?.contains(event.target as Node)) return
+      const activeIndex = items.indexOf(document.activeElement as HTMLElement)
+      // A close followed immediately by ArrowDown can cross the React effect
+      // cleanup boundary. Ignore that stale document event rather than
+      // advancing a newly opened menu to its second item.
+      if (activeIndex === -1) return
+      const currentIndex = activeIndex
       const nextIndex = event.key === 'ArrowDown'
         ? (currentIndex + 1) % items.length
         : event.key === 'ArrowUp'
@@ -176,6 +182,7 @@ export function AppShell() {
     focusable()[0]?.focus()
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        if (event.defaultPrevented || navigationRef.current?.querySelector('[role="menu"]')) return
         event.preventDefault()
         setNavigationOpen(false)
         return

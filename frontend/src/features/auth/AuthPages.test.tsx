@@ -54,10 +54,15 @@ describe('Google authentication', () => {
     expect(screen.getByRole('link', { name: 'Continue with Google' })).toHaveAttribute('href', '/oauth2/authorization/google')
     expect(screen.getByLabelText('Email')).toHaveAttribute('autocomplete', 'email')
     expect(screen.getByLabelText('Password')).toHaveAttribute('autocomplete', 'current-password')
+    expect(screen.getByTestId('retained-swap-revision-b')).toHaveTextContent('Deployment recovery ready · build')
   })
 
   it('keeps provider errors generic on the callback page', async () => {
-    render(<MemoryRouter initialEntries={['/auth/oauth/callback?oauth_error=oauth_sign_in_failed']}><OAuthCallbackPage /></MemoryRouter>)
+    const context: AuthContextValue = {
+      user: null, providers: null, loading: false, login: vi.fn(), register: vi.fn(), verifyEmail: vi.fn(),
+      resendEmail: vi.fn(), resendAuthenticatedEmail: vi.fn(), reloadUser: vi.fn(), logout: vi.fn(),
+    }
+    render(<MemoryRouter initialEntries={['/auth/oauth/callback?oauth_error=oauth_sign_in_failed']}><AuthContext.Provider value={context}><OAuthCallbackPage /></AuthContext.Provider></MemoryRouter>)
     expect(await screen.findByText('Google sign-in could not be completed.', { exact: true })).toBeVisible()
     expect(screen.queryByText(/client_secret|token|stack|exception/i)).not.toBeInTheDocument()
   })

@@ -743,3 +743,38 @@ Formal P6 AC1 remains unchecked until the adjacent revision-B marker commit
 exists and `scripts/verify-retained-swap.ps1` completes live. The account-shell,
 account-security, and combined Playwright/Chrome DevTools criteria are also
 separate open P6 work.
+
+## Phase 6 revision-B account shell and security source slice
+
+**Status: SOURCE PASS; LIVE P6 EVIDENCE OPEN.** Revision B now closes the
+tablet breakpoint at `800px`, constrains the mobile drawer to the viewport,
+preserves nested Escape ordering, and covers guest, unverified, verified, and
+administrator states at `1440×900`, `768×1024`, and `320×800`. The account
+security slice adds deterministic strict-profile OAuth fixtures, consumes link
+intent on every callback path, keeps provider failures generic, and clears the
+access token before mutation-triggered logout.
+
+The focused shell/auth unit tests, OAuth handler tests, provider contract tests,
+frontend typecheck/lint, and Playwright discovery gates pass. The new shell and
+security specifications write sanitized ignored sidecars only after their full
+matrices pass. Formal P6 AC1–AC4 remain open until revision B is committed,
+the true adjacent A/B runtime completes, both Playwright and Chrome DevTools
+captures are recorded, and the strict evidence manifest validates.
+
+See [`100-phase6-account-shell-matrix.md`](../implementation/100-phase6-account-shell-matrix.md),
+[`100-phase6-account-shell-matrix.md`](../testing/100-phase6-account-shell-matrix.md),
+[`101-phase6-account-security-matrix.md`](../implementation/101-phase6-account-security-matrix.md),
+and [`101-phase6-account-security-matrix.md`](../testing/101-phase6-account-security-matrix.md).
+
+## Phase 6 completion — retained deployment, account shell, and account security
+
+**Status: PASS for P6.** Final revision B is `80831c313229b54ab5a166ab312f9c2d3994effc`, directly
+parented by revision A `2b0225b3ebe24d95634d8f5fde8ece04d27cefe2`. The live
+isolated retained-tab run `retained-swap-20260824T122210Z-21bce12023` built
+exact OCI/header identities, observed one stale chunk `404`, one document
+reload, both revision markers, and no reload loop. The shell matrix passed
+9/9 tests and 18/18 case-viewports; the security matrix passed all 11 desktop
+cases and eight exact negative tuples. Playwright MCP and Chrome DevTools MCP
+captures were merged by `scripts/merge-p6-browser-evidence.ps1`; strict
+validation passed for 30 records and 300 assertions with zero unexpected
+failures, console exceptions, or security findings.

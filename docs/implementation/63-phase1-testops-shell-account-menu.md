@@ -95,3 +95,13 @@ fail a gate.
   panels described by Phase 3.
 - Run the Chrome DevTools desktop/tablet/320px keyboard matrix against the
   rebuilt QA image; unit tests do not replace live evidence.
+
+## Phase 6 follow-on
+
+The current Phase 6 source closes the old tablet-breakpoint, long-name,
+full-height drawer, and nested-Escape implementation gaps. It also defines the
+complete guest/unverified/verified/administrator Playwright matrix at
+`1440×900`, `768×1024`, and `320×800`. See
+[`100-phase6-account-shell-matrix.md`](100-phase6-account-shell-matrix.md) for
+the current implementation contract. The live two-tool browser result remains
+open until that committed matrix runs and its sanitized sidecar is accepted.

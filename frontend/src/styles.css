@@ -138,8 +138,8 @@ button:hover:not(:disabled), .button:hover { transform: translateY(-1px); }
 .primary-nav { align-items: center; display: flex; gap: .35rem; }
 .nav-link { border-radius: .5rem; padding: .55rem .7rem; transition: color .16s ease, background-color .16s ease; }
 .nav-link:hover, .nav-link.active { background: rgb(255 255 255 / 10%); color: #fff; }
-.nav-menu, .nav-close { display: none; }
-.nav-account-name { max-width: 12rem; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; white-space: nowrap; }
+.icon-button.nav-menu, .nav-close { display: none; }
+.nav-account-name { display: inline-block; flex: 0 1 12rem; max-width: 12rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; white-space: nowrap; }
 .account-menu { position: relative; }
 .account-menu-trigger { align-items: center; background: transparent; border: 1px solid transparent; border-radius: .5rem; color: #c8d2e6; cursor: pointer; display: inline-flex; font: inherit; gap: .35rem; max-width: 100%; padding: .55rem .7rem; }
 .account-menu-trigger:hover { background: rgb(255 255 255 / 10%); color: #fff; }
@@ -254,11 +254,11 @@ h2, h3 { text-wrap: balance; }
 table { background: #fff; }
 th { font-variant-numeric: tabular-nums; }
 
-@media (max-width: 760px) {
+@media (max-width: 800px) {
   .topbar-inner { min-height: 3.6rem; }
-  .nav-menu { display: inline-flex; }
+  .icon-button.nav-menu { display: inline-flex; }
   .nav-drawer-backdrop { display: block; }
-  .nav-drawer { background: #101827; display: none; inset: 0 0 auto auto; padding: 4rem 1rem 1rem; position: fixed; width: min(20rem, 90vw); z-index: 12; }
+  .nav-drawer { background: #101827; bottom: 0; display: none; height: 100dvh; max-height: 100dvh; overflow-y: auto; overscroll-behavior: contain; padding: 4rem 1rem 1rem; position: fixed; right: 0; top: 0; width: min(20rem, 90vw); z-index: 12; }
   .nav-drawer.open { display: block; }
   .primary-nav { align-items: stretch; flex-direction: column; }
   .primary-nav .nav-link { padding: .8rem; }

@@ -239,7 +239,7 @@ try {
     }
     $changedMarkerPath = Invoke-GitCapture -Arguments @('diff', '--name-only', $RevisionA, $RevisionB, '--', $MarkerSourcePath) `
         -Activity 'Verify legitimate revision-B source delta'
-    if ($changedMarkerPath.Trim() -cne ($MarkerSourcePath -replace '\', '/')) { throw 'Revision-B marker is not an adjacent source delta.' }
+    if ($changedMarkerPath.Trim() -cne $MarkerSourcePath.Replace('\', '/')) { throw 'Revision-B marker is not an adjacent source delta.' }
 
     foreach ($build in @(
         @{ Image = $frontendImageA; Revision = $RevisionA; Context = (Join-Path $worktreeA 'frontend'); Name = 'revision-A frontend' },
@@ -345,9 +345,22 @@ services:
     } | ConvertTo-Json -Compress), [Text.UTF8Encoding]::new($false))
 
     if (-not (Wait-Job -Job $browserJob -Timeout $TimeoutSeconds)) { throw 'Retained-swap Playwright did not finish.' }
-    $browserOutput = (Receive-Job -Job $browserJob 2>&1 | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    $browserOutputPreference = $ErrorActionPreference
+    try {
+        # PowerShell 5.1 promotes stderr from the child Node process into
+        # ErrorRecord instances. A non-fatal Node warning must not abort
+        # evidence collection before the job state is inspected.
+        $ErrorActionPreference = 'Continue'
+        $browserOutput = (Receive-Job -Job $browserJob 2>&1 | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
+    } finally {
+        $ErrorActionPreference = $browserOutputPreference
+    }
     if ($browserOutput) { Write-Host $browserOutput }
-    if ($browserJob.State -ne 'Completed') { throw "Retained-swap Playwright failed (state=$($browserJob.State))." }
+    if ($browserJob.State -ne 'Completed') {
+        $jobErrors = @($browserJob.ChildJobs | ForEach-Object { $_.Error | ForEach-Object { $_.ToString() } }) -join [Environment]::NewLine
+        $reason = @($browserJob.ChildJobs | ForEach-Object { $_.JobStateInfo.Reason | ForEach-Object { $_.ToString() } }) -join [Environment]::NewLine
+        throw "Retained-swap Playwright failed (state=$($browserJob.State)). errors=$jobErrors reason=$reason"
+    }
     $resultPath = Join-Path $controlDirectory 'retained-swap-result.json'
     $result = Wait-ForStateFile -Path $resultPath -Status 'passed' -RunId $runId -BrowserJob $null
     if ([int]$result.document_reloads -ne 1 -or [int]$result.stale_chunk_404s -ne 1 -or `

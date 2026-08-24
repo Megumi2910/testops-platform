@@ -2,10 +2,12 @@
 
 ## Current result
 
-**SOURCE FOUNDATION PASS; LIVE A/B RESULT OPEN.** The revision/header,
-Playwright configuration, client-navigation, orchestration, and evidence-output
-contracts pass focused checks. No two-image success is claimed because the
-adjacent revision-B diagnostic marker has not yet been committed and exercised.
+**P6 LIVE EVIDENCE PASS.** The revision/header, Playwright configuration,
+client-navigation, orchestration, and evidence-output contracts pass focused
+checks. The adjacent A/B run against the current revision-B commit built and
+served both exact images, recorded one stale-chunk `404`, one reload, and
+completed isolated teardown. The combined shell/security/Playwright/Chrome
+DevTools manifest validates 30 case/viewport records and 300 assertions.
 
 ## Acceptance matrix
 
@@ -30,7 +32,9 @@ frontend lint PASS
 
 The script dry run also resolved two distinct adjacent full commits and stated
 the detached-worktree/build/header/browser sequence without creating a
-success-shaped evidence record.
+success-shaped evidence record. The live command returned zero after the
+PowerShell worker correctly ignored a non-fatal Node stderr warning while
+collecting the Playwright result.
 
 ## Canonical sanitized swap block
 
@@ -44,13 +48,15 @@ shared top-level P6 schema and receives this `swap` contract:
 - A recovery marker present, B diagnostic marker present, and no reload loop.
 
 The file contains no cookies, authorization headers, passwords, OTPs, response
-bodies, raw URLs with user data, screenshots, or traces. Later account-shell
-and Chrome DevTools checks merge their sanitized case/viewport/network fields
-into the same ignored artifact.
+bodies, raw URLs with user data, screenshots, or traces. The account-shell,
+account-security, and Chrome DevTools checks are merged into the same ignored
+artifact by `scripts/merge-p6-browser-evidence.ps1`; the strict P6 validator
+accepts the combined manifest only after all case records and exact negative
+tuples are present.
 
 ## Release interpretation
 
-This evidence closes only the revision-A foundation slice. `QG-010` and formal
-P6 AC1 remain open until the live orchestrator returns zero and its pipeline
-manifest is accepted. Account-shell/security matrices and combined
-Playwright/Chrome DevTools evidence are separate P6 acceptance criteria.
+This evidence closes the retained-deployment portion of P6. The canonical
+manifest is merged and accepted alongside the account-shell/security matrices
+and combined Playwright/Chrome DevTools evidence; the next milestone slice may
+proceed with the same source SHA.

@@ -58,3 +58,12 @@ implementation commit `dfc5d36` passed all six CI jobs in run
 [`31865910829`](https://github.com/Megumi2910/testops-platform/actions/runs/31865910829).
 Live Chrome DevTools verification against a rebuilt container is still part of
 the broader Milestone 10A release gate.
+
+## Phase 6 follow-on
+
+The mounted shell suite now covers 13 cases, including Home/End movement,
+outside/hash/route dismissal, both drawer Tab boundaries, backdrop closure,
+and nested Escape ordering. The source and exact three-viewport Playwright
+contract are documented in
+[`100-phase6-account-shell-matrix.md`](100-phase6-account-shell-matrix.md);
+live browser acceptance remains a separate P6 gate.

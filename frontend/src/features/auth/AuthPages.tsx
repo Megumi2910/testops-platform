@@ -5,6 +5,7 @@ import { authApi } from './api'
 import { useAuth } from './AuthContext'
 import { ApiError } from '../../lib/api'
 import { Alert, Button } from '../../components/ui'
+import { applicationRevision } from '../../app/lazyWithRecovery'
 import { safeReturnTo } from './returnTo'
 import { AuthField } from './AuthField'
 
@@ -38,7 +39,10 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [pending, setPending] = useState(false)
   const notice = loginNotice(searchParams.get('reason'))
-  if (user) return <NavigateHome returnTo={searchParams.get('returnTo')} />
+  // Mutation success redirects intentionally carry a notice while logout
+  // clears the current auth context. Do not replace that route with the
+  // generic authenticated redirect during the brief cleanup window.
+  if (user && !notice) return <NavigateHome returnTo={searchParams.get('returnTo')} />
   async function submit(event: FormEvent) {
     event.preventDefault(); clear()
     setPending(true)
@@ -54,6 +58,9 @@ export function LoginPage() {
       <p className="form-help"><Link to="/password-reset">Forgot your password?</Link></p>
       {providers?.googleEnabled && <a className="button button-secondary" href="/oauth2/authorization/google">Continue with Google</a>}
       {providers?.registrationEnabled && <p className="form-help">New here? <Link to="/register">Create an account</Link>.</p>}
+      <p className="form-help" data-testid="retained-swap-revision-b">
+        Deployment recovery ready · build <code>{applicationRevision === 'development' ? 'development' : applicationRevision.slice(0, 12)}</code>
+      </p>
     </form>
   </AuthCard>
 }
@@ -189,14 +196,15 @@ export function PasswordResetPage() {
 }
 
 export function OAuthCallbackPage() {
+  const { reloadUser } = useAuth()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [error, setError] = useState('Completing Google sign-in…')
   useEffect(() => {
     const oauthError = searchParams.get('oauth_error')
     if (oauthError) { setError('Google sign-in could not be completed.'); return }
-    void authApi.refresh().then(() => navigate('/')).catch(() => setError('Google sign-in could not be completed.'))
-  }, [navigate, searchParams])
+    void authApi.refresh().then(() => reloadUser()).then(() => navigate('/')).catch(() => setError('Google sign-in could not be completed.'))
+  }, [navigate, reloadUser, searchParams])
   return <AuthCard title="Signing you in" subtitle={error} />
 }
 

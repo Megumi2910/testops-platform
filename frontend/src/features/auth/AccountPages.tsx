@@ -130,8 +130,11 @@ export function AccountPage() {
     setPasswordPending(true)
     try {
       await authApi.changePassword({ currentPassword, newPassword })
-      await logout()
+      // The mutation revokes every refresh session, including this browser's
+      // cookie. Logout is still attempted for cleanup, but its expected
+      // invalid-session response must not replace the success redirect.
       navigate('/login?reason=password-changed', { replace: true })
+      await logout().catch(() => undefined)
     } catch (cause) {
       const problem = localFormProblem(cause, 'Unable to change your password. Try again.')
       setPasswordFieldErrors(problem.fieldErrors)
@@ -187,8 +190,8 @@ export function AccountPage() {
     setUnlinkPending(true)
     try {
       await authApi.unlinkGoogle(unlinkPassword)
-      await logout()
       navigate('/login?reason=google-unlinked', { replace: true })
+      await logout().catch(() => undefined)
     } catch (cause) {
       const problem = localFormProblem(cause, 'Unable to unlink Google. Check your password and try again.')
       setUnlinkFieldErrors(problem.fieldErrors)
@@ -206,7 +209,7 @@ export function AccountPage() {
 
   async function revokeAllSessions() {
     setSessionError(''); setRevokeAllPending(true)
-    try { await authApi.revokeAll(); await logout(); navigate('/login?reason=sessions-revoked', { replace: true }) }
+    try { await authApi.revokeAll(); navigate('/login?reason=sessions-revoked', { replace: true }); await logout().catch(() => undefined) }
     catch (cause) { setSessionError(cause instanceof ApiError ? cause.message : 'Unable to revoke all sessions. Try again.'); setRevokeAllPending(false) }
   }
 

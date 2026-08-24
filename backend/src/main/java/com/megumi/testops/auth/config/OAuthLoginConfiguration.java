@@ -11,6 +11,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 
 import com.megumi.testops.auth.service.AuthService;
 import com.megumi.testops.auth.service.AuthException;
+import com.megumi.testops.auth.service.GoogleLinkIntentSession;
 import com.megumi.testops.auth.service.RefreshCookieFactory;
 import java.util.UUID;
 
@@ -22,12 +23,13 @@ public class OAuthLoginConfiguration {
     AuthenticationSuccessHandler oauthAuthenticationSuccessHandler(AuthService authService,
             AuthProperties properties, RefreshCookieFactory refreshCookies) {
         return (request, response, authentication) -> {
+            Object linkUser = GoogleLinkIntentSession.consumeUser(request);
             try {
                 OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) authentication;
                 OAuth2User principal = token.getPrincipal();
                 String origin = properties.frontendOrigin();
                 if (!Boolean.TRUE.equals(principal.getAttributes().get("email_verified"))) {
-                    response.sendRedirect(origin + "/login?oauth_error=email_unverified");
+                    response.sendRedirect(origin + "/auth/oauth/callback?oauth_error=email_unverified");
                     return;
                 }
                 String subject = String.valueOf(principal.getAttributes().get("sub"));
@@ -38,12 +40,10 @@ public class OAuthLoginConfiguration {
                 }
                 String name = (String) principal.getAttributes().getOrDefault("name", email);
                 String picture = (String) principal.getAttributes().get("picture");
-                Object linkUser = request.getSession(false) == null ? null : request.getSession(false).getAttribute("TESTOPS_GOOGLE_LINK_USER");
                 AuthService.SessionResult session;
                 if (linkUser != null) {
                     session = authService.linkGoogle(UUID.fromString(String.valueOf(linkUser)), subject, email, name, picture,
                             request.getHeader("User-Agent"), request.getRemoteAddr());
-                    request.getSession(false).removeAttribute("TESTOPS_GOOGLE_LINK_USER");
                 } else {
                     session = authService.oauthLogin("GOOGLE", subject, email, name, picture,
                             request.getHeader("User-Agent"), request.getRemoteAddr());
@@ -51,14 +51,16 @@ public class OAuthLoginConfiguration {
                 response.addHeader("Set-Cookie", refreshCookies.create(session.refreshToken()).toString());
                 response.sendRedirect(origin + "/auth/oauth/callback");
             } catch (com.megumi.testops.auth.service.AuthException exception) {
-                response.sendRedirect(properties.frontendOrigin() + "/login?oauth_error=oauth_sign_in_failed");
+                response.sendRedirect(properties.frontendOrigin() + "/auth/oauth/callback?oauth_error=oauth_sign_in_failed");
             }
         };
     }
 
     @Bean
     AuthenticationFailureHandler oauthAuthenticationFailureHandler(AuthProperties properties) {
-        return (request, response, exception) -> response.sendRedirect(
-                properties.frontendOrigin() + "/login?oauth_error=oauth_sign_in_failed");
+        return (request, response, exception) -> {
+            GoogleLinkIntentSession.clear(request);
+            response.sendRedirect(properties.frontendOrigin() + "/auth/oauth/callback?oauth_error=oauth_sign_in_failed");
+        };
     }
 }
