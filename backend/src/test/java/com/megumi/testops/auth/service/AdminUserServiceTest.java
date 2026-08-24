@@ -53,6 +53,28 @@ class AdminUserServiceTest {
         verify(auth).revokeAllSessions(changed.getId(), null, null);
     }
 
+    @Test
+    void reactivationAlsoRevokesSessionsAndOldBearerVersion() {
+        UserEntity changed = admin("LOCKED");
+        when(users.findById(changed.getId())).thenReturn(Optional.of(changed));
+
+        service.status(changed.getId(), "ACTIVE");
+
+        verify(changed).setStatus("ACTIVE", Instant.now(clock));
+        verify(auth).revokeAllSessions(changed.getId(), null, null);
+    }
+
+    @Test
+    void unchangedStatusDoesNotCreateAnotherRevocation() {
+        UserEntity unchanged = admin("ACTIVE");
+        when(users.findById(unchanged.getId())).thenReturn(Optional.of(unchanged));
+
+        service.status(unchanged.getId(), "ACTIVE");
+
+        verify(unchanged).setStatus("ACTIVE", Instant.now(clock));
+        verify(auth, never()).revokeAllSessions(unchanged.getId(), null, null);
+    }
+
     private static UserEntity admin(String status) {
         UserEntity user = mock(UserEntity.class);
         when(user.getId()).thenReturn(UUID.randomUUID());

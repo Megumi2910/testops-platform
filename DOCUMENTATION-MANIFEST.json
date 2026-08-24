@@ -693,6 +693,18 @@
       "source": ["scripts/test-revision-contract.ps1", "scripts/test-quality-gate-scripts.ps1"]
     },
     {
+      "path": "docs/implementation/91-phase7-authorization-resource-lifecycle.md",
+      "role": "Phase 7 authorization, session revocation, and resource lifecycle implementation",
+      "status": "current",
+      "source": ["backend/src/main/java/com/megumi/testops/auth/service/AdminUserService.java", "frontend/src/lib/api.ts", "frontend/src/features/auth/AuthProvider.tsx", "frontend/e2e"]
+    },
+    {
+      "path": "docs/testing/100-phase7-authorization-resource-lifecycle.md",
+      "role": "Phase 7 authorization and resource lifecycle acceptance evidence boundary",
+      "status": "current",
+      "source": ["frontend/e2e/session-expiry.spec.ts", "frontend/e2e/tenant-isolation.spec.ts", "frontend/e2e/variable-lifecycle.spec.ts", "frontend/e2e/member-lifecycle.spec.ts", "scripts/assert-browser-evidence.ps1"]
+    },
+    {
       "path": "docs/implementation/100-phase6-account-shell-matrix.md",
       "role": "Phase 6 responsive account-shell implementation and interaction matrix",
       "status": "current",

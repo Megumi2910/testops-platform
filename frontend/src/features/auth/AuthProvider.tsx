@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type PropsWithChildren } from 'react'
 
-import { ApiError } from '../../lib/api'
+import { ApiError, subscribeAuthFailure } from '../../lib/api'
 import { authApi, type Providers, type UserSummary } from './api'
 import { AuthContext, type AuthContextValue } from './AuthContext'
 
@@ -29,6 +29,12 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, [])
 
   useEffect(() => { void bootstrap() }, [bootstrap])
+
+  useEffect(() => subscribeAuthFailure(() => {
+    sessionHydrated.current = false
+    setUser(null)
+    setLoading(false)
+  }), [])
 
   const value = useMemo<AuthContextValue>(() => ({
     user,

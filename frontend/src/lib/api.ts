@@ -29,6 +29,19 @@ type AuthResponseLike = { accessToken: string }
 
 let accessToken: string | null = null
 let refreshPromise: Promise<unknown> | null = null
+const authFailureListeners = new Set<() => void>()
+
+export function subscribeAuthFailure(listener: () => void) {
+  authFailureListeners.add(listener)
+  return () => { authFailureListeners.delete(listener) }
+}
+
+function notifyAuthFailure() {
+  clearAccessToken()
+  for (const listener of authFailureListeners) {
+    try { listener() } catch { /* observers must not break request cleanup */ }
+  }
+}
 
 export function setAccessToken(token: string) {
   accessToken = token
@@ -49,6 +62,9 @@ async function refreshInMemory(): Promise<unknown> {
       const session = (await response.json()) as AuthResponseLike
       setAccessToken(session.accessToken)
       return session
+    }).catch((error) => {
+      notifyAuthFailure()
+      throw error
     }).finally(() => {
       refreshPromise = null
     })
@@ -78,10 +94,10 @@ async function request<T>(input: RequestInfo | URL, init: RequestInit | undefine
     try {
       await refreshInMemory()
       return request<T>(input, init, false)
-    } catch {
-      clearAccessToken()
-    }
+    } catch { /* refreshInMemory publishes the terminal auth failure */ }
   }
+
+  if (response.status === 401 && !allowRetry && canRefresh(input)) notifyAuthFailure()
 
   if (!response.ok) {
     let message = `Request failed with status ${response.status}`
@@ -104,11 +120,18 @@ export async function apiFetch<T>(input: RequestInfo | URL, init?: RequestInit):
   return request<T>(input, init, true)
 }
 
-export async function apiBlobFetch(input: RequestInfo | URL): Promise<Blob> {
+async function blobRequest(input: RequestInfo | URL, allowRetry: boolean): Promise<Blob> {
   const response = await fetch(input, { credentials: 'include', headers: { Accept: 'application/octet-stream', ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) } })
-  if (response.status === 401) { await refreshInMemory(); return apiBlobFetch(input) }
+  if (response.status === 401 && allowRetry && canRefresh(input)) {
+    try { await refreshInMemory(); return blobRequest(input, false) } catch { /* refreshInMemory publishes the terminal auth failure */ }
+  }
+  if (response.status === 401 && !allowRetry && canRefresh(input)) notifyAuthFailure()
   if (!response.ok) throw new ApiError(response.status, 'Artifact download failed')
   return response.blob()
+}
+
+export async function apiBlobFetch(input: RequestInfo | URL): Promise<Blob> {
+  return blobRequest(input, true)
 }
 
 export async function refreshAccessToken<T extends AuthResponseLike>() {

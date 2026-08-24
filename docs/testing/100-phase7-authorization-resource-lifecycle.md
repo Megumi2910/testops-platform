@@ -1,0 +1,30 @@
+# Phase 7 authorization and resource lifecycle evidence
+
+This document is the operator-facing evidence boundary for the P7 slice.
+Run the isolated E2E Compose project with `E2E_BASE_URL=http://localhost:3100`,
+`MAILPIT_URL=http://localhost:8025`, `OAUTH_PROVIDER_PUBLIC_HOST=localhost`,
+the bootstrap administrator credentials, and `PW_WORKERS=1`.
+
+The acceptance matrix contains no skipped tests:
+
+- `phase5-role-matrix.spec.ts`, `phase5-administrator-crud.spec.ts`,
+  `phase5-account-status.spec.ts`, `phase5-unverified-boundary.spec.ts`, and
+  `session-expiry.spec.ts` cover current role/status visibility and active
+  session revocation through reactivation.
+- `tenant-isolation.spec.ts` verifies foreign project and nested member reads
+  return a denial/not-found response without foreign payloads.
+- `variable-lifecycle.spec.ts` covers normalized plain keys, secret masking,
+  duplicate and stale conflicts, and reference-safe deletion.
+- `member-lifecycle.spec.ts` covers add, duplicate, role/effective-permission
+  presentation, stale recovery, removal, and final-manager conflicts.
+- `api.test.ts` and `AuthProvider.test.tsx` prove terminal JSON/blob refresh
+  failure clears both token and authenticated UI state with one bounded retry.
+
+The canonical sanitized output is `artifacts/browser-evidence/P7.json` and is
+validated by `scripts/assert-browser-evidence.ps1 -Phase P7`. It records only
+origin-relative paths, HTTP methods/statuses, sanitized problem codes, case
+assertion counts, and zero unexpected failures, 500s, console exceptions,
+cross-tenant leaks, or cross-origin leaks.
+
+No screenshots, traces, storage state, request/response bodies, cookies,
+authorization headers, passwords, or OTPs are published by this matrix.

@@ -768,9 +768,9 @@ and [`101-phase6-account-security-matrix.md`](../testing/101-phase6-account-secu
 
 ## Phase 6 completion — retained deployment, account shell, and account security
 
-**Status: PASS for P6.** Final revision B is `80831c313229b54ab5a166ab312f9c2d3994effc`, directly
+**Status: PASS for P6.** Final revision B is `f74e5f2af8ec4c272c43535de7df9288099f6c43`, directly
 parented by revision A `2b0225b3ebe24d95634d8f5fde8ece04d27cefe2`. The live
-isolated retained-tab run `retained-swap-20260824T122210Z-21bce12023` built
+isolated retained-tab run `retained-swap-20260824T123200Z-9808e06085` built
 exact OCI/header identities, observed one stale chunk `404`, one document
 reload, both revision markers, and no reload loop. The shell matrix passed
 9/9 tests and 18/18 case-viewports; the security matrix passed all 11 desktop
@@ -778,3 +778,13 @@ cases and eight exact negative tuples. Playwright MCP and Chrome DevTools MCP
 captures were merged by `scripts/merge-p6-browser-evidence.ps1`; strict
 validation passed for 30 records and 300 assertions with zero unexpected
 failures, console exceptions, or security findings.
+
+## Phase 7 completion — authorization and resource lifecycle
+
+P7 implementation is now source-complete: administrator role/status transitions
+revoke active sessions exactly once on real changes (including reactivation),
+shared JSON/blob refresh failures clear the token and AuthProvider state with a
+bounded retry, and the role/status, tenant, variable, and member browser
+contracts are present without skipped cases. The final status and receipt-backed
+evidence counts will be appended after the isolated P7 runtime and
+`artifacts/browser-evidence/P7.json` strict validation pass.

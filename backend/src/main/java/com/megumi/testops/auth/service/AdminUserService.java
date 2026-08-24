@@ -43,7 +43,6 @@ public class AdminUserService {
         try { role = PlatformRole.valueOf(value == null ? "" : value.trim().toUpperCase(Locale.ROOT)); } catch (IllegalArgumentException ex) { throw error(HttpStatus.BAD_REQUEST, "invalid_platform_role", "Platform role must be ADMIN or MEMBER"); }
         if (user.getPlatformRole() == PlatformRole.ADMIN && role != PlatformRole.ADMIN && "ACTIVE".equals(user.getStatus())) ensureAnotherActiveAdmin(user, "The final active administrator cannot be demoted");
         user.setPlatformRole(role);
-        user.incrementTokenVersion(Instant.now(clock));
         auth.revokeAllSessions(id, null, null);
         return response(user);
     }
@@ -53,7 +52,10 @@ public class AdminUserService {
         UserEntity user = find(id); String status = value == null ? "" : value.trim().toUpperCase(Locale.ROOT);
         if (!java.util.Set.of("ACTIVE", "LOCKED", "DISABLED").contains(status)) throw error(HttpStatus.BAD_REQUEST, "invalid_account_status", "Status must be ACTIVE, LOCKED, or DISABLED");
         if (user.getPlatformRole() == PlatformRole.ADMIN && "ACTIVE".equals(user.getStatus()) && !"ACTIVE".equals(status)) ensureAnotherActiveAdmin(user, "The final active administrator cannot be disabled");
-        user.setStatus(status, Instant.now(clock)); if (!"ACTIVE".equals(status)) auth.revokeAllSessions(id, null, null); return response(user);
+        boolean changed = !status.equals(user.getStatus());
+        user.setStatus(status, Instant.now(clock));
+        if (changed) auth.revokeAllSessions(id, null, null);
+        return response(user);
     }
 
     private UserEntity find(UUID id) { return users.findById(id).orElseThrow(() -> error(HttpStatus.NOT_FOUND, "user_not_found", "User was not found")); }
