@@ -53,6 +53,7 @@ test('member lifecycle covers duplicate, role, stale, removal, and final-manager
   await page.getByRole('button', { name: 'Remove member', exact: true }).click()
   expect((await finalManager).status()).toBe(409)
   await expect(page.getByText(/final project manager/i)).toBeVisible()
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click()
 
   await memberRow.getByRole('button', { name: 'Remove', exact: true }).click()
   await page.getByRole('button', { name: 'Remove member', exact: true }).click()

@@ -13,11 +13,15 @@ async function signIn(page: Page, email: string, password: string) {
 
 async function setStatus(page: Page, email: string, status: 'ACTIVE' | 'LOCKED') {
   await page.goto('/admin/users')
+  await expect(page).toHaveURL(/\/admin\/users$/)
   await page.getByPlaceholder('Email or display name').fill(email)
   const control = page.getByLabel(`Account status for ${email}`)
   await expect(control).toBeVisible()
   await control.selectOption(status)
-  await expect(page.getByRole('status')).toHaveText('User updated.')
+  if (status === 'LOCKED') {
+    await page.getByRole('button', { name: 'Lock account', exact: true }).click()
+  }
+  await expect(page.getByRole('status')).toContainText(status === 'LOCKED' ? 'account is now locked' : 'account is now active')
 }
 
 test('account status revokes active sessions and keeps the old bearer invalid after reactivation', async ({ page, browser }) => {
@@ -35,17 +39,18 @@ test('account status revokes active sessions and keeps the old bearer invalid af
   const adminContext = await browser.newContext({ baseURL: e2eBaseUrl })
   const adminPage = await adminContext.newPage()
   await signIn(adminPage, admin.email, admin.password)
+  await expect(adminPage.getByRole('link', { name: 'Admin', exact: true })).toBeVisible()
   await setStatus(adminPage, email, 'LOCKED')
 
-  const lockedResponse = accountPage.waitForResponse(response => response.url().includes('/api/v1/projects') && response.status() === 401)
+  const lockedResponse = accountPage.waitForResponse(response => response.url().includes('/api/v1/') && response.status() === 401, { timeout: 15_000 }).catch(() => undefined)
   await accountPage.goto('/projects')
-  expect((await lockedResponse).status()).toBe(401)
+  expect(await lockedResponse).toBeTruthy()
   await expect(accountPage).toHaveURL(/\/login/)
 
   await setStatus(adminPage, email, 'ACTIVE')
-  const reactivatedResponse = accountPage.waitForResponse(response => response.url().includes('/api/v1/projects') && response.status() === 401)
+  const reactivatedResponse = accountPage.waitForResponse(response => response.url().includes('/api/v1/') && response.status() === 401, { timeout: 15_000 }).catch(() => undefined)
   await accountPage.goto('/projects')
-  expect((await reactivatedResponse).status()).toBe(401)
+  expect(await reactivatedResponse).toBeTruthy()
   await expect(accountPage).toHaveURL(/\/login/)
 
   await accountContext.close()

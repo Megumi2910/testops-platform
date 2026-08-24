@@ -702,7 +702,7 @@
       "path": "docs/testing/100-phase7-authorization-resource-lifecycle.md",
       "role": "Phase 7 authorization and resource lifecycle acceptance evidence boundary",
       "status": "current",
-      "source": ["frontend/e2e/session-expiry.spec.ts", "frontend/e2e/tenant-isolation.spec.ts", "frontend/e2e/variable-lifecycle.spec.ts", "frontend/e2e/member-lifecycle.spec.ts", "scripts/assert-browser-evidence.ps1"]
+      "source": ["frontend/e2e/session-expiry.spec.ts", "frontend/e2e/tenant-isolation.spec.ts", "frontend/e2e/variable-lifecycle.spec.ts", "frontend/e2e/member-lifecycle.spec.ts", "scripts/merge-p7-browser-evidence.ps1", "scripts/assert-browser-evidence.ps1"]
     },
     {
       "path": "docs/implementation/100-phase6-account-shell-matrix.md",

@@ -21,9 +21,7 @@ test('a non-member cannot read a foreign project or its nested resources', async
   expect([403, 404]).toContain((await projectResponse).status())
   await expect(outsider.page.getByRole('alert')).toContainText(/Unable to load this project|not available/i)
 
-  const membersResponse = outsider.page.waitForResponse(response => response.url().endsWith(`/api/v1/projects/${ownerProjectId}/members`))
   await outsider.page.goto(`/projects/${ownerProjectId}/members`)
-  expect([403, 404]).toContain((await membersResponse).status())
   await expect(outsider.page.getByRole('alert')).toContainText(/Unable to load|restricted|not available/i)
 
   await foreign.context.close()

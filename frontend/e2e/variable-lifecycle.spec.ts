@@ -9,10 +9,11 @@ async function createReferencedCase(page: Page, projectId: string, suiteId: stri
   await page.getByLabel('Name').fill(`P7 variable reference ${Date.now()}`)
   await page.getByRole('button', { name: 'Continue to steps' }).click()
   await page.getByRole('button', { name: 'Add step', exact: true }).click()
+  await page.getByRole('button', { name: 'Add step', exact: true }).click()
   const steps = page.locator('fieldset.step-card')
   await steps.nth(0).getByLabel('Input value').fill('/')
   await steps.nth(1).getByLabel('Action').selectOption('FILL')
-  await steps.nth(1).getByLabel('Locator').selectOption({ index: 1 })
+  await steps.nth(1).locator('select').nth(1).selectOption({ index: 1 })
   await steps.nth(1).getByLabel('Locator value').fill('search')
   await steps.nth(1).getByLabel('Input value').fill(`\${${variableKey}}`)
   await page.getByRole('button', { name: 'Review case' }).click()
@@ -58,6 +59,7 @@ test('plain and secret variables cover masking, duplicate, stale, and reference-
   expect((await stale).status()).toBe(409)
   await expect(page.getByText(/changed in another session|latest data was reloaded/i)).toBeVisible()
   await page.unroute(`**/api/v1/projects/${projectId}/variables/${encodeURIComponent(plainKey.toUpperCase())}`)
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click()
 
   const secretKey = `P7_SECRET_${runId}`
   await page.getByLabel('Variable key').fill(secretKey)
