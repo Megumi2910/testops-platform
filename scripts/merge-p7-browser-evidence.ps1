@@ -45,7 +45,7 @@ $negativeTuples = @(
     @{ case_id = 'terminal-refresh-blob'; method = 'GET'; path = '/api/v1/artifacts/{artifact-id}/download'; status = 401; problem_code = 'refresh_invalid' }
 )
 $observed = @($negativeTuples | ForEach-Object { [ordered]@{ case_id = $_.case_id; method = $_.method; path = $_.path; status = $_.status; problem_code = $_.problem_code; count = 1 } })
-$assertionsTotal = [int](($caseRecords | Measure-Object -Property assertions_total -Sum).Sum)
+$assertionsTotal = [int](($cases | ForEach-Object { [int]$_.assertions_total } | Measure-Object -Sum).Sum)
 $manifest = [ordered]@{
     schema_version = 1
     phase = 'P7'
