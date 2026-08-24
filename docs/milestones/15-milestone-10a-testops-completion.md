@@ -781,10 +781,25 @@ failures, console exceptions, or security findings.
 
 ## Phase 7 completion — authorization and resource lifecycle
 
-P7 implementation is now source-complete: administrator role/status transitions
-revoke active sessions exactly once on real changes (including reactivation),
-shared JSON/blob refresh failures clear the token and AuthProvider state with a
-bounded retry, and the role/status, tenant, variable, and member browser
-contracts are present without skipped cases. The final status and receipt-backed
-evidence counts will be appended after the isolated P7 runtime and
-`artifacts/browser-evidence/P7.json` strict validation pass.
+**Status: PASS.** Administrator role/status transitions revoke active sessions
+exactly once on real changes (including reactivation), shared JSON/blob refresh
+failures clear the token and AuthProvider state with one bounded retry, and the
+role/status, tenant, variable, and member browser contracts pass without
+skipped cases. The retained phase-5 checks now exercise the current
+confirmation-dialog, row-local feedback, and read-only Members navigation
+contracts.
+
+The formal P7 ledger is recorded in
+`.agent/plans/testops-m10a-completion-20260823/ledger/P7.md`. AC1–AC6 receipts
+all pass under the frozen plan lease; the latest receipt hashes are
+`500fa1188ed083e81a15595fc0244450761283f4b3160f1c71b90ab6fddd13ec`,
+`be0dc74aa8fbd74a00a7fbe621bd01da0b7e4bf2609987a8752e00a46ccea518`,
+`f1cd0efc34ee2b92bf77ece8cfd07245b590a8cf2a81910c50186d7b8c8a9e49`,
+`afa8f3fa653feaccd261a028ef5d5d7f4526f3176bb2ae07e95b24f9d70159b6`,
+`81016084d0a568ebea6a0b90348dcc6358baa72b05c0e7cb974e2e6eea463af5`, and
+`8e48ec7fff6e73fbb3c49b90792834e20ef3fd992aed59c32758f0b87c379be7`.
+The sanitized browser manifest validates 14 cases, 34 assertions, and 10
+allowlisted expected negative tuples with zero unexpected failures, 500s,
+cross-tenant leaks, or sensitive artifacts. Playwright and Chrome DevTools
+smoke captures both render the public readiness shell; the only observed
+unauthenticated failure is the expected refresh `401`.

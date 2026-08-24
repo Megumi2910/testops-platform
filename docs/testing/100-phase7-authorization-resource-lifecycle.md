@@ -35,3 +35,12 @@ For the frozen AC1/AC6 receipt commands, set
 This process-scoped switch reconciles the plan's legacy `security-test` CLI
 argument with the proof map's normalized `integration-test` receipt kind; all
 other phases leave the switch unset.
+
+## Recorded result
+
+P7 is PASS. The formal ledger records passing AC1–AC6 receipts. The latest
+browser run passed 7 role/status/session cases, 1 tenant-isolation case, 1
+variable-lifecycle case, and 1 member-lifecycle case. The canonical manifest
+contains 14 cases, 34 assertions, and 10 expected negative tuples; strict
+validation reports zero unexpected failures, 500s, cross-tenant leaks, or
+sensitive artifacts.

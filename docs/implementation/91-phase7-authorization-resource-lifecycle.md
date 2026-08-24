@@ -57,3 +57,6 @@ per-user feedback contracts for administrator role/status changes; this keeps
 the regression suite aligned with the P7 security UI while preserving its
 authorization assertions. The role matrix also retains the read-only Members
 navigation for every project member, as required by the workspace contract.
+
+Formal P7 completion is recorded as PASS in the milestone ledger with six
+receipt-backed acceptance criteria and the sanitized 14-case browser manifest.
