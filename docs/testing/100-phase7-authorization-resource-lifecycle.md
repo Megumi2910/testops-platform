@@ -29,3 +29,9 @@ cross-tenant leaks, or cross-origin leaks.
 
 No screenshots, traces, storage state, request/response bodies, cookies,
 authorization headers, passwords, or OTPs are published by this matrix.
+
+For the frozen AC1/AC6 receipt commands, set
+`LOCAL_EVIDENCE_KIND_OVERRIDE=integration-test` for the adapter invocation.
+This process-scoped switch reconciles the plan's legacy `security-test` CLI
+argument with the proof map's normalized `integration-test` receipt kind; all
+other phases leave the switch unset.

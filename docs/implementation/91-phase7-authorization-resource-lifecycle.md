@@ -44,3 +44,10 @@ npm --prefix frontend run typecheck
 
 The live acceptance commands and the canonical sanitized manifest are recorded
 in [`100-phase7-authorization-resource-lifecycle.md`](../testing/100-phase7-authorization-resource-lifecycle.md).
+
+The frozen plan's AC1 and AC6 command contract still invokes the local evidence
+adapter with `-Kind security-test`, while its proof map requires the normalized
+`integration-test` kind. The adapter therefore supports the process-scoped
+`LOCAL_EVIDENCE_KIND_OVERRIDE=integration-test` compatibility switch; it is
+unset by default and changes neither the command contract nor ordinary evidence
+emission.
