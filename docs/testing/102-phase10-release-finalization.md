@@ -18,6 +18,11 @@ The retained revision-A/B tab reload remains a separate evidence-producing gate
 because it must build and compare two adjacent revisions; run
 `scripts/verify-retained-swap.ps1` for that boundary before final publication.
 
+The disposable E2E Compose profile uses a `1000` refresh-attempt budget because
+all browser specs share the localhost limiter while creating isolated sessions.
+This is test-harness capacity only; production/default Compose limits are not
+changed, and rate-limit semantics are still verified by focused contract cases.
+
 Run the local validators from the candidate checkout:
 
 ```powershell

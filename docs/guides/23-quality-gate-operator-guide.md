@@ -39,6 +39,11 @@ When startup fails it emits bounded `ps` and service-log diagnostics for that
 same project before cleanup. It never targets the developer's default Compose
 project.
 
+The E2E overlay intentionally sets `AUTH_REFRESH_LIMIT=1000` for its disposable
+backend. The complete browser matrix creates many sessions from one localhost
+address; the higher test-only budget prevents the suite from tripping its own
+refresh limiter. Default and production profiles retain their normal limits.
+
 PgAdmin rejects special-use domains such as `.invalid`, `.test`, and `localhost`
 at startup. The tracked template therefore uses the non-secret placeholder
 `admin@testops.example.com`; keep the address under a normal public suffix when

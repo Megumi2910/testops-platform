@@ -36,7 +36,10 @@ services:
       AUTH_LOGIN_FAILURE_LIMIT: "100"
       AUTH_REGISTRATION_IP_LIMIT: "100"
       AUTH_LOGIN_IP_LIMIT: "100"
-      AUTH_REFRESH_LIMIT: "100"
+      # The complete browser matrix bootstraps many isolated sessions from one
+      # localhost address. Keep production refresh throttling unchanged while
+      # preventing the disposable cross-spec run from self-throttling.
+      AUTH_REFRESH_LIMIT: "1000"
       AUTH_OTP_RESEND_IP_LIMIT: "100"
       MAIL_HOST: mailpit
       MAIL_PORT: "1025"
