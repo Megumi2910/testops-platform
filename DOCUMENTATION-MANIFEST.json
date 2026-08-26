@@ -2,7 +2,7 @@
   "classification": "Full product/application implementation specification",
   "verified_revision": "0dd704155433caeb5f83aa5c8fd7d429c8da557c",
   "verified_at": "2026-08-23",
-  "source_status": "Milestone 10A evidence is reconciled through the Phase 9 browser-quality, performance, documentation, and defect-disposition slice. Phase 10 final local/CI release proof and PLAN_PASS publication remain open. The visual portal, architecture report, API catalog/handbook, beginner manual, workflow guide, feature/business-logic handbook, and P9 implementation/testing notes describe the current V001-V023 source contract.",
+  "source_status": "Milestone 10A evidence is reconciled through the Phase 9 browser-quality, performance, documentation, and defect-disposition slice. Phase 10 final local/CI release proof, draft-PR publication, and PLAN_PASS finalization are the remaining publication boundary. The visual portal, architecture report, API catalog/handbook, beginner manual, workflow guide, feature/business-logic handbook, and P9/P10 implementation/testing notes describe the current V001-V023 source contract.",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -821,6 +821,18 @@
       "role": "Phase 9 browser-quality, Lighthouse/trace, defect-disposition, and sanitized evidence boundary",
       "status": "current",
       "source": ["artifacts/browser-evidence/P9.json", "scripts/assert-browser-evidence.ps1", "scripts/verify-defect-ledger.ps1", "scripts/verify-milestone-ledger.ps1"]
+    },
+    {
+      "path": "docs/implementation/95-phase10-release-finalization.md",
+      "role": "Phase 10 exact-SHA runtime, CI, PR, and plan-readiness validator implementation",
+      "status": "current",
+      "source": ["scripts/verify-consecutive-ci.ps1", "scripts/verify-release-runtimes.ps1", "scripts/verify-pr-state.ps1", "scripts/verify-plan-ready.ps1"]
+    },
+    {
+      "path": "docs/testing/102-phase10-release-finalization.md",
+      "role": "Phase 10 release publication, draft-PR, and PLAN_PASS evidence boundary",
+      "status": "current",
+      "source": [".github/workflows/ci.yml", "scripts/verify-consecutive-ci.ps1", "scripts/verify-pr-state.ps1"]
     }
   ]
 }

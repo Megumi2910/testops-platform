@@ -208,6 +208,25 @@ the twelve sanitized Chromium route records with two Chrome DevTools MCP
 readiness captures. It fails closed unless every record meets accessibility
 ≥95, LCP ≤2500 ms, and CLS ≤0.1 and the source revision equals `HEAD`.
 
+## Phase 10 candidate publication gate
+
+After committing the exact candidate and pushing the branch, keep the existing
+PR draft and run the final validators:
+
+```powershell
+$sha = git rev-parse HEAD
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-release-runtimes.ps1 -ExpectedRevision $sha
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-consecutive-ci.ps1 -Count 2 -ExpectedRevision $sha
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-pr-state.ps1 -Number 3 -ExpectedRevision $sha
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-plan-ready.ps1 -PlanId testops-m10a-completion-20260823
+```
+
+The runtime validator uses only the isolated `testops-m10a-final-normal` and
+`testops-m10a-final-qa` Compose projects. The CI validator requires successful
+`frontend`, `backend`, `containers`, `e2e`, `e2e-local-disabled`, and
+`e2e-browser-crash` jobs in two completed runs of the same SHA. The PR remains
+open and draft; no merge or deployment is part of this gate.
+
 ## QA ownership rules
 
 - Use the two `[QA]` TestOps projects and prefix generated names with `[QA-RUN-<date>]`.

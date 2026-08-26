@@ -875,3 +875,14 @@ and `8421339e9cd701fac8798c6f78899774814f760d82c764547ba6fdeedcbd68ee`.
 
 See [`94-phase9-browser-quality-performance.md`](../implementation/94-phase9-browser-quality-performance.md)
 and [`101-phase9-browser-quality-performance.md`](../testing/101-phase9-browser-quality-performance.md).
+
+## Phase 10 final release and PLAN_PASS
+
+**Status: IN PROGRESS.** The final slice freezes the exact candidate revision,
+proves isolated normal/QA runtimes, waits for two consecutive six-job CI
+successes, updates draft PR #3 without merging, and records the final plan
+receipts. Production deployment and pull-request merge remain explicitly out
+of scope.
+
+See [`95-phase10-release-finalization.md`](../implementation/95-phase10-release-finalization.md)
+and [`102-phase10-release-finalization.md`](../testing/102-phase10-release-finalization.md).
