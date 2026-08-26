@@ -1,6 +1,6 @@
 # TestOps Platform — Managed Browser Testing for an Existing E-commerce Application
 
-> **Documentation status:** Milestone 10A is the TestOps first-release completion track. The completion branch is closed through the Phase 9 browser-quality, performance, documentation, and defect-disposition gate. Phase 10 is the final revision-matched local gate, two consecutive CI attempts, draft-PR publication, and PLAN_PASS finalization; it never merges or deploys production.
+> **Documentation status:** Milestone 10A is the TestOps first-release completion track. The completion branch is closed through the Phase 10 revision-matched local gate, isolated runtime proof, two consecutive CI attempts, draft-PR publication, and PLAN_PASS finalization; it never merges or deploys production.
 >
 > The repository contains the Milestone 1–9 product foundation and the Milestone 10A completion plan. See the [Milestone 10A completion ledger](docs/milestones/15-milestone-10a-testops-completion.md) for the current slice status, evidence, and publication boundary. The former release-candidate document remains historical.
 

@@ -1,8 +1,8 @@
 {
   "classification": "Full product/application implementation specification",
   "verified_revision": "0dd704155433caeb5f83aa5c8fd7d429c8da557c",
-  "verified_at": "2026-08-23",
-  "source_status": "Milestone 10A evidence is reconciled through the Phase 9 browser-quality, performance, documentation, and defect-disposition slice. Phase 10 final local/CI release proof, draft-PR publication, and PLAN_PASS finalization are the remaining publication boundary. The visual portal, architecture report, API catalog/handbook, beginner manual, workflow guide, feature/business-logic handbook, and P9/P10 implementation/testing notes describe the current V001-V023 source contract.",
+  "verified_at": "2026-08-26",
+  "source_status": "Milestone 10A evidence is reconciled through the Phase 10 revision-matched local gate, isolated normal/QA runtime proof, consecutive CI proof, draft-PR publication, and PLAN_PASS finalization. The visual portal, architecture report, API catalog/handbook, beginner manual, workflow guide, feature/business-logic handbook, and P9/P10 implementation/testing notes describe the current V001-V023 source contract.",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
