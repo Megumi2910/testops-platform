@@ -804,9 +804,9 @@ cross-tenant leaks, or sensitive artifacts. Playwright and Chrome DevTools
 smoke captures both render the public readiness shell; the only observed
 unauthenticated failure is the expected refresh `401`.
 
-## Phase 8 follow-up slice — context-level navigation safety
+## Phase 8 follow-up slice — context-level navigation safety (historical implementation slice)
 
-**Status: PARTIAL for this implementation slice.** The disposable browser
+**Status: Closed by the Phase 8 completion below.** The disposable browser
 target now covers click, form, redirect, script, and popup escape attempts.
 `PlaywrightCaseRunner` rejects disallowed navigation at the browser-context
 routing boundary before send and preserves the sanitized
@@ -818,5 +818,37 @@ The focused implementation and test records are
 [`92-phase8-guided-case-builder.md`](../implementation/92-phase8-guided-case-builder.md)
 and
 [`102-phase8-guided-case-builder.md`](../testing/102-phase8-guided-case-builder.md).
-This entry does not claim P8 completion: the full builder/execution/evidence
-matrix, sanitized P8 manifest, and later P9/P10 gates remain open.
+This entry records the implementation slice that enabled the complete P8 gate.
+
+## Phase 8 completion — execution, evidence, dashboard, navigation, and sanitized browser proof
+
+**Status: PASS.** The exact frozen P8 AC1–AC7 commands completed with passing
+receipts under the reconciled P8 lease. The isolated Chromium matrix recorded
+11 expected tests with zero unexpected, skipped, or flaky results. The backend
+focused and Failsafe reports passed the validation, queue/cancellation,
+retention, query-count, and navigation guard assertions.
+
+The canonical sanitized manifest is `artifacts/browser-evidence/P8.json` and
+validates 18 desktop records, 18 assertions, four exact expected-negative
+tuples, and zero unexpected failures, 500s, console exceptions, cross-tenant
+leaks, or cross-origin requests. The manifest was generated only after the
+passing Playwright JSON, current backend reports, and AC1–AC6 receipts were
+present; `scripts/test-browser-evidence-contract.ps1` also passes 31 contract
+assertions.
+
+The formal P8 ledger is recorded in
+`.agent/plans/testops-m10a-completion-20260823/ledger/P8.md`. Receipt hashes
+are:
+
+`d903669bf4df113e550a328fe5577fd1f086702f3394b4124f42c701d17117f8`,
+`9bce66c0f8a1e5560e34dacd7c9a7b321b33598e3001428ab76896214400584f`,
+`a72a55a7c16541642f7f7c598f586b9d9e110bc0b4196f29b911e62ea5d7f64f`,
+`48d5462434c566990cdea2cc8038ecb7f3496317f9b5d3b00d5c4cf87ce823e4`,
+`e4b0784a8bde9452371580495bdde7cffa02a83b8f5e1d46b6ee16b5c19cb1da`,
+`87d7f9bd1d1a6a8f851985180372fa19a3020a72bb593f95fadece95582ce094`, and
+`d966fd962b4a7b1820f1e1bd5deb4b33764ebef16661808ee18f5bdd4796d0f1`.
+
+Implementation and testing details are in
+[`93-phase8-execution-evidence-dashboard.md`](../implementation/93-phase8-execution-evidence-dashboard.md)
+and
+[`100-phase8-execution-evidence-dashboard.md`](../testing/100-phase8-execution-evidence-dashboard.md).

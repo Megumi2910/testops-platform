@@ -142,9 +142,9 @@ function Get-NegativeAllowlist {
         'P8' {
             return @(
                 (New-NegativeTuple 'builder-invalid-input' 'PUT' '/api/v1/projects/:projectId/suites/:suiteId/cases/:caseId' 400 'validation_failed'),
-                (New-NegativeTuple 'execution-capacity-conflict' 'POST' '/api/v1/projects/:projectId/executions' 409 'queue_capacity'),
-                (New-NegativeTuple 'execution-cancellation-denied' 'POST' '/api/v1/projects/:projectId/executions/:executionId/cancel' 403 'access_denied'),
-                (New-NegativeTuple 'artifact-suppressed' 'GET' '/api/v1/projects/:projectId/executions/:executionId/artifacts/screenshot' 404 'artifact_suppressed')
+                (New-NegativeTuple 'execution-capacity-conflict' 'POST' '/api/v1/projects/:projectId/executions' 429 'execution_queue_full'),
+                (New-NegativeTuple 'execution-cancellation-denied' 'POST' '/api/v1/projects/:projectId/executions/:executionId/cancel' 403 'cancel_denied'),
+                (New-NegativeTuple 'artifact-suppressed' 'GET' '/api/v1/projects/:projectId/executions/:executionId/artifacts/screenshot' 410 'artifact_suppressed')
             )
         }
         'P9' { return @() }

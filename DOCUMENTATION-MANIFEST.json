@@ -799,6 +799,16 @@
       "path": "docs/testing/102-phase8-guided-case-builder.md",
       "role": "Phase 8 builder and five-path navigation-safety regression evidence",
       "status": "current"
+    },
+    {
+      "path": "docs/implementation/93-phase8-execution-evidence-dashboard.md",
+      "role": "Phase 8 execution, evidence, dashboard, and context navigation implementation",
+      "status": "current"
+    },
+    {
+      "path": "docs/testing/100-phase8-execution-evidence-dashboard.md",
+      "role": "Phase 8 sanitized execution, evidence, dashboard, and navigation matrix",
+      "status": "current"
     }
   ]
 }
