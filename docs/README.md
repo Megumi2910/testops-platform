@@ -11,7 +11,7 @@ node scripts/docs/serve-report.mjs
 
 The machine-readable [API catalog](reference/api-catalog.json) is generated into the [API handbook](reference/api-reference.html). The [source truth audit](planning/86-documentation-truth-audit.md) records what was verified live and what was unavailable, rather than presenting missing runtime evidence as complete.
 
-For the current committed candidate gate, start with the [quality-gate operator guide](guides/23-quality-gate-operator-guide.md) and reconcile the result in the [Milestone 10A completion ledger](milestones/15-milestone-10a-testops-completion.md). The Milestone 9 release guide is historical evidence.
+For the current committed candidate gate, start with the [quality-gate operator guide](guides/23-quality-gate-operator-guide.md), then read the [Phase 9 browser-quality evidence](testing/101-phase9-browser-quality-performance.md) and reconcile the result in the [Milestone 10A completion ledger](milestones/15-milestone-10a-testops-completion.md). The Milestone 9 release guide is historical evidence.
 
 This directory is organized by the question a maintainer is trying to answer:
 
@@ -39,6 +39,7 @@ The root [README](../README.md) remains the project entry point. The machine-rea
 - Synchronizing the ecommerce TestOps catalog: [catalog synchronization](implementation/21-catalog-synchronization.md) → [local target guide](operations/12-local-target-testing-guide.md).
 - Reproducing release gates: [release-gate verification](implementation/22-release-gate-verification.md) → [ecommerce dogfooding guide](operations/15-ecommerce-dogfooding-guide.md).
 - Running the Milestone 10 quality gate: [operator guide](guides/23-quality-gate-operator-guide.md) → [baseline matrix](testing/23-quality-gate-baseline.md) → [defect ledger](testing/24-defect-ledger.md).
+- Reviewing Phase 9 browser quality and performance: [implementation contract](implementation/94-phase9-browser-quality-performance.md) → [sanitized evidence](testing/101-phase9-browser-quality-performance.md) → [completion ledger](milestones/15-milestone-10a-testops-completion.md).
 - Reviewing the Phase 1 shell and account menu: [implementation notes](implementation/63-phase1-testops-shell-account-menu.md) → [test evidence](testing/72-phase1-shell-account-menu.md) → [interactive workflow](implementation/17-ui-to-execution-workflow.html).
 - Reviewing account-menu keyboard entry and Tab wrapping: [implementation notes](implementation/80-phase1-account-menu-keyboard.md) → [test evidence](testing/89-phase1-account-menu-keyboard.md) → [interactive workflow](implementation/17-ui-to-execution-workflow.html).
 - Reviewing Phase 2 stale-bundle recovery: [implementation notes](implementation/64-phase2-stale-bundle-recovery.md) → [test evidence](testing/73-phase2-stale-bundle-recovery.md) → [interactive workflow](implementation/17-ui-to-execution-workflow.html).

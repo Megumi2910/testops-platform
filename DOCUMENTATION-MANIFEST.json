@@ -2,7 +2,7 @@
   "classification": "Full product/application implementation specification",
   "verified_revision": "106ae5e0b1e073f3b1559074e4db9f41bdc248ec",
   "verified_at": "2026-08-23",
-  "source_status": "Milestone 10A committed runtime evidence is reconciled through the isolated P5 candidate gate. The P6 retained-deployment, account-shell, and account-security source slices are implemented and focused-contract tested, but their adjacent live A/B and browser evidence remain open. The visual portal, architecture report, API catalog/handbook, beginner manual, workflow guide, and feature/business-logic handbook describe the current V001-V023 source contract. Screenshots remain explicitly labelled with their ded01b87 capture revision; later browser evidence remains open P6-P10 work rather than implied completion.",
+  "source_status": "Milestone 10A evidence is reconciled through the Phase 9 browser-quality, performance, documentation, and defect-disposition slice. Phase 10 final local/CI release proof and PLAN_PASS publication remain open. The visual portal, architecture report, API catalog/handbook, beginner manual, workflow guide, feature/business-logic handbook, and P9 implementation/testing notes describe the current V001-V023 source contract.",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -809,6 +809,18 @@
       "path": "docs/testing/100-phase8-execution-evidence-dashboard.md",
       "role": "Phase 8 sanitized execution, evidence, dashboard, and navigation matrix",
       "status": "current"
+    },
+    {
+      "path": "docs/implementation/94-phase9-browser-quality-performance.md",
+      "role": "Phase 9 accessibility matrix, sanitized performance inputs, and release-threshold implementation",
+      "status": "current",
+      "source": ["frontend/e2e/accessibility-matrix.spec.ts", "scripts/record-p9-performance.ps1", "scripts/verify-performance.ps1"]
+    },
+    {
+      "path": "docs/testing/101-phase9-browser-quality-performance.md",
+      "role": "Phase 9 browser-quality, Lighthouse/trace, defect-disposition, and sanitized evidence boundary",
+      "status": "current",
+      "source": ["artifacts/browser-evidence/P9.json", "scripts/assert-browser-evidence.ps1", "scripts/verify-defect-ledger.ps1", "scripts/verify-milestone-ledger.ps1"]
     }
   ]
 }

@@ -78,6 +78,26 @@ flowchart LR
 
 The comparison intentionally summarizes step actions instead of repeating locator and input values. The user's local editor remains intact until one recovery button is chosen.
 
+## Phase 9 browser-quality flow
+
+```mermaid
+flowchart LR
+    Candidate[Committed candidate revision] --> Matrix[Playwright 18 case-viewports]
+    Matrix --> Views[1440x900 / 768x1024 / 320x800]
+    Views --> A11y[Keyboard, focus, forms, dialogs, overflow, a11y helper]
+    Matrix --> Perf[Chromium route PerformanceObserver records]
+    DevTools[Chrome DevTools Lighthouse + trace] --> Perf
+    Perf --> Thresholds[Accessibility >=95, LCP <=2500ms, CLS <=0.1]
+    A11y --> Manifest[Sanitized P9 browser manifest]
+    Thresholds --> Manifest
+    Manifest --> Ledgers[Defect + milestone ledger validators]
+```
+
+The DevTools capture is a public readiness anchor at desktop and narrow
+mobile; authenticated routes use the sanitized Chromium matrix. This keeps
+the evidence revision-matched without serializing cookies, tokens, or raw
+browser payloads.
+
 ## Verification resend path
 
 ```mermaid

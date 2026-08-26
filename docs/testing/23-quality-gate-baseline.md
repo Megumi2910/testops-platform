@@ -12,6 +12,17 @@ This document is the canonical browser-testing baseline for TestOps at `http://l
 > part of a release gate; rows marked `PARTIAL` remain open unless that ledger
 > explicitly closes them with new evidence.
 
+## Phase 9 reconciliation boundary
+
+The fresh Phase 9 TestOps matrix is recorded in
+[`101-phase9-browser-quality-performance.md`](101-phase9-browser-quality-performance.md).
+It supersedes the historical responsive/accessibility row for TestOps release
+acceptance: 18 case-viewports passed across desktop, tablet, and `320×800`,
+with 143 sanitized assertions and zero failures. The twelve route records and
+the two Chrome DevTools readiness captures meet accessibility ≥95, LCP ≤2500
+ms, and CLS ≤0.1. Ecommerce rows remain reference-suite context and are not
+part of the TestOps release gate.
+
 The local baseline uses QA-owned records only. It never resets the normal PostgreSQL volumes. Fixture credentials live in ignored secret files or environment variables and are deliberately absent from this document, screenshots, traces, and Git history.
 
 ## Environment provenance

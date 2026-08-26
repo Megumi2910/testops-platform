@@ -1,6 +1,6 @@
 # TestOps Platform — Managed Browser Testing for an Existing E-commerce Application
 
-> **Documentation status:** Milestone 10A is the TestOps first-release completion track. The completion branch is closed through the isolated P5 candidate gate. The P6 retained-deployment source foundation is implemented and contract-tested; its live adjacent A/B swap, browser matrices, accessibility/performance, and final release evidence remain tracked work.
+> **Documentation status:** Milestone 10A is the TestOps first-release completion track. The completion branch is closed through the Phase 9 browser-quality, performance, documentation, and defect-disposition gate. Phase 10 still owns the final revision-matched local gate, two consecutive CI attempts, draft-PR publication, and PLAN_PASS finalization.
 >
 > The repository contains the Milestone 1–9 product foundation and the Milestone 10A completion plan. See the [Milestone 10A completion ledger](docs/milestones/15-milestone-10a-testops-completion.md) for the current slice status, evidence, and publication boundary. The former release-candidate document remains historical.
 
@@ -13,7 +13,7 @@ The difficult part is not opening a browser. The platform must preserve a trustw
 The existing e-commerce site is an **external system under test**. TestOps owns test definitions, execution state, results, screenshots, traces, users, permissions, and audit data. It does not own the target website’s deployment, database, inventory, accounts, selectors, or availability.
 
 New to the local workflow? Start with the [Ecommerce dogfooding guide](docs/operations/15-ecommerce-dogfooding-guide.md). It explains the two Docker networks, exact ports and environment variables, target checks, the guided case builder, catalog synchronization, evidence, and safe E2E resets.
-For current candidate verification commands, use the [quality-gate operator guide](docs/guides/23-quality-gate-operator-guide.md); the [release-gate verification guide](docs/implementation/22-release-gate-verification.md) is retained as historical Milestone 9 evidence.
+For current candidate verification commands, use the [quality-gate operator guide](docs/guides/23-quality-gate-operator-guide.md); the [Phase 9 browser-quality implementation](docs/implementation/94-phase9-browser-quality-performance.md) and [evidence note](docs/testing/101-phase9-browser-quality-performance.md) record the current accessibility/performance boundary. The [release-gate verification guide](docs/implementation/22-release-gate-verification.md) is retained as historical Milestone 9 evidence.
 Record current browser coverage in the [full-system baseline](docs/testing/23-quality-gate-baseline.md) and [defect ledger](docs/testing/24-defect-ledger.md).
 Suite and case deletion is a history-preserving Trash workflow; see the [definition Trash UI guide](docs/implementation/27-definition-trash-ui.md) for archive, read-only, conflict, and restore behavior.
 

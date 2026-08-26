@@ -852,3 +852,17 @@ Implementation and testing details are in
 [`93-phase8-execution-evidence-dashboard.md`](../implementation/93-phase8-execution-evidence-dashboard.md)
 and
 [`100-phase8-execution-evidence-dashboard.md`](../testing/100-phase8-execution-evidence-dashboard.md).
+
+## Phase 9 browser quality, performance, docs, and defect closure
+
+**Status: IN PROGRESS until the frozen P9 receipts complete.** The source
+slice now includes a desktop/tablet/`320×800` Playwright accessibility matrix,
+sanitized route performance records, Chrome DevTools Lighthouse/trace anchors,
+strict performance and defect-ledger validators, and the related
+implementation/testing/operator/index documentation. The public readiness
+DevTools capture is an independent threshold anchor; authenticated routes are
+represented by the sanitized Chromium matrix so no session material enters
+evidence.
+
+See [`94-phase9-browser-quality-performance.md`](../implementation/94-phase9-browser-quality-performance.md)
+and [`101-phase9-browser-quality-performance.md`](../testing/101-phase9-browser-quality-performance.md).

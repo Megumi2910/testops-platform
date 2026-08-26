@@ -188,6 +188,26 @@ powershell -NoProfile -ExecutionPolicy Bypass `
   -File scripts/test-browser-evidence-contract.ps1
 ```
 
+## Phase 9 browser-quality and performance gate
+
+Run the accessibility matrix against the isolated TestOps E2E profile after
+the candidate services are healthy:
+
+```powershell
+npm --prefix frontend run e2e -- e2e/accessibility-matrix.spec.ts --project=chromium
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-performance.ps1 `
+  -ProjectName testops-m10a-gate
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/assert-browser-evidence.ps1 -Phase P9
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-defect-ledger.ps1
+```
+
+The matrix has 18 case-viewports across `1440×900`, `768×1024`, and
+`320×800`. It covers keyboard/focus, forms and errors, dialogs, clipping,
+navigation, and automated accessibility. The performance contract combines
+the twelve sanitized Chromium route records with two Chrome DevTools MCP
+readiness captures. It fails closed unless every record meets accessibility
+≥95, LCP ≤2500 ms, and CLS ≤0.1 and the source revision equals `HEAD`.
+
 ## QA ownership rules
 
 - Use the two `[QA]` TestOps projects and prefix generated names with `[QA-RUN-<date>]`.

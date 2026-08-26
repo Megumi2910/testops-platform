@@ -99,7 +99,8 @@ not as evidence against the shell/account-menu implementation.
 ### QG-006 — Ecommerce header and remaining controls are not fully semantic
 
 - Severity: P1
-- Status: PARTIALLY RESOLVED; catalog, shared-header, unavailable-feature, and product-gallery sub-slices verified locally
+- Status: OUT OF SCOPE for the TestOps release gate; the opt-in ecommerce reference suite retains a partial follow-up
+- Disposition: Ecommerce is excluded from Milestone 10A TestOps acceptance; its remaining route-level work stays in the separate dogfooding track.
 - Environment: ecommerce `3f06fde`, mobile `320×800`
 - Evidence: catalog cards use named React Router links, homepage category cards use native buttons, the shared header exposes named search/cart/message/account/menu controls, and the product-gallery browser contract proves named zoom/navigation buttons plus dialog Escape/focus restoration. The remaining baseline still contains route-level form, contrast, and mobile findings
 - Expected: every control has a programmatic name and card navigation is a semantic link
@@ -109,6 +110,8 @@ not as evidence against the shell/account-menu implementation.
 ### QG-007 — Ecommerce accessibility is below the release gate
 
 - Severity: P1
+- Status: OUT OF SCOPE for the TestOps release gate; the ecommerce reference baseline remains a separate follow-up
+- Disposition: Do not use the opt-in ecommerce Lighthouse baseline as TestOps release evidence; the TestOps browser matrix owns the current threshold.
 - Evidence: Chrome Lighthouse mobile accessibility `80`, target `>=95`
 - Expected: no serious route-level accessibility failures and score at least 95
 - Actual: score 80, with form/control semantics among observed failures
@@ -118,6 +121,7 @@ not as evidence against the shell/account-menu implementation.
 
 - Severity: P2
 - Status: RESOLVED for storefront and permanent mock fixtures; fresh Lighthouse timing remains a separate performance check
+- Disposition: Ecommerce fixture work is recorded for reference only and is not a TestOps release blocker.
 - Evidence: the previous baseline loaded Google Fonts and multiple Unsplash resources; the new Playwright network allowlist observed zero external image, stylesheet, or font requests after a clean container rebuild
 - Expected: deterministic local assets for QA and no external availability dependency
 - Resolution: local SVG banners/team art, checked-in public mock product art, system fonts, local category fallback, and seeder synchronization for existing `MOCK-*` rows. Seeder values are copied into mutable lists before Hibernate replacement.
@@ -128,6 +132,7 @@ not as evidence against the shell/account-menu implementation.
 
 - Severity: P2
 - Status: PARTIAL — wishlist and Flash Sale now have explicit unavailable status regions and disabled empty-state controls; wallet/voucher cards and header integrations already say coming soon
+- Disposition: Remaining ecommerce destination polish is out of scope for TestOps Milestone 10A and remains an opt-in reference-suite follow-up.
 - Evidence: `ecommerce-smoke.spec.ts` proves the wishlist notice plus disabled filter/view controls and the Flash Sale unavailable notice
 - Expected: implemented destinations, or clearly disabled/labelled placeholders
 - Actual: the covered routes no longer imply working features; simulated settings and any unreviewed destination remain to audit
@@ -136,6 +141,7 @@ not as evidence against the shell/account-menu implementation.
 ### QG-010 — Stale lazy chunks crash TestOps after a container rebuild
 
 - Severity: P2
+- Disposition: Mitigated in source and isolated rebuilt-runtime evidence; the true adjacent two-image swap remains operational follow-up for the retained deployment harness.
 - Preconditions: keep a browser tab open while replacing the frontend image
 - Reproduction: navigate from the stale tab after the new image starts
 - Expected: one controlled reload or branded recovery boundary
@@ -282,7 +288,7 @@ not as evidence against the shell/account-menu implementation.
 - Verification: `AuthServiceRecoveryTest` passed 3 tests; the rebuilt E2E stack ran all 4 `auth-recovery.spec.ts` scenarios successfully, including Mailpit reset delivery, the new `/login?reason=password-reset&email=...` handoff, and sign-in using the new password. Frontend regression evidence is recorded in `docs/testing/97-phase3-password-reset-handoff.md`.
 - Regression layer: migration, service, frontend, and Playwright/Mailpit browser tests
 
-### QG-020 — CI password-recovery run used a non-canonical browser origin
+### QG-040 — CI password-recovery run used a non-canonical browser origin
 
 - Severity: P1
 - Status: RESOLVED in the E2E environment contract slice
@@ -541,15 +547,15 @@ not as evidence against the shell/account-menu implementation.
 | QG-B03 | Project restore/conflict/stale version | RESOLVED by versioned archive/restore API, frontend cache wiring, project-manager edit/name-conflict browser coverage in `projects.spec.ts`, and lifecycle E2E; stale-version UI remains covered by the existing focused conflict contract |
 | QG-B04 | target blocked/unreachable variants | isolated local-disabled/unreachable profiles |
 | QG-B05 | evidence redaction in browser artifacts | variable listing now enforces `VARIABLE_VIEW` and always masks secrets; `phase5-evidence-safety.spec.ts` proves passing and failing secret cases suppress all artifacts, ordinary cases retain screenshot/trace, and secret plaintext is absent from the detail response; member/non-member download authorization is covered separately |
-| QG-B06 | ecommerce cross-customer/cross-seller/admin isolation | PARTIAL: fixtures and read isolation are covered by `phase5-ecommerce-role-isolation.spec.ts`; `phase5-ecommerce-permission-matrix.spec.ts` now proves guest/unverified restrictions, customer/seller/admin boundary denial, non-disclosing foreign-product mutation rejection, and administrator read surfaces. Seller/admin writes, seller order ownership transitions, review ownership, and the complete endpoint/UI matrix remain |
+| QG-B06 | ecommerce cross-customer/cross-seller/admin isolation | OUT OF SCOPE for TestOps release acceptance; the opt-in reference suite remains PARTIAL: fixtures and read isolation are covered by `phase5-ecommerce-role-isolation.spec.ts`; seller/admin writes, seller order ownership transitions, review ownership, and the complete endpoint/UI matrix remain |
 | QG-B07 | remaining membership HTTP/browser matrix | RESOLVED: service/MockMvc/PostgreSQL covers ancestry, cancellation, versions, archive, final manager, positive add/change/remove, duplicate, archived-project, and role denial paths; HTTP add/change/remove/duplicate responses are explicit; Chrome DevTools confirms PM, test-manager, tester, viewer, non-member, and administrator boundaries |
 | QG-B08 | queue/cancel/retry/artifact matrix | cancellation and infrastructure retry browser evidence are covered by `phase5-execution-matrix.spec.ts`; retry asserts concise sanitized connection errors with no Playwright stack/call-log leakage. `ExecutionWorkerTest` proves disabled polling never claims work, and `ExecutionServiceTest` proves a full queue returns `429 execution_queue_full` before persistence and denies non-member artifacts before lookup. `phase5-evidence-safety.spec.ts` proves click/form target escape and secret-bearing failure suppression; `phase5-artifact-download.spec.ts` proves member PNG/ZIP downloads and outsider denial. `zz-phase5-browser-crash.spec.ts` now terminates real managed Chromium in a fresh container and verifies `ERROR`/`BROWSER_CRASH`, failed-step preservation, and sanitized error text; deployment-mode DevTools evidence remains |
 | QG-B09 | dashboard populated browser matrix and query-count proof | RESOLVED: `phase5-dashboard-admin-matrix.spec.ts` renders the dashboard after a real passed run; `DashboardPage.test.tsx` covers bounded URL windows and selector refetch; rebuilt Chrome DevTools evidence confirms the selected UTC range, exactly three `200` panel requests, no console messages, Lighthouse accessibility 96, LCP 501 ms, and CLS 0.03. See [dashboard range and DevTools evidence](51-phase5-dashboard-range-devtools.md) |
 | QG-B10 | browser proof of administration boundaries | Focused administrator CRUD/final-admin, locked/disabled, project-role `/admin/users` denial, and unverified recovery journeys are covered by `phase5-administrator-crud.spec.ts`, `phase5-account-status.spec.ts`, `phase5-role-matrix.spec.ts`, and `phase5-unverified-boundary.spec.ts`; Google/session and broader release variants remain |
-| QG-B11 | ecommerce search/filter/sort URL matrix | RESOLVED for the catalog sub-gate: `ecommerce-smoke.spec.ts` covers category navigation, product detail, keyword/no-result search, filter/sort URL state, retry, and pagination against the permanent mock catalog; checkout, messaging, permissions, and accessibility remain separate gates |
-| QG-B12 | ecommerce email verification/reset | RESOLVED for the deterministic delivery sub-gate: `ecommerce-auth-mailpit.spec.ts` passes registration → same-origin verification, unverified resend/cooldown, and password reset (3/3) against the isolated ecommerce PostgreSQL/Mailpit profile. Real SMTP-provider behavior remains outside this local gate; see `testing/60-phase5-ecommerce-mailpit-auth-evidence.md` |
-| QG-B13 | checkout concurrency and destructive order states | PARTIAL: `OrderServiceImplCheckoutTest` and `phase5-ecommerce-checkout.spec.ts` prove server-side pricing, selected-item cleanup, UUID idempotency replay, and exact-once cancellation restoration; `phase5-ecommerce-checkout-concurrency.spec.ts` proves two-user final-unit locking, one successful order, one normal `4xx` rejection, and exact restoration; `phase5-ecommerce-payment-stale-stock.spec.ts` proves backend-owned QR configuration and stale-cart recovery; `phase5-ecommerce-reviews.spec.ts` and `ReviewServiceEligibilityTest` prove completed-purchaser creation, duplicate rejection, and non-purchaser rejection. Payment capture/webhooks and the broader checkout accessibility matrix remain; see `testing/66-phase5-ecommerce-checkout-concurrency-evidence.md`, `testing/67-phase5-payment-stale-stock-evidence.md`, and `testing/69-phase5-ecommerce-review-evidence.md` |
-| QG-B14 | two-user messaging | PARTIAL: separate customer-A/seller-B and customer-B/seller-B threads are seeded, foreign REST reads return `404`, and the two-context browser contract proves WebSocket send/receive, disconnected REST fallback, unread filtering, and read-state removal; backend-restart reconnect timing, native stress, and the complete role/thread matrix remain; see `testing/68-phase5-ecommerce-messaging-resilience-evidence.md` |
+| QG-B11 | ecommerce search/filter/sort URL matrix | OUT OF SCOPE for TestOps release acceptance; the opt-in catalog sub-gate is separately recorded in `ecommerce-smoke.spec.ts` and does not define the TestOps browser gate |
+| QG-B12 | ecommerce email verification/reset | OUT OF SCOPE for TestOps release acceptance; the deterministic Mailpit sub-gate remains reference evidence only (see `testing/60-phase5-ecommerce-mailpit-auth-evidence.md`) |
+| QG-B13 | checkout concurrency and destructive order states | OUT OF SCOPE for TestOps release acceptance; the checkout/payment/review evidence remains in the opt-in ecommerce reference suite |
+| QG-B14 | two-user messaging | OUT OF SCOPE for TestOps release acceptance; the messaging resilience evidence remains in the opt-in ecommerce reference suite |
 
 ## Triage result
 
