@@ -871,7 +871,7 @@ P9 receipt hashes are:
 `353a4b4834d654b014d7feda7594ad1bc6766e3822e5f96739690fd1fa08eae5`,
 `3d2b1f456be4638cc6c2d2f8fa4c5053abe8230704bbcf2aa31a6fdebd0b15ff`,
 `6be2be98282acae8eb844523260c69962f4643f11d39337e72c50f87640b56fd`,
-and the AC6 receipt recorded by the milestone-ledger validator below.
+and `8421339e9cd701fac8798c6f78899774814f760d82c764547ba6fdeedcbd68ee`.
 
 See [`94-phase9-browser-quality-performance.md`](../implementation/94-phase9-browser-quality-performance.md)
 and [`101-phase9-browser-quality-performance.md`](../testing/101-phase9-browser-quality-performance.md).

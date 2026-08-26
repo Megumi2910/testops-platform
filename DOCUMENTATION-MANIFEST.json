@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "verified_revision": "106ae5e0b1e073f3b1559074e4db9f41bdc248ec",
+  "verified_revision": "0dd704155433caeb5f83aa5c8fd7d429c8da557c",
   "verified_at": "2026-08-23",
   "source_status": "Milestone 10A evidence is reconciled through the Phase 9 browser-quality, performance, documentation, and defect-disposition slice. Phase 10 final local/CI release proof and PLAN_PASS publication remain open. The visual portal, architecture report, API catalog/handbook, beginner manual, workflow guide, feature/business-logic handbook, and P9 implementation/testing notes describe the current V001-V023 source contract.",
   "documents": [
