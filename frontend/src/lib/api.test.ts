@@ -36,6 +36,27 @@ describe('normalizeFieldErrors', () => {
     unsubscribe()
   })
 
+  it('keeps the session for structured authenticated domain failures', async () => {
+    setAccessToken('valid-session')
+    const listener = vi.fn()
+    const unsubscribe = subscribeAuthFailure(listener)
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({
+      status: 401,
+      code: 'password_invalid',
+      detail: 'Current password is incorrect',
+      errors: [{ path: 'currentPassword', message: 'Current password is incorrect' }],
+    }), { status: 401, headers: { 'Content-Type': 'application/json' } })))
+
+    await expect(apiFetch('/api/v1/auth/me/password', { method: 'PUT' })).rejects.toMatchObject({
+      status: 401,
+      code: 'password_invalid',
+      fieldErrors: { currentPassword: 'Current password is incorrect' },
+    })
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(listener).not.toHaveBeenCalled()
+    unsubscribe()
+  })
+
   it('clears authenticated state when a blob refresh fails without recursion', async () => {
     setAccessToken('stale')
     const listener = vi.fn()

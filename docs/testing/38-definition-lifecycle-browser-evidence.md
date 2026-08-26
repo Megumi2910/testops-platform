@@ -20,7 +20,7 @@ This record captures the Chrome DevTools journey for suite and case history-pres
 3. Confirm the three guided steps are present: `NAVIGATE /`, `ASSERT_VISIBLE TEXT “Danh mục sản phẩm”`, and `TAKE_SCREENSHOT`.
 4. Continue through **Details → Steps → Review** and choose **Save draft**.
 
-Observed result: `POST /api/v1/projects/{projectId}/suites/{suiteId}/cases` returned `201`, the browser opened the new case detail, the status was `DRAFT`, and **Run case** was disabled. The action catalogue exposed backend-provided options including Press, Hover, value/checked/enabled/disabled/attribute/count assertions, URL equality, and screenshot capture.
+Observed result: `POST /api/v1/projects/{projectId}/suites/{suiteId}/cases` returned `201`, the browser opened the new case detail, the status was `DRAFT`, and **Run case** was absent. Only READY cases render an execution action. The action catalogue exposed backend-provided options including Press, Hover, value/checked/enabled/disabled/attribute/count assertions, URL equality, and screenshot capture.
 
 ### 2. Move the case to Trash
 
@@ -72,7 +72,7 @@ No authorization headers, cookies, OTPs, passwords, or tokens were captured in t
 
 ## Automated regression
 
-The same journey is repeatable in `frontend/e2e/definition-lifecycle.spec.ts`. It creates an isolated user/project/suite, saves a draft from the guided builder, asserts that a draft cannot run, verifies the `DELETE` archive response and Trash projection, restores the case, and confirms the active suite renders it as `DRAFT`. The test uses the E2E Compose target at `http://localhost:3201`, so it does not depend on the developer's ecommerce data.
+The same journey is repeatable in `frontend/e2e/definition-lifecycle.spec.ts`. It creates an isolated user/project/suite, saves a draft from the guided builder, asserts that a draft has no execution action, verifies the `DELETE` archive response and Trash projection, restores the case, and confirms the active suite renders it as `DRAFT`. The test uses the E2E Compose target at `http://localhost:3201`, so it does not depend on the developer's ecommerce data.
 
 Run it against the isolated stack with:
 

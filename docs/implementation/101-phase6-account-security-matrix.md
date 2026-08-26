@@ -52,7 +52,10 @@ after the page's own fetch handler has consumed the response body; it does not
 add credentials or raw bodies to the sidecar. The recovery notice is asserted
 through its semantic success status role. For mutations that intentionally
 return `401`, the disposable bearer is captured before the UI action so the
-page's refresh/retry path cannot invalidate the diagnostic probe.
+page's refresh/retry path cannot invalidate the diagnostic probe. The bearer
+probe uses copied storage state, then carries the rotated refresh cookie back
+to the browser context so its in-memory access token remains paired with the
+current server-side refresh family.
 
 The browser flow uses an exact accessible `New password` role locator where
 the form also exposes `Confirm new password`, avoiding a strict-mode collision

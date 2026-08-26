@@ -50,10 +50,10 @@ child handler has already prevented the event), so:
 The browser matrix explicitly waits for that trigger-focus restoration before
 opening the menu again with ArrowDown. This makes the evidence deterministic
 across React's state commit boundary while asserting the same user-visible
-keyboard contract. The document-level menu-key handler also ignores arrow
-events that originate outside the current menu (and whose active element is
-not a menu item), preventing a bubbling trigger event during that boundary
-from skipping the first item.
+keyboard contract. The account trigger stops its ArrowUp/ArrowDown event before
+the document-level menu-key handler can observe the closing menu's stale
+listener, preventing the newly opened menu from skipping its first or last
+item.
 
 Native buttons retain browser Enter/Space activation. The menu continues to
 support Arrow Up/Down, Home, End, forward Tab wrapping, and reverse Tab

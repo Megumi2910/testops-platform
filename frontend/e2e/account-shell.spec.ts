@@ -180,7 +180,12 @@ async function assertAdministratorMatrix(page: Page, viewport: Viewport) {
 }
 
 async function assertFocused(observation: CaseObservation, locator: Locator) {
-  await check(observation, () => expect(locator).toBeFocused())
+  // Playwright's role matcher can report an otherwise focused menuitem as
+  // inactive while the parent role=menu is mounted. Compare the resolved DOM
+  // node with document.activeElement so the assertion remains exact.
+  await check(observation, async () => {
+    await expect.poll(() => locator.evaluate(element => element === document.activeElement)).toBe(true)
+  })
 }
 
 async function assertKeyboardMatrix(page: Page, viewport: Viewport) {

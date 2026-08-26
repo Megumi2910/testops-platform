@@ -78,6 +78,22 @@ function canRefresh(input: RequestInfo | URL) {
     && !url.includes('/auth/refresh') && !url.includes('/auth/logout')
 }
 
+async function unauthorizedProblemCode(response: Response) {
+  try {
+    const problem = await response.clone().json() as { code?: string }
+    return problem.code?.toLowerCase()
+  } catch {
+    return undefined
+  }
+}
+
+function isSessionUnauthorized(code?: string) {
+  // A structured 401 can be an authenticated domain validation failure (for
+  // example, a wrong current password). Only retry and clear auth state when
+  // the response is an actual session/credential boundary.
+  return code !== 'password_invalid'
+}
+
 async function request<T>(input: RequestInfo | URL, init: RequestInit | undefined, allowRetry: boolean): Promise<T> {
   const response = await fetch(input, {
     ...init,
@@ -90,14 +106,15 @@ async function request<T>(input: RequestInfo | URL, init: RequestInit | undefine
     },
   })
 
-  if (response.status === 401 && allowRetry && canRefresh(input)) {
+  const unauthorizedCode = response.status === 401 ? await unauthorizedProblemCode(response) : undefined
+  if (response.status === 401 && allowRetry && canRefresh(input) && isSessionUnauthorized(unauthorizedCode)) {
     try {
       await refreshInMemory()
       return request<T>(input, init, false)
     } catch { /* refreshInMemory publishes the terminal auth failure */ }
   }
 
-  if (response.status === 401 && !allowRetry && canRefresh(input)) notifyAuthFailure()
+  if (response.status === 401 && !allowRetry && canRefresh(input) && isSessionUnauthorized(unauthorizedCode)) notifyAuthFailure()
 
   if (!response.ok) {
     let message = `Request failed with status ${response.status}`

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../features/auth/AuthContext'
@@ -27,7 +27,7 @@ function AccountMenu({ onNavigate }: { onNavigate: () => void }) {
 
   useEffect(() => { setOpen(false) }, [location.pathname, location.hash])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!open) return undefined
     const items = menuItems(menuRef.current)
     items[initialFocusRef.current === 'last' ? items.length - 1 : 0]?.focus()
@@ -126,6 +126,9 @@ function AccountMenu({ onNavigate }: { onNavigate: () => void }) {
         onKeyDown={(event) => {
           if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
             event.preventDefault()
+            // Prevent the closing menu's document handler from seeing the
+            // same trigger event after React commits the newly opened menu.
+            event.stopPropagation()
             initialFocusRef.current = event.key === 'ArrowUp' ? 'last' : 'first'
             setOpen(true)
           }

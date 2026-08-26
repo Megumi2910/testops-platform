@@ -66,3 +66,8 @@ without treating the generic callback landing route as an account-page error.
 Page-form negative mutations are status-asserted in the UI and tuple-asserted
 again through the same context's API request, avoiding response-body races
 after the frontend fetch handler has consumed the error payload.
+
+Bearer probes use copied Playwright storage state and synchronize the rotated
+refresh cookie back to the browser context. This preserves the page's
+in-memory access-token/cookie pairing while still proving the direct negative
+API tuple.

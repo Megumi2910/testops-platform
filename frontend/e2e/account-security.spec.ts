@@ -108,15 +108,15 @@ test('account security covers password, setup, link, unlink, and revocation boun
   await page.getByLabel('Current password').fill('wrong-current-password')
   await page.getByRole('textbox', { name: 'New password', exact: true }).fill(changedPassword)
   await page.getByLabel('Confirm new password').fill(changedPassword)
-  const wrongChangeBearer = await currentBearer(page.context())
   const wrongChange = page.waitForResponse(response => response.url().endsWith('/api/v1/auth/me/password') && response.request().method() === 'PUT')
   await page.getByRole('button', { name: 'Change password' }).click()
   check('password-change-wrong-current', (await wrongChange).status()).toBe(401)
-  await observeNegative('password-change-wrong-current', await authenticatedPut(page.context(), '/api/v1/auth/me/password', {
-    currentPassword: 'wrong-current-password', newPassword: changedPassword, confirmation: changedPassword,
-  }, wrongChangeBearer), 'PUT')
   await check('password-change-wrong-current', page.getByText('Current password is incorrect')).toBeVisible()
   await check('password-change-wrong-current', page.getByLabel('Current password')).toHaveAttribute('aria-invalid', 'true')
+  const wrongChangeBearer = await currentBearer(passwordSecondContext)
+  await observeNegative('password-change-wrong-current', await authenticatedPut(passwordSecondContext, '/api/v1/auth/me/password', {
+    currentPassword: 'wrong-current-password', newPassword: changedPassword, confirmation: changedPassword,
+  }, wrongChangeBearer), 'PUT')
 
   await page.getByLabel('Current password').fill(accountPassword)
   const successfulChange = page.waitForResponse(response => response.url().endsWith('/api/v1/auth/me/password') && response.request().method() === 'PUT')
@@ -156,7 +156,14 @@ test('account security covers password, setup, link, unlink, and revocation boun
   await check('password-setup-google-only', googleOnlyPage.getByText(/Connected:/).locator('..')).toContainText('GOOGLE')
   await check('password-setup-google-only', googleOnlyPage.getByRole('button', { name: 'Unlink Google' })).toHaveCount(0)
 
-  const lastMethodResponse = await authenticatedPost(googleOnlyContext, '/api/v1/auth/me/login-methods/google/unlink', { currentPassword: 'not-a-local-password' })
+  const googleOnlyProbeContext = await browser.newContext({ baseURL: applicationOrigin, viewport: { width: 1440, height: 900 } })
+  const googleOnlyProbePage = await googleOnlyProbeContext.newPage()
+  await setGoogleProfile(googleOnlyProbeContext, googleProfile('google-only', googleOnlyNonce))
+  await googleOnlyProbePage.goto('/login')
+  await googleOnlyProbePage.getByRole('link', { name: 'Continue with Google', exact: true }).click()
+  await expect(googleOnlyProbePage.getByRole('link', { name: 'Projects', exact: true })).toBeVisible()
+
+  const lastMethodResponse = await authenticatedPost(googleOnlyProbeContext, '/api/v1/auth/me/login-methods/google/unlink', { currentPassword: 'not-a-local-password' })
   await observeNegative('provider-unlink-last-method', lastMethodResponse)
   check('provider-unlink-last-method', lastMethodResponse.status()).toBe(409)
 
@@ -169,11 +176,11 @@ test('account security covers password, setup, link, unlink, and revocation boun
   const invalidSetupOtp = setupOtp === '000000' ? '000001' : '000000'
   await googleOnlyPage.getByLabel('Verification code').fill(invalidSetupOtp)
   await googleOnlyPage.getByRole('textbox', { name: 'New password', exact: true }).fill(accountPassword)
-  const invalidSetupBearer = await currentBearer(googleOnlyContext)
+  const invalidSetupBearer = await currentBearer(googleOnlyProbeContext)
   const invalidSetup = googleOnlyPage.waitForResponse(response => response.url().endsWith('/api/v1/auth/me/password/confirm') && response.request().method() === 'POST')
   await googleOnlyPage.getByRole('button', { name: 'Confirm password' }).click()
   check('password-setup-invalid-code', (await invalidSetup).status()).toBe(400)
-  await observeNegative('password-setup-invalid-code', await authenticatedPost(googleOnlyContext, '/api/v1/auth/me/password/confirm', {
+  await observeNegative('password-setup-invalid-code', await authenticatedPost(googleOnlyProbeContext, '/api/v1/auth/me/password/confirm', {
     otp: invalidSetupOtp, password: accountPassword,
   }, invalidSetupBearer))
   await check('password-setup-invalid-code', googleOnlyPage.getByText('Verification code is invalid or expired')).toBeVisible()
@@ -188,6 +195,7 @@ test('account security covers password, setup, link, unlink, and revocation boun
   await signInAccount(googleOnlyPage, googleOnlyEmail)
   await check('password-setup-success', googleOnlyPage.getByRole('link', { name: 'Projects', exact: true })).toBeVisible()
   await googleOnlyContext.close()
+  await googleOnlyProbeContext.close()
 
   const linkContext = await browser.newContext({ baseURL: applicationOrigin, viewport: { width: 1440, height: 900 } })
   const linkPage = await linkContext.newPage()
@@ -222,15 +230,15 @@ test('account security covers password, setup, link, unlink, and revocation boun
   await unlinkDialog.getByRole('button', { name: 'Unlink Google' }).click()
   check('provider-unlink-blank-password', await noBlankRequest).toBeNull()
   await check('provider-unlink-blank-password', unlinkDialog.getByText('Enter your current password to unlink Google.')).toBeVisible()
-  const blankUnlink = await authenticatedPost(linkContext, '/api/v1/auth/me/login-methods/google/unlink', { currentPassword: '' })
+  const blankUnlink = await authenticatedPost(unlinkSecondContext, '/api/v1/auth/me/login-methods/google/unlink', { currentPassword: '' })
   await observeNegative('provider-unlink-blank-password', blankUnlink)
 
   await unlinkDialog.getByLabel('Current password').fill('wrong-current-password')
-  const wrongUnlinkBearer = await currentBearer(linkContext)
+  const wrongUnlinkBearer = await currentBearer(unlinkSecondContext)
   const wrongUnlink = linkPage.waitForResponse(response => response.url().endsWith('/api/v1/auth/me/login-methods/google/unlink') && response.request().method() === 'POST')
   await unlinkDialog.getByRole('button', { name: 'Unlink Google' }).click()
   check('provider-unlink-wrong-password', (await wrongUnlink).status()).toBe(401)
-  await observeNegative('provider-unlink-wrong-password', await authenticatedPost(linkContext, '/api/v1/auth/me/login-methods/google/unlink', {
+  await observeNegative('provider-unlink-wrong-password', await authenticatedPost(unlinkSecondContext, '/api/v1/auth/me/login-methods/google/unlink', {
     currentPassword: 'wrong-current-password',
   }, wrongUnlinkBearer))
   await check('provider-unlink-wrong-password', unlinkDialog.getByText('Current password is incorrect')).toBeVisible()
