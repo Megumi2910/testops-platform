@@ -56,7 +56,10 @@ function AccountMenu({ onNavigate }: { onNavigate: () => void }) {
         return
       }
       if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return
-      if (!menuRef.current?.contains(event.target as Node)) return
+      // Keyboard events are allowed to bubble to document in both the browser
+      // and the mounted regression test; use the focused menu item as the
+      // boundary rather than requiring document itself to be inside the menu.
+      if (!menuRef.current?.contains(document.activeElement)) return
       const activeIndex = items.indexOf(document.activeElement as HTMLElement)
       // A close followed immediately by ArrowDown can cross the React effect
       // cleanup boundary. Ignore that stale document event rather than

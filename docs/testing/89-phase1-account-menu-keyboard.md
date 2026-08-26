@@ -45,6 +45,10 @@ overall Milestone 10A release remains PARTIAL until the rebuilt runtime passes
 the live Chrome DevTools matrix, retained-tab deployment test, role matrix, and
 the remaining release thresholds.
 
+The handler also treats document-level `End`, `Home`, and Arrow events as
+menu navigation when focus is inside the menu, keeping the browser and
+mounted regression contracts aligned.
+
 ## Phase 6 follow-on evidence
 
 The current implementation expands the focused mounted result from seven to
