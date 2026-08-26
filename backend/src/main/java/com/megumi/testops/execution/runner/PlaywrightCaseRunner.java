@@ -41,6 +41,25 @@ public class PlaywrightCaseRunner {
         try (BrowserContext context = chromium.newContext(contextOptions(definitions)); Page page = context.newPage()) {
             context.setDefaultTimeout(properties.execution().defaultStepTimeout().toMillis());
             AtomicReference<NavigationViolation> navigationViolation = new AtomicReference<>();
+            // Intercept at the context routing boundary as well as observing
+            // page events. A target=_blank popup can dispatch its first
+            // navigation request before the Page callback is delivered.
+            context.route("**/*", route -> {
+                Request request = route.request();
+                if (request.isNavigationRequest()) {
+                    try {
+                        targetGuard.resolve(targetOrigin, request.url());
+                    } catch (RuntimeException ex) {
+                        navigationViolation.compareAndSet(null, new NavigationViolation());
+                        route.abort();
+                        return;
+                    }
+                }
+                route.resume();
+            });
+            // Register at the browser-context boundary so target checks attach
+            // before a popup's first navigation request is dispatched.
+            context.onPage(popup -> monitorNavigation(popup, targetOrigin, navigationViolation));
             monitorNavigation(page, targetOrigin, navigationViolation);
             page.onPopup(popup -> {
                 monitorNavigation(popup, targetOrigin, navigationViolation);

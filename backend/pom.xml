@@ -151,6 +151,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
+                    <!-- Keep -DskipTests scoped to Surefire; AC5 and release
+                         verification must still execute named integration tests. -->
+                    <skipTests>${skipITs}</skipTests>
                     <systemPropertyVariables>
                         <api.version>${testcontainers.docker.api.version}</api.version>
                     </systemPropertyVariables>

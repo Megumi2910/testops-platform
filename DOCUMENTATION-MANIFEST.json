@@ -789,6 +789,16 @@
       "path": "scripts/docs/verify-report.mjs",
       "role": "HTML, endpoint, migration, and route drift verification",
       "status": "tooling"
+    },
+    {
+      "path": "docs/implementation/92-phase8-guided-case-builder.md",
+      "role": "Phase 8 guided builder and context-level navigation-safety implementation evidence",
+      "status": "current"
+    },
+    {
+      "path": "docs/testing/102-phase8-guided-case-builder.md",
+      "role": "Phase 8 builder and five-path navigation-safety regression evidence",
+      "status": "current"
     }
   ]
 }

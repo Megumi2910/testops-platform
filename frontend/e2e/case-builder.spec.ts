@@ -1,0 +1,50 @@
+import { expect, test } from '@playwright/test'
+
+import { createProject, createSuite } from './helpers/project'
+import { registerAndVerify } from './helpers/auth'
+
+test('guided builder covers templates, stages, step lifecycle, statuses, and duplicate recovery', async ({ page }) => {
+  test.setTimeout(90_000)
+  const runId = Date.now()
+  const caseName = `Builder case ${runId}`
+  await registerAndVerify(page, `p8-builder-${runId}@example.test`)
+  const projectId = await createProject(page, `P8 builder ${runId}`)
+  const suiteId = await createSuite(page, projectId, `P8 suite ${runId}`)
+
+  await page.goto(`/projects/${projectId}/suites/${suiteId}/cases/new`)
+  await expect(page.getByRole('heading', { name: 'New case', exact: true })).toBeVisible()
+  await expect(page.getByRole('navigation', { name: 'Case authoring stages' })).toContainText('1. Details')
+  await page.getByLabel('Start from a template').selectOption('search')
+  await page.getByLabel('Name').fill(caseName)
+  await page.getByRole('button', { name: 'Continue to steps', exact: true }).click()
+  await expect(page.getByRole('navigation', { name: 'Case authoring stages' })).toContainText('2. Steps')
+  await expect(page.locator('fieldset.step-card')).toHaveCount(3)
+  await expect(page.locator('fieldset.step-card').first().getByLabel('Action')).toHaveValue('NAVIGATE')
+  await expect(page.locator('fieldset.step-card').first().getByText(/Path such as/)).toBeVisible()
+  await page.locator('fieldset.step-card').first().getByRole('button', { name: 'Duplicate' }).click()
+  await expect(page.locator('fieldset.step-card')).toHaveCount(4)
+  await page.locator('fieldset.step-card').nth(1).getByRole('button', { name: 'Move down' }).click()
+  await page.locator('fieldset.step-card').last().getByRole('button', { name: 'Remove' }).click()
+  await expect(page.locator('fieldset.step-card')).toHaveCount(3)
+  await page.getByRole('button', { name: 'Review case', exact: true }).click()
+  await expect(page.getByRole('navigation', { name: 'Case authoring stages' })).toContainText('3. Review')
+  await page.getByRole('button', { name: 'Save draft', exact: true }).click()
+  await expect(page).toHaveURL(/\/cases\/[0-9a-f-]+$/)
+  await expect(page.locator('span.status-badge').filter({ hasText: 'DRAFT' })).toHaveCount(1)
+  await expect(page.getByRole('button', { name: 'Run case', exact: true })).toHaveCount(0)
+
+  await page.goto(`/projects/${projectId}/suites/${suiteId}/cases/new`)
+  await page.getByLabel('Start from a template').selectOption('homepage')
+  await page.getByLabel('Name').fill(caseName)
+  await page.getByRole('button', { name: 'Continue to steps', exact: true }).click()
+  await page.getByRole('button', { name: 'Review case', exact: true }).click()
+  await page.getByRole('button', { name: 'Save as READY', exact: true }).click()
+  await expect(page.getByRole('alert')).toContainText('A case with this name already exists.')
+  await page.getByRole('button', { name: /copy/ }).click()
+  await page.getByRole('button', { name: 'Continue to steps', exact: true }).click()
+  await page.getByRole('button', { name: 'Review case', exact: true }).click()
+  await page.getByRole('button', { name: 'Save as READY', exact: true }).click()
+  await expect(page).toHaveURL(/\/cases\/[0-9a-f-]+$/)
+  await expect(page.locator('span.status-badge').filter({ hasText: 'READY' })).toHaveCount(1)
+  await expect(page.getByRole('button', { name: 'Run case', exact: true })).toBeVisible()
+})

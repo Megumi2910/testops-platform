@@ -803,3 +803,20 @@ allowlisted expected negative tuples with zero unexpected failures, 500s,
 cross-tenant leaks, or sensitive artifacts. Playwright and Chrome DevTools
 smoke captures both render the public readiness shell; the only observed
 unauthenticated failure is the expected refresh `401`.
+
+## Phase 8 follow-up slice — context-level navigation safety
+
+**Status: PARTIAL for this implementation slice.** The disposable browser
+target now covers click, form, redirect, script, and popup escape attempts.
+`PlaywrightCaseRunner` rejects disallowed navigation at the browser-context
+routing boundary before send and preserves the sanitized
+`BLOCKED_NAVIGATION` result. The rebuilt isolated Chromium run passed all five
+navigation cases, including the popup race regression; the source contract is
+also covered by `PlaywrightNavigationSafetyIT`.
+
+The focused implementation and test records are
+[`92-phase8-guided-case-builder.md`](../implementation/92-phase8-guided-case-builder.md)
+and
+[`102-phase8-guided-case-builder.md`](../testing/102-phase8-guided-case-builder.md).
+This entry does not claim P8 completion: the full builder/execution/evidence
+matrix, sanitized P8 manifest, and later P9/P10 gates remain open.
