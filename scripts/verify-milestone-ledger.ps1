@@ -28,7 +28,7 @@ $milestone = Get-Content -LiteralPath $MilestonePath -Raw
 if ($milestone -notmatch '(?ms)^##\s+Phase 8 completion.*?\*\*Status:\s*PASS\b') {
     Fail-Milestone 'Phase 8 completion is not marked PASS'
 }
-if ($milestone -notmatch '(?ms)^##\s+Phase 9 completion.*?\*\*Status:\s*PASS\b') {
+if ($milestone -notmatch '(?ms)^##\s+Phase 9\b.*?\*\*Status:\s*PASS\b') {
     Fail-Milestone 'Phase 9 completion is not marked PASS'
 }
 if ($milestone -notmatch 'artifacts/browser-evidence/P8\.json' -or $milestone -notmatch 'artifacts/browser-evidence/P9\.json') {

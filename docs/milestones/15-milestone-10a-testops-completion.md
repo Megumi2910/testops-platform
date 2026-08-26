@@ -855,14 +855,23 @@ and
 
 ## Phase 9 browser quality, performance, docs, and defect closure
 
-**Status: IN PROGRESS until the frozen P9 receipts complete.** The source
-slice now includes a desktop/tablet/`320×800` Playwright accessibility matrix,
-sanitized route performance records, Chrome DevTools Lighthouse/trace anchors,
-strict performance and defect-ledger validators, and the related
-implementation/testing/operator/index documentation. The public readiness
-DevTools capture is an independent threshold anchor; authenticated routes are
-represented by the sanitized Chromium matrix so no session material enters
-evidence.
+**Status: PASS.** The exact frozen P9 AC1–AC6 commands completed under the
+P9 lease. The committed Chromium matrix passed 18/18 case-viewports across
+`1440×900`, `768×1024`, and `320×800`, with 143 sanitized assertions and no
+failed assertions. The twelve route performance records and two Chrome
+DevTools readiness captures meet accessibility ≥95, LCP ≤2500 ms, and CLS
+≤0.1. The canonical browser manifest is `artifacts/browser-evidence/P9.json`;
+the defect ledger reports zero open P0/P1 TestOps defects and explicit P2/P3
+and ecommerce scope dispositions.
+
+P9 receipt hashes are:
+
+`ebc30283568baf9283e5fe39b4b40c08368e7bb041e4d33bb1556ca2518c6adb`,
+`8b4eb88fefdc85ea6a6a5c75f14834a94d8733ac94916f021f257e3e93fdfd4b`,
+`353a4b4834d654b014d7feda7594ad1bc6766e3822e5f96739690fd1fa08eae5`,
+`3d2b1f456be4638cc6c2d2f8fa4c5053abe8230704bbcf2aa31a6fdebd0b15ff`,
+`6be2be98282acae8eb844523260c69962f4643f11d39337e72c50f87640b56fd`,
+and the AC6 receipt recorded by the milestone-ledger validator below.
 
 See [`94-phase9-browser-quality-performance.md`](../implementation/94-phase9-browser-quality-performance.md)
 and [`101-phase9-browser-quality-performance.md`](../testing/101-phase9-browser-quality-performance.md).
