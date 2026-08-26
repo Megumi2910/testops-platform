@@ -886,9 +886,10 @@ truth for the final candidate, runtime revisions, CI run IDs, PR state, and
 plan-readiness checks. The ordinary CI E2E job and aggregate local matrix
 exclude only the retained A/B tab-swap contract; its adjacent-revision proof
 remains a dedicated validator. Production deployment and pull-request merge
-remain explicitly out of scope. The final browser boundary also waits for
-post-login bootstrap quiescence before capturing sibling-context refresh
-evidence, avoiding a single-use cookie hand-off race.
+remain explicitly out of scope. The final browser boundary also allows a
+bounded post-login bootstrap settle window before capturing sibling-context
+refresh evidence, avoiding a single-use cookie hand-off race without waiting
+on long-lived probes.
 
 See [`95-phase10-release-finalization.md`](../implementation/95-phase10-release-finalization.md)
 and [`102-phase10-release-finalization.md`](../testing/102-phase10-release-finalization.md).

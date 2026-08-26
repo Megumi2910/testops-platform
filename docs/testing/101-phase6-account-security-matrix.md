@@ -74,5 +74,6 @@ refresh cookie back to the browser context. This preserves the page's
 in-memory access-token/cookie pairing while still proving the direct negative
 API tuple. A single retry with a fresh cookie snapshot covers the concurrent
 bootstrap-rotation hand-off; a second 401 remains a real failure.
-The sign-in helper waits for the post-login bootstrap network to become idle
-before any sibling-context bearer probe begins.
+The sign-in helper allows a bounded post-login bootstrap settle window before
+any sibling-context bearer probe begins, rather than waiting on long-lived
+background probes.

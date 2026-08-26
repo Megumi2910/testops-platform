@@ -61,9 +61,9 @@ to the browser context so its in-memory access token remains paired with the
 current server-side refresh family. If a concurrent page bootstrap rotates the
 same family between the cookie copy and probe, the helper retries once with a
 fresh cookie snapshot; an actual second 401 still fails the contract.
-Sign-in helpers also wait for the post-login bootstrap network to become idle
-before a sibling context captures a disposable bearer, removing the remaining
-single-use refresh hand-off race.
+Sign-in helpers also allow a bounded post-login bootstrap settle window before
+a sibling context captures a disposable bearer, removing the remaining
+single-use refresh hand-off race without waiting forever on long-lived probes.
 
 The browser flow uses an exact accessible `New password` role locator where
 the form also exposes `Confirm new password`, avoiding a strict-mode collision

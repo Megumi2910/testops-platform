@@ -55,8 +55,9 @@ export async function signInAccount(page: Page, email: string, password = accoun
   await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page.getByRole('link', { name: 'Projects', exact: true })).toBeVisible()
   // Let the initial AuthProvider bootstrap settle before a second context
-  // captures the single-use refresh cookie for a direct API assertion.
-  await page.waitForLoadState('networkidle')
+  // captures the single-use refresh cookie for a direct API assertion. A
+  // bounded pause avoids waiting forever on the app's long-lived probes.
+  await page.waitForTimeout(500)
 }
 
 export async function signOutAccount(page: Page) {
