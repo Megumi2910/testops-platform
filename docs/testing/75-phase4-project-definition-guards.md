@@ -29,7 +29,7 @@ The new regression uses an active project, an archived parent suite, and a READY
 
 ## Live browser note
 
-`frontend/e2e/definition-lifecycle.spec.ts` was run against the rebuilt QA frontend at `http://localhost:3000` with the ecommerce target configured as `http://localhost:3001`. The first two lifecycle journeys passed. The later two could not register their temporary users because the live QA backend returned the expected rate-limit response:
+`frontend/e2e/definition-lifecycle.spec.ts` was run against the rebuilt QA frontend at `http://localhost:3300` with the ecommerce target configured as `http://localhost:3001`. The first two lifecycle journeys passed. The later two could not register their temporary users because the live QA backend returned the expected rate-limit response:
 
 ```text
 429 Too many attempts; try again later

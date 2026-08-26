@@ -341,7 +341,7 @@ new lazy chunk from a retained tab and verifies the recovery boundary and build
 revision.
 
 The targeted retained-tab Playwright regression passed against the rebuilt
-isolated QA frontend at `http://localhost:3000`; the earlier failure against
+isolated QA frontend at `http://localhost:3300`; the earlier failure against
 the old image is retained as evidence that the runtime must be rebuilt before
 browser conclusions are trusted.
 
@@ -379,7 +379,7 @@ The local frontend gate is green at 17 test files / 53 tests. Live Chrome
 DevTools verification against a rebuilt QA image, including the account
 security panels and Mailpit password/Google mutation journeys, remains part of
 the complete Phase 3 gate. The focused live Playwright auth/session matrix
-passed 3/3 against the rebuilt QA frontend, including real Mailpit verification
+passed 3/3 against the rebuilt QA frontend at `http://localhost:3300`, including real Mailpit verification
 and session revocation.
 
 ## Phase 4 slice result — project and definition lifecycle guards

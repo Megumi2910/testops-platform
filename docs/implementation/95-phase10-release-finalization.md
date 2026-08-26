@@ -30,3 +30,7 @@ These validators never merge a pull request, deploy production, delete the
 default Compose project, or publish raw browser artifacts. Runtime names are
 explicit (`testops-m10a-final-normal` and `testops-m10a-final-qa`) so a local
 release check cannot mutate the developer’s default stack.
+
+The QA overlay publishes its UI/API on `3300/8380`; the normal E2E overlay uses
+`3100/8180`. Both remain separate from the developer’s default `3000/8080`
+stack, which is never stopped by release verification.

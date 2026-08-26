@@ -23,6 +23,10 @@ all browser specs share the localhost limiter while creating isolated sessions.
 This is test-harness capacity only; production/default Compose limits are not
 changed, and rate-limit semantics are still verified by focused contract cases.
 
+The QA runtime smoke uses the isolated overlay endpoints `http://localhost:3300`
+and `http://localhost:8380/actuator/health`; the developer’s default stack keeps
+its `3000/8080` ports and remains running throughout the check.
+
 Run the local validators from the candidate checkout:
 
 ```powershell

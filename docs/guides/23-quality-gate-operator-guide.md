@@ -110,9 +110,10 @@ docker compose -f docker-compose.yml -f docker-compose.qa.yml ps
 
 Expected TestOps endpoints:
 
-- UI: `http://localhost:3000`
-- API/health through UI proxy: `http://localhost:3000/actuator/health`
-- backend: `http://localhost:8080`
+- Default stack UI: `http://localhost:3000`
+- QA overlay UI: `http://localhost:3300`
+- QA API/health through UI proxy: `http://localhost:3300/actuator/health`
+- QA backend: `http://localhost:8380`
 - QA Mailpit: `http://localhost:8027`
 
 Expected ecommerce endpoints:
@@ -233,6 +234,10 @@ The runtime validator uses only the isolated `testops-m10a-final-normal` and
 open and draft; no merge or deployment is part of this gate. The aggregate
 Playwright matrix excludes the retained revision-A/B test; run the dedicated
 retained-swap command above for that two-image boundary.
+
+The QA overlay publishes its UI/API on `3300/8380` and leaves the default
+`3000/8080` stack untouched. This port separation is part of the isolation
+contract, not a production endpoint change.
 
 ## QA ownership rules
 

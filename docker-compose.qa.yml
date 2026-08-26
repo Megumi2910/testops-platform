@@ -12,7 +12,16 @@ services:
       timeout: 5s
       retries: 12
 
+  postgres:
+    # The QA overlay must coexist with the developer's default Compose stack.
+    ports: !override []
+
+  pgadmin4:
+    ports: !override []
+
   backend:
+    ports: !override
+      - "8380:8080"
     environment:
       SPRING_PROFILES_ACTIVE: local-qa
       AUTH_ENABLED: "true"
@@ -39,3 +48,7 @@ services:
         condition: service_healthy
       mailpit:
         condition: service_healthy
+
+  frontend:
+    ports: !override
+      - "3300:8080"

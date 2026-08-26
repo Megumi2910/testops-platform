@@ -7,9 +7,9 @@ param(
     [string]$NormalProject = 'testops-m10a-final-normal',
     [string]$QaProject = 'testops-m10a-final-qa',
     [int]$NormalUiPort = 3100,
-    [int]$QaUiPort = 3000,
+    [int]$QaUiPort = 3300,
     [int]$NormalApiPort = 8180,
-    [int]$QaApiPort = 8080
+    [int]$QaApiPort = 8380
 )
 
 $ErrorActionPreference = 'Stop'
