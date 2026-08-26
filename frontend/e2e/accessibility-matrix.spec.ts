@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type BrowserContext, type Page } from '@playwright/test'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -42,9 +42,14 @@ const artifactPath = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '../../artifacts/browser-evidence/inputs/accessibility-matrix-result.json',
 )
+const storageStatePath = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../artifacts/browser-evidence/inputs/accessibility-matrix-storage-state.json',
+)
 const observations = new Map<string, Observation>()
 const performanceObservations: PerformanceObservation[] = []
 let verifiedEmail = ''
+let authCookies: Awaited<ReturnType<BrowserContext['cookies']>> = []
 
 function begin(id: CaseId, viewport: Viewport) {
   return { id, viewport: viewport.id, status: 'passed' as const, assertions_total: 0, assertions_failed: 0 as const }
@@ -65,8 +70,24 @@ async function setViewport(page: Page, viewport: Viewport) {
 }
 
 async function authenticated(page: Page) {
+  await page.context().addCookies(authCookies)
+  await page.goto('/')
+  const trigger = page.locator('.account-menu-trigger')
+  try {
+    await expect(trigger).toHaveCount(1, { timeout: 5_000 })
+  } catch {
+    // A rotated refresh cookie can be consumed by a prior document bootstrap;
+    // recover through the normal login contract instead of silently testing as
+    // an anonymous user.
+    await signIn(page, verifiedEmail)
+  }
+  await expect(trigger).toHaveCount(1)
+  authCookies = await page.context().cookies()
+}
+
+async function guest(page: Page) {
   await page.context().clearCookies()
-  await signIn(page, verifiedEmail)
+  await page.goto('/login')
 }
 
 async function assertNoOverflow(page: Page, observation: Observation) {
@@ -76,6 +97,7 @@ async function assertNoOverflow(page: Page, observation: Observation) {
 async function criticalRoutes(page: Page, viewport: Viewport) {
   const observation = begin('critical-route-navigation', viewport)
   await setViewport(page, viewport)
+  await guest(page)
   for (const route of ['/readiness', '/login', '/register', '/password-reset']) {
     await page.goto(route)
     await check(observation, () => expect(page.locator('main')).toHaveCount(1))
@@ -93,7 +115,7 @@ async function criticalRoutes(page: Page, viewport: Viewport) {
 async function keyboardFocus(page: Page, viewport: Viewport) {
   const observation = begin('keyboard-focus', viewport)
   await setViewport(page, viewport)
-  await page.goto('/login')
+  await guest(page)
   await page.keyboard.press('Tab')
   await check(observation, () => expect(page.locator(':focus')).toHaveCount(1))
   await authenticated(page)
@@ -128,7 +150,7 @@ async function keyboardFocus(page: Page, viewport: Viewport) {
 async function formsAndErrors(page: Page, viewport: Viewport) {
   const observation = begin('forms-and-errors', viewport)
   await setViewport(page, viewport)
-  await page.goto('/login')
+  await guest(page)
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
   await check(observation, () => expect(page.locator('input:invalid')).toHaveCount(2))
   await page.getByLabel('Email').fill(`missing-${Date.now()}@example.test`)
@@ -168,6 +190,7 @@ async function dialogs(page: Page, viewport: Viewport) {
 async function automatedAccessibility(page: Page, viewport: Viewport) {
   const observation = begin('automated-accessibility', viewport)
   await setViewport(page, viewport)
+  await guest(page)
   for (const route of ['/readiness', '/login', '/register']) {
     await page.goto(route)
     await assertBasicAccessibility(page)
@@ -220,16 +243,32 @@ test.describe.serial('P9 accessibility, responsive, focus, and route matrix', ()
     const context = await browser.newContext({ baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:3100' })
     try {
       await registerAndVerify(await context.newPage(), verifiedEmail, { displayName: `P9 Accessibility ${runId}` })
+      await context.storageState({ path: storageStatePath })
     } finally {
       await context.close()
     }
     await fs.rm(artifactPath, { force: true })
   })
 
+  test.beforeEach(async ({ context }) => {
+    const state = JSON.parse(await fs.readFile(storageStatePath, 'utf8')) as { cookies?: Parameters<typeof context.addCookies>[0] }
+    authCookies = state.cookies ?? []
+    await context.addCookies(authCookies)
+  })
+
+  test.afterEach(async ({ context }, testInfo) => {
+    if (testInfo.status === 'passed') {
+      // Refresh cookies rotate on every bootstrap; carry the sanitized cookie
+      // jar to the next serial case rather than replaying a consumed token.
+      await context.storageState({ path: storageStatePath })
+    }
+  })
+
   test.afterAll(async () => {
     const expected = caseIds.length * viewports.length
     if (observations.size !== expected) {
       await fs.rm(artifactPath, { force: true })
+      await fs.rm(storageStatePath, { force: true })
       return
     }
     const cases = [...observations.values()]
@@ -246,6 +285,7 @@ test.describe.serial('P9 accessibility, responsive, focus, and route matrix', ()
       cases,
       performance: performanceObservations,
     }, null, 2), 'utf8')
+    await fs.rm(storageStatePath, { force: true })
   })
 
   for (const viewport of viewports) {
