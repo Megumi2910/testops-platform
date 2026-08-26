@@ -31,7 +31,17 @@ function Assert-ComposeRuntime {
     Push-Location $repositoryRoot
     try {
         $raw = Invoke-CheckedNative -FilePath 'docker' -Arguments $args -Activity "Read $Label runtime status" -CaptureOutput
-        $rows = @($raw | ConvertFrom-Json)
+        # Compose emits one JSON object per line on current Docker Desktop
+        # versions. Normalize both that JSON-lines form and older array output
+        # before applying the service-level health contract.
+        try {
+            $parsed = $raw | ConvertFrom-Json
+            $rows = @($parsed)
+        } catch {
+            $rows = @($raw -split '\r?\n' |
+                Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+                ForEach-Object { $_ | ConvertFrom-Json })
+        }
     } finally { Pop-Location }
     foreach ($service in @('backend', 'frontend')) {
         $matches = @($rows | Where-Object { [string]$_.Service -eq $service })

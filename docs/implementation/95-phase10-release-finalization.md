@@ -34,3 +34,6 @@ release check cannot mutate the developer’s default stack.
 The QA overlay publishes its UI/API on `3300/8380`; the normal E2E overlay uses
 `3100/8180`. Both remain separate from the developer’s default `3000/8080`
 stack, which is never stopped by release verification.
+
+The runtime validator normalizes Docker Compose `ps --format json` output from
+both JSON-array and JSON-lines implementations before checking service health.
