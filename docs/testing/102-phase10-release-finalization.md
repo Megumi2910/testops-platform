@@ -17,6 +17,9 @@ The aggregate Playwright command covers the single-revision browser matrix.
 The retained revision-A/B tab reload remains a separate evidence-producing gate
 because it must build and compare two adjacent revisions; run
 `scripts/verify-retained-swap.ps1` for that boundary before final publication.
+The ordinary CI E2E job uses the same exclusion, so a missing retained-swap
+control directory cannot turn the six-job CI contract into a false product
+failure.
 
 The disposable E2E Compose profile uses a `1000` refresh-attempt budget because
 all browser specs share the localhost limiter while creating isolated sessions.

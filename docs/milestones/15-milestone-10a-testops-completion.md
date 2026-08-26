@@ -883,8 +883,10 @@ isolated normal/QA runtimes, records two consecutive six-job CI successes, and
 updates draft PR #3 without merging. The exact AC1–AC6 receipts and the P10
 ledger under `.agent/plans/testops-m10a-completion-20260823/` are the source of
 truth for the final candidate, runtime revisions, CI run IDs, PR state, and
-plan-readiness checks. Production deployment and pull-request merge remain
-explicitly out of scope.
+plan-readiness checks. The ordinary CI E2E job and aggregate local matrix
+exclude only the retained A/B tab-swap contract; its adjacent-revision proof
+remains a dedicated validator. Production deployment and pull-request merge
+remain explicitly out of scope.
 
 See [`95-phase10-release-finalization.md`](../implementation/95-phase10-release-finalization.md)
 and [`102-phase10-release-finalization.md`](../testing/102-phase10-release-finalization.md).

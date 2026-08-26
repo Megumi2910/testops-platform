@@ -20,6 +20,9 @@ login-method summary (including `GOOGLE`) authoritative immediately after a
 deterministic provider sign-in instead of relying on a stale bootstrap state.
 The provider also guards against an in-flight bootstrap refresh erasing that
 newly hydrated user when the initial no-session request settles afterward.
+Bootstrap now also checks whether login or OAuth already hydrated the session
+before starting its first refresh, preventing a single-use refresh-cookie race
+with the freshly authenticated page.
 
 The disposable OAuth provider accepts only `legacy` or a strict
 `<google-only|link|mismatch>.<nonce>` profile key. Derived subject, email, and
@@ -55,7 +58,9 @@ return `401`, the disposable bearer is captured before the UI action so the
 page's refresh/retry path cannot invalidate the diagnostic probe. The bearer
 probe uses copied storage state, then carries the rotated refresh cookie back
 to the browser context so its in-memory access token remains paired with the
-current server-side refresh family.
+current server-side refresh family. If a concurrent page bootstrap rotates the
+same family between the cookie copy and probe, the helper retries once with a
+fresh cookie snapshot; an actual second 401 still fails the contract.
 
 The browser flow uses an exact accessible `New password` role locator where
 the form also exposes `Confirm new password`, avoiding a strict-mode collision

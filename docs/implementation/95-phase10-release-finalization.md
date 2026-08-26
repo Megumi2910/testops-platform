@@ -35,5 +35,10 @@ The QA overlay publishes its UI/API on `3300/8380`; the normal E2E overlay uses
 `3100/8180`. Both remain separate from the developer’s default `3000/8080`
 stack, which is never stopped by release verification.
 
+The ordinary CI E2E job excludes the retained A/B tab-swap test because that
+contract requires adjacent revisions and a coordination directory. The
+dedicated retained-swap validator remains the owner of that evidence; the
+single-revision CI job still runs every other browser contract.
+
 The runtime validator normalizes Docker Compose `ps --format json` output from
 both JSON-array and JSON-lines implementations before checking service health.

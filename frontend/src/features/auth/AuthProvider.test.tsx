@@ -16,6 +16,11 @@ function SessionProbe() {
   return <span>{user ? `Authenticated as ${user.email}` : 'Signed out'}</span>
 }
 
+function LoginProbe() {
+  const { login } = useAuth()
+  return <button type="button" onClick={() => void login('user@example.test', 'password')}>Sign in</button>
+}
+
 afterEach(() => vi.restoreAllMocks())
 
 describe('AuthProvider', () => {
@@ -53,5 +58,24 @@ describe('AuthProvider', () => {
       .mockResolvedValueOnce(new Response(null, { status: 401 })))
     await expect(apiFetch('/api/v1/projects')).rejects.toMatchObject({ status: 401 })
     await waitFor(() => expect(screen.getByText('Signed out')).toBeVisible())
+  })
+
+  it('does not start bootstrap refresh after login hydrates the session', async () => {
+    let resolveProviders!: (value: Awaited<ReturnType<typeof authApi.providers>>) => void
+    vi.spyOn(authApi, 'providers').mockImplementation(() => new Promise(resolve => { resolveProviders = resolve }))
+    const refresh = vi.spyOn(authApi, 'refresh').mockResolvedValue({
+      accessToken: 'refresh-token', expiresInSeconds: 900,
+      user: { id: '1', email: 'user@example.test', displayName: 'User', emailVerified: true, status: 'ACTIVE', platformRole: 'MEMBER', loginMethods: ['PASSWORD'], platformPermissions: [] },
+    })
+    vi.spyOn(authApi, 'login').mockResolvedValue({
+      accessToken: 'login-token', expiresInSeconds: 900,
+      user: { id: '1', email: 'user@example.test', displayName: 'User', emailVerified: true, status: 'ACTIVE', platformRole: 'MEMBER', loginMethods: ['PASSWORD'], platformPermissions: [] },
+    })
+
+    render(<AuthProvider><LoginProbe /></AuthProvider>)
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+    await waitFor(() => expect(screen.getByText('Sign in')).toBeVisible())
+    resolveProviders({ enabled: true, registrationEnabled: false, emailVerificationEnabled: true, googleEnabled: false })
+    await waitFor(() => expect(refresh).not.toHaveBeenCalled())
   })
 })

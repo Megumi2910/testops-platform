@@ -116,7 +116,11 @@ jobs:
         working-directory: frontend
       - run: npx playwright install --with-deps chromium
         working-directory: frontend
-      - run: npm run e2e
+      # The retained A/B tab-swap contract needs two adjacent revisions and a
+      # control directory; its dedicated validator owns that evidence. Keep
+      # the ordinary CI matrix single-revision and fail closed on all other
+      # browser contracts.
+      - run: npm run e2e -- --grep-invert "a retained revision-A tab reloads exactly once onto revision B"
         working-directory: frontend
         env:
           E2E_BASE_URL: http://localhost:3100

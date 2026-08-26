@@ -92,29 +92,38 @@ export async function setGoogleProfile(context: BrowserContext, profile: ReturnT
 export async function currentBearer(context: BrowserContext) {
   // Refresh rotation is intentionally destructive for the old cookie. Probe
   // with a copied storage state so the page's in-memory session and browser
-  // cookie remain paired while the test records a disposable bearer.
-  const cookies = await context.cookies()
-  const probe = await request.newContext({
-    baseURL: applicationOrigin,
-    storageState: { cookies, origins: [] },
-  })
-  try {
-    const refresh = await probe.post('/api/v1/auth/refresh', {
-      headers: { Origin: applicationOrigin, Accept: 'application/json' },
+  // cookie remain paired while the test records a disposable bearer. A page
+  // bootstrap can rotate the same family just before this probe; one retry
+  // with freshly copied cookies closes that deterministic hand-off window.
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const cookies = await context.cookies()
+    const probe = await request.newContext({
+      baseURL: applicationOrigin,
+      storageState: { cookies, origins: [] },
     })
-    expect(refresh.status()).toBe(200)
-    const body = await refresh.json() as { accessToken?: string }
-    expect(body.accessToken).toBeTruthy()
-    // The probe legitimately rotates the server-side refresh family. Carry
-    // the rotated cookie back to the browser context before the page retries;
-    // leaving the old cookie in place would make the page appear signed out.
-    const rotatedCookies = (await probe.storageState()).cookies.filter(cookie => cookie.name === 'testops_refresh')
-    await context.clearCookies({ name: 'testops_refresh' })
-    await context.addCookies(rotatedCookies)
-    return body.accessToken!
-  } finally {
-    await probe.dispose()
+    try {
+      const refresh = await probe.post('/api/v1/auth/refresh', {
+        headers: { Origin: applicationOrigin, Accept: 'application/json' },
+      })
+      if (refresh.status() === 200) {
+        const body = await refresh.json() as { accessToken?: string }
+        expect(body.accessToken).toBeTruthy()
+        // The probe legitimately rotates the server-side refresh family. Carry
+        // the rotated cookie back to the browser context before the page
+        // retries; leaving the old cookie in place would make the page appear
+        // signed out.
+        const rotatedCookies = (await probe.storageState()).cookies.filter(cookie => cookie.name === 'testops_refresh')
+        await context.clearCookies({ name: 'testops_refresh' })
+        await context.addCookies(rotatedCookies)
+        return body.accessToken!
+      }
+      if (attempt === 1) expect(refresh.status()).toBe(200)
+    } finally {
+      await probe.dispose()
+    }
+    await new Promise(resolve => setTimeout(resolve, 50))
   }
+  throw new Error('Unreachable refresh probe state')
 }
 
 export async function authenticatedPost(context: BrowserContext, path: string, data: object, bearerToken?: string): Promise<APIResponse> {

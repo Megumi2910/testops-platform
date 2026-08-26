@@ -42,6 +42,8 @@ assertion targets the labeled login-method row (rather than its `Connected:`
 `<strong>` label alone), so the evidence reflects the rendered value.
 The OAuth callback check also covers the in-flight bootstrap race: the
 hydrated user remains available while the initial refresh request finishes.
+The AuthProvider unit contract also verifies that a completed login prevents
+the delayed bootstrap from starting a competing refresh rotation.
 
 Negative setup-code replay uses the same `{ otp, password }` payload as the
 page form; this keeps the direct API tuple equivalent to the intercepted UI
@@ -70,4 +72,5 @@ after the frontend fetch handler has consumed the error payload.
 Bearer probes use copied Playwright storage state and synchronize the rotated
 refresh cookie back to the browser context. This preserves the page's
 in-memory access-token/cookie pairing while still proving the direct negative
-API tuple.
+API tuple. A single retry with a fresh cookie snapshot covers the concurrent
+bootstrap-rotation hand-off; a second 401 remains a real failure.

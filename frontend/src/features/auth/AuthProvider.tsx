@@ -15,6 +15,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
       const configured = await authApi.providers()
       setProviders(configured)
       if (!configured.enabled) return
+      // Login/OAuth can complete while the initial provider request is in
+      // flight. Do not start a second refresh against the just-issued cookie;
+      // refresh rotation is single-use and would race the authenticated page.
+      if (sessionHydrated.current) return
       const refreshed = await authApi.refresh()
       setUser(refreshed.user)
     } catch (error) {
