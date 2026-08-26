@@ -13,6 +13,11 @@ reads the draft state and head SHA from GitHub. Local runtime evidence remains
 sanitized to status, health, revision, and HTTP 200 smoke outcomes. The PR
 must remain open and draft, and no production endpoint is touched.
 
+The aggregate Playwright command covers the single-revision browser matrix.
+The retained revision-A/B tab reload remains a separate evidence-producing gate
+because it must build and compare two adjacent revisions; run
+`scripts/verify-retained-swap.ps1` for that boundary before final publication.
+
 Run the local validators from the candidate checkout:
 
 ```powershell

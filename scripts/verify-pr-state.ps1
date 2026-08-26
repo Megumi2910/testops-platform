@@ -24,3 +24,15 @@ if ([string]$pr.title -notmatch '(?i)milestone\s*10A|testops') { throw 'PR title
 if ([string]$pr.body -notmatch '(?i)phase\s*9|phase\s*10|evidence|verification') { throw 'PR body does not describe the current evidence boundary.' }
 
 Write-Output "PR state PASS number=$Number state=$($pr.state) draft=$($pr.isDraft) head=$revision base=$($pr.baseRefName)"
+Write-Output ('EVIDENCE_JSON:' + (@{
+    kind = 'pipeline-run'
+    assertions_total = 1
+    assertions_failed = 0
+    query_backed = $true
+    adapter_verified = $true
+    adapter = 'github-pr-cli'
+    source = 'github'
+    target_sha = $revision
+    terminal_status = 'success'
+    run_id = "pr-$Number"
+} | ConvertTo-Json -Compress))

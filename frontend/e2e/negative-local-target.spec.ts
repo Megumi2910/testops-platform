@@ -32,7 +32,7 @@ test('a suite without READY cases explains why it cannot run', async ({ page }) 
   await createProject(page, 'http://localhost:3201', `No ready cases ${Date.now()}`)
   await createSuite(page)
   await page.getByRole('button', { name: 'Run ready cases' }).click()
-  await expect(page.getByText('Unable to queue this suite run.')).toBeVisible()
+  await expect(page.getByText('No READY cases are available.')).toBeVisible()
 })
 
 test('a failing assertion identifies the failed step', async ({ page }) => {

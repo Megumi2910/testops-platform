@@ -184,7 +184,13 @@ try {
                 $env:MAILPIT_URL = 'http://127.0.0.1:8025'
                 $env:E2E_ADMIN_EMAIL = 'qa.bootstrap-admin@testops.local'
                 $env:E2E_ADMIN_PASSWORD = ([IO.File]::ReadAllText($bootstrapPasswordPath)).Trim()
-                Invoke-NpmChecked -Arguments @('run', 'e2e') -Activity 'Run complete Playwright TestOps matrix'
+                # The retained revision-A/B browser swap is a separate, two-image
+                # gate. It needs RETAINED_SWAP_CONTROL_DIR and adjacent source
+                # revisions, so keep it out of this single-revision aggregate.
+                Invoke-NpmChecked -Arguments @(
+                    'run', 'e2e', '--',
+                    '--grep-invert', 'a retained revision-A tab reloads exactly once onto revision B'
+                ) -Activity 'Run complete Playwright TestOps matrix (excluding retained swap gate)'
             } finally {
                 $env:E2E_BASE_URL = $previousBaseUrl
                 $env:MAILPIT_URL = $previousMailpitUrl

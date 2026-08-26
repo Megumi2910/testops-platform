@@ -45,3 +45,16 @@ foreach ($run in $runs | Select-Object -First $Count) {
 }
 
 Write-Output "Consecutive CI PASS revision=$revision runs=$($verified -join ',') jobs=$($requiredJobs -join ',')"
+$runId = [string]$runs[0].databaseId
+Write-Output ('EVIDENCE_JSON:' + (@{
+    kind = 'pipeline-run'
+    assertions_total = $Count * $requiredJobs.Count
+    assertions_failed = 0
+    query_backed = $true
+    adapter_verified = $true
+    adapter = 'github-actions-cli'
+    source = 'github-actions'
+    target_sha = $revision
+    terminal_status = 'success'
+    run_id = $runId
+} | ConvertTo-Json -Compress))

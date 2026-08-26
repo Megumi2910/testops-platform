@@ -225,7 +225,9 @@ The runtime validator uses only the isolated `testops-m10a-final-normal` and
 `testops-m10a-final-qa` Compose projects. The CI validator requires successful
 `frontend`, `backend`, `containers`, `e2e`, `e2e-local-disabled`, and
 `e2e-browser-crash` jobs in two completed runs of the same SHA. The PR remains
-open and draft; no merge or deployment is part of this gate.
+open and draft; no merge or deployment is part of this gate. The aggregate
+Playwright matrix excludes the retained revision-A/B test; run the dedicated
+retained-swap command above for that two-image boundary.
 
 ## QA ownership rules
 
