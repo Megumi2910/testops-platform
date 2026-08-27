@@ -33,10 +33,11 @@ The frontend command includes the existing member and platform-route guard
 tests so the new direct-link behavior is checked beside the neighboring
 permission surfaces.
 
-The browser lifecycle fixture deliberately selects the `ROLE` locator by value,
-then supplies its required `TEXTBOX` ARIA role. That avoids depending on option
-order in the guided builder and keeps the reference-safe deletion check focused
-on variable ownership and masking rather than an invalid READY-case fixture.
+The browser lifecycle fixture deliberately selects the `ROLE` locator by its
+exact accessible label and value, then supplies its required `TEXTBOX` ARIA
+role. That avoids ambiguous label matches and option-order dependencies in the
+guided builder, keeping the reference-safe deletion check focused on variable
+ownership and masking rather than an invalid READY-case fixture.
 
 ## Manual acceptance checklist
 

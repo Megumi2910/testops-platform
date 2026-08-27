@@ -13,7 +13,7 @@ async function createReferencedCase(page: Page, projectId: string, suiteId: stri
   const steps = page.locator('fieldset.step-card')
   await steps.nth(0).getByLabel('Input value').fill('/')
   await steps.nth(1).getByLabel('Action').selectOption('FILL')
-  await steps.nth(1).getByLabel('Locator').selectOption('ROLE')
+  await steps.nth(1).getByLabel('Locator', { exact: true }).selectOption('ROLE')
   await steps.nth(1).getByLabel('ARIA role').selectOption('TEXTBOX')
   await steps.nth(1).getByLabel('Locator value').fill('search')
   await steps.nth(1).getByLabel('Input value').fill(`\${${variableKey}}`)
