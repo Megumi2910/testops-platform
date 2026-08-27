@@ -81,3 +81,9 @@ copied-cookie probe and a bounded two-second retry window, so bearer capture
 follows token-version changes caused by provider linking without hiding a
 genuinely revoked session. The sign-in helper still allows a bounded
 post-login settle window rather than waiting on long-lived background probes.
+
+The secondary session used for unlink validation is established only after a
+successful Google link. Linking intentionally invalidates older refresh
+families; creating the session after that mutation keeps the direct unlink
+negative tuples authenticated, while the successful unlink still proves that
+the new secondary session is revoked.

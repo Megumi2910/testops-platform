@@ -204,7 +204,6 @@ test('account security covers password, setup, link, unlink, and revocation boun
   await registerVerifiedAccount(linkPage, linkEmail, { displayName: 'Provider Link User' })
   const unlinkSecondContext = await browser.newContext({ baseURL: applicationOrigin, viewport: { width: 1440, height: 900 } })
   const unlinkSecondPage = await unlinkSecondContext.newPage()
-  await signInAccount(unlinkSecondPage, linkEmail)
 
   await linkPage.goto('/account#login-methods')
   const mismatchNonce = `${suffix}m`.slice(-16).padStart(8, '0')
@@ -223,6 +222,10 @@ test('account security covers password, setup, link, unlink, and revocation boun
   await check('provider-link-success', linkPage.getByRole('heading', { name: 'Account security' })).toBeVisible()
   await check('provider-link-success', linkPage.getByText(/Connected:/).locator('..')).toContainText('GOOGLE')
   await check('provider-link-success', linkPage.getByText(/Connected:/).locator('..')).toContainText('PASSWORD')
+
+  // Linking invalidates pre-existing refresh families. Establish the secondary
+  // session after that mutation so it can be used to prove unlink revocation.
+  await signInAccount(unlinkSecondPage, linkEmail)
 
   await linkPage.getByRole('button', { name: 'Unlink Google' }).click()
   const unlinkDialog = linkPage.getByRole('dialog', { name: 'Unlink Google?' })
