@@ -14,6 +14,7 @@ async function createReferencedCase(page: Page, projectId: string, suiteId: stri
   await steps.nth(0).getByLabel('Input value').fill('/')
   await steps.nth(1).getByLabel('Action').selectOption('FILL')
   await steps.nth(1).locator('select').nth(1).selectOption({ index: 1 })
+  await steps.nth(1).getByLabel('ARIA role').selectOption('TEXTBOX')
   await steps.nth(1).getByLabel('Locator value').fill('search')
   await steps.nth(1).getByLabel('Input value').fill(`\${${variableKey}}`)
   await page.getByRole('button', { name: 'Review case' }).click()

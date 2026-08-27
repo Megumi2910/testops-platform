@@ -11,6 +11,7 @@ direct frontend route agree on the same authorization contract.
 | Variable API guards | `ProjectVariableService` list/create/update/delete |
 | Secret response safety | `ProjectVariableServiceTest` and `VariablesPage.test.tsx` |
 | Direct-link recovery | `VariablesPage.test.tsx` |
+| Variable-reference browser fixture | `variable-lifecycle.spec.ts` creates a READY case with a complete `ROLE`/`TEXTBOX` locator before checking reference-safe deletion |
 
 ## Automated result
 
@@ -31,6 +32,11 @@ Tests       8 passed
 The frontend command includes the existing member and platform-route guard
 tests so the new direct-link behavior is checked beside the neighboring
 permission surfaces.
+
+The browser lifecycle fixture deliberately supplies the ARIA role required by
+the guided builder's `ROLE` locator. That keeps the reference-safe deletion
+check focused on variable ownership and masking rather than relying on an
+invalid READY-case fixture.
 
 ## Manual acceptance checklist
 
