@@ -77,7 +77,7 @@ bootstrap-rotation hand-off; a second 401 remains a real failure.
 The immediate wrong-current-password tuple uses the successful UI login
 response's bearer rather than initiating a second, single-use refresh while
 the initial AuthProvider bootstrap settles. Later contexts retain the
-copied-cookie probe and bounded retry behavior, so bearer capture follows
-token-version changes caused by provider linking. The sign-in helper still
-allows a bounded post-login settle window rather than waiting on long-lived
-background probes.
+copied-cookie probe and a bounded two-second retry window, so bearer capture
+follows token-version changes caused by provider linking without hiding a
+genuinely revoked session. The sign-in helper still allows a bounded
+post-login settle window rather than waiting on long-lived background probes.

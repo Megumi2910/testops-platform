@@ -105,9 +105,10 @@ export async function currentBearer(context: BrowserContext) {
   // Refresh rotation is intentionally destructive for the old cookie. Probe
   // with a copied storage state so the page's in-memory session and browser
   // cookie remain paired while the test records a disposable bearer. A page
-  // bootstrap can rotate the same family just before this probe; one retry
-  // with freshly copied cookies closes that deterministic hand-off window.
-  for (let attempt = 0; attempt < 2; attempt += 1) {
+  // bootstrap can rotate the same family just before this probe. Re-snapshot
+  // for a bounded two seconds so slower local containers can finish that
+  // hand-off without masking a genuinely revoked session.
+  for (let attempt = 0; attempt < 10; attempt += 1) {
     const cookies = await context.cookies()
     const probe = await request.newContext({
       baseURL: applicationOrigin,
@@ -129,11 +130,11 @@ export async function currentBearer(context: BrowserContext) {
         await context.addCookies(rotatedCookies)
         return body.accessToken!
       }
-      if (attempt === 1) expect(refresh.status()).toBe(200)
+      if (attempt === 9) expect(refresh.status()).toBe(200)
     } finally {
       await probe.dispose()
     }
-    await new Promise(resolve => setTimeout(resolve, 50))
+    await new Promise(resolve => setTimeout(resolve, 200))
   }
   throw new Error('Unreachable refresh probe state')
 }
