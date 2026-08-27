@@ -102,7 +102,7 @@ test('account security covers password, setup, link, unlink, and revocation boun
   await registerVerifiedAccount(page, passwordEmail, { displayName: 'Password Boundary User' })
   const passwordSecondContext = await browser.newContext({ baseURL: applicationOrigin, viewport: { width: 1440, height: 900 } })
   const passwordSecondPage = await passwordSecondContext.newPage()
-  await signInAccount(passwordSecondPage, passwordEmail)
+  const passwordSecondBearer = await signInAccount(passwordSecondPage, passwordEmail)
 
   await page.goto('/account#security')
   await page.getByLabel('Current password').fill('wrong-current-password')
@@ -113,7 +113,7 @@ test('account security covers password, setup, link, unlink, and revocation boun
   check('password-change-wrong-current', (await wrongChange).status()).toBe(401)
   await check('password-change-wrong-current', page.getByText('Current password is incorrect')).toBeVisible()
   await check('password-change-wrong-current', page.getByLabel('Current password')).toHaveAttribute('aria-invalid', 'true')
-  const wrongChangeBearer = await currentBearer(passwordSecondContext)
+  const wrongChangeBearer = passwordSecondBearer
   await observeNegative('password-change-wrong-current', await authenticatedPut(passwordSecondContext, '/api/v1/auth/me/password', {
     currentPassword: 'wrong-current-password', newPassword: changedPassword, confirmation: changedPassword,
   }, wrongChangeBearer), 'PUT')

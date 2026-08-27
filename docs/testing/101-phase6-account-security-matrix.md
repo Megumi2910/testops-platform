@@ -74,9 +74,10 @@ refresh cookie back to the browser context. This preserves the page's
 in-memory access-token/cookie pairing while still proving the direct negative
 API tuple. A single retry with a fresh cookie snapshot covers the concurrent
 bootstrap-rotation hand-off; a second 401 remains a real failure.
-For a context created through the UI password-login flow, the helper instead
-retains the successful login response's bearer for its direct negative API
-tuples. This avoids initiating a second, single-use refresh while the initial
-AuthProvider bootstrap settles; other contexts retain the copied-cookie probe
-and bounded retry behavior. The sign-in helper still allows a bounded
-post-login settle window rather than waiting on long-lived background probes.
+The immediate wrong-current-password tuple uses the successful UI login
+response's bearer rather than initiating a second, single-use refresh while
+the initial AuthProvider bootstrap settles. Later contexts retain the
+copied-cookie probe and bounded retry behavior, so bearer capture follows
+token-version changes caused by provider linking. The sign-in helper still
+allows a bounded post-login settle window rather than waiting on long-lived
+background probes.

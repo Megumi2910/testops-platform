@@ -9,10 +9,6 @@ type MailpitSearch = { messages: Array<{ ID: string }> }
 type MailpitMessage = { Text?: string; HTML?: string }
 type GoogleProfileKind = 'google-only' | 'link' | 'mismatch'
 
-// UI login already returns a valid bearer. Retain it per browser context so
-// direct negative API assertions do not race a second, single-use refresh.
-const contextBearers = new WeakMap<BrowserContext, string>()
-
 async function searchMessages(email: string) {
   const response = await fetch(`${mailpitUrl}/api/v1/search?query=${encodeURIComponent(`to:${email}`)}`)
   expect(response.ok).toBeTruthy()
@@ -64,12 +60,12 @@ export async function signInAccount(page: Page, email: string, password = accoun
   expect(login.status()).toBe(200)
   const body = await login.json() as { accessToken?: string }
   expect(body.accessToken).toBeTruthy()
-  contextBearers.set(page.context(), body.accessToken!)
   await expect(page.getByRole('link', { name: 'Projects', exact: true })).toBeVisible()
   // Let the initial AuthProvider bootstrap settle before a second context
   // captures the single-use refresh cookie for a direct API assertion. A
   // bounded pause avoids waiting forever on the app's long-lived probes.
   await page.waitForTimeout(500)
+  return body.accessToken!
 }
 
 export async function signOutAccount(page: Page) {
@@ -106,8 +102,6 @@ export async function setGoogleProfile(context: BrowserContext, profile: ReturnT
 }
 
 export async function currentBearer(context: BrowserContext) {
-  const loginBearer = contextBearers.get(context)
-  if (loginBearer) return loginBearer
   // Refresh rotation is intentionally destructive for the old cookie. Probe
   // with a copied storage state so the page's in-memory session and browser
   // cookie remain paired while the test records a disposable bearer. A page
