@@ -82,6 +82,11 @@ follows token-version changes caused by provider linking without hiding a
 genuinely revoked session. The sign-in helper still allows a bounded
 post-login settle window rather than waiting on long-lived background probes.
 
+The Google-only invalid-setup tuple likewise retains the bearer captured from
+the probe context before the setup-code UI flow. It verifies the same negative
+API contract without rotating a refresh family that another browser context may
+already have advanced.
+
 The secondary session used for unlink validation is established only after a
 successful Google link. Linking intentionally invalidates older refresh
 families; creating the session after that mutation keeps the direct unlink

@@ -162,6 +162,7 @@ test('account security covers password, setup, link, unlink, and revocation boun
   await googleOnlyProbePage.goto('/login')
   await googleOnlyProbePage.getByRole('link', { name: 'Continue with Google', exact: true }).click()
   await expect(googleOnlyProbePage.getByRole('link', { name: 'Projects', exact: true })).toBeVisible()
+  const googleOnlyProbeBearer = await currentBearer(googleOnlyProbeContext)
 
   const lastMethodResponse = await authenticatedPost(googleOnlyProbeContext, '/api/v1/auth/me/login-methods/google/unlink', { currentPassword: 'not-a-local-password' })
   await observeNegative('provider-unlink-last-method', lastMethodResponse)
@@ -176,13 +177,12 @@ test('account security covers password, setup, link, unlink, and revocation boun
   const invalidSetupOtp = setupOtp === '000000' ? '000001' : '000000'
   await googleOnlyPage.getByLabel('Verification code').fill(invalidSetupOtp)
   await googleOnlyPage.getByRole('textbox', { name: 'New password', exact: true }).fill(accountPassword)
-  const invalidSetupBearer = await currentBearer(googleOnlyProbeContext)
   const invalidSetup = googleOnlyPage.waitForResponse(response => response.url().endsWith('/api/v1/auth/me/password/confirm') && response.request().method() === 'POST')
   await googleOnlyPage.getByRole('button', { name: 'Confirm password' }).click()
   check('password-setup-invalid-code', (await invalidSetup).status()).toBe(400)
   await observeNegative('password-setup-invalid-code', await authenticatedPost(googleOnlyProbeContext, '/api/v1/auth/me/password/confirm', {
     otp: invalidSetupOtp, password: accountPassword,
-  }, invalidSetupBearer))
+  }, googleOnlyProbeBearer))
   await check('password-setup-invalid-code', googleOnlyPage.getByText('Verification code is invalid or expired')).toBeVisible()
 
   await googleOnlyPage.getByLabel('Verification code').fill(setupOtp)
