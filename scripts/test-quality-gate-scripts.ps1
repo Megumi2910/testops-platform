@@ -101,7 +101,7 @@ Assert-True ($retainedDryRun -notmatch 'EVIDENCE_JSON:') `
 $retainedSource = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'verify-retained-swap.ps1') -Raw
 foreach ($contract in @('worktree.*--detach', 'merge-base.*--is-ancestor', 'VCS_REF=', 'Get-ImageRevision', `
     'Assert-FrontendHttpContract', 'stale_chunk_404s', 'document_reloads', 'query_backed', 'adapter_verified', `
-    'artifacts/browser-evidence/P6\.json')) {
+    'artifacts/browser-evidence/P6\.json', 'Resolve-AutomaticRevisionPair', 'rev-list.*--first-parent')) {
     Assert-True ($retainedSource -match $contract) "retained harness contains contract $contract"
 }
 foreach ($secretName in @('jwt-private.pem', 'jwt-public.pem', 'email-otp-pepper', 'project-variable-key', `

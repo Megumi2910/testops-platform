@@ -123,16 +123,18 @@ Expected ecommerce endpoints:
 
 ## Retained revision A/B deployment gate
 
-After revision A (the retained-deployment foundation) and its adjacent revision
-B (the `AuthPages` diagnostic marker) are committed, run:
+After the retained-deployment foundation and its adjacent `AuthPages`
+diagnostic-marker transition are committed, run:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-retained-swap.ps1 `
   -ProjectName testops-m10a-gate
 ```
 
-The command uses clean detached worktrees and a disposable project with a
-random loopback frontend port. It verifies full-SHA ancestry, source delta,
+With no revision arguments, the command finds the latest valid first-parent
+adjacent marker transition, so later follow-up commits do not invalidate the
+proof. It uses clean detached worktrees and a disposable project with a random
+loopback frontend port. It verifies full-SHA ancestry, source delta,
 image labels, shell/asset/static-404 headers, proxy exclusions, one old-chunk
 `404`, one document reload, the A recovery marker, the B diagnostic marker,
 and post-reload stability. Raw coordination/report data stays in ignored

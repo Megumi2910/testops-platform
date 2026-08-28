@@ -145,6 +145,36 @@ function Set-JsonProperty {
     else { $Object | Add-Member -NotePropertyName $Name -NotePropertyValue $Value }
 }
 
+function Resolve-AutomaticRevisionPair {
+    param([string]$MarkerSourcePath, [string]$MarkerTestId)
+
+    # Follow-up commits commonly retain the diagnostic marker. A no-argument
+    # run therefore selects the latest adjacent transition that introduced it,
+    # rather than assuming that HEAD itself is always revision B.
+    $revisionList = Invoke-GitCapture -Arguments @('rev-list', '--first-parent', 'HEAD') `
+        -Activity 'Enumerate retained-swap revision candidates'
+    $revisions = @($revisionList -split '\r?\n' |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    foreach ($candidate in $revisions) {
+        $revisionB = $candidate.Trim().ToLowerInvariant()
+        try {
+            $revisionA = (Invoke-GitCapture -Arguments @('rev-parse', "$revisionB^") `
+                -Activity 'Resolve retained-swap revision-A candidate').Trim().ToLowerInvariant()
+            $markerB = Invoke-GitCapture -Arguments @('show', "$revisionB`:$MarkerSourcePath") `
+                -Activity 'Read retained-swap revision-B marker candidate'
+            $markerA = Invoke-GitCapture -Arguments @('show', "$revisionA`:$MarkerSourcePath") `
+                -Activity 'Read retained-swap revision-A marker candidate'
+            if ($markerB.Contains($MarkerTestId) -and -not $markerA.Contains($MarkerTestId)) {
+                return [pscustomobject]@{ RevisionA = $revisionA; RevisionB = $revisionB }
+            }
+        } catch {
+            # Root commits and revisions before the marker source are not
+            # eligible transitions, so continue through first-parent history.
+        }
+    }
+    throw "Could not find an adjacent retained-swap marker transition for $MarkerSourcePath."
+}
+
 function Merge-SanitizedEvidence {
     param([string]$Path, [object]$Swap, [string]$RunId, [string]$SourceRevision)
     $directory = Split-Path -Parent $Path
@@ -168,6 +198,11 @@ function Merge-SanitizedEvidence {
 Assert-IsolatedComposeProjectName -ProjectName $ProjectName -RepositoryRoot $root | Out-Null
 foreach ($command in @('docker', 'git', 'npm')) {
     if (-not (Get-Command $command -ErrorAction SilentlyContinue)) { throw "$command is required for retained-swap verification." }
+}
+if ([string]::IsNullOrWhiteSpace($RevisionB) -and [string]::IsNullOrWhiteSpace($RevisionA)) {
+    $automaticPair = Resolve-AutomaticRevisionPair -MarkerSourcePath $MarkerSourcePath -MarkerTestId $RevisionBMarkerTestId
+    $RevisionA = $automaticPair.RevisionA
+    $RevisionB = $automaticPair.RevisionB
 }
 if ([string]::IsNullOrWhiteSpace($RevisionB)) { $RevisionB = Get-GitRevision -RepositoryRoot $root }
 Assert-FullRevision -Name 'RevisionB' -Value $RevisionB

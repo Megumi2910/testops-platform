@@ -34,7 +34,9 @@ the security headers alongside the revision/cache headers deliberately.
 ## True retained-tab orchestration
 
 `scripts/verify-retained-swap.ps1` accepts two full revisions and fails unless
-revision A is the first parent of revision B. It then:
+revision A is the first parent of revision B. With no revisions supplied, it
+selects the latest first-parent adjacent transition that introduced the
+diagnostic marker, so follow-up commits keep the proof repeatable. It then:
 
 1. creates clean detached worktrees for both commits;
 2. proves the revision-B marker is absent from A, present in B, and introduced
@@ -98,8 +100,9 @@ revision-B commit passed, recording one document reload, one stale-chunk
 `404`, the A recovery marker, and the B marker, with no reload loop. The
 combined canonical manifest now validates 30 case/viewport records and 300
 assertions with zero unexpected failures, console exceptions, or security
-findings. The command remains repeatable after revision B contains the
-diagnostic marker:
+findings. The command remains repeatable after later commits retain the
+diagnostic marker because its default selector finds the latest valid adjacent
+marker transition:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify-retained-swap.ps1 `
