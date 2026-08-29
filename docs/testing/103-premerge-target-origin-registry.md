@@ -19,4 +19,4 @@ npm --prefix frontend test -- --run src/features/projects/ProjectPages.test.tsx 
 npm --prefix frontend run typecheck
 ```
 
-The local focused run passed: backend 199 tests; frontend 14 focused tests; TypeScript check passed; and the V024 migration upgrade passed against PostgreSQL 18. The final candidate verification additionally runs the live administrator/member browser matrix against a rebuilt local stack.
+The local focused run passed: backend 199 tests; frontend 14 focused tests; TypeScript check passed; and the V024 migration upgrade passed against PostgreSQL 18. `ApplicationContextIT` also asserts that its Flyway health probe reaches semantic version `24`, preventing a newly added migration from leaving the full Maven gate stale. The final candidate verification additionally runs the live administrator/member browser matrix against a rebuilt local stack.
