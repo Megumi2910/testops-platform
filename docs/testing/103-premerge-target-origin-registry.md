@@ -8,6 +8,7 @@
 | Registry sources | environment rows remain read-only and retain project usage counts |
 | Duplicate safety | an administrator cannot add a canonical duplicate of an environment origin |
 | Dynamic disable | disabling an administrator origin removes it from selectable values and new policy validation |
+| Local bridge disabled | a localhost-only bootstrap configuration shows the project-setup block instead of offering an unusable target |
 | Form recovery | blank project name and target origin receive specific native field errors and focus |
 | UI roles | administrator add control is permission-gated; members receive guidance instead |
 

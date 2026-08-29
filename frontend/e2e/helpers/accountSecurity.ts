@@ -4,6 +4,7 @@ const mailpitUrl = process.env.MAILPIT_URL ?? 'http://127.0.0.1:8025'
 const applicationOrigin = process.env.E2E_BASE_URL ?? 'http://localhost:3100'
 const oauthProviderHost = process.env.OAUTH_PROVIDER_PUBLIC_HOST ?? 'localhost'
 const accountPassword = 'correct-horse-battery-staple'
+const refreshCookieName = process.env.E2E_REFRESH_COOKIE_NAME ?? 'testops_e2e_refresh'
 
 type MailpitSearch = { messages: Array<{ ID: string }> }
 type MailpitMessage = { Text?: string; HTML?: string }
@@ -125,8 +126,8 @@ export async function currentBearer(context: BrowserContext) {
         // the rotated cookie back to the browser context before the page
         // retries; leaving the old cookie in place would make the page appear
         // signed out.
-        const rotatedCookies = (await probe.storageState()).cookies.filter(cookie => cookie.name === 'testops_refresh')
-        await context.clearCookies({ name: 'testops_refresh' })
+        const rotatedCookies = (await probe.storageState()).cookies.filter(cookie => cookie.name === refreshCookieName)
+        await context.clearCookies({ name: refreshCookieName })
         await context.addCookies(rotatedCookies)
         return body.accessToken!
       }
