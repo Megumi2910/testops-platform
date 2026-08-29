@@ -14,15 +14,18 @@ import java.util.Arrays;
 @Configuration
 @ConditionalOnProperty(prefix = "testops.auth.google", name = "enabled", havingValue = "true")
 public class GoogleClientConfiguration {
+    private static final String GOOGLE_AUTHORIZATION_URI = "https://accounts.google.com/o/oauth2/v2/auth";
+    private static final String GOOGLE_TOKEN_URI = "https://oauth2.googleapis.com/token";
+    private static final String GOOGLE_USER_INFO_URI = "https://openidconnect.googleapis.com/v1/userinfo";
+    private static final String GOOGLE_JWK_SET_URI = "https://www.googleapis.com/oauth2/v3/certs";
 
     @Bean
     ClientRegistrationRepository googleClientRegistration(AuthProperties properties,
             @Value("${testops.auth.google.provider-base-uri:}") String providerBaseUri,
             @Value("${testops.auth.google.public-base-uri:}") String publicBaseUri,
             @Value("${testops.auth.google.scopes:openid,profile,email}") String scopes) {
-        String base = providerBaseUri == null || providerBaseUri.isBlank()
-                ? "https://accounts.google.com"
-                : providerBaseUri.replaceAll("/+$", "");
+        boolean realGoogle = providerBaseUri == null || providerBaseUri.isBlank();
+        String base = realGoogle ? "https://accounts.google.com" : providerBaseUri.replaceAll("/+$", "");
         String authorizationBase = publicBaseUri == null || publicBaseUri.isBlank()
                 ? base
                 : publicBaseUri.replaceAll("/+$", "");
@@ -36,11 +39,11 @@ public class GoogleClientConfiguration {
                         .map(String::trim)
                         .filter(value -> !value.isBlank())
                         .toArray(String[]::new))
-                .authorizationUri(authorizationBase + "/o/oauth2/v2/auth")
-                .tokenUri(base + "/token")
-                .userInfoUri(base + "/userinfo")
+                .authorizationUri(realGoogle ? GOOGLE_AUTHORIZATION_URI : authorizationBase + "/o/oauth2/v2/auth")
+                .tokenUri(realGoogle ? GOOGLE_TOKEN_URI : base + "/token")
+                .userInfoUri(realGoogle ? GOOGLE_USER_INFO_URI : base + "/userinfo")
                 .userNameAttributeName("sub")
-                .jwkSetUri(base + "/certs")
+                .jwkSetUri(realGoogle ? GOOGLE_JWK_SET_URI : base + "/certs")
                 .clientName("Google")
                 .build();
         return new InMemoryClientRegistrationRepository(registration);

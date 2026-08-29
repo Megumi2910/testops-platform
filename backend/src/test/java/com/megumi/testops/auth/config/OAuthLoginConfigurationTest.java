@@ -106,6 +106,14 @@ class OAuthLoginConfigurationTest {
                 new AuthException(org.springframework.http.HttpStatus.BAD_REQUEST, "provider_token_exposed", "sensitive")));
     }
 
+    @Test
+    void providerFailureLoggingUsesOnlyAllowlistedCodes() {
+        assertEquals("invalid_client", OAuthLoginConfiguration.failureLogCode(
+                new OAuth2AuthenticationException(new OAuth2Error("invalid_client"), "provider detail")));
+        assertEquals("provider_or_protocol_failure", OAuthLoginConfiguration.failureLogCode(
+                new OAuth2AuthenticationException(new OAuth2Error("provider detail"), "provider detail")));
+    }
+
     private static MockHttpServletRequest requestWithLinkIntent() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         GoogleLinkIntentSession.setUser(request, USER_ID.toString());

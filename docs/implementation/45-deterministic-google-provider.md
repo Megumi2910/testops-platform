@@ -18,7 +18,14 @@ The browser follows the authorization redirect, so it must receive a URL that is
 | `GOOGLE_PROVIDER_BASE_URI` | backend | `http://oauth-provider:9090` | Token, user-info, and certificate endpoints |
 | `GOOGLE_SCOPES` | backend/provider | `profile,email` | OAuth2 user-info flow without an OIDC ID token |
 
-Production defaults remain `https://accounts.google.com` and `openid,profile,email`. The E2E provider deliberately does not mint a signed ID token or publish signing keys, so including `openid` would make Spring Security require an ID-token validation path that this deterministic fixture does not claim to implement.
+Production defaults use Google's OIDC discovery endpoints: authorization at
+`https://accounts.google.com/o/oauth2/v2/auth`, token exchange at
+`https://oauth2.googleapis.com/token`, user info at
+`https://openidconnect.googleapis.com/v1/userinfo`, and signing keys at
+`https://www.googleapis.com/oauth2/v3/certs`; production scopes remain
+`openid,profile,email`. The E2E provider deliberately does not mint a signed ID
+token or publish signing keys, so including `openid` would make Spring Security
+require an ID-token validation path that this deterministic fixture does not claim to implement.
 
 ## Provider contract
 

@@ -214,6 +214,14 @@ recovery states, never provider exceptions or backend error messages. A
 password-account collision remains an explicit sign-in-and-link flow; Google is
 never automatically linked by matching email.
 
+For real Google, the client follows Google's OIDC discovery endpoints: authorization
+at `accounts.google.com`, token exchange at `oauth2.googleapis.com`, user info at
+`openidconnect.googleapis.com`, and signing keys at `www.googleapis.com`. The
+registered `http://localhost:3000/login/oauth2/code/google` callback is sufficient
+for this server-side authorization-code flow; an Authorized JavaScript origin is
+not required. Backend logs record only an allowlisted OAuth failure code, never
+provider text, tokens, or client secrets.
+
 ### Identity resolution
 
 1. Find `oauth_accounts` by `(GOOGLE, sub)`.

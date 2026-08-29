@@ -29,3 +29,10 @@ After a Google unlink leaves a password account, the deterministic provider
 must return `account_link_required`. The account-security browser path asserts
 that safe callback reason and the password-first linking guidance rather than
 accepting a generic provider failure.
+
+`GoogleClientConfigurationTest` keeps the real Google OIDC discovery endpoints
+separate from the deterministic provider's browser/container endpoints. This
+prevents a valid real-Google authorization redirect from failing later during
+token exchange, user-info retrieval, or ID-token key lookup. Failure-handler
+tests additionally assert that backend observability emits only allowlisted
+OAuth codes while the browser stays on the generic safe recovery state.

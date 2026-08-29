@@ -1,10 +1,16 @@
 package com.megumi.testops.auth.config;
 
+import java.util.Set;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -18,6 +24,11 @@ import java.util.UUID;
 @Configuration
 @ConditionalOnProperty(prefix = "testops.auth.google", name = "enabled", havingValue = "true")
 public class OAuthLoginConfiguration {
+    private static final Logger log = LoggerFactory.getLogger(OAuthLoginConfiguration.class);
+    private static final Set<String> SAFE_PROVIDER_FAILURE_CODES = Set.of(
+            "access_denied", "invalid_client", "invalid_grant", "invalid_id_token", "invalid_request",
+            "invalid_scope", "invalid_token_response", "invalid_user_info_response", "server_error",
+            "temporarily_unavailable", "unauthorized_client", "unsupported_grant_type");
 
     @Bean
     AuthenticationSuccessHandler oauthAuthenticationSuccessHandler(AuthService authService,
@@ -61,6 +72,7 @@ public class OAuthLoginConfiguration {
     AuthenticationFailureHandler oauthAuthenticationFailureHandler(AuthProperties properties) {
         return (request, response, exception) -> {
             GoogleLinkIntentSession.clear(request);
+            log.warn("Google OAuth callback failed: code={}", failureLogCode(exception));
             response.sendRedirect(properties.frontendOrigin() + "/auth/oauth/callback?oauth_error=oauth_sign_in_failed");
         };
     }
@@ -72,5 +84,18 @@ public class OAuthLoginConfiguration {
             case "email_unverified" -> "email_unverified";
             default -> "oauth_sign_in_failed";
         };
+    }
+
+    static String failureLogCode(AuthenticationException exception) {
+        Throwable current = exception;
+        for (int depth = 0; current != null && depth < 8; depth++, current = current.getCause()) {
+            String code = switch (current) {
+                case OAuth2AuthenticationException oauth -> oauth.getError().getErrorCode();
+                case OAuth2AuthorizationException oauth -> oauth.getError().getErrorCode();
+                default -> null;
+            };
+            if (SAFE_PROVIDER_FAILURE_CODES.contains(code)) return code;
+        }
+        return "provider_or_protocol_failure";
     }
 }
