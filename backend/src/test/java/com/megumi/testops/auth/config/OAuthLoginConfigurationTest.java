@@ -82,6 +82,30 @@ class OAuthLoginConfigurationTest {
                 response.getRedirectedUrl());
     }
 
+    @Test
+    void passwordAccountCollisionUsesTheActionableSafeCallbackReason() throws Exception {
+        AuthService authService = mock(AuthService.class);
+        when(authService.oauthLogin(eq("GOOGLE"), any(), any(), any(), any(), any(), any()))
+                .thenThrow(new AuthException(org.springframework.http.HttpStatus.CONFLICT,
+                        "account_link_required", "password account collision"));
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        new OAuthLoginConfiguration().oauthAuthenticationSuccessHandler(authService, properties(), cookies())
+                .onAuthenticationSuccess(new MockHttpServletRequest(), response,
+                        authentication("google-subject", "qa@example.test"));
+
+        assertEquals(FRONTEND_ORIGIN + "/auth/oauth/callback?oauth_error=account_link_required",
+                response.getRedirectedUrl());
+    }
+
+    @Test
+    void callbackReasonNeverPassesThroughUnexpectedServiceCodes() {
+        assertEquals("account_unavailable", OAuthLoginConfiguration.callbackReason(
+                new AuthException(org.springframework.http.HttpStatus.FORBIDDEN, "account_unavailable", "unavailable")));
+        assertEquals("oauth_sign_in_failed", OAuthLoginConfiguration.callbackReason(
+                new AuthException(org.springframework.http.HttpStatus.BAD_REQUEST, "provider_token_exposed", "sensitive")));
+    }
+
     private static MockHttpServletRequest requestWithLinkIntent() {
         MockHttpServletRequest request = new MockHttpServletRequest();
         GoogleLinkIntentSession.setUser(request, USER_ID.toString());

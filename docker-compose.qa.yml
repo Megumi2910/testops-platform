@@ -36,6 +36,12 @@ services:
       MAIL_FROM_NAME: TestOps QA
       MAIL_SMTP_AUTH: "false"
       MAIL_STARTTLS: "false"
+      FRONTEND_ORIGIN: http://localhost:3300
+      REFRESH_COOKIE_NAME: testops_qa_refresh
+      OAUTH_SESSION_COOKIE_NAME: testops_qa_oauth_session
+      # QA fixtures use password authentication. This explicit false wins over
+      # any real Google credentials in backend/.env.
+      GOOGLE_AUTH_ENABLED: "false"
       TESTOPS_QA_FIXTURES_ENABLED: "true"
       TESTOPS_QA_FIXTURE_PASSWORD_PATH: /run/secrets/testops/qa-fixture-password
       TESTOPS_QA_TARGET_ORIGIN: http://localhost:3001

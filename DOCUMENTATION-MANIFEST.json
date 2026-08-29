@@ -845,6 +845,18 @@
       "role": "Pre-merge target-origin regression and verification boundary",
       "status": "current",
       "source": ["backend/src/test/java/com/megumi/testops/TargetOriginRegistryTest.java", "frontend/src/features/projects/ProjectPages.test.tsx"]
+    },
+    {
+      "path": "docs/implementation/104-premerge-oauth-stack-isolation.md",
+      "role": "Pre-merge safe OAuth callback contract and localhost cookie isolation",
+      "status": "current",
+      "source": ["backend/src/main/java/com/megumi/testops/auth/config/OAuthLoginConfiguration.java", "docker-compose.qa.yml", "docker-compose.e2e.yml"]
+    },
+    {
+      "path": "docs/testing/104-premerge-oauth-stack-isolation.md",
+      "role": "Pre-merge OAuth callback and QA/E2E stack regression boundary",
+      "status": "current",
+      "source": ["backend/src/test/java/com/megumi/testops/auth/config/OAuthLoginConfigurationTest.java", "frontend/src/features/auth/AuthPages.test.tsx", "scripts/verify-compose-configs.ps1"]
     }
   ]
 }

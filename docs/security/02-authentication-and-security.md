@@ -208,6 +208,12 @@ sequenceDiagram
 
 Tokens are not placed in the redirect URL. The backend sets the normal refresh cookie and redirects to `/auth/oauth/callback`; the frontend completes the flow with its normal refresh request. There is no browser-facing one-time OAuth code exchange endpoint.
 
+The only callback error values are `account_link_required`, `account_unavailable`,
+`email_unverified`, and `oauth_sign_in_failed`. They are safe browser-facing
+recovery states, never provider exceptions or backend error messages. A
+password-account collision remains an explicit sign-in-and-link flow; Google is
+never automatically linked by matching email.
+
 ### Identity resolution
 
 1. Find `oauth_accounts` by `(GOOGLE, sub)`.
@@ -394,6 +400,11 @@ Acceptable approaches:
 - minimal transient HTTP session only for the OAuth handshake.
 
 Normal API authorization remains JWT-based. An OAuth handshake session must not accidentally become the platform’s authorization source.
+
+The handshake session and refresh token use separate cookie names. The normal,
+QA, and E2E Compose profiles set distinct pairs (`testops_*`, `testops_qa_*`,
+and `testops_e2e_*`) so localhost stacks cannot overwrite one another’s
+authentication state.
 
 ## 11. Target-origin security
 

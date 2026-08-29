@@ -22,6 +22,8 @@ sidecar only after its full flow succeeds; no live result is claimed here.
 | `provider-unlink-wrong-password` | wrong current password is rejected with a field error |
 | `provider-unlink-last-method` | Google-only account cannot remove its final login method |
 | `provider-unlink-success-revocation` | unlink signs out all sessions and removes Google-only relogin |
+| `oauth-password-account-recovery` | existing password account receives only the safe sign-in-and-link recovery action |
+| `oauth-safe-failure-recovery` | unavailable, unverified, and provider failures show bounded recovery without provider detail |
 
 All rows use `1440×900`. Negative API tuples are recorded by method, path,
 status, and structured problem code, with no request or response data. The

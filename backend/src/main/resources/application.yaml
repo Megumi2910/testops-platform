@@ -29,6 +29,10 @@ spring:
 server:
   port: ${SERVER_PORT:8080}
   forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        name: ${OAUTH_SESSION_COOKIE_NAME:testops_oauth_session}
 
 springdoc:
   api-docs:

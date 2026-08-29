@@ -556,6 +556,22 @@ not as evidence against the shell/account-menu implementation.
 - Regression layer: frontend gates plus Chrome DevTools/Lighthouse readiness
   snapshot
 
+### QG-040 — OAuth collision recovery and local QA sessions were opaque
+
+- Severity: P1
+- Status: RESOLVED in the pre-merge OAuth stabilization slice
+- Previous actual: a Google attempt against an existing password account ended
+  at a generic callback error, while the QA stack inherited port `3000` and
+  could lose a port-`3300` session after reload
+- Resolution: the backend allowlists safe callback reasons, the callback page
+  supplies bounded recovery actions, QA explicitly trusts `3300`, and normal,
+  QA, and E2E use separate refresh/OAuth-session cookie pairs
+- Verification: handler and callback component regressions cover collision,
+  unavailable, unverified, and generic-provider paths; Compose rendering and
+  the QA reload check are part of the pre-merge candidate gate
+- Regression layer: backend OAuth mapping tests, AuthPages tests, Compose
+  contract, and browser QA
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |

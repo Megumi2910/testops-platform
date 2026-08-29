@@ -27,6 +27,9 @@ services:
       - "host.docker.internal:host-gateway"
     env_file:
       - ./backend/.env
+    environment:
+      REFRESH_COOKIE_NAME: testops_refresh
+      OAUTH_SESSION_COOKIE_NAME: testops_oauth_session
     volumes:
       - artifacts_data:/app/artifacts
       - ./backend/.secrets:/run/secrets/testops:ro

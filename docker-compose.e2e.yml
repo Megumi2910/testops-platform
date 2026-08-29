@@ -41,6 +41,8 @@ services:
       # preventing the disposable cross-spec run from self-throttling.
       AUTH_REFRESH_LIMIT: "1000"
       AUTH_OTP_RESEND_IP_LIMIT: "100"
+      REFRESH_COOKIE_NAME: testops_e2e_refresh
+      OAUTH_SESSION_COOKIE_NAME: testops_e2e_oauth_session
       MAIL_HOST: mailpit
       MAIL_PORT: "1025"
       MAIL_FROM_ADDRESS: e2e@testops.local

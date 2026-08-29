@@ -30,6 +30,13 @@ The QA runtime smoke uses the isolated overlay endpoints `http://localhost:3300`
 and `http://localhost:8380/actuator/health`; the developer’s default stack keeps
 its `3000/8080` ports and remains running throughout the check.
 
+QA explicitly trusts `http://localhost:3300`, uses
+`testops_qa_refresh`/`testops_qa_oauth_session`, and disables real Google OAuth
+regardless of inherited backend environment values. The normal stack uses the
+`testops_refresh`/`testops_oauth_session` pair and deterministic Google stays
+isolated to the E2E pair. A QA password login must therefore survive a full
+reload with `POST /api/v1/auth/refresh` returning `200`.
+
 The validator accepts the JSON-lines form emitted by current Docker Desktop as
 well as array-form Compose output, then applies the same two-service health and
 full-SHA provenance assertions.

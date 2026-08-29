@@ -25,6 +25,7 @@ function loginNotice(reason: string | null) {
     case 'password-changed': return { title: 'Password changed', message: 'Sign in again with your new password.' }
     case 'password-reset': return { title: 'Password reset', message: 'Your password was updated. Sign in to continue.' }
     case 'google-unlinked': return { title: 'Google unlinked', message: 'Google was removed and all other sessions were signed out.' }
+    case 'google-link-required': return { title: 'Link Google', message: 'After signing in, open Account Security to link your Google account.' }
     case 'sessions-revoked': return { title: 'Sessions revoked', message: 'All refresh sessions were revoked. Sign in again to continue.' }
     default: return null
   }
@@ -199,13 +200,35 @@ export function OAuthCallbackPage() {
   const { reloadUser } = useAuth()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const [error, setError] = useState('Completing Google sign-in…')
+  const [error, setError] = useState<string | null>(null)
+  const oauthError = searchParams.get('oauth_error')
   useEffect(() => {
-    const oauthError = searchParams.get('oauth_error')
-    if (oauthError) { setError('Google sign-in could not be completed.'); return }
-    void authApi.refresh().then(() => reloadUser()).then(() => navigate('/')).catch(() => setError('Google sign-in could not be completed.'))
-  }, [navigate, reloadUser, searchParams])
-  return <AuthCard title="Signing you in" subtitle={error} />
+    if (oauthError) return
+    void authApi.refresh().then(() => reloadUser()).then(() => navigate('/')).catch(() => setError('oauth_sign_in_failed'))
+  }, [navigate, oauthError, reloadUser])
+  const recovery = oauthRecovery(error ?? oauthError)
+  if (recovery) return <AuthCard title="Google sign-in needs attention" subtitle={recovery.message}>
+    <div className="form-actions">
+      <Link className="button button-secondary" to="/login">Try Google again</Link>
+      {recovery.passwordSignIn && <Link className="button" to="/login?reason=google-link-required&returnTo=%2Faccount%23security">Sign in with password</Link>}
+    </div>
+  </AuthCard>
+  return <AuthCard title="Signing you in" subtitle="Completing Google sign-in…" />
+}
+
+function oauthRecovery(reason: string | null) {
+  switch (reason) {
+    case 'account_link_required':
+      return { message: 'This email already has a password account. Sign in with your password, then link Google from Account Security.', passwordSignIn: true }
+    case 'account_unavailable':
+      return { message: 'This account is unavailable. Contact an administrator for help.', passwordSignIn: false }
+    case 'email_unverified':
+      return { message: 'Choose a Google account with a verified email address, then try again.', passwordSignIn: false }
+    case 'oauth_sign_in_failed':
+      return { message: 'Google sign-in could not be completed. Try again or sign in with your password.', passwordSignIn: true }
+    default:
+      return null
+  }
 }
 
 function NavigateHome({ returnTo }: { returnTo: string | null }) {

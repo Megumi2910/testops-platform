@@ -51,7 +51,8 @@ public class OAuthLoginConfiguration {
                 response.addHeader("Set-Cookie", refreshCookies.create(session.refreshToken()).toString());
                 response.sendRedirect(origin + "/auth/oauth/callback");
             } catch (com.megumi.testops.auth.service.AuthException exception) {
-                response.sendRedirect(properties.frontendOrigin() + "/auth/oauth/callback?oauth_error=oauth_sign_in_failed");
+                response.sendRedirect(properties.frontendOrigin() + "/auth/oauth/callback?oauth_error="
+                        + callbackReason(exception));
             }
         };
     }
@@ -61,6 +62,15 @@ public class OAuthLoginConfiguration {
         return (request, response, exception) -> {
             GoogleLinkIntentSession.clear(request);
             response.sendRedirect(properties.frontendOrigin() + "/auth/oauth/callback?oauth_error=oauth_sign_in_failed");
+        };
+    }
+
+    static String callbackReason(AuthException exception) {
+        return switch (exception.getCode()) {
+            case "account_link_required" -> "account_link_required";
+            case "account_unavailable" -> "account_unavailable";
+            case "email_unverified" -> "email_unverified";
+            default -> "oauth_sign_in_failed";
         };
     }
 }

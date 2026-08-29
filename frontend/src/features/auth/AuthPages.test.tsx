@@ -63,8 +63,25 @@ describe('Google authentication', () => {
       resendEmail: vi.fn(), resendAuthenticatedEmail: vi.fn(), reloadUser: vi.fn(), logout: vi.fn(),
     }
     render(<MemoryRouter initialEntries={['/auth/oauth/callback?oauth_error=oauth_sign_in_failed']}><AuthContext.Provider value={context}><OAuthCallbackPage /></AuthContext.Provider></MemoryRouter>)
-    expect(await screen.findByText('Google sign-in could not be completed.', { exact: true })).toBeVisible()
+    expect(await screen.findByText(/Google sign-in could not be completed\./)).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Try Google again' })).toHaveAttribute('href', '/login')
+    expect(screen.getByRole('link', { name: 'Sign in with password' })).toHaveAttribute('href', '/login?reason=google-link-required&returnTo=%2Faccount%23security')
     expect(screen.queryByText(/client_secret|token|stack|exception/i)).not.toBeInTheDocument()
+  })
+
+  it.each([
+    ['account_link_required', 'This email already has a password account.', true],
+    ['account_unavailable', 'This account is unavailable.', false],
+    ['email_unverified', 'Choose a Google account with a verified email address', false],
+  ])('provides safe recovery for %s', async (reason, message, needsPassword) => {
+    const context: AuthContextValue = {
+      user: null, providers: null, loading: false, login: vi.fn(), register: vi.fn(), verifyEmail: vi.fn(),
+      resendEmail: vi.fn(), resendAuthenticatedEmail: vi.fn(), reloadUser: vi.fn(), logout: vi.fn(),
+    }
+    render(<MemoryRouter initialEntries={[`/auth/oauth/callback?oauth_error=${reason}`]}><AuthContext.Provider value={context}><OAuthCallbackPage /></AuthContext.Provider></MemoryRouter>)
+    expect(await screen.findByText(new RegExp(message))).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Try Google again' })).toBeVisible()
+    expect(screen.queryByRole('link', { name: 'Sign in with password' })).toEqual(needsPassword ? expect.anything() : null)
   })
 })
 

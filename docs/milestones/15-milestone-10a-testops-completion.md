@@ -899,3 +899,13 @@ and [`102-phase10-release-finalization.md`](../testing/102-phase10-release-final
 The first pre-merge stabilization slice adds `V024` and administrator-managed target origins without breaking the existing `TARGET_ALLOWED_ORIGINS` deployment bootstrap. The effective allowlist is revalidated dynamically for project target changes, target checks, and execution navigation. Environment rows remain visible/read-only; administrator rows have enable/disable state, optimistic versioning, creator/timestamps, and project usage counts.
 
 The create/edit selectors now share accessible add/select behavior: verified administrators can register a canonical safe origin and immediately select it, while members receive administrator guidance. Disabled current origins may remain while unrelated project metadata is edited, but new checks and executions are blocked. Focused verification for this slice passed the 199-test backend suite, 14 frontend project/administration tests, TypeScript checking, and the V024 PostgreSQL migration upgrade. The administrator/member browser matrix is included in the final candidate gate.
+
+## Pre-merge stabilization — OAuth recovery and local-stack isolation
+
+Google callback failures now expose only four documented recovery reasons and
+never pass provider/backend detail to the browser. Password-account collisions
+require password sign-in followed by explicit Account Security linking; account
+availability, unverified Google email, and protocol/provider failure each have
+bounded retry/contact guidance. Normal, QA, and E2E stacks use distinct refresh
+and OAuth-session cookie names. QA trusts port `3300` and forces Google OAuth
+off; deterministic Google remains E2E-only.
