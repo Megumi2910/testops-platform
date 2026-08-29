@@ -78,7 +78,9 @@ public class ProjectService {
         UserEntity user = access.user(jwt); ProjectEntity project = access.project(id); access.requireProjectRole(project, user, jwt, java.util.Set.of("PROJECT_MANAGER")); requireVersion(project.getVersion(), request.projectVersion());
         String name = request.name().trim(); if (!name.equalsIgnoreCase(project.getName()) && projects.existsByNameIgnoreCase(name)) throw error(HttpStatus.CONFLICT, "project_name_taken", "Project name is already in use");
         if ("ARCHIVED".equals(project.getStatus())) throw error(HttpStatus.CONFLICT, "project_archived", "Archived projects are read-only");
-        project.update(name, trim(request.description()), targets.validate(request.targetOrigin()), Instant.now()); audit(project, user, "PROJECT_UPDATED"); return response(jwt, project);
+        String requestedOrigin = targets.normalize(request.targetOrigin());
+        String targetOrigin = requestedOrigin.equals(project.getTargetOrigin()) ? project.getTargetOrigin() : targets.validate(requestedOrigin);
+        project.update(name, trim(request.description()), targetOrigin, Instant.now()); audit(project, user, "PROJECT_UPDATED"); return response(jwt, project);
     }
     @Transactional
     public ProjectDtos.ProjectResponse setArchived(Jwt jwt, UUID id, boolean archived, long version) {

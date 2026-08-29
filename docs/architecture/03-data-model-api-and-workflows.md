@@ -38,7 +38,7 @@ erDiagram
 
 ## 3. Current relational model
 
-The tables below describe the active PostgreSQL model. The migration directory is authoritative; this document is a readable map, not a second schema definition. The current migration chain is `V001` through `V023`.
+The tables below describe the active PostgreSQL model. The migration directory is authoritative; this document is a readable map, not a second schema definition. The current migration chain is `V001` through `V024`.
 
 ### `users`
 
@@ -164,6 +164,20 @@ Constraints:
 
 - valid HTTP/HTTPS URL;
 - status `ACTIVE` or `ARCHIVED`;
+
+### `target_origins`
+
+```text
+id UUID PK
+origin VARCHAR UNIQUE NOT NULL
+enabled BOOLEAN NOT NULL
+created_by UUID FK NOT NULL
+created_at TIMESTAMPTZ NOT NULL
+updated_at TIMESTAMPTZ NOT NULL
+version BIGINT NOT NULL
+```
+
+`TARGET_ALLOWED_ORIGINS` remains a read-only deployment bootstrap source. The effective allowlist is the canonical union of those environment origins and enabled `target_origins` rows. A disabled row is retained for audit and project history: projects may keep the value while editing unrelated metadata, but fresh target checks and execution navigation are blocked until an enabled origin is selected.
 
 ### `project_members`
 

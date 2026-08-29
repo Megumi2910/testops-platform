@@ -893,3 +893,9 @@ on long-lived probes.
 
 See [`95-phase10-release-finalization.md`](../implementation/95-phase10-release-finalization.md)
 and [`102-phase10-release-finalization.md`](../testing/102-phase10-release-finalization.md).
+
+## Pre-merge stabilization — target-origin registry
+
+The first pre-merge stabilization slice adds `V024` and administrator-managed target origins without breaking the existing `TARGET_ALLOWED_ORIGINS` deployment bootstrap. The effective allowlist is revalidated dynamically for project target changes, target checks, and execution navigation. Environment rows remain visible/read-only; administrator rows have enable/disable state, optimistic versioning, creator/timestamps, and project usage counts.
+
+The create/edit selectors now share accessible add/select behavior: verified administrators can register a canonical safe origin and immediately select it, while members receive administrator guidance. Disabled current origins may remain while unrelated project metadata is edited, but new checks and executions are blocked. Focused verification for this slice passed the 199-test backend suite, 14 frontend project/administration tests, TypeScript checking, and the V024 PostgreSQL migration upgrade. The administrator/member browser matrix is included in the final candidate gate.

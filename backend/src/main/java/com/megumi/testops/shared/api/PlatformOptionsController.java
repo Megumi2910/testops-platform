@@ -18,6 +18,7 @@ import java.util.UUID;
 import com.megumi.testops.config.PlatformProperties;
 import com.megumi.testops.config.ProjectProperties;
 import com.megumi.testops.project.service.ProjectTargetPolicy;
+import com.megumi.testops.project.service.TargetOriginRegistry;
 
 @RestController
 @RequestMapping("/api/v1/platform")
@@ -28,15 +29,17 @@ public class PlatformOptionsController {
     private final UserRepository users;
     private final PlatformPermissionService permissions;
     private final ProjectTargetPolicy targetPolicy;
-    public PlatformOptionsController(PlatformProperties platform, ProjectProperties project, ObjectProvider<AuthService> auth, UserRepository users, PlatformPermissionService permissions, ProjectTargetPolicy targetPolicy) { this.platform = platform; this.project = project; this.auth = auth; this.users = users; this.permissions = permissions; this.targetPolicy = targetPolicy; }
+    private final TargetOriginRegistry targetOrigins;
+    public PlatformOptionsController(PlatformProperties platform, ProjectProperties project, ObjectProvider<AuthService> auth, UserRepository users, PlatformPermissionService permissions, ProjectTargetPolicy targetPolicy, TargetOriginRegistry targetOrigins) { this.platform = platform; this.project = project; this.auth = auth; this.users = users; this.permissions = permissions; this.targetPolicy = targetPolicy; this.targetOrigins = targetOrigins; }
 
     @GetMapping("/options")
     public Options options(@AuthenticationPrincipal Jwt jwt) {
-        boolean targetConfigured = !platform.target().allowedOrigins().isEmpty();
+        boolean targetConfigured = targetPolicy.isConfigured();
         UserEntity user = jwt == null || auth.getIfAvailable() == null ? null : currentUser(jwt);
         boolean projectCreationEnabled = targetConfigured && permissions.canCreateProject(user);
         boolean reportingAvailable = user != null;
-        List<TargetOriginOption> origins = platform.target().allowedOrigins().stream().map(origin -> describeOrigin(origin)).toList();
+        List<TargetOriginOption> origins = targetOrigins.enabledOptions().stream()
+                .map(origin -> new TargetOriginOption(origin.origin(), origin.source(), origin.usable(), origin.blockedReason())).toList();
         List<ActionDefinition> actions = List.of(
                 action("NAVIGATE", "Navigate", "NOT_APPLICABLE", "REQUIRED", "NOT_APPLICABLE", "Path such as / or /checkout"),
                 action("CLICK", "Click", "REQUIRED", "NOT_APPLICABLE", "NOT_APPLICABLE", "Button or link to activate"),
@@ -69,16 +72,6 @@ public class PlatformOptionsController {
                 Set.of("BUTTON", "LINK", "CHECKBOX", "COMBOBOX", "HEADING", "TEXTBOX"), actions);
     }
 
-    private TargetOriginOption describeOrigin(String origin) {
-        boolean local = origin != null && origin.toLowerCase(java.util.Locale.ROOT).startsWith("http://localhost:");
-        try {
-            targetPolicy.validate(origin);
-            return new TargetOriginOption(origin, local ? "LOCAL_DEVELOPMENT" : "EXTERNAL", true, null);
-        } catch (com.megumi.testops.shared.api.ApiException ex) {
-            return new TargetOriginOption(origin, local ? "LOCAL_DEVELOPMENT" : "EXTERNAL", false, ex.getCode());
-        }
-    }
-
     private static ActionDefinition action(String action, String label, String locator, String input, String expected, String help) {
         boolean usesLocator = !"NOT_APPLICABLE".equals(locator);
         return new ActionDefinition(action, label, usesLocator, !"NOT_APPLICABLE".equals(input), !"NOT_APPLICABLE".equals(expected), usesLocator, help, locator, input, expected, true);
@@ -92,7 +85,7 @@ public class PlatformOptionsController {
             boolean secretVariablesEnabled, boolean executionWorkerEnabled,
             Set<String> supportedStepActions, Set<String> supportedLocatorTypes, Set<String> supportedLocatorRoles,
             List<ActionDefinition> stepActions) { }
-    public record TargetOriginOption(String origin, String type, boolean usable, String blockedReason) { }
+    public record TargetOriginOption(String origin, String source, boolean usable, String blockedReason) { }
     public record ActionDefinition(String action, String label, boolean locator, boolean input, boolean expected, boolean role, String help,
             String locatorRequirement, String inputRequirement, String expectedRequirement, boolean timeout) { }
 }

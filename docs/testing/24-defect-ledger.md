@@ -1,5 +1,23 @@
 # Milestone 10 quality-gate defect ledger
 
+## Current pre-merge fixes
+
+### PM-UX-001 — Target origins required a deployment environment edit
+
+- Severity: P2
+- Status: RESOLVED in the pre-merge target-origin registry slice
+- Previous actual: adding a safe staging target required changing `TARGET_ALLOWED_ORIGINS` and recreating the backend.
+- Resolution: verified platform administrators now manage canonical, persistent target origins in Administration; environment entries remain visible but immutable. The effective allowlist is rechecked for project changes, target checks, and execution navigation.
+- Regression layer: backend registry/policy tests, project/admin component tests, migration upgrade test, and rebuilt browser role matrix.
+
+### PM-UX-002 — Empty project submission exposed generic validation text
+
+- Severity: P3
+- Status: RESOLVED in the pre-merge target-origin registry slice
+- Previous actual: the project form displayed `Invalid input` for missing required values.
+- Resolution: field-level name, description, and target-origin instructions now use native controls with first-invalid focus.
+- Regression layer: ProjectPages component tests and final 320px browser form check.
+
 ## Severity policy
 
 - **P0:** credential/data exposure, tenant escape, destructive corruption, or system-wide inability to operate.

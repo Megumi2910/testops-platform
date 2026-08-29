@@ -8,7 +8,7 @@ The original browser/report capture was verified against revision `ded01b87f7ec9
 |---|---|---|
 | Backend | `backend/src/main/java/com/megumi/testops` | Spring Boot modular monolith with auth, projects, definitions, execution, dashboard, configuration, and shared API contracts. |
 | Frontend | `frontend/src` | React Router application with lazy routes and feature folders for auth, projects, executions, dashboard, and system health. |
-| Persistence | `backend/src/main/resources/db/migration` | PostgreSQL/Flyway migrations `V001` through `V023`; applied schema must be checked against the running database during the browser evidence pass. |
+| Persistence | `backend/src/main/resources/db/migration` | PostgreSQL/Flyway migrations `V001` through `V024`; `V024` adds administrator-managed target origins with optimistic versioning. Applied schema must be checked against the running database during the browser evidence pass. |
 | Browser runner | `backend/src/main/java/com/megumi/testops/execution/runner` | Playwright Java worker with isolated contexts, immutable execution snapshots, navigation guards, step outcomes, and artifacts. |
 | Runtime | `docker-compose.yml`, `docker-compose.e2e.yml`, `docker-compose.qa.yml` | TestOps frontend/backend/PostgreSQL/pgAdmin plus opt-in E2E target and Mailpit services. |
 | Target | `frontend/e2e/target-site` and the separate ecommerce application | A local storefront is used by the deterministic E2E profile; the separate ecommerce site is an external target boundary, not part of this documentation rewrite. |

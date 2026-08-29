@@ -1,11 +1,12 @@
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useDeferredValue, useEffect, useState, type FormEvent, type InputHTMLAttributes } from 'react'
+import { useContext, useDeferredValue, useEffect, useState, type FormEvent, type InputHTMLAttributes } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 import { authApi } from './api'
 import { apiFetch, ApiError } from '../../lib/api'
-import { useAuth } from './AuthContext'
+import { AuthContext, useAuth } from './AuthContext'
 import { Alert, Button, ConfirmDialog, LoadingState, PageHeader } from '../../components/ui'
+import { TargetOriginsAdminCard } from '../projects/TargetOriginControls'
 
 type AdminUser = { id: string; email: string; displayName: string; status: string; platformRole: string; emailVerified: boolean; createdAt: string; lastLoginAt?: string }
 type AdminUsersResponse = { content: AdminUser[]; page?: number; totalPages?: number; totalElements?: number }
@@ -269,6 +270,7 @@ export function AccountPage() {
 }
 
 export function AdminUsersPage() {
+  const auth = useContext(AuthContext)
   const client = useQueryClient()
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(0)
@@ -351,6 +353,7 @@ export function AdminUsersPage() {
   const confirmationPending = confirmation ? pendingUserIds.has(confirmation.user.id) : false
   return <section className="page-stack">
     <div><p className="eyebrow">Administration</p><h1>Users</h1><p className="lede">Manage platform roles and account status. Project roles remain scoped to each project.</p></div>
+    {auth?.user?.platformPermissions?.includes('USER_ADMINISTER') && <TargetOriginsAdminCard />}
     <label className="search-field" htmlFor="admin-user-search">Search users<input id="admin-user-search" name="adminUserSearch" value={query} onChange={event => { setQuery(event.target.value); setPage(0); setFeedbackByUser({}) }} placeholder="Email or display name" autoComplete="off" /></label>
     <div className="card">
       <ul className="resource-list">{users.data?.content.map(user => {

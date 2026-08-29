@@ -21,6 +21,7 @@ public class ExecutionTargetGuard {
     public ExecutionTargetGuard(PlatformProperties properties, ProjectTargetPolicy targetPolicy) { this.properties = properties; this.targetPolicy = targetPolicy; }
     public String resolve(String origin, String requested) {
         if (requested == null || requested.isBlank()) throw invalid();
+        if (targetPolicy != null) targetPolicy.validate(origin);
         URI base = URI.create(origin); URI uri = URI.create(requested.trim());
         URI resolved = uri.isAbsolute() ? uri : base.resolve(uri);
         if (!("http".equalsIgnoreCase(resolved.getScheme()) || "https".equalsIgnoreCase(resolved.getScheme())) || resolved.getHost() == null || resolved.getUserInfo() != null) throw invalid();

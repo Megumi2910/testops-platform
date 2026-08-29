@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.megumi.testops.project.domain.ProjectEntity;
 
 public interface ProjectRepository extends JpaRepository<ProjectEntity, UUID> {
+    long countByTargetOrigin(String targetOrigin);
     Page<ProjectEntity> findByNameContainingIgnoreCase(String name, Pageable pageable);
     boolean existsByNameIgnoreCase(String name);
     Optional<ProjectEntity> findByNameIgnoreCase(String name);

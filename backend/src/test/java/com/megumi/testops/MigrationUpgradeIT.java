@@ -38,7 +38,19 @@ class MigrationUpgradeIT {
             Flyway releaseCandidate = flyway(jdbcUrl, username, password, null);
             releaseCandidate.migrate();
 
-            assertThat(releaseCandidate.info().current().getVersion().getVersion()).isEqualTo("023");
+            assertThat(releaseCandidate.info().current().getVersion().getVersion()).isEqualTo("024");
+            try (var connection = DriverManager.getConnection(jdbcUrl, username, password);
+                    var statement = connection.prepareStatement("""
+                            select count(*)
+                            from information_schema.columns
+                            where table_schema = 'public'
+                              and table_name = 'target_origins'
+                              and column_name in ('origin', 'enabled', 'created_by', 'created_at', 'updated_at', 'version')
+                            """);
+                    var result = statement.executeQuery()) {
+                assertThat(result.next()).isTrue();
+                assertThat(result.getInt(1)).isEqualTo(6);
+            }
             try (var connection = DriverManager.getConnection(
                     jdbcUrl,
                     username,

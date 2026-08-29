@@ -16,6 +16,7 @@ import com.megumi.testops.auth.service.PlatformPermissionService;
 import com.megumi.testops.config.PlatformProperties;
 import com.megumi.testops.config.ProjectProperties;
 import com.megumi.testops.project.service.ProjectTargetPolicy;
+import com.megumi.testops.project.service.TargetOriginRegistry;
 
 class PlatformOptionsControllerTest {
     @Test
@@ -25,9 +26,13 @@ class PlatformOptionsControllerTest {
                         java.time.Duration.ofMinutes(1), java.time.Duration.ofMinutes(5), java.time.Duration.ofSeconds(5), "chromium", true),
                 new PlatformProperties.Artifact(Path.of("target/artifacts"), 0),
                 new PlatformProperties.Target(List.of("https://target.example.test"), false, "host.docker.internal"));
+        ProjectTargetPolicy policy = mock(ProjectTargetPolicy.class);
+        TargetOriginRegistry origins = mock(TargetOriginRegistry.class);
+        org.mockito.Mockito.when(policy.isConfigured()).thenReturn(true);
+        org.mockito.Mockito.when(origins.enabledOptions()).thenReturn(List.of());
         PlatformOptionsController controller = new PlatformOptionsController(properties,
                 new ProjectProperties(false, null, 1), mock(ObjectProvider.class), null,
-                new PlatformPermissionService(), new ProjectTargetPolicy(properties));
+                new PlatformPermissionService(), policy, origins);
 
         PlatformOptionsController.Options options = controller.options(null);
 

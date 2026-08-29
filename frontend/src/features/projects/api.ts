@@ -1,10 +1,29 @@
 import { apiFetch } from '../../lib/api'
 
 export type ActionDefinition = { action: string; label: string; locator: boolean; input: boolean; expected: boolean; role: boolean; help: string; locatorRequirement?: 'REQUIRED' | 'OPTIONAL' | 'NOT_APPLICABLE'; inputRequirement?: 'REQUIRED' | 'OPTIONAL' | 'NOT_APPLICABLE'; expectedRequirement?: 'REQUIRED' | 'OPTIONAL' | 'NOT_APPLICABLE'; timeout?: boolean }
-export type TargetOriginOption = { origin: string; type: 'EXTERNAL' | 'LOCAL_DEVELOPMENT'; usable: boolean; blockedReason?: string }
+export type TargetOriginOption = { origin: string; source: 'ENVIRONMENT' | 'ADMIN'; usable: boolean; blockedReason?: string }
 export type PlatformOptions = { targetAllowedOrigins: string[]; targetOrigins?: TargetOriginOption[]; targetConfigured: boolean; projectCreationEnabled: boolean; reportingAvailable: boolean; secretVariablesEnabled: boolean; executionWorkerEnabled: boolean; supportedStepActions: string[]; supportedLocatorTypes: string[]; supportedLocatorRoles?: string[]; stepActions?: ActionDefinition[]; localDevelopmentEnabled?: boolean }
 
 export const platformApi = { options: () => apiFetch<PlatformOptions>('/api/v1/platform/options') }
+
+export type ManagedTargetOrigin = {
+  id?: string
+  origin: string
+  source: 'ENVIRONMENT' | 'ADMIN'
+  enabled: boolean
+  usable: boolean
+  blockedReason?: string
+  usageCount: number
+  version?: number
+  createdAt?: string
+  updatedAt?: string
+}
+
+export const targetOriginsApi = {
+  list: () => apiFetch<ManagedTargetOrigin[]>('/api/v1/admin/target-origins'),
+  create: (origin: string) => apiFetch<ManagedTargetOrigin>('/api/v1/admin/target-origins', { method: 'POST', body: JSON.stringify({ origin }) }),
+  update: (id: string, input: { enabled: boolean; version: number }) => apiFetch<ManagedTargetOrigin>(`/api/v1/admin/target-origins/${id}`, { method: 'PATCH', body: JSON.stringify(input) }),
+}
 
 export type PageResponse<T> = { content: T[]; page: number; size: number; totalElements: number; totalPages: number }
 export type ProjectPermission = 'PROJECT_VIEW' | 'PROJECT_UPDATE' | 'PROJECT_ARCHIVE' | 'MEMBER_MANAGE' | 'VARIABLE_VIEW' | 'VARIABLE_MANAGE' | 'DEFINITION_VIEW' | 'DEFINITION_MANAGE' | 'EXECUTION_START' | 'EXECUTION_CANCEL_OWN' | 'EXECUTION_CANCEL_ANY' | 'EXECUTION_VIEW' | 'ARTIFACT_VIEW'

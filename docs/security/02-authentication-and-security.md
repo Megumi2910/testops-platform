@@ -328,7 +328,8 @@ Example policy:
 |---|---|
 | Manage global users and roles | `ADMIN` |
 | Create project | `ADMIN` or approved `TEST_MANAGER` |
-| Change project target origin | project `OWNER` or `ADMIN` |
+| Register, enable, or disable a target origin | verified platform `ADMIN` only |
+| Choose a registered target origin for a project | project `PROJECT_MANAGER` or platform `ADMIN` |
 | Edit suites/cases | project `OWNER` or `EDITOR` |
 | Execute suites | project membership with execution permission |
 | View result/artifact | project membership |
@@ -400,7 +401,7 @@ A browser worker can reach network locations that ordinary users cannot. Project
 
 Rules:
 
-- only administrators or project owners may set the target origin;
+- only verified platform administrators may register, enable, or disable target origins; project managers may only choose an enabled registered origin;
 - allow only `https`, plus explicit `http` in local development;
 - steps use relative paths where possible;
 - block loopback, link-local, private networks, cloud metadata, `file:`, `javascript:`, and `data:` targets;
@@ -408,7 +409,7 @@ Rules:
 - place worker containers in a restricted network;
 - never expose browser-debug ports publicly.
 
-The first release should allowlist the known e-commerce target rather than supporting arbitrary public URLs.
+`TARGET_ALLOWED_ORIGINS` is a backward-compatible, read-only bootstrap source. The dynamic effective list additionally includes enabled administrator-managed rows. Canonicalization lowercases scheme and host, removes a trailing slash and default ports, and rejects credentials, paths, queries, fragments, duplicate canonical values, unsafe literal/private addresses, and localhost unless local development is explicitly enabled. Disabling an origin immediately blocks target checks and execution navigation without deleting its projects.
 
 ## 12. Target-site secrets
 
@@ -420,7 +421,7 @@ Preferred order:
 2. encrypted project variables;
 3. plaintext database values — rejected.
 
-Milestone 3 implements AES-256-GCM project-variable storage behind the explicit `PROJECT_SECRET_VARIABLES_ENABLED` flag. The key is loaded from `PROJECT_VARIABLE_KEY_PATH`; secret values are never serialized in API responses, audit metadata, logs, or definition snapshots. Static target validation is allowlist-based in this milestone. DNS/IP revalidation immediately before browser navigation is a Milestone 4 requirement.
+Milestone 3 implements AES-256-GCM project-variable storage behind the explicit `PROJECT_SECRET_VARIABLES_ENABLED` flag. The key is loaded from `PROJECT_VARIABLE_KEY_PATH`; secret values are never serialized in API responses, audit metadata, logs, or definition snapshots. Target validation is dynamically allowlist-based and DNS/IP revalidation still occurs immediately before browser navigation.
 
 Step definitions reference placeholders:
 

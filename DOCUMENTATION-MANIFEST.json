@@ -2,7 +2,7 @@
   "classification": "Full product/application implementation specification",
   "verified_revision": "0dd704155433caeb5f83aa5c8fd7d429c8da557c",
   "verified_at": "2026-08-26",
-  "source_status": "Milestone 10A evidence is reconciled through the Phase 10 revision-matched local gate, isolated normal/QA runtime proof, consecutive CI proof, draft-PR publication, and PLAN_PASS finalization. The visual portal, architecture report, API catalog/handbook, beginner manual, workflow guide, feature/business-logic handbook, and P9/P10 implementation/testing notes describe the current V001-V023 source contract.",
+  "source_status": "Milestone 10A evidence is reconciled through the Phase 10 revision-matched local gate, isolated normal/QA runtime proof, consecutive CI proof, draft-PR publication, and PLAN_PASS finalization. The pre-merge stabilization adds the V024 administrator-managed target-origin contract; the visual portal, architecture report, API catalog/handbook, beginner manual, workflow guide, feature/business-logic handbook, and implementation/testing notes describe the current V001-V024 source contract.",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -833,6 +833,18 @@
       "role": "Phase 10 release publication, draft-PR, and PLAN_PASS evidence boundary",
       "status": "current",
       "source": [".github/workflows/ci.yml", "scripts/verify-consecutive-ci.ps1", "scripts/verify-pr-state.ps1"]
+    },
+    {
+      "path": "docs/implementation/103-premerge-target-origin-registry.md",
+      "role": "Pre-merge administrator-managed target origin implementation and security boundary",
+      "status": "current",
+      "source": ["backend/src/main/java/com/megumi/testops/project/service/TargetOriginRegistry.java", "frontend/src/features/projects/TargetOriginControls.tsx"]
+    },
+    {
+      "path": "docs/testing/103-premerge-target-origin-registry.md",
+      "role": "Pre-merge target-origin regression and verification boundary",
+      "status": "current",
+      "source": ["backend/src/test/java/com/megumi/testops/TargetOriginRegistryTest.java", "frontend/src/features/projects/ProjectPages.test.tsx"]
     }
   ]
 }

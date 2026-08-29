@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
@@ -7,7 +7,7 @@ import type { ReactNode } from 'react'
 import { ApiError } from '../../lib/api'
 import { AuthContext, type AuthContextValue } from '../auth/AuthContext'
 import type { UserSummary } from '../auth/api'
-import { platformApi, projectsApi, type Project } from './api'
+import { platformApi, projectsApi, targetOriginsApi, type Project } from './api'
 import { NewProjectPage, ProjectsPage } from './ProjectPages'
 import { ProjectLayout } from './ProjectWorkspace'
 
@@ -76,6 +76,33 @@ describe('project recovery surfaces', () => {
     expect(name).toHaveAttribute('aria-invalid', 'true')
   })
 
+  it('gives specific empty-project instructions and focuses the first invalid field', async () => {
+    vi.spyOn(platformApi, 'options').mockResolvedValue(options)
+
+    renderWithClient(<AuthContext.Provider value={authContext()}><MemoryRouter><NewProjectPage /></MemoryRouter></AuthContext.Provider>)
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Create project' }))
+
+    expect(await screen.findByText('Enter a project name.')).toBeInTheDocument()
+    expect(screen.getByText('Choose a target origin.')).toBeInTheDocument()
+    expect(document.activeElement).toBe(screen.getByRole('textbox', { name: /^Name/ }))
+  })
+
+  it('lets an administrator add a target origin and selects the canonical result', async () => {
+    vi.spyOn(platformApi, 'options').mockResolvedValue(options)
+    vi.spyOn(targetOriginsApi, 'create').mockResolvedValue({ id: 'origin-1', origin: 'https://staging.example.test', source: 'ADMIN', enabled: true, usable: true, usageCount: 0, version: 0 })
+
+    renderWithClient(<AuthContext.Provider value={authContext({ platformPermissions: ['USER_ADMINISTER'] })}><MemoryRouter><NewProjectPage /></MemoryRouter></AuthContext.Provider>)
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Add target origin' }))
+    const dialog = screen.getByRole('dialog', { name: 'Add target origin' })
+    fireEvent.change(within(dialog).getByRole('textbox', { name: 'Origin' }), { target: { value: 'https://STAGING.example.test/' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Add target origin' }))
+
+    await waitFor(() => expect(targetOriginsApi.create).toHaveBeenCalledWith('https://STAGING.example.test/', expect.anything()))
+    await waitFor(() => expect(screen.getByRole('combobox', { name: /^Target origin/ })).toHaveValue('https://staging.example.test'))
+  })
+
   it('refetches a failed project workspace load', async () => {
     const get = vi.spyOn(projectsApi, 'get')
       .mockRejectedValueOnce(new ApiError(503, 'Project unavailable', { correlationId: 'corr-project-load' }))
@@ -107,10 +134,11 @@ describe('project recovery surfaces', () => {
   })
 })
 
-function authContext(): AuthContextValue {
+function authContext(overrides: Partial<UserSummary> = {}): AuthContextValue {
+  const currentUser = { ...user, ...overrides }
   return {
-    user, providers: { enabled: true, registrationEnabled: true, emailVerificationEnabled: true, googleEnabled: false }, loading: false,
-    reloadUser: vi.fn(async () => user), login: vi.fn(), register: vi.fn(), verifyEmail: vi.fn(), resendEmail: vi.fn(), resendAuthenticatedEmail: vi.fn(), logout: vi.fn(),
+    user: currentUser, providers: { enabled: true, registrationEnabled: true, emailVerificationEnabled: true, googleEnabled: false }, loading: false,
+    reloadUser: vi.fn(async () => currentUser), login: vi.fn(), register: vi.fn(), verifyEmail: vi.fn(), resendEmail: vi.fn(), resendAuthenticatedEmail: vi.fn(), logout: vi.fn(),
   }
 }
 
