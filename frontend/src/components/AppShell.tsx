@@ -137,7 +137,7 @@ function AccountMenu({ onNavigate }: { onNavigate: () => void }) {
       >
         <span className="account-menu-avatar" aria-hidden="true">{user.displayName.trim().charAt(0).toUpperCase() || '?'}</span>
         <span className="nav-account-name">{user.displayName}</span>
-        <span aria-hidden="true">· Account</span>
+        <span className="account-menu-disclosure" aria-hidden="true">Account <span className="account-menu-chevron">⌄</span></span>
       </button>
       {open && <div ref={menuRef} id="account-menu" className="account-menu-panel" role="menu" aria-label="Account actions">
         <div className="account-menu-identity" role="presentation">
@@ -220,10 +220,10 @@ export function AppShell() {
             <Icon name="shield" size={22} /> TestOps
           </NavLink>
           {navigationOpen && <button className="nav-drawer-backdrop" type="button" aria-label="Close navigation" onClick={() => setNavigationOpen(false)} />}
-          <div ref={navigationRef} className={navigationOpen ? 'nav-drawer open' : 'nav-drawer'} role={navigationOpen ? 'dialog' : undefined} aria-modal={navigationOpen ? true : undefined} aria-label={navigationOpen ? 'Site navigation' : undefined}>
+          <div ref={navigationRef} id="site-navigation" className={navigationOpen ? 'nav-drawer open' : 'nav-drawer'} role={navigationOpen ? 'dialog' : undefined} aria-modal={navigationOpen ? true : undefined} aria-label={navigationOpen ? 'Site navigation' : undefined}>
             <PrimaryNavigation onNavigate={() => setNavigationOpen(false)} />
           </div>
-          <button ref={navigationTriggerRef} className="icon-button nav-menu" type="button" aria-label="Open navigation" aria-expanded={navigationOpen} onClick={() => setNavigationOpen(true)}><Icon name="menu" size={21} /></button>
+          <button ref={navigationTriggerRef} className="icon-button nav-menu" type="button" aria-label="Open navigation" aria-controls="site-navigation" aria-expanded={navigationOpen} onClick={() => setNavigationOpen(true)}><Icon name="menu" size={21} /></button>
         </div>
       </header>
       {unverified && user && <div className="verification-banner" role="status" aria-live="polite">Your email is not verified. <NavLink to={`/verify-email?email=${encodeURIComponent(user.email)}&recover=1`}>Verify now</NavLink> to unlock your workspace.</div>}

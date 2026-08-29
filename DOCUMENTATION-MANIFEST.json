@@ -714,7 +714,7 @@
       "path": "docs/testing/100-phase6-account-shell-matrix.md",
       "role": "Phase 6 account-shell viewport, keyboard, dismissal, and sanitized-sidecar evidence boundary",
       "status": "current",
-      "source": ["frontend/src/components/AppShell.test.tsx", "frontend/e2e/account-shell.spec.ts"]
+      "source": ["frontend/src/components/AppShell.test.tsx", "frontend/e2e/account-shell.spec.ts", "frontend/e2e/navigation-hit-targets.spec.ts"]
     },
     {
       "path": "docs/implementation/101-phase6-account-security-matrix.md",
@@ -857,6 +857,18 @@
       "role": "Pre-merge OAuth callback and QA/E2E stack regression boundary",
       "status": "current",
       "source": ["backend/src/test/java/com/megumi/testops/auth/config/OAuthLoginConfigurationTest.java", "frontend/src/features/auth/AuthPages.test.tsx", "scripts/verify-compose-configs.ps1"]
+    },
+    {
+      "path": "docs/implementation/105-premerge-navigation-accessibility.md",
+      "role": "Pre-merge navigation hit-target, disclosure, and semantic-control implementation",
+      "status": "current",
+      "source": ["frontend/src/components/AppShell.tsx", "frontend/src/styles.css"]
+    },
+    {
+      "path": "docs/testing/105-premerge-navigation-accessibility.md",
+      "role": "Pre-merge glyph-level navigation and account-trigger browser regression boundary",
+      "status": "current",
+      "source": ["frontend/src/components/AppShell.test.tsx", "frontend/e2e/account-shell.spec.ts", "frontend/e2e/navigation-hit-targets.spec.ts"]
     }
   ]
 }

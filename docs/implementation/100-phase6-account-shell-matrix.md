@@ -36,6 +36,21 @@ stylesheet. The mobile media rule restores `inline-flex` at `800px` and below;
 this keeps the trigger hidden at `1440px` while preserving the tablet/mobile
 drawer contract.
 
+## Pre-merge hit-target hardening
+
+The hamburger and close controls now have a minimum `44×44` CSS-pixel target
+without increasing their SVG glyphs. `site-navigation` gives the hamburger a
+stable `aria-controls` relationship, and its expanded state has a stronger
+visual surface. The account trigger uses the same minimum height, a visible
+Account disclosure chevron, and matching expanded feedback.
+
+The visual children of both controls deliberately use `pointer-events: none`.
+That makes the owning native button the hit target whether a user presses the
+hamburger path, avatar, display name, or rightmost Account label. It preserves
+the existing button keyboard behavior, focus trap, Escape ordering, route/hash
+dismissal, scroll lock, backdrop dismissal, and desktop navigation rather
+than adding a parallel event handler.
+
 ## Nested keyboard behavior
 
 The account menu and mobile drawer both listen for Escape. Closing both on one
@@ -68,7 +83,12 @@ pointer dismissal without letting the drawer intercept the event.
 ## Browser contract and safe evidence
 
 `frontend/e2e/account-shell.spec.ts` defines the six validator case IDs at
-`1440×900`, `768×1024`, and `320×800`—18 case/viewport records in total. Two
+`1440×900`, `768×1024`, and `320×800`—18 case/viewport records in total. It
+also presses the exact hamburger glyph coordinates at drawer widths and the
+avatar, display-name, and Account-label coordinates for a verified user. The
+dedicated `navigation-hit-targets.spec.ts` regression adds the exact
+`320×800`, `390×844`, `800×900`, and `801×900` boundary matrix without
+changing the historical P6 evidence contract. Two
 unique ordinary accounts are created through registration and Mailpit OTP
 verification; the administrator state uses the disposable E2E bootstrap
 administrator. The isolated Compose overlay raises only the login attempt,
@@ -104,8 +124,9 @@ npx eslint src/components/AppShell.tsx src/components/AppShell.test.tsx e2e/help
 npm run e2e -- account-shell.spec.ts --list
 ```
 
-The current source pass is 13 focused unit tests, successful typechecking,
-focused lint with zero findings, and nine listed Playwright tests. The live
+The current source pass includes direct-child click coverage in the focused
+unit suite, successful typechecking, focused lint with zero findings, and the
+listed Playwright matrix. The live
 account-shell run, Playwright MCP capture, Chrome DevTools capture, and merge
 into canonical P6 evidence remain release-gate work rather than implied
 results.

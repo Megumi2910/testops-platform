@@ -91,6 +91,26 @@ describe('AppShell account navigation', () => {
     expect(trigger.querySelector('.nav-account-name')).toHaveTextContent(displayName)
   })
 
+  it('activates navigation from the hamburger glyph and every account-trigger region', () => {
+    renderShell()
+    const navigationButton = screen.getByRole('button', { name: 'Open navigation' })
+    expect(navigationButton).toHaveAttribute('aria-controls', 'site-navigation')
+    const menuGlyph = navigationButton.querySelector('svg')
+    expect(menuGlyph).not.toBeNull()
+    fireEvent.click(menuGlyph!)
+    expect(screen.getByRole('dialog', { name: 'Site navigation' })).toBeVisible()
+
+    const trigger = screen.getByRole('button', { name: 'Open account menu for QA User' })
+    for (const selector of ['.account-menu-avatar', '.nav-account-name', '.account-menu-disclosure']) {
+      const region = trigger.querySelector(selector)
+      expect(region).not.toBeNull()
+      fireEvent.click(region!)
+      expect(screen.getByRole('menu')).toBeVisible()
+      fireEvent.click(trigger)
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    }
+  })
+
   it('supports Arrow, Home, End, and bidirectional Tab movement inside the account menu', async () => {
     renderShell()
     const trigger = screen.getByRole('button', { name: 'Open account menu for QA User' })

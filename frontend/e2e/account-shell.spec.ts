@@ -72,7 +72,11 @@ async function openNavigation(page: Page, viewport: Viewport, observation: CaseO
   }
 
   await check(observation, () => expect(trigger).toBeVisible())
-  await trigger.click()
+  const glyph = trigger.locator('svg')
+  await check(observation, () => expect(glyph).toHaveCSS('pointer-events', 'none'))
+  const box = await glyph.boundingBox()
+  if (!box) throw new Error('Navigation glyph must have a clickable visual bounds.')
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
   const drawer = page.getByRole('dialog', { name: 'Site navigation' })
   await check(observation, () => expect(drawer).toBeVisible())
   return drawer.getByRole('navigation', { name: 'Primary navigation' })
@@ -155,8 +159,18 @@ async function assertVerifiedMatrix(page: Page, viewport: Viewport) {
     expect(truncation.textOverflow).toBe('ellipsis')
     expect(truncation.scrollWidth).toBeGreaterThan(truncation.clientWidth)
   })
+  for (const selector of ['.account-menu-avatar', '.nav-account-name', '.account-menu-disclosure']) {
+    const region = accountTrigger.locator(selector)
+    await check(observation, () => expect(region).toBeVisible())
+    await check(observation, () => expect(region).toHaveCSS('pointer-events', 'none'))
+    const box = await region.boundingBox()
+    if (!box) throw new Error(`${selector} must have a visible click region.`)
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
+    await check(observation, () => expect(navigation.getByRole('menuitem', { name: 'Account security' })).toBeVisible())
+    await page.keyboard.press('Escape')
+    await check(observation, () => expect(navigation.getByRole('menu')).toHaveCount(0))
+  }
   await accountTrigger.click()
-  await check(observation, () => expect(navigation.getByRole('menuitem', { name: 'Account security' })).toBeVisible())
   await check(observation, () => expect(navigation.getByRole('menuitem', { name: 'Active sessions' })).toBeVisible())
   await check(observation, () => expect(navigation.getByRole('menuitem', { name: 'Verify email' })).toHaveCount(0))
   await check(observation, () => expect(navigation.getByRole('menuitem', { name: 'Administration' })).toHaveCount(0))

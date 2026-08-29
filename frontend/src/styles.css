@@ -141,8 +141,12 @@ button:hover:not(:disabled), .button:hover { transform: translateY(-1px); }
 .icon-button.nav-menu, .nav-close { display: none; }
 .nav-account-name { display: inline-block; flex: 0 1 12rem; max-width: 12rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; white-space: nowrap; }
 .account-menu { position: relative; }
-.account-menu-trigger { align-items: center; background: transparent; border: 1px solid transparent; border-radius: .5rem; color: #c8d2e6; cursor: pointer; display: inline-flex; font: inherit; gap: .35rem; max-width: 100%; padding: .55rem .7rem; }
-.account-menu-trigger:hover { background: rgb(255 255 255 / 10%); color: #fff; }
+.account-menu-trigger { align-items: center; background: transparent; border: 1px solid transparent; border-radius: .5rem; color: #c8d2e6; cursor: pointer; display: inline-flex; font: inherit; gap: .35rem; max-width: 100%; min-height: 2.75rem; padding: .55rem .7rem; }
+.account-menu-trigger > * { pointer-events: none; }
+.account-menu-trigger:hover, .account-menu-trigger[aria-expanded="true"] { background: rgb(255 255 255 / 12%); color: #fff; }
+.account-menu-disclosure { align-items: center; display: inline-flex; gap: .2rem; }
+.account-menu-chevron { font-size: 1.1em; line-height: 1; transition: transform .16s ease; }
+.account-menu-trigger[aria-expanded="true"] .account-menu-chevron { transform: rotate(180deg); }
 .account-menu-avatar { align-items: center; background: #3155b8; border-radius: 999px; color: #fff; display: inline-flex; flex: 0 0 auto; font-size: .75rem; font-weight: 800; height: 1.5rem; justify-content: center; width: 1.5rem; }
 .account-menu-panel { background: var(--surface); border: 1px solid var(--line); border-radius: .75rem; box-shadow: var(--shadow-md); color: var(--ink); min-width: 14rem; padding: .4rem; position: absolute; right: 0; top: calc(100% + .45rem); width: min(20rem, calc(100vw - 2rem)); z-index: 20; }
 .account-menu-identity { border-bottom: 1px solid var(--line); display: grid; gap: .15rem; padding: .7rem .75rem; overflow-wrap: anywhere; }
@@ -185,8 +189,9 @@ h2, h3 { text-wrap: balance; }
 .button-danger:hover { background: #921b12; }
 .button-small { min-height: 2.2rem; padding: .45rem .7rem; }
 .button-icon { flex: 0 0 auto; }
-.icon-button { align-items: center; background: transparent; border: 1px solid transparent; border-radius: .5rem; color: currentColor; cursor: pointer; display: inline-flex; justify-content: center; min-height: 2.35rem; min-width: 2.35rem; padding: .4rem; }
-.icon-button:hover:not(:disabled) { background: rgb(21 94 239 / 10%); }
+.icon-button { align-items: center; background: transparent; border: 1px solid transparent; border-radius: .5rem; color: currentColor; cursor: pointer; display: inline-flex; justify-content: center; min-height: 2.75rem; min-width: 2.75rem; padding: .4rem; }
+.icon-button > svg { pointer-events: none; }
+.icon-button:hover:not(:disabled), .icon-button[aria-expanded="true"] { background: rgb(21 94 239 / 14%); }
 .button:focus-visible, .icon-button:focus-visible, .nav-link:focus-visible, .inline-link:focus-visible { box-shadow: 0 0 0 3px rgb(124 140 255 / 34%); outline: 2px solid var(--focus); outline-offset: 2px; }
 .alert { align-items: flex-start; border: 1px solid var(--line); border-radius: .8rem; display: flex; gap: .7rem; padding: .85rem 1rem; }
 .alert strong { display: block; margin-bottom: .15rem; }
@@ -253,6 +258,14 @@ h2, h3 { text-wrap: balance; }
 .table-scroll { border: 1px solid var(--line); border-radius: .75rem; }
 table { background: #fff; }
 th { font-variant-numeric: tabular-nums; }
+
+@media (min-width: 801px) and (max-width: 920px) {
+  .topbar-inner { gap: .5rem; }
+  .topbar .primary-nav { gap: .1rem; }
+  .primary-nav .nav-link { padding-left: .45rem; padding-right: .45rem; }
+  .nav-account-name { flex-basis: 3.5rem; max-width: 3.5rem; }
+  .account-menu-trigger { padding-left: .5rem; padding-right: .5rem; }
+}
 
 @media (max-width: 800px) {
   .topbar-inner { min-height: 3.6rem; }

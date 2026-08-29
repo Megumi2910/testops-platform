@@ -909,3 +909,16 @@ availability, unverified Google email, and protocol/provider failure each have
 bounded retry/contact guidance. Normal, QA, and E2E stacks use distinct refresh
 and OAuth-session cookie names. QA trusts port `3300` and forces Google OAuth
 off; deterministic Google remains E2E-only.
+
+## Pre-merge stabilization — navigation hit targets and disclosure
+
+The shell now exposes a 44px minimum target for icon controls, stable
+`aria-controls` wiring for the hamburger, expanded-state feedback, and an
+explicit account disclosure. SVG and account-label children cannot intercept
+pointer activation, so presses on the exact hamburger glyph, avatar, display
+name, or Account label consistently activate the native control. The existing
+drawer focus trap, Escape ordering, focus return, scroll restoration, backdrop
+dismissal, and desktop navigation remain covered at `320`, `390`, `800`, and
+`801` CSS-pixel breakpoints. See
+[`105-premerge-navigation-accessibility.md`](../implementation/105-premerge-navigation-accessibility.md)
+and [`105-premerge-navigation-accessibility.md`](../testing/105-premerge-navigation-accessibility.md).

@@ -56,3 +56,15 @@ The current implementation expands the focused mounted result from seven to
 Tab, and exact `1440×900`/`768×1024`/`320×800` Playwright coverage. See
 [`100-phase6-account-shell-matrix.md`](100-phase6-account-shell-matrix.md) for
 the source-verified result and the still-open live evidence boundary.
+
+## Pre-merge pointer-target follow-up
+
+The current pre-merge regression additionally activates the hamburger from its
+SVG coordinates and opens the account menu from the avatar, display name, and
+rightmost Account disclosure. Those child nodes are deliberately
+`pointer-events: none`, so each interaction must resolve to its native button.
+The browser matrix exercises the `320`, `390`, `800`, and `801` CSS-pixel
+breakpoints alongside the existing keyboard, Escape, focus-restoration, and
+backdrop assertions. See
+[`105-premerge-navigation-accessibility.md`](105-premerge-navigation-accessibility.md)
+for the current verification record.
