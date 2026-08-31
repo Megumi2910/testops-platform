@@ -1,5 +1,12 @@
 # Ecommerce dogfooding guide
 
+> **Certification inventory (2026-08-31):** the normal TestOps `Ecommerce`
+> project is the durable reusable pack: 9 catalog-managed suites, 38 cases,
+> 34 READY cases, and 4 shared-state DRAFT cases. Its catalog smoke/search,
+> authentication/verification, orders/reviews, seller, and resilience suites
+> have retained green executions. Run the catalog synchronizer idempotently;
+> do not recreate the project or enter target credentials into case steps.
+
 This guide is for a first-time maintainer who wants to run the local ecommerce
 website, connect it to TestOps, and execute a browser check safely. It describes
 the complete path from Docker startup to a saved screenshot. It also explains

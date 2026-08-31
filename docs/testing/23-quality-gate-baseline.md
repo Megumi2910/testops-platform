@@ -12,6 +12,18 @@ This document is the canonical browser-testing baseline for TestOps at `http://l
 > part of a release gate; rows marked `PARTIAL` remain open unless that ledger
 > explicitly closes them with new evidence.
 
+## 2026-08-31 certification update
+
+The current full-platform campaign is recorded in
+[`106-full-platform-certification.md`](106-full-platform-certification.md).
+The repeated local boundary is **PASS**: 103 isolated Chromium tests, the
+local-target-disabled profile, the live retained revision A/B swap, QA API
+role isolation, and the persistent normal ecommerce catalog all passed. The
+normal guest runtime returned the intentional anonymous-refresh `204` with no
+console errors; mobile Lighthouse reported accessibility 100 and best
+practices 100. Real Google remains **PENDING OWNER**, because no automation or
+documentation may impersonate an external Google account.
+
 ## Phase 9 reconciliation boundary
 
 The fresh Phase 9 TestOps matrix is recorded in

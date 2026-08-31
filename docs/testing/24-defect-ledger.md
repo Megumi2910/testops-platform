@@ -2,6 +2,30 @@
 
 ## Current pre-merge fixes
 
+### CERT-001 — Legacy normal-stack execution evidence contained a target credential
+
+- Severity: P0
+- Status: RESOLVED during the 2026-08-31 certification remediation
+- Previous actual: a legacy ecommerce definition and its historical normal-stack evidence used a literal target credential.
+- Resolution: rotated the target account secret, moved the replacement to ignored runtime/TestOps secret-variable storage, and removed the exact guarded historic execution/evidence scope before recreating the safe catalog definition.
+- Regression layer: catalog synchronization validation, secret-safety audit, and persistent normal-stack reruns.
+
+### CERT-002 — Anonymous session bootstrap logged an expected refresh failure
+
+- Severity: P3
+- Status: RESOLVED
+- Previous actual: a guest page called refresh without a cookie and surfaced an avoidable `401` console error.
+- Resolution: the backend returns `204 No Content` when no refresh cookie is present; the frontend treats it as a signed-out bootstrap state. Invalid supplied cookies continue to receive the documented rejection.
+- Regression layer: API/AuthProvider unit coverage and Chrome DevTools guest-runtime capture.
+
+### CERT-003 — Session-expiry regression did not prove stale bearer invalidation
+
+- Severity: P2
+- Status: RESOLVED
+- Previous actual: the test checked a post-reactivation session state rather than the bearer issued before account lock.
+- Resolution: the E2E test now retains the pre-lock bearer and requires `/auth/me` to return `401` after lock, before verifying that reactivation still requires a fresh session.
+- Regression layer: focused session-expiry spec and complete 103-test Chromium suite.
+
 ### PM-UX-001 — Target origins required a deployment environment edit
 
 - Severity: P2

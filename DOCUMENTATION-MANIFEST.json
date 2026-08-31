@@ -1,6 +1,6 @@
 {
   "classification": "Full product/application implementation specification",
-  "verified_revision": "0dd704155433caeb5f83aa5c8fd7d429c8da557c",
+  "verified_revision": "6fc614894885a59e078fe08d18e6534aa5df34e7",
   "verified_at": "2026-08-26",
   "source_status": "Milestone 10A evidence is reconciled through the Phase 10 revision-matched local gate, isolated normal/QA runtime proof, consecutive CI proof, draft-PR publication, and PLAN_PASS finalization. The pre-merge stabilization adds the V024 administrator-managed target-origin contract; the visual portal, architecture report, API catalog/handbook, beginner manual, workflow guide, feature/business-logic handbook, and implementation/testing notes describe the current V001-V024 source contract.",
   "documents": [
@@ -869,6 +869,12 @@
       "role": "Pre-merge glyph-level navigation and account-trigger browser regression boundary",
       "status": "current",
       "source": ["frontend/src/components/AppShell.test.tsx", "frontend/e2e/account-shell.spec.ts", "frontend/e2e/navigation-hit-targets.spec.ts"]
+    },
+    {
+      "path": "docs/testing/106-full-platform-certification.md",
+      "role": "Current full-platform certification evidence, repeatable-gate results, durable ecommerce pack, and owner-assisted OAuth boundary",
+      "status": "current",
+      "source": ["frontend/test-results/.last-run.json", "frontend/e2e/local-target-disabled.spec.ts", "scripts/verify-retained-swap.ps1", "catalog/ecommerce-testops.json"]
     }
   ]
 }
