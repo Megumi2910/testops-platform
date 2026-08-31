@@ -11,6 +11,24 @@ async function signIn(page: Page, email: string, password: string) {
   await expect(page.locator('.account-menu-trigger')).toHaveCount(1)
 }
 
+async function refreshAccessToken(page: Page) {
+  return page.evaluate(async () => {
+    const response = await fetch('/api/v1/auth/refresh', { method: 'POST', credentials: 'include' })
+    if (!response.ok) throw new Error(`Unable to refresh session: ${response.status}`)
+    return (await response.json() as { accessToken: string }).accessToken
+  })
+}
+
+async function statusWithBearer(page: Page, token: string) {
+  return page.evaluate(async accessToken => {
+    const response = await fetch('/api/v1/auth/me', {
+      credentials: 'include',
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+    return response.status
+  }, token)
+}
+
 async function setStatus(page: Page, email: string, status: 'ACTIVE' | 'LOCKED') {
   await page.goto('/admin/users')
   await expect(page).toHaveURL(/\/admin\/users$/)
@@ -35,6 +53,7 @@ test('account status revokes active sessions and keeps the old bearer invalid af
   const accountContext = await browser.newContext({ baseURL: e2eBaseUrl })
   const accountPage = await accountContext.newPage()
   await signIn(accountPage, email, password)
+  const oldBearer = await refreshAccessToken(accountPage)
 
   const adminContext = await browser.newContext({ baseURL: e2eBaseUrl })
   const adminPage = await adminContext.newPage()
@@ -48,9 +67,8 @@ test('account status revokes active sessions and keeps the old bearer invalid af
   await expect(accountPage).toHaveURL(/\/login/)
 
   await setStatus(adminPage, email, 'ACTIVE')
-  const reactivatedResponse = accountPage.waitForResponse(response => response.url().includes('/api/v1/') && response.status() === 401, { timeout: 15_000 }).catch(() => undefined)
+  expect(await statusWithBearer(accountPage, oldBearer)).toBe(401)
   await accountPage.goto('/projects')
-  expect(await reactivatedResponse).toBeTruthy()
   await expect(accountPage).toHaveURL(/\/login/)
 
   await accountContext.close()

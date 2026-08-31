@@ -90,6 +90,12 @@ cookie. A supplied but invalid, expired, or replayed cookie still returns the
 safe `401 refresh_invalid` response and is cleared. This keeps browser-console
 failures meaningful without weakening session validation.
 
+An administrator account-status transition also revokes every refresh session
+and increments the user token version. Reactivating an account does not revive
+the pre-lock bearer: a captured access JWT is still rejected with `401`. The
+session-expiry browser regression exercises that request explicitly, rather
+than relying on a route redirect that may make no API call after logout.
+
 ## 3. Password account flow
 
 ### Registration
