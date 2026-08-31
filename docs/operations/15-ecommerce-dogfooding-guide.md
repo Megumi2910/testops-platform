@@ -151,8 +151,11 @@ The source-controlled manifest at
 | 2 | `TAKE_SCREENSHOT` | no locator | Produces visual evidence for a non-secret run |
 
 The catalog also keeps two deterministic guest search cases `READY`: **Search
-state is shareable** opens `/search?q=shirt`, checks the labelled search input
-with `ASSERT_VALUE`, and checks the exact URL; **Search no-results state** opens
+state is shareable** opens `/search?q=shirt`, checks the page search input
+(`locatorIndex: 1`) with `ASSERT_VALUE`, and checks the exact URL; the index
+is intentional because the target renders an empty header input before the
+query-bearing page input, both with the same accessible label. **Search
+no-results state** opens
 a deliberately unknown term and checks the `Không tìm thấy sản phẩm` heading.
 Both cases are safe to run repeatedly because they do not authenticate, mutate
 cart state, or create an order.
@@ -167,6 +170,11 @@ than volatile prices or inventory, so they remain safe to rerun.
 `TEXT` is a forgiving text search; `TEXT_EXACT` requires an exact match.
 `locatorIndex` is zero-based and is useful when a page has repeated semantic
 matches. Prefer a role, label, test id, or exact visible text over CSS/XPath.
+
+The seeded review case verifies the permanent verified-purchase marker and
+review text only. The separate ecommerce target currently does not expose a
+customer review-edit control, so TestOps does not assert that unavailable
+target feature or turn it into an unattended-run failure.
 
 The first step may set viewport, locale, and timezone. Later steps inherit the
 same browser context and cannot redefine those settings.
@@ -269,7 +277,7 @@ timeouts, context settings, `READY` ordering, and local variable references
 before making an API call. It should report:
 
 ```text
-Manifest validation passed: 9 suites, 24 cases.
+Manifest validation passed: 9 suites, 38 cases.
 Dry run complete. No API calls were made.
 ```
 
@@ -292,7 +300,7 @@ terminal logs can be shared without exposing fixture credentials.
 The synchronizer also discards the variable API response instead of letting
 PowerShell render it as a table after the request. A full-stream redaction
 assertion was verified locally with supplied test-only values;
-the preflight passed with 9 suites and 24 cases and the values did not appear
+the preflight passed with 9 suites and 38 cases and the values did not appear
 in captured output.
 Stable project, suite, and case markers are matched literally during apply, so
 rerunning the command updates existing catalog entities instead of creating
