@@ -182,6 +182,11 @@ When a normal API request returns `401`, the wrapper checks whether the URL is e
 3. retries the original request once;
 4. clears the token if refresh fails.
 
+The initial anonymous bootstrap is different from a failed session: the refresh
+endpoint returns `204 No Content` when no cookie exists, and the provider keeps
+the visitor signed out without publishing an authentication failure. Invalid or
+replayed cookies still return `401` and follow the normal cleanup path.
+
 Concurrent requests share one `refreshPromise`, so five simultaneous `401` responses do not rotate the same refresh token five times.
 
 ### 5.4 JSON and blob responses

@@ -81,7 +81,9 @@ Chrome DevTools verified:
 5. Mailpit still contained exactly one message, proving neither resend created a duplicate.
 6. No resend request returned `500`.
 
-The unauthenticated application bootstrap still records its expected failed refresh request when no refresh cookie exists; this is unrelated to resend and remains part of the broader authentication/browser matrix.
+The unauthenticated application bootstrap now receives `204 No Content` when no
+refresh cookie exists. This is an intentional no-session result rather than a
+failed refresh and remains unrelated to resend behavior.
 
 ## Automated verification
 

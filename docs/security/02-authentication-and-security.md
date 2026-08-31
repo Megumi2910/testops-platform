@@ -84,6 +84,12 @@ Database:
 
 The current React client keeps the access token in module memory only; it does not use `localStorage` or `sessionStorage` for credentials. A reload obtains a fresh access token through the `HttpOnly` refresh cookie.
 
+An anonymous bootstrap has no cookie to rotate. `POST /api/v1/auth/refresh` returns
+`204 No Content` for that normal no-session state, without issuing or clearing a
+cookie. A supplied but invalid, expired, or replayed cookie still returns the
+safe `401 refresh_invalid` response and is cleared. This keeps browser-console
+failures meaningful without weakening session validation.
+
 ## 3. Password account flow
 
 ### Registration

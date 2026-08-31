@@ -60,6 +60,15 @@ describe('AuthProvider', () => {
     await waitFor(() => expect(screen.getByText('Signed out')).toBeVisible())
   })
 
+  it('renders an anonymous session when bootstrap receives the explicit no-session response', async () => {
+    vi.spyOn(authApi, 'providers').mockResolvedValue({ enabled: true, registrationEnabled: false, emailVerificationEnabled: true, googleEnabled: false })
+    vi.spyOn(authApi, 'refresh').mockResolvedValue(null)
+
+    render(<AuthProvider><SessionProbe /></AuthProvider>)
+
+    await waitFor(() => expect(screen.getByText('Signed out')).toBeVisible())
+  })
+
   it('does not start bootstrap refresh after login hydrates the session', async () => {
     let resolveProviders!: (value: Awaited<ReturnType<typeof authApi.providers>>) => void
     vi.spyOn(authApi, 'providers').mockImplementation(() => new Promise(resolve => { resolveProviders = resolve }))

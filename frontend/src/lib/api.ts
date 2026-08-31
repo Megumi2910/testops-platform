@@ -28,7 +28,7 @@ export function normalizeFieldErrors(errors?: Record<string, string> | ProblemVi
 type AuthResponseLike = { accessToken: string }
 
 let accessToken: string | null = null
-let refreshPromise: Promise<unknown> | null = null
+let refreshPromise: Promise<AuthResponseLike | null> | null = null
 const authFailureListeners = new Set<() => void>()
 
 export function subscribeAuthFailure(listener: () => void) {
@@ -51,13 +51,17 @@ export function clearAccessToken() {
   accessToken = null
 }
 
-async function refreshInMemory(): Promise<unknown> {
+async function refreshInMemory(): Promise<AuthResponseLike | null> {
   if (!refreshPromise) {
     refreshPromise = fetch('/api/v1/auth/refresh', {
       method: 'POST',
       credentials: 'include',
       headers: { Accept: 'application/json' },
     }).then(async (response) => {
+      // A first anonymous page load is a normal no-session state. The backend
+      // returns 204 so DevTools does not report an expected refresh as an
+      // application error.
+      if (response.status === 204) return null
       if (!response.ok) throw new ApiError(response.status, 'Session refresh failed')
       const session = (await response.json()) as AuthResponseLike
       setAccessToken(session.accessToken)
@@ -152,5 +156,5 @@ export async function apiBlobFetch(input: RequestInfo | URL): Promise<Blob> {
 }
 
 export async function refreshAccessToken<T extends AuthResponseLike>() {
-  return refreshInMemory() as Promise<T>
+  return refreshInMemory() as Promise<T | null>
 }

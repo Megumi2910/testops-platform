@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { apiBlobFetch, apiFetch, clearAccessToken, normalizeFieldErrors, setAccessToken, subscribeAuthFailure } from './api'
+import { apiBlobFetch, apiFetch, clearAccessToken, normalizeFieldErrors, refreshAccessToken, setAccessToken, subscribeAuthFailure } from './api'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -68,5 +68,16 @@ describe('normalizeFieldErrors', () => {
     await expect(apiBlobFetch('/api/v1/artifacts/1/download')).rejects.toMatchObject({ status: 401 })
     expect(fetch).toHaveBeenCalledTimes(2)
     expect(listener).toHaveBeenCalledTimes(1)
+  })
+
+  it('treats a missing refresh cookie as a silent anonymous session', async () => {
+    const listener = vi.fn()
+    const unsubscribe = subscribeAuthFailure(listener)
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(new Response(null, { status: 204 })))
+
+    await expect(refreshAccessToken()).resolves.toBeNull()
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(listener).not.toHaveBeenCalled()
+    unsubscribe()
   })
 })

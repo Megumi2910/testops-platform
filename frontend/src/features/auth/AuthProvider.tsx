@@ -20,7 +20,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       // refresh rotation is single-use and would race the authenticated page.
       if (sessionHydrated.current) return
       const refreshed = await authApi.refresh()
-      setUser(refreshed.user)
+      setUser(refreshed?.user ?? null)
     } catch (error) {
       authApi.clearAccessToken()
       // OAuth callbacks can hydrate the session while the one-time bootstrap

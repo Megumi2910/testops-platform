@@ -543,7 +543,7 @@ The controller mappings below are implemented in the current source. Each entry 
 | `POST` | `/auth/email/resend` | Resend a registration OTP with server cooldown/idempotency. |
 | `POST` | `/auth/me/email/resend` | Resend verification for an authenticated unverified user. |
 | `POST` | `/auth/login` | Authenticate email/password. |
-| `POST` | `/auth/refresh` | Rotate refresh token and issue access JWT. |
+| `POST` | `/auth/refresh` | Rotate a supplied refresh token and issue an access JWT; return `204` when an anonymous bootstrap has no refresh cookie. |
 | `POST` | `/auth/logout` | Revoke and clear session. |
 | `GET` | `/auth/me` | Current local user. |
 | `POST` | `/auth/sessions/revoke-all` | Revoke all current-user sessions. |

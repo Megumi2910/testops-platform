@@ -45,9 +45,10 @@ The accessibility snapshot showed:
 - email textbox populated with `qa@example.com`;
 - empty password textbox and normal Sign in action.
 
-Document and application assets returned `200`. The only console error was the
-expected anonymous `POST /api/v1/auth/refresh` response with `401`; no
-application exception or sensitive value was exposed.
+Document and application assets returned `200`. Later authentication hardening
+changed an anonymous `POST /api/v1/auth/refresh` from the historical `401` to
+an intentional `204 No Content`, so current browser gates no longer treat the
+anonymous bootstrap as a console error.
 
 ## Regression boundary
 

@@ -100,6 +100,12 @@ public class AuthController {
     public ResponseEntity<AuthResponse> refresh(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
         originGuard.requireSameOrigin(servletRequest);
         String raw = readRefreshCookie(servletRequest);
+        // A first anonymous page load has no refresh cookie to rotate. Treat
+        // that as an explicit no-session result rather than an authentication
+        // failure so browser consoles stay meaningful for real failures.
+        if (raw == null || raw.isBlank()) {
+            return ResponseEntity.noContent().header(HttpHeaders.CACHE_CONTROL, "no-store").build();
+        }
         try {
             AuthService.SessionResult session = service().refresh(raw, servletRequest.getHeader("User-Agent"), clientIp(servletRequest));
             return withRefreshCookie(session);
