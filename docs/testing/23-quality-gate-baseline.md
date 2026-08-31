@@ -4,13 +4,44 @@
 
 This document is the canonical browser-testing baseline for TestOps at `http://localhost:3000` and the ecommerce target at `http://localhost:3001`. The baseline was established before lifecycle or product fixes. A failed or blocked row is evidence, not a release waiver. Product work may begin only after every row below is either executed or tied to a defect/blocker ID.
 
+> **Post-merge reconciliation (2026-08-14):** This matrix is historical evidence
+> captured before the Milestone 10A completion branch. The current source,
+> running-image provenance, and release interpretation are recorded in
+> [`docs/milestones/15-milestone-10a-testops-completion.md`](../milestones/15-milestone-10a-testops-completion.md).
+> Rows marked `PASS` here still require a fresh rebuilt runtime when they are
+> part of a release gate; rows marked `PARTIAL` remain open unless that ledger
+> explicitly closes them with new evidence.
+
+## 2026-08-31 certification update
+
+The current full-platform campaign is recorded in
+[`106-full-platform-certification.md`](106-full-platform-certification.md).
+The repeated local boundary is **PASS**: 103 isolated Chromium tests, the
+local-target-disabled profile, the live retained revision A/B swap, QA API
+role isolation, and the persistent normal ecommerce catalog all passed. The
+normal guest runtime returned the intentional anonymous-refresh `204` with no
+console errors; mobile Lighthouse reported accessibility 100 and best
+practices 100. The account owner retained real Google OAuth as a manual
+provider check; deterministic OAuth remains covered by the passing E2E gate.
+
+## Phase 9 reconciliation boundary
+
+The fresh Phase 9 TestOps matrix is recorded in
+[`101-phase9-browser-quality-performance.md`](101-phase9-browser-quality-performance.md).
+It supersedes the historical responsive/accessibility row for TestOps release
+acceptance: 18 case-viewports passed across desktop, tablet, and `320×800`,
+with 143 sanitized assertions and zero failures. The twelve route records and
+the two Chrome DevTools readiness captures meet accessibility ≥95, LCP ≤2500
+ms, and CLS ≤0.1. Ecommerce rows remain reference-suite context and are not
+part of the TestOps release gate.
+
 The local baseline uses QA-owned records only. It never resets the normal PostgreSQL volumes. Fixture credentials live in ignored secret files or environment variables and are deliberately absent from this document, screenshots, traces, and Git history.
 
 ## Environment provenance
 
 | Application | Checked revision | Runtime proof | Result |
 | --- | --- | --- | --- |
-| TestOps | `5deaa33db239b0351aa4066c9279a51a83c9b1d7` | Backend and frontend OCI `org.opencontainers.image.revision` labels match; Compose reports healthy | PASS |
+| TestOps | Phase 0 source revision (`git rev-parse HEAD`) | Isolated `testops-quality-gate` backend/frontend OCI `org.opencontainers.image.revision` labels match; PostgreSQL, Mailpit, pgAdmin, backend, and frontend report healthy; health/UI probes return 200; CI run `31782848666` passed all six jobs | PASS |
 | Ecommerce | `7a430eaa48e58c2e144e2034d678aa0616822737` | Backend and frontend OCI revision labels match; Compose reports healthy | PASS |
 
 Run `scripts/setup-quality-gate.ps1` once to create the ignored TestOps fixture secret, rebuild both stacks with revision labels, start the TestOps QA overlay, and invoke `scripts/verify-running-revisions.ps1`. The verifier waits for health and fails when any application image is stale.
@@ -89,6 +120,7 @@ The sanitized request body contains a DRAFT case and `steps[0]` with action `NAV
 ```powershell
 cd D:\Projects\testops-platform
 .\backend\mvnw.cmd -B test
+.\backend\mvnw.cmd -B -DskipITs verify
 docker compose -f docker-compose.yml -f docker-compose.qa.yml config --quiet
 .\scripts\setup-quality-gate.ps1
 .\scripts\verify-running-revisions.ps1
@@ -98,3 +130,14 @@ docker compose config --quiet
 ```
 
 The original baseline backend verification passed with 59 tests. After the Phase 2–5 repairs, the current backend unit/package gate passes 111 tests, including ancestry, membership, and cancellation assertions beyond the prior 101-test gate. The focused authorization slice passes 22 tests, and the positive membership lifecycle slice passes its focused `ProjectMembershipSecurityTest` and `ProjectAccessServiceTest` gate. The isolated PostgreSQL gate additionally passes all 7 `ApplicationContextIT` cases on a clean V021 schema. Both Compose configurations parsed, both stacks became healthy, and all four application images matched their checked-out revisions at baseline capture.
+
+## Phase 6 retained-deployment foundation reconciliation
+
+The current completion branch adds the full-SHA frontend response contract and
+the true retained A/B orchestrator described in
+[`90-phase6-retained-deployment-foundation.md`](../implementation/90-phase6-retained-deployment-foundation.md).
+Focused source contracts pass 31 revision/header and 82 orchestration/config
+assertions. This does not revise the historical runtime rows above: the live
+adjacent A/B swap and combined browser/DevTools P6 evidence are still open and
+must be recorded in the Milestone 10A ledger before release interpretation
+changes.

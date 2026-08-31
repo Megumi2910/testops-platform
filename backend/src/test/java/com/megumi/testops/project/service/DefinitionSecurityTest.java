@@ -63,6 +63,37 @@ class DefinitionSecurityTest {
     }
 
     @Test
+    void rejectsCaseReadWhenCaseDoesNotBelongToRequestedSuite() {
+        TestSuiteEntity suite = new TestSuiteEntity(project, "Primary suite", null, user, Instant.now());
+        UUID foreignCaseId = UUID.randomUUID();
+        when(suites.findByIdAndProjectId(suite.getId(), project.getId())).thenReturn(Optional.of(suite));
+        when(cases.findByIdAndSuiteId(foreignCaseId, suite.getId())).thenReturn(Optional.empty());
+
+        ApiException failure = assertThrows(ApiException.class,
+                () -> service.getCase(jwt, project.getId(), suite.getId(), foreignCaseId));
+
+        assertEquals("case_not_found", failure.getCode());
+        verify(steps, never()).findByTestCaseIdOrderByPositionAsc(any());
+    }
+
+    @Test
+    void rejectsCaseMutationWhenCaseDoesNotBelongToRequestedSuite() {
+        TestSuiteEntity suite = new TestSuiteEntity(project, "Primary suite", null, user, Instant.now());
+        UUID foreignCaseId = UUID.randomUUID();
+        when(suites.findByIdAndProjectId(suite.getId(), project.getId())).thenReturn(Optional.of(suite));
+        when(cases.findByIdAndSuiteId(foreignCaseId, suite.getId())).thenReturn(Optional.empty());
+        ProjectDtos.CaseRequest request = new ProjectDtos.CaseRequest("Updated", null, "DRAFT", "MEDIUM", null,
+                0, true, null, List.of());
+
+        ApiException failure = assertThrows(ApiException.class,
+                () -> service.updateCase(jwt, project.getId(), suite.getId(), foreignCaseId, request));
+
+        assertEquals("case_not_found", failure.getCode());
+        verify(cases, never()).save(any());
+        verify(steps, never()).deleteByTestCaseId(any());
+    }
+
+    @Test
     void rejectsCaseCreationUnderArchivedSuite() {
         TestSuiteEntity suite = new TestSuiteEntity(project, "Archived", null, user, Instant.now());
         suite.archive(Instant.now());

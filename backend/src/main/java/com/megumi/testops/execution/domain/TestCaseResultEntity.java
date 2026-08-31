@@ -19,12 +19,20 @@ public class TestCaseResultEntity {
     @Column(name = "failed_step_position") private Integer failedStepPosition;
     @Column(name = "error_category", length = 40) private String errorCategory;
     @Column(name = "retry_count_snapshot", nullable = false) private int retryCountSnapshot;
+    @Column(name = "evidence_suppressed", nullable = false) private boolean evidenceSuppressed;
+    @Column(name = "evidence_suppression_reason", length = 120) private String evidenceSuppressionReason;
     protected TestCaseResultEntity() { }
     public TestCaseResultEntity(ExecutionEntity execution, TestCaseEntity testCase) { this.id = UUID.randomUUID(); this.execution = execution; this.testCase = testCase; this.status = ExecutionStatus.QUEUED; this.caseNameSnapshot = testCase.getName(); this.retryCountSnapshot = testCase.getRetryCount(); }
-    public void start(Instant now) { status = ExecutionStatus.RUNNING; startedAt = now; attemptCount++; }
+    public void start(Instant now) { status = ExecutionStatus.RUNNING; if (startedAt == null) startedAt = now; attemptCount++; }
     public void finish(ExecutionStatus result, Instant now, String error) { status = result; finishedAt = now; errorMessage = error; }
     public UUID getId() { return id; } public ExecutionEntity getExecution() { return execution; } public TestCaseEntity getTestCase() { return testCase; } public ExecutionStatus getStatus() { return status; } public int getAttemptCount() { return attemptCount; } public Instant getStartedAt() { return startedAt; } public Instant getFinishedAt() { return finishedAt; } public String getErrorMessage() { return errorMessage; }
     public String getCaseNameSnapshot() { return caseNameSnapshot; } public Integer getFailedStepPosition() { return failedStepPosition; } public String getErrorCategory() { return errorCategory; }
     public int getRetryCountSnapshot() { return retryCountSnapshot; }
     public void setFailure(Integer step, String category) { this.failedStepPosition = step; this.errorCategory = category; }
+    public boolean isEvidenceSuppressed() { return evidenceSuppressed; }
+    public String getEvidenceSuppressionReason() { return evidenceSuppressionReason; }
+    public void suppressEvidence(String reason) {
+        this.evidenceSuppressed = true;
+        if (this.evidenceSuppressionReason == null) this.evidenceSuppressionReason = reason;
+    }
 }

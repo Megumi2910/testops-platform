@@ -44,6 +44,13 @@ public class ProjectAccessService {
         if (globalAdmin(jwt)) return;
         if (!roles.contains(membership(project, user).getRole())) throw error(HttpStatus.FORBIDDEN, "project_role_required", "Your project role does not allow this operation");
     }
+    public void requireProjectPermission(ProjectEntity project, UserEntity user, Jwt jwt, ProjectPermission permission) {
+        if (globalAdmin(jwt)) return;
+        String role = membership(project, user).getRole();
+        if (!ProjectService.permissionSet(role, false).contains(permission.name())) {
+            throw error(HttpStatus.FORBIDDEN, "project_permission_required", "Your project permissions do not allow this operation");
+        }
+    }
     private static boolean hasRole(Jwt jwt, String role) { Object claim = jwt.getClaim("roles"); return claim instanceof java.util.Collection<?> c && c.contains(role); }
     private static ApiException error(HttpStatus status, String code, String message) { return new ApiException(status, code, message); }
 }

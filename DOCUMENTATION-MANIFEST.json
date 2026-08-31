@@ -1,6 +1,8 @@
 {
   "classification": "Full product/application implementation specification",
-  "source_status": "Milestone 10 Phase 5 adds the quality-gate matrix, role/tenant and execution regression evidence, worker/queue safety, public password recovery, deterministic and real-process browser-crash classification, binary artifact access, dashboard range/performance evidence, role/unverified browser boundaries, deterministic Google OAuth, and project edit/name-conflict coverage; real-provider/Chrome DevTools authentication, deployment-mode crash evidence, broader account/session permutations, and ecommerce release gates remain open",
+  "verified_revision": "6fc614894885a59e078fe08d18e6534aa5df34e7",
+  "verified_at": "2026-08-26",
+  "source_status": "Milestone 10A evidence is reconciled through the Phase 10 revision-matched local gate, isolated normal/QA runtime proof, consecutive CI proof, draft-PR publication, and PLAN_PASS finalization. The pre-merge stabilization adds the V024 administrator-managed target-origin contract; the visual portal, architecture report, API catalog/handbook, beginner manual, workflow guide, feature/business-logic handbook, and implementation/testing notes describe the current V001-V024 source contract.",
   "documents": [
     {
       "path": "docs/implementation/00-project-implementation-handbook.md",
@@ -63,6 +65,10 @@
       "role": "Docker host mapping, browser target checks, structured metadata, editable case authoring, and negative E2E scenarios"
     },
     {
+      "path": "docs/milestones/15-milestone-10a-testops-completion.md",
+      "role": "Canonical Milestone 10A completion ledger, post-merge provenance, public-safety audit, and phase boundary"
+    },
+    {
       "path": "docs/operations/16-live-target-recovery.md",
       "role": "Beginner recovery guide for blocked localhost targets and READY-case reruns"
     },
@@ -73,6 +79,46 @@
     {
       "path": "docs/implementation/17-ui-to-execution-workflow.md",
       "role": "Step-by-step browser-to-API-to-database-to-worker-to-evidence workflow"
+    },
+    {
+      "path": "docs/implementation/81-phase6-execution-rerun-recovery.md",
+      "role": "Permission-aware suite rerun and cancellation error recovery implementation"
+    },
+    {
+      "path": "docs/testing/90-phase6-execution-rerun-recovery.md",
+      "role": "Execution rerun/cancellation regression evidence and manual checklist"
+    },
+    {
+      "path": "docs/implementation/82-phase6-failure-guidance.md",
+      "role": "Category-driven execution failure explanation and recovery implementation"
+    },
+    {
+      "path": "docs/testing/91-phase6-failure-guidance.md",
+      "role": "Execution failure-category regression evidence and Chrome DevTools checklist"
+    },
+    {
+      "path": "docs/implementation/83-phase6-dashboard-panel-recovery.md",
+      "role": "Independent dashboard panel error states and retry implementation"
+    },
+    {
+      "path": "docs/testing/92-phase6-dashboard-panel-recovery.md",
+      "role": "Dashboard panel retry regression evidence and Chrome DevTools checklist"
+    },
+    {
+      "path": "docs/implementation/84-phase6-dashboard-trends.md",
+      "role": "Accessible UTC daily trend reporting implementation"
+    },
+    {
+      "path": "docs/testing/93-phase6-dashboard-trends.md",
+      "role": "Daily dashboard trend regression evidence and Chrome DevTools checklist"
+    },
+    {
+      "path": "docs/implementation/85-phase6-dashboard-utc-display.md",
+      "role": "UTC reporting date formatting and execution table header semantics"
+    },
+    {
+      "path": "docs/testing/94-phase6-dashboard-utc-display.md",
+      "role": "UTC reporting display regression evidence and Chrome DevTools checklist"
     },
     {
       "path": "docs/implementation/18-feature-implementation-handbook.md",
@@ -465,6 +511,370 @@
     {
       "path": "docs/implementation/17-ui-to-execution-workflow.html",
       "role": "Interactive SVG workflow diagram for the UI, domain, worker, data, and target boundaries"
+    },
+    {
+      "path": "docs/implementation/63-phase1-testops-shell-account-menu.md",
+      "role": "Phase 1 shell, account-menu permissions, mobile focus behavior, and route-recovery implementation"
+    },
+    {
+      "path": "docs/testing/72-phase1-shell-account-menu.md",
+      "role": "Phase 1 account-menu, mobile drawer, and branded route-recovery regression evidence"
+    },
+    {
+      "path": "docs/implementation/64-phase2-stale-bundle-recovery.md",
+      "role": "Phase 2 revision-aware lazy-import recovery, build metadata, and cache policy implementation"
+    },
+    {
+      "path": "docs/testing/73-phase2-stale-bundle-recovery.md",
+      "role": "Phase 2 chunk-failure classification, reload guard, retained-tab, and revision evidence"
+    },
+    {
+      "path": "frontend/e2e/phase2-stale-bundle.spec.ts",
+      "role": "Phase 2 retained-tab lazy-chunk recovery browser regression"
+    },
+    {
+      "path": "docs/implementation/65-phase3-account-security.md",
+      "role": "Phase 3 account security panels, identity refresh, credential invalidation, and session recovery implementation"
+    },
+    {
+      "path": "docs/testing/74-phase3-account-security.md",
+      "role": "Phase 3 account password, Google identity, session, deep-link, and accessibility regression evidence"
+    },
+    {
+      "path": "docs/implementation/66-phase4-project-definition-guards.md",
+      "role": "Phase 4 direct case-link lifecycle guard and canonical local-target guidance implementation"
+    },
+    {
+      "path": "docs/testing/75-phase4-project-definition-guards.md",
+      "role": "Phase 4 archived-parent suite read-only regression and live lifecycle test evidence"
+    },
+    {
+      "path": "docs/implementation/67-phase5-admin-user-pagination.md",
+      "role": "Phase 5 administrator user-list pagination, bounded queries, and retry recovery implementation"
+    },
+    {
+      "path": "docs/testing/76-phase5-admin-user-pagination.md",
+      "role": "Phase 5 administrator pagination, retry, and route-guard regression evidence"
+    },
+    {
+      "path": "docs/implementation/68-phase5-variable-permissions.md",
+      "role": "Phase 5 shared variable permission guards, direct-link recovery, and secret masking implementation"
+    },
+    {
+      "path": "docs/testing/77-phase5-variable-permissions.md",
+      "role": "Phase 5 variable permission, direct-link, and secret masking regression evidence"
+    },
+    {
+      "path": "docs/implementation/69-phase5-member-list-recovery.md",
+      "role": "Phase 5 member-list retry recovery and read-only role behavior implementation"
+    },
+    {
+      "path": "docs/testing/78-phase5-member-list-recovery.md",
+      "role": "Phase 5 member-list retry, role rendering, and project-scope regression evidence"
+    },
+    {
+      "path": "docs/implementation/70-phase5-membership-stale-recovery.md",
+      "role": "Phase 5 stale membership conflict recovery and exact query invalidation implementation"
+    },
+    {
+      "path": "docs/testing/79-phase5-membership-stale-recovery.md",
+      "role": "Phase 5 stale membership recovery and duplicate-refetch regression evidence"
+    },
+    {
+      "path": "docs/implementation/71-phase5-admin-conflict-guidance.md",
+      "role": "Phase 5 final-active-administrator conflict mapping and sanitized UI guidance implementation"
+    },
+    {
+      "path": "docs/testing/80-phase5-admin-conflict-guidance.md",
+      "role": "Phase 5 final-active-administrator conflict and administration boundary regression evidence"
+    },
+    {
+      "path": "docs/implementation/72-ci-auth-recovery-remediation.md",
+      "role": "Phase 5 CI administrator wording stability and password-reset email handoff implementation"
+    },
+    {
+      "path": "docs/testing/81-ci-auth-recovery-remediation.md",
+      "role": "Phase 5 CI remediation diagnosis and administrator/password-recovery regression evidence"
+    },
+    {
+      "path": "frontend/src/features/auth/AccountPages.test.tsx",
+      "role": "Phase 3 mounted account-center security and session regression tests"
+    },
+    {
+      "path": "docs/implementation/73-phase5-nested-tenant-isolation.md",
+      "role": "Phase 5 parent-scoped project/suite/case isolation contract and regression implementation"
+    },
+    {
+      "path": "docs/testing/82-phase5-nested-tenant-isolation.md",
+      "role": "Phase 5 nested tenant-isolation scenario matrix, evidence interpretation, and rerun commands"
+    },
+    {
+      "path": "docs/implementation/74-phase5-session-context.md",
+      "role": "Phase 5 active-session context rendering and safe optional-IP fallback implementation"
+    },
+    {
+      "path": "docs/testing/83-phase5-session-context.md",
+      "role": "Phase 5 active-session context regression evidence and focused test procedure"
+    },
+    {
+      "path": "docs/implementation/75-phase6-execution-retry-recovery.md",
+      "role": "Phase 6 execution list/detail and artifact retry-recovery implementation"
+    },
+    {
+      "path": "docs/testing/84-phase6-execution-retry-recovery.md",
+      "role": "Phase 6 execution retry-recovery regression evidence and rerun commands"
+    },
+    {
+      "path": "frontend/src/features/executions/ExecutionPages.test.tsx",
+      "role": "Phase 6 mounted execution list/detail and artifact retry regression tests"
+    },
+    {
+      "path": "docs/implementation/76-phase7-artifact-preview-dialog.md",
+      "role": "Phase 7 accessible screenshot preview dialog and focus lifecycle implementation"
+    },
+    {
+      "path": "docs/testing/85-phase7-artifact-preview-dialog.md",
+      "role": "Phase 7 screenshot preview keyboard and focus regression evidence"
+    },
+    {
+      "path": "docs/implementation/77-phase7-auth-field-error-accessibility.md",
+      "role": "Phase 7 authentication field labels, autocomplete, and structured error association implementation"
+    },
+    {
+      "path": "docs/testing/86-phase7-auth-field-error-accessibility.md",
+      "role": "Phase 7 authentication field-error accessibility regression evidence"
+    },
+    {
+      "path": "docs/implementation/78-phase7-testops-form-autocomplete.md",
+      "role": "Phase 7 TestOps definition-form autocomplete policy implementation"
+    },
+    {
+      "path": "docs/testing/87-phase7-testops-form-autocomplete.md",
+      "role": "Phase 7 TestOps form metadata regression evidence"
+    },
+    {
+      "path": "docs/implementation/79-phase2-stale-chunk-manual-recovery.md",
+      "role": "Phase 2 stale lazy-chunk recognition and manual recovery implementation"
+    },
+    {
+      "path": "docs/testing/88-phase2-stale-chunk-manual-recovery.md",
+      "role": "Phase 2 stale lazy-chunk manual recovery regression evidence"
+    },
+    {
+      "path": "docs/implementation/80-phase1-account-menu-keyboard.md",
+      "role": "Phase 1 account-menu arrow entry, Tab wrapping, and focus-management implementation"
+    },
+    {
+      "path": "docs/testing/89-phase1-account-menu-keyboard.md",
+      "role": "Phase 1 account-menu keyboard regression evidence and Chrome DevTools follow-up matrix"
+    },
+    {
+      "path": "docs/implementation/86-phase7-testops-readiness-contrast.md",
+      "role": "Phase 7 TestOps readiness contrast correction implementation",
+      "status": "current",
+      "source": ["frontend/src/styles.css", "Chrome DevTools Lighthouse"]
+    },
+    {
+      "path": "docs/testing/95-phase7-testops-readiness-contrast.md",
+      "role": "Phase 7 TestOps readiness contrast regression evidence",
+      "status": "current",
+      "source": ["frontend/src/styles.css", "frontend/package.json", "Chrome DevTools Lighthouse"]
+    },
+    {
+      "path": "docs/implementation/90-phase6-retained-deployment-foundation.md",
+      "role": "Phase 6 exact frontend revision and retained A/B orchestration design",
+      "status": "current",
+      "source": ["frontend/Dockerfile", "frontend/nginx.conf", "frontend/e2e/retained-swap.spec.ts", "scripts/verify-retained-swap.ps1"]
+    },
+    {
+      "path": "docs/testing/99-phase6-retained-deployment-foundation.md",
+      "role": "Phase 6 retained-deployment foundation contract evidence and live-proof boundary",
+      "status": "current",
+      "source": ["scripts/test-revision-contract.ps1", "scripts/test-quality-gate-scripts.ps1"]
+    },
+    {
+      "path": "docs/implementation/91-phase7-authorization-resource-lifecycle.md",
+      "role": "Phase 7 authorization, session revocation, and resource lifecycle implementation",
+      "status": "current",
+      "source": ["backend/src/main/java/com/megumi/testops/auth/service/AdminUserService.java", "frontend/src/lib/api.ts", "frontend/src/features/auth/AuthProvider.tsx", "frontend/e2e"]
+    },
+    {
+      "path": "docs/testing/100-phase7-authorization-resource-lifecycle.md",
+      "role": "Phase 7 authorization and resource lifecycle acceptance evidence boundary",
+      "status": "current",
+      "source": ["frontend/e2e/session-expiry.spec.ts", "frontend/e2e/tenant-isolation.spec.ts", "frontend/e2e/variable-lifecycle.spec.ts", "frontend/e2e/member-lifecycle.spec.ts", "scripts/merge-p7-browser-evidence.ps1", "scripts/assert-browser-evidence.ps1"]
+    },
+    {
+      "path": "docs/implementation/100-phase6-account-shell-matrix.md",
+      "role": "Phase 6 responsive account-shell implementation and interaction matrix",
+      "status": "current",
+      "source": ["frontend/src/components/AppShell.tsx", "frontend/src/styles.css", "frontend/e2e/account-shell.spec.ts"]
+    },
+    {
+      "path": "docs/testing/100-phase6-account-shell-matrix.md",
+      "role": "Phase 6 account-shell viewport, keyboard, dismissal, and sanitized-sidecar evidence boundary",
+      "status": "current",
+      "source": ["frontend/src/components/AppShell.test.tsx", "frontend/e2e/account-shell.spec.ts", "frontend/e2e/navigation-hit-targets.spec.ts"]
+    },
+    {
+      "path": "docs/implementation/101-phase6-account-security-matrix.md",
+      "role": "Phase 6 password, Google provider, revocation, and deterministic OAuth implementation",
+      "status": "current",
+      "source": ["frontend/src/features/auth/AuthPages.tsx", "frontend/src/features/auth/AuthProvider.tsx", "backend/src/main/java/com/megumi/testops/auth/config/OAuthLoginConfiguration.java", "frontend/e2e/oauth-provider"]
+    },
+    {
+      "path": "docs/testing/101-phase6-account-security-matrix.md",
+      "role": "Phase 6 account-security browser-flow and sanitized problem-tuple evidence boundary",
+      "status": "current",
+      "source": ["frontend/e2e/account-security.spec.ts", "backend/src/test/java/com/megumi/testops/auth/config/OAuthLoginConfigurationTest.java"]
+    },
+    {
+      "path": "frontend/e2e/phase5-role-matrix.spec.ts",
+      "role": "Phase 5 role matrix including foreign suite and foreign case substitution journeys"
+    },
+    {
+      "path": "docs/index.html",
+      "role": "Canonical offline visual report portal and reader paths",
+      "status": "current",
+      "source": ["README.md", "docs/README.md", "docs/architecture/15-codebase-architecture.html"]
+    },
+    {
+      "path": "docs/reference/api-catalog.json",
+      "role": "Machine-readable current controller endpoint catalog",
+      "status": "current",
+      "source": ["backend/src/main/java/com/megumi/testops/*/api", "backend/src/main/java/com/megumi/testops/*/dto"]
+    },
+    {
+      "path": "docs/reference/api-reference.html",
+      "role": "Generated API handbook with safe request examples",
+      "status": "current",
+      "generated_by": "scripts/docs/build-report.mjs"
+    },
+    {
+      "path": "docs/guides/testops-user-manual.html",
+      "role": "Beginner click-by-click user manual with verified readiness screenshot",
+      "status": "current",
+      "screenshots": [
+        "docs/assets/screenshots/testops/readiness.png",
+        "docs/assets/screenshots/testops/sign-in.png",
+        "docs/assets/screenshots/testops/register.png"
+      ]
+    },
+    {
+      "path": "docs/workflows/ui-to-execution-workflow.html",
+      "role": "Canonical UI-to-controller-to-worker workflow explanation",
+      "status": "current"
+    },
+    {
+      "path": "docs/implementation/feature-code-and-business-logic.html",
+      "role": "Feature ownership, syntax, business rules, and maintainer checklist",
+      "status": "current"
+    },
+    {
+      "path": "docs/planning/86-documentation-truth-audit.md",
+      "role": "Source/runtime/documentation reconciliation ledger",
+      "status": "current"
+    },
+    {
+      "path": "scripts/docs/build-report.mjs",
+      "role": "Deterministic API handbook generator",
+      "status": "tooling"
+    },
+    {
+      "path": "scripts/docs/serve-report.mjs",
+      "role": "Dependency-free local documentation server",
+      "status": "tooling"
+    },
+    {
+      "path": "scripts/docs/verify-report.mjs",
+      "role": "HTML, endpoint, migration, and route drift verification",
+      "status": "tooling"
+    },
+    {
+      "path": "docs/implementation/92-phase8-guided-case-builder.md",
+      "role": "Phase 8 guided builder and context-level navigation-safety implementation evidence",
+      "status": "current"
+    },
+    {
+      "path": "docs/testing/102-phase8-guided-case-builder.md",
+      "role": "Phase 8 builder and five-path navigation-safety regression evidence",
+      "status": "current"
+    },
+    {
+      "path": "docs/implementation/93-phase8-execution-evidence-dashboard.md",
+      "role": "Phase 8 execution, evidence, dashboard, and context navigation implementation",
+      "status": "current"
+    },
+    {
+      "path": "docs/testing/100-phase8-execution-evidence-dashboard.md",
+      "role": "Phase 8 sanitized execution, evidence, dashboard, and navigation matrix",
+      "status": "current"
+    },
+    {
+      "path": "docs/implementation/94-phase9-browser-quality-performance.md",
+      "role": "Phase 9 accessibility matrix, sanitized performance inputs, and release-threshold implementation",
+      "status": "current",
+      "source": ["frontend/e2e/accessibility-matrix.spec.ts", "scripts/record-p9-performance.ps1", "scripts/verify-performance.ps1"]
+    },
+    {
+      "path": "docs/testing/101-phase9-browser-quality-performance.md",
+      "role": "Phase 9 browser-quality, Lighthouse/trace, defect-disposition, and sanitized evidence boundary",
+      "status": "current",
+      "source": ["artifacts/browser-evidence/P9.json", "scripts/assert-browser-evidence.ps1", "scripts/verify-defect-ledger.ps1", "scripts/verify-milestone-ledger.ps1"]
+    },
+    {
+      "path": "docs/implementation/95-phase10-release-finalization.md",
+      "role": "Phase 10 exact-SHA runtime, CI, PR, and plan-readiness validator implementation",
+      "status": "current",
+      "source": ["scripts/verify-consecutive-ci.ps1", "scripts/verify-release-runtimes.ps1", "scripts/verify-pr-state.ps1", "scripts/verify-plan-ready.ps1"]
+    },
+    {
+      "path": "docs/testing/102-phase10-release-finalization.md",
+      "role": "Phase 10 release publication, draft-PR, and PLAN_PASS evidence boundary",
+      "status": "current",
+      "source": [".github/workflows/ci.yml", "scripts/verify-consecutive-ci.ps1", "scripts/verify-pr-state.ps1"]
+    },
+    {
+      "path": "docs/implementation/103-premerge-target-origin-registry.md",
+      "role": "Pre-merge administrator-managed target origin implementation and security boundary",
+      "status": "current",
+      "source": ["backend/src/main/java/com/megumi/testops/project/service/TargetOriginRegistry.java", "frontend/src/features/projects/TargetOriginControls.tsx"]
+    },
+    {
+      "path": "docs/testing/103-premerge-target-origin-registry.md",
+      "role": "Pre-merge target-origin regression and verification boundary",
+      "status": "current",
+      "source": ["backend/src/test/java/com/megumi/testops/TargetOriginRegistryTest.java", "frontend/src/features/projects/ProjectPages.test.tsx"]
+    },
+    {
+      "path": "docs/implementation/104-premerge-oauth-stack-isolation.md",
+      "role": "Pre-merge safe OAuth callback contract and localhost cookie isolation",
+      "status": "current",
+      "source": ["backend/src/main/java/com/megumi/testops/auth/config/OAuthLoginConfiguration.java", "docker-compose.qa.yml", "docker-compose.e2e.yml"]
+    },
+    {
+      "path": "docs/testing/104-premerge-oauth-stack-isolation.md",
+      "role": "Pre-merge OAuth callback and QA/E2E stack regression boundary",
+      "status": "current",
+      "source": ["backend/src/test/java/com/megumi/testops/auth/config/OAuthLoginConfigurationTest.java", "frontend/src/features/auth/AuthPages.test.tsx", "scripts/verify-compose-configs.ps1"]
+    },
+    {
+      "path": "docs/implementation/105-premerge-navigation-accessibility.md",
+      "role": "Pre-merge navigation hit-target, disclosure, and semantic-control implementation",
+      "status": "current",
+      "source": ["frontend/src/components/AppShell.tsx", "frontend/src/styles.css"]
+    },
+    {
+      "path": "docs/testing/105-premerge-navigation-accessibility.md",
+      "role": "Pre-merge glyph-level navigation and account-trigger browser regression boundary",
+      "status": "current",
+      "source": ["frontend/src/components/AppShell.test.tsx", "frontend/e2e/account-shell.spec.ts", "frontend/e2e/navigation-hit-targets.spec.ts"]
+    },
+    {
+      "path": "docs/testing/106-full-platform-certification.md",
+      "role": "Current full-platform certification evidence, repeatable-gate results, durable ecommerce pack, and owner-assisted OAuth boundary",
+      "status": "current",
+      "source": ["frontend/test-results/.last-run.json", "frontend/e2e/local-target-disabled.spec.ts", "scripts/verify-retained-swap.ps1", "catalog/ecommerce-testops.json"]
     }
   ]
 }

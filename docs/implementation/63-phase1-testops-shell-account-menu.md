@@ -1,0 +1,107 @@
+# Phase 1 slice — TestOps shell and account menu
+
+## Outcome
+
+This slice makes the first-release shell usable after sign-in. The desktop
+account control is now an actual accessible menu, the same actions are
+available from the mobile drawer, and the lazy Account route uses the same
+loading boundary as every other feature route. Route-level failures now have a
+branded recovery page instead of falling through to the browser's generic
+error screen.
+
+The slice does not claim to finish all of Milestone 10A Phase 1. Automatic
+stale-chunk reloads, revision-aware recovery telemetry, and the complete
+account-security form work remain later slices.
+
+## Source map
+
+| Responsibility | Implementation |
+| --- | --- |
+| Lazy Account loading | `frontend/src/app/router.tsx` wraps `AccountPage` in `LazyPage`. |
+| Route recovery | `frontend/src/app/RouteErrorPage.tsx` is the root route `errorElement`; React Router sends loader/render/chunk failures here. |
+| Navigation and account actions | `frontend/src/components/AppShell.tsx` owns route-aware menu closure, sign-out navigation, and the mobile drawer. |
+| Visual states | `frontend/src/styles.css` defines the account panel, mobile backdrop, focus states, and recovery layout. |
+| Regression coverage | `frontend/src/components/AppShell.test.tsx` and `frontend/src/app/RouteErrorPage.test.tsx`. |
+
+## Account menu contract
+
+The trigger exposes `aria-haspopup="menu"`, `aria-expanded`, `aria-controls`,
+and a name containing the signed-in display name. The menu renders the
+identity summary followed by only the destinations the current user can use:
+
+- `/account#security` for account security;
+- `/account#sessions` for active sessions;
+- `/verify-email?...&recover=1` for unverified users;
+- `/admin/users` only when `USER_ADMINISTER` is present;
+- a sign-out button for every authenticated user.
+
+The menu uses `role="menu"` and `role="menuitem"`. Opening focuses the first
+action. Arrow Up/Down, Home, and End move within the action list; Escape closes
+and restores focus to the trigger; pointer-down outside closes it. Selecting a
+destination closes both the menu and the mobile drawer before navigation.
+
+Sign-out deliberately clears the auth state through `AuthProvider.logout()`
+and then navigates to `/login`. The provider's `finally` block still clears the
+local access token if the server request fails, so the UI cannot remain
+visually authenticated after a failed logout request.
+
+## Mobile behavior
+
+The existing hamburger control now opens a modal-labelled drawer with a
+backdrop. While open, body scrolling is disabled and Tab/Shift+Tab wrap around
+the drawer controls. Escape, the close button, the backdrop, or navigation
+closes the drawer and restores focus to the hamburger trigger. The account
+menu remains composed inside the drawer rather than duplicating a second set
+of account actions.
+
+## Route recovery behavior
+
+The root router declares `RouteErrorPage` as its `errorElement`. A missing
+route remains a normal 404 page, while a dynamic-import/chunk error explains
+that the tab may have an older bundle and offers **Reload application** and
+**Return to readiness**. Other render or route failures get the same safe
+recovery actions without exposing stack traces, tokens, or backend details.
+
+The follow-on Phase 2 slice now adds the one-reload-per-revision guard and a
+retained-tab lazy-chunk regression. A full revision-A/revision-B image swap and
+live Chrome DevTools deployment capture remain separate operational evidence.
+
+## Verification
+
+From `frontend/`:
+
+```powershell
+npm run lint
+npm run typecheck
+npm test -- --run
+npm run build
+```
+
+The slice added six assertions across the shell and route-recovery tests (five
+account/drawer cases and one route-error case). The full frontend suite passes
+with 15 test files and 48 tests; lint has no warnings, typecheck succeeds, and
+the Vite production build succeeds. GitHub Actions run
+[`31785998751`](https://github.com/Megumi2910/testops-platform/actions/runs/31785998751)
+also passed all six required jobs, including the rebuilt enabled,
+local-disabled, and browser-crash E2E profiles. GitHub reported only the
+existing Node.js 20 deprecation annotation for `upload-artifact`; it did not
+fail a gate.
+
+## Known follow-ups
+
+- Repeat the stale-bundle check with a real revision-A/revision-B image swap and
+  capture the live Chrome DevTools deployment evidence.
+- Refactor the Account page into the security, login-method, and sessions
+  panels described by Phase 3.
+- Run the Chrome DevTools desktop/tablet/320px keyboard matrix against the
+  rebuilt QA image; unit tests do not replace live evidence.
+
+## Phase 6 follow-on
+
+The current Phase 6 source closes the old tablet-breakpoint, long-name,
+full-height drawer, and nested-Escape implementation gaps. It also defines the
+complete guest/unverified/verified/administrator Playwright matrix at
+`1440×900`, `768×1024`, and `320×800`. See
+[`100-phase6-account-shell-matrix.md`](100-phase6-account-shell-matrix.md) for
+the current implementation contract. The live two-tool browser result remains
+open until that committed matrix runs and its sanitized sidecar is accepted.

@@ -215,6 +215,9 @@ flowchart TD
 - Port: `5050`.
 - Uses `pgadmin4/.env`.
 - Persists UI state in `pgadmin4_data`.
+- Requires a validator-safe email such as the tracked non-secret placeholder
+  `admin@testops.example.com`; special-use `.invalid`, `.test`, and `localhost`
+  domains stop the container before its health check can pass.
 
 Health-gated `depends_on` means the backend waits for PostgreSQL health and the frontend waits for backend health. It does not guarantee that every application-level feature is configured correctly; health is still intentionally summary-only.
 

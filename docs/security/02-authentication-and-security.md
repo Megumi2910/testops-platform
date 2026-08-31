@@ -84,6 +84,18 @@ Database:
 
 The current React client keeps the access token in module memory only; it does not use `localStorage` or `sessionStorage` for credentials. A reload obtains a fresh access token through the `HttpOnly` refresh cookie.
 
+An anonymous bootstrap has no cookie to rotate. `POST /api/v1/auth/refresh` returns
+`204 No Content` for that normal no-session state, without issuing or clearing a
+cookie. A supplied but invalid, expired, or replayed cookie still returns the
+safe `401 refresh_invalid` response and is cleared. This keeps browser-console
+failures meaningful without weakening session validation.
+
+An administrator account-status transition also revokes every refresh session
+and increments the user token version. Reactivating an account does not revive
+the pre-lock bearer: a captured access JWT is still rejected with `401`. The
+session-expiry browser regression exercises that request explicitly, rather
+than relying on a route redirect that may make no API call after logout.
+
 ## 3. Password account flow
 
 ### Registration
@@ -208,6 +220,20 @@ sequenceDiagram
 
 Tokens are not placed in the redirect URL. The backend sets the normal refresh cookie and redirects to `/auth/oauth/callback`; the frontend completes the flow with its normal refresh request. There is no browser-facing one-time OAuth code exchange endpoint.
 
+The only callback error values are `account_link_required`, `account_unavailable`,
+`email_unverified`, and `oauth_sign_in_failed`. They are safe browser-facing
+recovery states, never provider exceptions or backend error messages. A
+password-account collision remains an explicit sign-in-and-link flow; Google is
+never automatically linked by matching email.
+
+For real Google, the client follows Google's OIDC discovery endpoints: authorization
+at `accounts.google.com`, token exchange at `oauth2.googleapis.com`, user info at
+`openidconnect.googleapis.com`, and signing keys at `www.googleapis.com`. The
+registered `http://localhost:3000/login/oauth2/code/google` callback is sufficient
+for this server-side authorization-code flow; an Authorized JavaScript origin is
+not required. Backend logs record only an allowlisted OAuth failure code, never
+provider text, tokens, or client secrets.
+
 ### Identity resolution
 
 1. Find `oauth_accounts` by `(GOOGLE, sub)`.
@@ -328,7 +354,8 @@ Example policy:
 |---|---|
 | Manage global users and roles | `ADMIN` |
 | Create project | `ADMIN` or approved `TEST_MANAGER` |
-| Change project target origin | project `OWNER` or `ADMIN` |
+| Register, enable, or disable a target origin | verified platform `ADMIN` only |
+| Choose a registered target origin for a project | project `PROJECT_MANAGER` or platform `ADMIN` |
 | Edit suites/cases | project `OWNER` or `EDITOR` |
 | Execute suites | project membership with execution permission |
 | View result/artifact | project membership |
@@ -394,13 +421,18 @@ Acceptable approaches:
 
 Normal API authorization remains JWT-based. An OAuth handshake session must not accidentally become the platform’s authorization source.
 
+The handshake session and refresh token use separate cookie names. The normal,
+QA, and E2E Compose profiles set distinct pairs (`testops_*`, `testops_qa_*`,
+and `testops_e2e_*`) so localhost stacks cannot overwrite one another’s
+authentication state.
+
 ## 11. Target-origin security
 
 A browser worker can reach network locations that ordinary users cannot. Project target configuration is therefore a security boundary.
 
 Rules:
 
-- only administrators or project owners may set the target origin;
+- only verified platform administrators may register, enable, or disable target origins; project managers may only choose an enabled registered origin;
 - allow only `https`, plus explicit `http` in local development;
 - steps use relative paths where possible;
 - block loopback, link-local, private networks, cloud metadata, `file:`, `javascript:`, and `data:` targets;
@@ -408,7 +440,7 @@ Rules:
 - place worker containers in a restricted network;
 - never expose browser-debug ports publicly.
 
-The first release should allowlist the known e-commerce target rather than supporting arbitrary public URLs.
+`TARGET_ALLOWED_ORIGINS` is a backward-compatible, read-only bootstrap source. The dynamic effective list additionally includes enabled administrator-managed rows. Canonicalization lowercases scheme and host, removes a trailing slash and default ports, and rejects credentials, paths, queries, fragments, duplicate canonical values, unsafe literal/private addresses, and localhost unless local development is explicitly enabled. Disabling an origin immediately blocks target checks and execution navigation without deleting its projects.
 
 ## 12. Target-site secrets
 
@@ -420,7 +452,7 @@ Preferred order:
 2. encrypted project variables;
 3. plaintext database values — rejected.
 
-Milestone 3 implements AES-256-GCM project-variable storage behind the explicit `PROJECT_SECRET_VARIABLES_ENABLED` flag. The key is loaded from `PROJECT_VARIABLE_KEY_PATH`; secret values are never serialized in API responses, audit metadata, logs, or definition snapshots. Static target validation is allowlist-based in this milestone. DNS/IP revalidation immediately before browser navigation is a Milestone 4 requirement.
+Milestone 3 implements AES-256-GCM project-variable storage behind the explicit `PROJECT_SECRET_VARIABLES_ENABLED` flag. The key is loaded from `PROJECT_VARIABLE_KEY_PATH`; secret values are never serialized in API responses, audit metadata, logs, or definition snapshots. Target validation is dynamically allowlist-based and DNS/IP revalidation still occurs immediately before browser navigation.
 
 Step definitions reference placeholders:
 
@@ -558,3 +590,11 @@ TARGET_ALLOWED_ORIGINS
 
 There is no independent Google callback setting: the backend derives `/login/oauth2/code/google` from the exact `FRONTEND_ORIGIN`. The bootstrap password and project-variable key are file paths, not inline secret values. The complete non-secret template is `backend/.env.example`.
 > Milestone 5 note: the legacy global role join model has been replaced by a singular `users.platform_role` (`ADMIN` or `MEMBER`) plus project-scoped memberships. Passwords live in `local_credentials`; Google and password login methods may coexist on one account. See [Milestone 5 identity and authorization](06-milestone-5-identity-and-authorization.md).
+
+## Phase 6 account-security follow-on
+
+The current completion branch adds the deterministic OAuth profile contract,
+consumed link intent, generic callback failure UI, and mutation logout ordering
+used by the Phase 6 account-security matrix. The source and focused tests are
+described in [`101-phase6-account-security-matrix.md`](../implementation/101-phase6-account-security-matrix.md); its live browser and
+DevTools evidence remains open until the revision-B Compose run succeeds.

@@ -1,39 +1,41 @@
-import { lazy } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 
 import { AppShell } from '../components/AppShell'
 import { PlatformPermissionRoute, ProtectedRoute, VerifiedRoute } from '../features/projects/RouteGuards'
 import { LazyPage } from './LazyPage'
+import { lazyWithRecovery } from './lazyWithRecovery'
+import { RouteErrorPage } from './RouteErrorPage'
 
-const HomePage = lazy(async () => ({ default: (await import('./pages')).HomePage }))
-const NotFoundPage = lazy(async () => ({ default: (await import('./pages')).NotFoundPage }))
-const LoginPage = lazy(async () => ({ default: (await import('../features/auth/AuthPages')).LoginPage }))
-const OAuthCallbackPage = lazy(async () => ({ default: (await import('../features/auth/AuthPages')).OAuthCallbackPage }))
-const RegisterPage = lazy(async () => ({ default: (await import('../features/auth/AuthPages')).RegisterPage }))
-const VerifyEmailPage = lazy(async () => ({ default: (await import('../features/auth/AuthPages')).VerifyEmailPage }))
-const PasswordResetPage = lazy(async () => ({ default: (await import('../features/auth/AuthPages')).PasswordResetPage }))
-const ProjectsPage = lazy(async () => ({ default: (await import('../features/projects/ProjectPages')).ProjectsPage }))
-const NewProjectPage = lazy(async () => ({ default: (await import('../features/projects/ProjectPages')).NewProjectPage }))
-const EditProjectPage = lazy(async () => ({ default: (await import('../features/projects/ProjectPages')).EditProjectPage }))
-const ProjectLayout = lazy(async () => ({ default: (await import('../features/projects/ProjectWorkspace')).ProjectLayout }))
-const ProjectOverviewPage = lazy(async () => ({ default: (await import('../features/projects/ProjectWorkspace')).ProjectOverviewPage }))
-const SuitesPage = lazy(async () => ({ default: (await import('../features/projects/SuitePages')).SuitesPage }))
-const SuitePage = lazy(async () => ({ default: (await import('../features/projects/SuitePages')).SuitePage }))
-const GuidedNewCasePage = lazy(async () => ({ default: (await import('../features/projects/GuidedCasePage')).GuidedNewCasePage }))
-const CasePage = lazy(async () => ({ default: (await import('../features/projects/CasePage')).CasePage }))
-const DefinitionTrashPage = lazy(async () => ({ default: (await import('../features/projects/DefinitionTrashPage')).DefinitionTrashPage }))
-const VariablesPage = lazy(async () => ({ default: (await import('../features/projects/ProjectResourcePages')).VariablesPage }))
-const MembersPage = lazy(async () => ({ default: (await import('../features/projects/ProjectResourcePages')).MembersPage }))
-const ExecutionsPage = lazy(async () => ({ default: (await import('../features/executions/ExecutionPages')).ExecutionsPage }))
-const ExecutionDetailPage = lazy(async () => ({ default: (await import('../features/executions/ExecutionPages')).ExecutionDetailPage }))
-const AccountPage = lazy(async () => ({ default: (await import('../features/auth/AccountPages')).AccountPage }))
-const AdminUsersPage = lazy(async () => ({ default: (await import('../features/auth/AccountPages')).AdminUsersPage }))
-const DashboardPage = lazy(async () => ({ default: (await import('../features/dashboard/DashboardPage')).DashboardPage }))
+const HomePage = lazyWithRecovery(async () => ({ default: (await import('./pages')).HomePage }))
+const NotFoundPage = lazyWithRecovery(async () => ({ default: (await import('./pages')).NotFoundPage }))
+const LoginPage = lazyWithRecovery(async () => ({ default: (await import('../features/auth/AuthPages')).LoginPage }))
+const OAuthCallbackPage = lazyWithRecovery(async () => ({ default: (await import('../features/auth/AuthPages')).OAuthCallbackPage }))
+const RegisterPage = lazyWithRecovery(async () => ({ default: (await import('../features/auth/AuthPages')).RegisterPage }))
+const VerifyEmailPage = lazyWithRecovery(async () => ({ default: (await import('../features/auth/AuthPages')).VerifyEmailPage }))
+const PasswordResetPage = lazyWithRecovery(async () => ({ default: (await import('../features/auth/AuthPages')).PasswordResetPage }))
+const ProjectsPage = lazyWithRecovery(async () => ({ default: (await import('../features/projects/ProjectPages')).ProjectsPage }))
+const NewProjectPage = lazyWithRecovery(async () => ({ default: (await import('../features/projects/ProjectPages')).NewProjectPage }))
+const EditProjectPage = lazyWithRecovery(async () => ({ default: (await import('../features/projects/ProjectPages')).EditProjectPage }))
+const ProjectLayout = lazyWithRecovery(async () => ({ default: (await import('../features/projects/ProjectWorkspace')).ProjectLayout }))
+const ProjectOverviewPage = lazyWithRecovery(async () => ({ default: (await import('../features/projects/ProjectWorkspace')).ProjectOverviewPage }))
+const SuitesPage = lazyWithRecovery(async () => ({ default: (await import('../features/projects/SuitePages')).SuitesPage }))
+const SuitePage = lazyWithRecovery(async () => ({ default: (await import('../features/projects/SuitePages')).SuitePage }))
+const GuidedNewCasePage = lazyWithRecovery(async () => ({ default: (await import('../features/projects/GuidedCasePage')).GuidedNewCasePage }))
+const CasePage = lazyWithRecovery(async () => ({ default: (await import('../features/projects/CasePage')).CasePage }))
+const DefinitionTrashPage = lazyWithRecovery(async () => ({ default: (await import('../features/projects/DefinitionTrashPage')).DefinitionTrashPage }))
+const VariablesPage = lazyWithRecovery(async () => ({ default: (await import('../features/projects/ProjectResourcePages')).VariablesPage }))
+const MembersPage = lazyWithRecovery(async () => ({ default: (await import('../features/projects/ProjectResourcePages')).MembersPage }))
+const ExecutionsPage = lazyWithRecovery(async () => ({ default: (await import('../features/executions/ExecutionPages')).ExecutionsPage }))
+const ExecutionDetailPage = lazyWithRecovery(async () => ({ default: (await import('../features/executions/ExecutionPages')).ExecutionDetailPage }))
+const AccountPage = lazyWithRecovery(async () => ({ default: (await import('../features/auth/AccountPages')).AccountPage }))
+const AdminUsersPage = lazyWithRecovery(async () => ({ default: (await import('../features/auth/AccountPages')).AdminUsersPage }))
+const DashboardPage = lazyWithRecovery(async () => ({ default: (await import('../features/dashboard/DashboardPage')).DashboardPage }))
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <AppShell />,
+    errorElement: <RouteErrorPage />,
     children: [
       { index: true, element: <LazyPage><HomePage /></LazyPage> },
       { path: 'login', element: <LazyPage><LoginPage /></LazyPage> },
@@ -42,7 +44,7 @@ export const router = createBrowserRouter([
       { path: 'password-reset', element: <LazyPage><PasswordResetPage /></LazyPage> },
       { path: 'auth/oauth/callback', element: <LazyPage><OAuthCallbackPage /></LazyPage> },
       { element: <ProtectedRoute />, children: [
-        { path: 'account', element: <AccountPage /> },
+        { path: 'account', element: <LazyPage><AccountPage /></LazyPage> },
         { element: <VerifiedRoute />, children: [
         { path: 'dashboard', element: <LazyPage><DashboardPage /></LazyPage> },
         { element: <PlatformPermissionRoute permission="USER_ADMINISTER" />, children: [

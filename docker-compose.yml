@@ -18,6 +18,8 @@ services:
     image: testops-platform-backend:0.1.0
     build:
       context: ./backend
+      args:
+        VCS_REF: ${VCS_REF:-unknown}
     restart: unless-stopped
     init: true
     shm_size: 1gb
@@ -25,6 +27,9 @@ services:
       - "host.docker.internal:host-gateway"
     env_file:
       - ./backend/.env
+    environment:
+      REFRESH_COOKIE_NAME: testops_refresh
+      OAUTH_SESSION_COOKIE_NAME: testops_oauth_session
     volumes:
       - artifacts_data:/app/artifacts
       - ./backend/.secrets:/run/secrets/testops:ro
@@ -43,6 +48,8 @@ services:
     image: testops-platform-frontend:0.1.0
     build:
       context: ./frontend
+      args:
+        VCS_REF: ${VCS_REF:-unknown}
     restart: unless-stopped
     env_file:
       - ./frontend/.env

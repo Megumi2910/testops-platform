@@ -1,10 +1,13 @@
 package com.megumi.testops.auth.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -17,6 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -93,21 +97,30 @@ class AuthServiceResendVerificationTest {
     }
 
     @Test
-    void publicResendDoesNotRevealDeliveryOutagesForExistingAccounts() {
+    void deliveryFailureIsInvalidatedAndPublicRetrySendsAgain() {
         UserEntity user = user(false);
         when(users.findByEmailForUpdate(user.getEmail())).thenReturn(Optional.of(user));
         when(challenges.findTopByUserIdAndPurposeAndConsumedAtIsNullAndInvalidatedAtIsNullOrderByIssuedAtDesc(
                 user.getId(), "REGISTRATION")).thenReturn(Optional.empty());
         when(challenges.countByUserIdAndPurposeAndIssuedAtAfter(any(), anyString(), any())).thenReturn(0L);
         when(otpHasher.hash(anyString(), anyString())).thenReturn("otp-hash");
-        org.mockito.Mockito.doThrow(new AuthException(HttpStatus.SERVICE_UNAVAILABLE,
+        doThrow(new AuthException(HttpStatus.SERVICE_UNAVAILABLE,
                 "email_delivery_unavailable", "Email verification is temporarily unavailable"))
+                .doNothing()
                 .when(emailDelivery).sendVerificationCode(anyString(), anyString(), anyString(), any());
 
-        AuthService.ResendVerificationResult result = service.resendVerification(user.getEmail(), "192.0.2.4");
+        AuthService.ResendVerificationResult first = service.resendVerification(user.getEmail(), "192.0.2.4");
+        AuthService.ResendVerificationResult retry = service.resendVerification(user.getEmail(), "192.0.2.4");
 
-        assertEquals(30, result.retryAfterSeconds());
-        verify(challenges).save(any(EmailVerificationChallengeEntity.class));
+        assertEquals(30, first.retryAfterSeconds());
+        assertEquals(30, retry.retryAfterSeconds());
+        ArgumentCaptor<EmailVerificationChallengeEntity> saved =
+                ArgumentCaptor.forClass(EmailVerificationChallengeEntity.class);
+        verify(challenges, times(2)).save(saved.capture());
+        assertEquals("FAILED", saved.getAllValues().get(0).getDeliveryStatus());
+        assertFalse(saved.getAllValues().get(0).isActive(NOW));
+        assertEquals("SENT", saved.getAllValues().get(1).getDeliveryStatus());
+        verify(emailDelivery, times(2)).sendVerificationCode(anyString(), anyString(), anyString(), any());
     }
 
     private static UserEntity user(boolean verified) {

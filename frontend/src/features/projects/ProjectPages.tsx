@@ -10,8 +10,14 @@ import { ApiError } from '../../lib/api'
 import { platformApi, projectKeys, projectsApi, type Project } from './api'
 import { useProjectWorkspace } from './ProjectWorkspaceContext'
 import { Alert, Button, Card, EmptyState, LoadingState, PageHeader } from '../../components/ui'
+import { ProjectErrorAlert } from './ProjectErrorAlert'
+import { TargetOriginSelector } from './TargetOriginControls'
 
-const projectSchema = z.object({ name: z.string().trim().min(2).max(120), description: z.string().max(2000).optional(), targetOrigin: z.string().url() })
+const projectSchema = z.object({
+  name: z.string().trim().min(1, 'Enter a project name.').min(2, 'Project name must be at least 2 characters.').max(120, 'Project name must be 120 characters or fewer.'),
+  description: z.string().max(2000, 'Description must be 2,000 characters or fewer.').optional(),
+  targetOrigin: z.string().trim().min(1, 'Choose a target origin.').url('Choose a valid HTTP(S) target origin.'),
+})
 type ProjectForm = z.infer<typeof projectSchema>
 
 export function ProjectsPage() {
@@ -33,10 +39,10 @@ export function ProjectsPage() {
   return <section className="page-stack">
     <PageHeader eyebrow="Workspace" title="Projects" description="Organize targets, test suites, and reusable variables." actions={canCreate && <Link className="button" to="/projects/new">New project</Link>} />
     {canCreate && options.data && !options.data.targetConfigured && <Alert tone="warning" title="Project creation needs setup.">Set <code>TARGET_ALLOWED_ORIGINS</code> in the backend environment, then recreate the backend container. <Link className="inline-link" to="/projects/new">View setup details</Link></Alert>}
-    {options.isError && canCreate && <Alert tone="danger" title="Project setup could not be checked.">You can retry after the backend is ready.</Alert>}
+    {options.isError && canCreate && <ProjectErrorAlert title="Project setup could not be checked." error={options.error} fallback="You can retry after the backend is ready." onRetry={() => void options.refetch()} />}
     <label className="search-field" htmlFor="project-search">Filter projects<input id="project-search" name="q" value={search} onChange={event => updateSearch(event.target.value)} placeholder="Search by name…" autoComplete="off" /></label>
     {query.isPending && <Card><LoadingState label="Loading projects…" /></Card>}
-    {query.isError && <Alert tone="danger" title="Unable to load projects.">{query.error instanceof ApiError ? query.error.message : 'Try again when the backend is ready.'}</Alert>}
+    {query.isError && <ProjectErrorAlert title="Unable to load projects." error={query.error} fallback="Try again when the backend is ready." onRetry={() => void query.refetch()} />}
     <div className="project-grid">{query.data?.content.map(project => <ProjectCard key={project.id} project={project} />)}</div>
     {query.data && query.data.content.length === 0 && <Card><EmptyState title={search ? 'No matching projects' : 'No projects yet'} description={search ? 'Try a different project name.' : 'Create your first project to start organizing targets and suites.'} action={canCreate && <Link className="button" to="/projects/new">Create a project</Link>} /></Card>}
     {query.data && query.data.totalPages > 1 && <nav className="pagination" aria-label="Project pages"><Button variant="secondary" type="button" onClick={() => updatePage(page - 1)} disabled={page === 0}>Previous</Button><span aria-live="polite">Page {page + 1} of {query.data.totalPages}</span><Button variant="secondary" type="button" onClick={() => updatePage(page + 1)} disabled={page + 1 >= query.data.totalPages}>Next</Button></nav>}
@@ -51,17 +57,18 @@ export function NewProjectPage() {
   const form = useForm<ProjectForm>({ resolver: zodResolver(projectSchema), defaultValues: { name: '', description: '', targetOrigin: '' } })
   const mutation = useMutation({ mutationFn: projectsApi.create, onSuccess: project => { client.invalidateQueries({ queryKey: projectKeys.all }); navigate(`/projects/${project.id}`) } })
   if (options.isPending) return <section className="card"><LoadingState label="Loading project setup…" /></section>
-  if (options.isError) return <section className="card" role="alert"><PageHeader eyebrow="Projects" title="Project setup unavailable" description="The backend did not return the project configuration." /><div className="inline-actions"><Button type="button" onClick={() => void options.refetch()}>Retry</Button><Link className="button button-secondary" to="/projects">Back to projects</Link></div></section>
-  if (!options.data?.targetConfigured) return <section className="card" role="alert"><PageHeader eyebrow="Projects" title="Project setup required" description="An administrator must set TARGET_ALLOWED_ORIGINS to at least one safe HTTP(S) origin before projects can be created." /><Link className="button button-secondary" to="/projects">Back to projects</Link></section>
+  if (options.isError) return <section className="card"><PageHeader eyebrow="Projects" title="Project setup unavailable" description="The backend did not return the project configuration." /><ProjectErrorAlert title="Unable to load project setup." error={options.error} fallback="The backend did not return the project configuration." onRetry={() => void options.refetch()} /><Link className="button button-secondary" to="/projects">Back to projects</Link></section>
+  if (!options.data?.targetConfigured) return <section className="card" role="alert"><PageHeader eyebrow="Projects" title="Project setup required" description="A platform administrator must register at least one safe HTTP(S) target origin before projects can be created." /><Link className="button button-secondary" to="/projects">Back to projects</Link></section>
   if (!options.data.projectCreationEnabled) return <section className="card" role="alert"><PageHeader eyebrow="Projects" title="Project creation is restricted" description="Your account must be active and email verified before it can create a project." /><Link className="button button-secondary" to="/projects">Back to projects</Link></section>
-  const origins = options.data.targetOrigins ?? options.data.targetAllowedOrigins.map(origin => ({ origin, type: 'EXTERNAL' as const, usable: true }))
-  return <section className="card auth-card"><PageHeader eyebrow="Projects" title="Create project" description="Register a safe target before adding suites and browser checks." /><form className="form-stack" onSubmit={form.handleSubmit(values => mutation.mutate(values))}><Field label="Name" error={form.formState.errors.name?.message}><input autoComplete="organization" {...form.register('name')} /></Field><Field label="Description" error={form.formState.errors.description?.message}><textarea {...form.register('description')} rows={4} /></Field><Field label="Target origin" help="Choose an origin from the deployment allowlist. Disabled entries explain why they cannot be used." error={form.formState.errors.targetOrigin?.message}><select {...form.register('targetOrigin')}><option value="">Select target origin</option>{origins.map(origin => <option key={origin.origin} value={origin.origin} disabled={!origin.usable}>{origin.origin}{origin.usable ? '' : ` — ${origin.blockedReason ?? 'Unavailable'}`}</option>)}</select></Field>{mutation.isError && <p className="form-error" role="alert" aria-live="polite">{mutation.error instanceof ApiError ? mutation.error.message : 'Unable to create project'}</p>}<div className="inline-actions"><Button type="submit" busy={mutation.isPending}>{mutation.isPending ? 'Creating…' : 'Create project'}</Button><Link className="button button-secondary" to="/projects">Cancel</Link></div></form></section>
+  const origins = options.data.targetOrigins ?? options.data.targetAllowedOrigins.map(origin => ({ origin, source: 'ENVIRONMENT' as const, usable: true }))
+  return <section className="card auth-card"><PageHeader eyebrow="Projects" title="Create project" description="Register a safe target before adding suites and browser checks." /><form className="form-stack" onSubmit={form.handleSubmit(values => mutation.mutate(values))}><Field label="Name" error={form.formState.errors.name?.message} errorId="new-project-name-error"><input autoComplete="off" aria-invalid={Boolean(form.formState.errors.name)} aria-describedby={form.formState.errors.name ? 'new-project-name-error' : undefined} {...form.register('name')} /></Field><Field label="Description" error={form.formState.errors.description?.message} errorId="new-project-description-error"><textarea autoComplete="off" aria-invalid={Boolean(form.formState.errors.description)} aria-describedby={form.formState.errors.description ? 'new-project-description-error' : undefined} {...form.register('description')} rows={4} /></Field><Field label="Target origin" help="Choose an approved origin. Platform administrators can add a target they control; all other users can request one." error={form.formState.errors.targetOrigin?.message} errorId="new-project-origin-error"><TargetOriginSelector id="new-project-origin" registration={form.register('targetOrigin')} value={form.watch('targetOrigin')} origins={origins} invalid={Boolean(form.formState.errors.targetOrigin)} describedBy={form.formState.errors.targetOrigin ? 'new-project-origin-error' : undefined} onCreated={origin => form.setValue('targetOrigin', origin, { shouldDirty: true, shouldValidate: true })} /></Field>{mutation.isError && <ProjectErrorAlert title="Unable to create project." error={mutation.error} fallback="Review the project details and try again." busy={mutation.isPending} onRetry={() => void form.handleSubmit(values => mutation.mutate(values))()} /> }<div className="inline-actions"><Button type="submit" busy={mutation.isPending}>{mutation.isPending ? 'Creating…' : 'Create project'}</Button><Link className="button button-secondary" to="/projects">Cancel</Link></div></form></section>
 }
 
 export function EditProjectPage() {
   const { project, root } = useProjectWorkspace()
   const navigate = useNavigate()
   const client = useQueryClient()
+  const options = useQuery({ queryKey: ['platform', 'options'], queryFn: platformApi.options, staleTime: 60_000 })
   const form = useForm<ProjectForm>({
     resolver: zodResolver(projectSchema),
     defaultValues: { name: project.name, description: project.description ?? '', targetOrigin: project.targetOrigin },
@@ -72,6 +79,14 @@ export function EditProjectPage() {
       client.setQueryData(projectKeys.detail(project.id), updated)
       void client.invalidateQueries({ queryKey: projectKeys.all })
       navigate(root)
+    },
+  })
+  const reload = useMutation({
+    mutationFn: () => projectsApi.get(project.id),
+    onSuccess: latest => {
+      client.setQueryData(projectKeys.detail(project.id), latest)
+      form.reset({ name: latest.name, description: latest.description ?? '', targetOrigin: latest.targetOrigin })
+      mutation.reset()
     },
   })
 
@@ -91,17 +106,20 @@ export function EditProjectPage() {
           ? 'This project was archived and is now read-only.'
           : mutation.error.message
     : 'Unable to save project changes.'
+  const staleVersion = mutation.error instanceof ApiError && mutation.error.code === 'stale_version'
 
+  const origins = options.data?.targetOrigins ?? options.data?.targetAllowedOrigins.map(origin => ({ origin, source: 'ENVIRONMENT' as const, usable: true })) ?? []
   return <section className="card auth-card">
     <PageHeader eyebrow="Projects" title="Edit project" description="Update the project identity and its approved target origin." />
-    <form className="form-stack" onSubmit={form.handleSubmit(values => mutation.mutate(values))}>
-      <Field label="Name" error={form.formState.errors.name?.message}><input autoComplete="organization" {...form.register('name')} /></Field>
-      <Field label="Description" error={form.formState.errors.description?.message}><textarea {...form.register('description')} rows={4} /></Field>
-      <Field label="Target origin" help="The origin must remain in the backend allowlist." error={form.formState.errors.targetOrigin?.message}><input type="url" {...form.register('targetOrigin')} /></Field>
-      {mutation.isError && <p className="form-error" role="alert" aria-live="polite">{errorMessage}</p>}
-      <div className="inline-actions"><Button type="submit" busy={mutation.isPending}>{mutation.isPending ? 'Saving…' : 'Save changes'}</Button><Link className="button button-secondary" to={root}>Cancel</Link></div>
+    <form className="form-stack" aria-busy={reload.isPending} onSubmit={form.handleSubmit(values => mutation.mutate(values))}>
+      <Field label="Name" error={form.formState.errors.name?.message} errorId="edit-project-name-error"><input autoComplete="off" disabled={reload.isPending} aria-invalid={Boolean(form.formState.errors.name)} aria-describedby={form.formState.errors.name ? 'edit-project-name-error' : undefined} {...form.register('name')} /></Field>
+      <Field label="Description" error={form.formState.errors.description?.message} errorId="edit-project-description-error"><textarea autoComplete="off" disabled={reload.isPending} aria-invalid={Boolean(form.formState.errors.description)} aria-describedby={form.formState.errors.description ? 'edit-project-description-error' : undefined} {...form.register('description')} rows={4} /></Field>
+      <Field label="Target origin" help="Choose an enabled approved origin. If this project’s origin was disabled, you may keep it while editing other metadata but checks and executions stay blocked." error={form.formState.errors.targetOrigin?.message} errorId="edit-project-origin-error"><TargetOriginSelector id="edit-project-origin" registration={form.register('targetOrigin')} value={form.watch('targetOrigin')} origins={origins} currentOrigin={project.targetOrigin} disabled={reload.isPending || options.isPending} invalid={Boolean(form.formState.errors.targetOrigin)} describedBy={form.formState.errors.targetOrigin ? 'edit-project-origin-error' : undefined} onCreated={origin => form.setValue('targetOrigin', origin, { shouldDirty: true, shouldValidate: true })} /></Field>
+      {mutation.isError && <ProjectErrorAlert title="Unable to save project changes." error={mutation.error} fallback="Unable to save project changes." message={errorMessage} retryLabel={staleVersion ? 'Reload latest project' : 'Try save again'} busy={staleVersion ? reload.isPending : mutation.isPending} onRetry={staleVersion ? () => reload.mutate() : () => void form.handleSubmit(values => mutation.mutate(values))()} />}
+      {reload.isError && <ProjectErrorAlert title="Unable to reload the project." error={reload.error} fallback="Your edits remain in this form." retryLabel="Retry reload" busy={reload.isPending} onRetry={() => reload.mutate()} />}
+      <div className="inline-actions"><Button type="submit" busy={mutation.isPending} disabled={reload.isPending || staleVersion}>{mutation.isPending ? 'Saving…' : 'Save changes'}</Button><Link className="button button-secondary" to={root}>Cancel</Link></div>
     </form>
   </section>
 }
 
-function Field({ label, help, error, children }: { label: string; help?: string; error?: string; children: ReactNode }) { return <label>{label}{children}{help && <small className="form-help">{help}</small>}{error && <small className="form-error">{error}</small>}</label> }
+function Field({ label, help, error, errorId, children }: { label: string; help?: string; error?: string; errorId?: string; children: ReactNode }) { return <label>{label}{children}{help && <small className="form-help">{help}</small>}{error && <small id={errorId} className="form-error">{error}</small>}</label> }

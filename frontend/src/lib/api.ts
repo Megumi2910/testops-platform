@@ -28,7 +28,20 @@ export function normalizeFieldErrors(errors?: Record<string, string> | ProblemVi
 type AuthResponseLike = { accessToken: string }
 
 let accessToken: string | null = null
-let refreshPromise: Promise<unknown> | null = null
+let refreshPromise: Promise<AuthResponseLike | null> | null = null
+const authFailureListeners = new Set<() => void>()
+
+export function subscribeAuthFailure(listener: () => void) {
+  authFailureListeners.add(listener)
+  return () => { authFailureListeners.delete(listener) }
+}
+
+function notifyAuthFailure() {
+  clearAccessToken()
+  for (const listener of authFailureListeners) {
+    try { listener() } catch { /* observers must not break request cleanup */ }
+  }
+}
 
 export function setAccessToken(token: string) {
   accessToken = token
@@ -38,17 +51,24 @@ export function clearAccessToken() {
   accessToken = null
 }
 
-async function refreshInMemory(): Promise<unknown> {
+async function refreshInMemory(): Promise<AuthResponseLike | null> {
   if (!refreshPromise) {
     refreshPromise = fetch('/api/v1/auth/refresh', {
       method: 'POST',
       credentials: 'include',
       headers: { Accept: 'application/json' },
     }).then(async (response) => {
+      // A first anonymous page load is a normal no-session state. The backend
+      // returns 204 so DevTools does not report an expected refresh as an
+      // application error.
+      if (response.status === 204) return null
       if (!response.ok) throw new ApiError(response.status, 'Session refresh failed')
       const session = (await response.json()) as AuthResponseLike
       setAccessToken(session.accessToken)
       return session
+    }).catch((error) => {
+      notifyAuthFailure()
+      throw error
     }).finally(() => {
       refreshPromise = null
     })
@@ -60,6 +80,22 @@ function canRefresh(input: RequestInfo | URL) {
   const url = typeof input === 'string' ? input : input instanceof URL ? input.pathname : input.url
   return !url.includes('/auth/login') && !url.includes('/auth/register') && !url.includes('/auth/email/')
     && !url.includes('/auth/refresh') && !url.includes('/auth/logout')
+}
+
+async function unauthorizedProblemCode(response: Response) {
+  try {
+    const problem = await response.clone().json() as { code?: string }
+    return problem.code?.toLowerCase()
+  } catch {
+    return undefined
+  }
+}
+
+function isSessionUnauthorized(code?: string) {
+  // A structured 401 can be an authenticated domain validation failure (for
+  // example, a wrong current password). Only retry and clear auth state when
+  // the response is an actual session/credential boundary.
+  return code !== 'password_invalid'
 }
 
 async function request<T>(input: RequestInfo | URL, init: RequestInit | undefined, allowRetry: boolean): Promise<T> {
@@ -74,14 +110,15 @@ async function request<T>(input: RequestInfo | URL, init: RequestInit | undefine
     },
   })
 
-  if (response.status === 401 && allowRetry && canRefresh(input)) {
+  const unauthorizedCode = response.status === 401 ? await unauthorizedProblemCode(response) : undefined
+  if (response.status === 401 && allowRetry && canRefresh(input) && isSessionUnauthorized(unauthorizedCode)) {
     try {
       await refreshInMemory()
       return request<T>(input, init, false)
-    } catch {
-      clearAccessToken()
-    }
+    } catch { /* refreshInMemory publishes the terminal auth failure */ }
   }
+
+  if (response.status === 401 && !allowRetry && canRefresh(input) && isSessionUnauthorized(unauthorizedCode)) notifyAuthFailure()
 
   if (!response.ok) {
     let message = `Request failed with status ${response.status}`
@@ -104,13 +141,20 @@ export async function apiFetch<T>(input: RequestInfo | URL, init?: RequestInit):
   return request<T>(input, init, true)
 }
 
-export async function apiBlobFetch(input: RequestInfo | URL): Promise<Blob> {
+async function blobRequest(input: RequestInfo | URL, allowRetry: boolean): Promise<Blob> {
   const response = await fetch(input, { credentials: 'include', headers: { Accept: 'application/octet-stream', ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) } })
-  if (response.status === 401) { await refreshInMemory(); return apiBlobFetch(input) }
+  if (response.status === 401 && allowRetry && canRefresh(input)) {
+    try { await refreshInMemory(); return blobRequest(input, false) } catch { /* refreshInMemory publishes the terminal auth failure */ }
+  }
+  if (response.status === 401 && !allowRetry && canRefresh(input)) notifyAuthFailure()
   if (!response.ok) throw new ApiError(response.status, 'Artifact download failed')
   return response.blob()
 }
 
+export async function apiBlobFetch(input: RequestInfo | URL): Promise<Blob> {
+  return blobRequest(input, true)
+}
+
 export async function refreshAccessToken<T extends AuthResponseLike>() {
-  return refreshInMemory() as Promise<T>
+  return refreshInMemory() as Promise<T | null>
 }

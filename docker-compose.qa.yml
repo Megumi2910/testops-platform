@@ -12,11 +12,23 @@ services:
       timeout: 5s
       retries: 12
 
+  postgres:
+    # The QA overlay must coexist with the developer's default Compose stack.
+    ports: !override []
+
+  pgadmin4:
+    ports: !override []
+
   backend:
+    ports: !override
+      - "8380:8080"
     environment:
       SPRING_PROFILES_ACTIVE: local-qa
       AUTH_ENABLED: "true"
       AUTH_REGISTRATION_ENABLED: "true"
+      # local-qa creates the administrator and role fixtures itself. Do not
+      # run the first-user bootstrap runner against that already-seeded data.
+      BOOTSTRAP_ADMIN_ENABLED: "false"
       EMAIL_DELIVERY_ENABLED: "true"
       MAIL_HOST: mailpit
       MAIL_PORT: "1025"
@@ -24,6 +36,12 @@ services:
       MAIL_FROM_NAME: TestOps QA
       MAIL_SMTP_AUTH: "false"
       MAIL_STARTTLS: "false"
+      FRONTEND_ORIGIN: http://localhost:3300
+      REFRESH_COOKIE_NAME: testops_qa_refresh
+      OAUTH_SESSION_COOKIE_NAME: testops_qa_oauth_session
+      # QA fixtures use password authentication. This explicit false wins over
+      # any real Google credentials in backend/.env.
+      GOOGLE_AUTH_ENABLED: "false"
       TESTOPS_QA_FIXTURES_ENABLED: "true"
       TESTOPS_QA_FIXTURE_PASSWORD_PATH: /run/secrets/testops/qa-fixture-password
       TESTOPS_QA_TARGET_ORIGIN: http://localhost:3001
@@ -36,3 +54,7 @@ services:
         condition: service_healthy
       mailpit:
         condition: service_healthy
+
+  frontend:
+    ports: !override
+      - "3300:8080"

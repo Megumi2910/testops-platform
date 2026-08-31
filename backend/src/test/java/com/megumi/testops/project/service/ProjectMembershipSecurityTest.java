@@ -1,6 +1,7 @@
 package com.megumi.testops.project.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -11,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -121,6 +123,7 @@ class ProjectMembershipSecurityTest {
         assertEquals("qa.member@example.test", response.email());
         assertEquals("TEST_MANAGER", response.role());
         assertEquals(actorId, response.assignedBy());
+        assertEquals(ProjectService.permissionSet("TEST_MANAGER", false), response.permissions());
         verify(members).save(any(ProjectMemberEntity.class));
         verify(audits).save(any());
     }
@@ -158,9 +161,28 @@ class ProjectMembershipSecurityTest {
         service.removeMember(jwt, project.getId(), memberId, project.getVersion());
 
         assertEquals("VIEWER", changed.role());
+        assertEquals(ProjectService.permissionSet("VIEWER", false), changed.permissions());
         assertEquals("VIEWER", member.getRole());
         verify(members).delete(member);
         verify(audits, org.mockito.Mockito.times(2)).save(any());
+    }
+
+    @Test
+    void memberPermissionsComeFromEachMembersProjectRoleEvenForAnAdministratorCaller() {
+        UserEntity managerUser = memberUser("manager@example.test", "Manager");
+        UserEntity viewerUser = memberUser("viewer@example.test", "Viewer");
+        ProjectMemberEntity manager = new ProjectMemberEntity(project, managerUser, "PROJECT_MANAGER", Instant.now());
+        ProjectMemberEntity viewer = new ProjectMemberEntity(project, viewerUser, "VIEWER", Instant.now());
+        when(access.globalAdmin(jwt)).thenReturn(true);
+        when(members.findByProjectIdOrderByCreatedAtAsc(project.getId())).thenReturn(List.of(manager, viewer));
+
+        List<ProjectDtos.MemberResponse> response = service.members(jwt, project.getId());
+
+        assertEquals(ProjectService.permissionSet("PROJECT_MANAGER", false), response.get(0).permissions());
+        assertEquals(ProjectService.permissionSet("VIEWER", false), response.get(1).permissions());
+        assertFalse(response.get(1).permissions().contains(ProjectPermission.MEMBER_MANAGE.name()));
+        assertFalse(response.get(1).permissions().contains(ProjectPermission.VARIABLE_MANAGE.name()));
+        verify(access, never()).membership(project, actor);
     }
 
     @Test
@@ -200,5 +222,13 @@ class ProjectMembershipSecurityTest {
         assertEquals(403, failure.getStatus().value());
         verify(users, never()).findByEmail(any());
         verify(members, never()).save(any());
+    }
+
+    private static UserEntity memberUser(String email, String displayName) {
+        UserEntity member = mock(UserEntity.class);
+        when(member.getId()).thenReturn(UUID.randomUUID());
+        when(member.getEmail()).thenReturn(email);
+        when(member.getDisplayName()).thenReturn(displayName);
+        return member;
     }
 }

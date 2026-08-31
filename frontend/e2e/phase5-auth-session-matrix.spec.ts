@@ -43,7 +43,7 @@ test('invalid OTP is rejected and a valid code can complete verification', async
   await registerPending(page, email)
   await page.getByLabel('Verification code').fill('999999')
   await page.getByRole('button', { name: 'Verify and sign in' }).click()
-  await expect(page.getByRole('alert')).toContainText(/invalid|expired/i)
+  await expect(page.getByRole('alert').filter({ hasText: /invalid|expired/i }).first()).toBeVisible()
   await page.getByLabel('Verification code').fill(await latestOtp(email))
   await page.getByRole('button', { name: 'Verify and sign in' }).click()
   await expect(page.getByRole('link', { name: 'Projects', exact: true })).toBeVisible()

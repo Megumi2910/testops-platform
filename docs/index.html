@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Beginner-friendly visual documentation for the TestOps managed browser-testing platform.">
+  <title>TestOps documentation portal</title>
+  <link rel="stylesheet" href="assets/report.css">
+</head>
+<body id="top">
+  <div class="report-shell">
+    <header class="report-header">
+      <div class="report-header-inner">
+        <p class="eyebrow">Visual system report · verified source boundary</p>
+        <h1>TestOps Platform documentation</h1>
+        <p class="lede">A clear path from a user click to a validated API request, a PostgreSQL state change, an isolated Chromium run, and the evidence that explains the result.</p>
+        <div class="header-meta">
+          <span class="chip current">Verified source: Phase 9 candidate</span>
+          <span class="chip runtime">Runtime screenshots: QA fixtures only</span>
+          <span class="chip deferred">Ecommerce: documented as target boundary</span>
+        </div>
+      </div>
+    </header>
+
+    <nav class="report-nav" aria-label="Documentation navigation">
+      <div class="report-nav-inner">
+        <a href="#start">Start here</a>
+        <a href="architecture/15-codebase-architecture.html">Architecture</a>
+        <a href="reference/api-reference.html">API handbook</a>
+        <a href="guides/testops-user-manual.html">User manual</a>
+        <a href="workflows/ui-to-execution-workflow.html">Workflows</a>
+        <a href="implementation/feature-code-and-business-logic.html">Code guide</a>
+        <a href="README.md">Markdown index</a>
+      </div>
+    </nav>
+
+    <main class="report-main">
+      <section class="hero-grid" id="start">
+        <article class="panel">
+          <p class="eyebrow" style="color:var(--blue)">What this project is</p>
+          <h2>A reviewable browser-testing platform for an existing ecommerce site.</h2>
+          <p>TestOps lets a team register a target, define suites and cases, queue browser work, and inspect a durable history of what happened. The target website is deliberately kept outside TestOps’ ownership boundary: TestOps controls the test definition, safety policy, worker, and evidence; the ecommerce application owns its own catalog, account, checkout, and messaging behavior.</p>
+          <div class="callout success"><strong>How to use this report:</strong> start with the user manual if you want to operate the app, the API handbook if you need to call it, the architecture page if you need the system boundary, and the code guide if you need to change it.</div>
+        </article>
+        <aside class="panel">
+          <h2>At a glance</h2>
+          <table>
+            <tbody>
+              <tr><th>Browser UI</th><td>React + TypeScript + React Router</td></tr>
+              <tr><th>API</th><td>Spring Boot modular monolith</td></tr>
+              <tr><th>Data</th><td>PostgreSQL + Flyway V001–V024</td></tr>
+              <tr><th>Runner</th><td>Playwright Java + Chromium</td></tr>
+              <tr><th>Local UI</th><td><code>http://localhost:3000</code></td></tr>
+              <tr><th>Local API</th><td><code>http://localhost:8080</code></td></tr>
+              <tr><th>Target bridge</th><td><code>host.docker.internal</code></td></tr>
+            </tbody>
+          </table>
+        </aside>
+      </section>
+
+      <section class="section">
+        <h2>Choose a reader path</h2>
+        <p class="section-lede">Each page answers a different question. You do not need to read the repository in source-code order.</p>
+        <div class="card-grid">
+          <a class="route-card" href="guides/testops-user-manual.html"><span class="route-label">New user</span><strong>How do I use TestOps?</strong><span>Register, create a project, author a case, run it, and read the evidence.</span></a>
+          <a class="route-card" href="reference/api-reference.html"><span class="route-label">API consumer</span><strong>How do I call each API?</strong><span>Methods, paths, headers, query parameters, bodies, response statuses, and examples.</span></a>
+          <a class="route-card" href="architecture/15-codebase-architecture.html"><span class="route-label">Reviewer</span><strong>How is the system divided?</strong><span>Runtime components, trust boundaries, data ownership, and design decisions.</span></a>
+          <a class="route-card" href="workflows/ui-to-execution-workflow.html"><span class="route-label">Workflow reader</span><strong>What happens after a click?</strong><span>Follow UI state through HTTP, services, persistence, worker execution, and evidence.</span></a>
+          <a class="route-card" href="implementation/feature-code-and-business-logic.html"><span class="route-label">Maintainer</span><strong>Where is each feature implemented?</strong><span>Frontend folders, Java packages, DTOs, repositories, tests, and business rules.</span></a>
+          <a class="route-card" href="planning/86-documentation-truth-audit.md"><span class="route-label">Evidence boundary</span><strong>What is verified?</strong><span>Current, legacy, deferred, and runtime-unverified claims are recorded in the audit ledger.</span></a>
+          <a class="route-card" href="testing/101-phase9-browser-quality-performance.md"><span class="route-label">Phase 9 gate</span><strong>How is browser quality proven?</strong><span>Review the 18 viewport cases, sanitized accessibility assertions, and Lighthouse/trace threshold evidence.</span></a>
+          <a class="route-card" href="testing/102-phase10-release-finalization.md"><span class="route-label">Phase 10 gate</span><strong>How is release publication bounded?</strong><span>Check the exact-SHA runtimes, two-run CI contract, draft PR state, and PLAN_PASS boundary.</span></a>
+        </div>
+      </section>
+
+      <section class="section two-col">
+        <article class="panel">
+          <h2>Feature map</h2>
+          <table>
+            <thead><tr><th>Feature</th><th>Start here</th><th>Backend owner</th></tr></thead>
+            <tbody>
+              <tr><td>Identity and sessions</td><td><a href="guides/testops-user-manual.html#account">Account guide</a></td><td><code>auth</code></td></tr>
+              <tr><td>Projects and targets</td><td><a href="guides/testops-user-manual.html#project">Project guide</a></td><td><code>project</code></td></tr>
+              <tr><td>Suites and cases</td><td><a href="guides/testops-user-manual.html#project">Authoring guide</a></td><td><code>project</code></td></tr>
+              <tr><td>Variables and permissions</td><td><a href="reference/api-reference.html#variables">API reference</a></td><td><code>project</code></td></tr>
+              <tr><td>Execution and evidence</td><td><a href="workflows/ui-to-execution-workflow.html#execution">Execution workflow</a></td><td><code>execution</code></td></tr>
+              <tr><td>Reporting</td><td><a href="architecture/15-codebase-architecture.html#dashboard">Architecture</a></td><td><code>dashboard</code></td></tr>
+              <tr><td>Administration</td><td><a href="guides/testops-user-manual.html#administration">Admin guide</a></td><td><code>auth</code></td></tr>
+            </tbody>
+          </table>
+        </article>
+        <article class="panel">
+          <h2>Important vocabulary</h2>
+          <dl>
+            <dt><strong>DRAFT</strong></dt><dd class="muted">A case that may be incomplete and can be edited without being executable.</dd>
+            <dt><strong>READY</strong></dt><dd class="muted">A case whose steps satisfy the executable definition rules.</dd>
+            <dt><strong>Target health</strong></dt><dd class="muted">The last sanitized result of checking the project’s approved origin.</dd>
+            <dt><strong>Execution snapshot</strong></dt><dd class="muted">The immutable target, case, step, browser, and variable-reference data captured when a run is queued.</dd>
+            <dt><strong>Infrastructure error</strong></dt><dd class="muted">A worker, browser, target, timeout, or policy problem—not a failed business assertion.</dd>
+          </dl>
+        </article>
+      </section>
+
+      <section class="section">
+        <div class="callout warning"><strong>Evidence status:</strong> the TestOps app was reachable during the source audit. The separate ecommerce target was offline at that moment, so ecommerce screenshots remain explicitly runtime-unverified until the controlled stack is available.</div>
+      </section>
+    </main>
+
+    <footer class="report-footer">
+      <p><strong>Documentation status:</strong> generated and reviewed against the current checkout. See <a href="planning/86-documentation-truth-audit.md">the truth audit</a> for the source boundary and preservation rules.</p>
+      <p>Use the Markdown <a href="README.md">documentation index</a> when working from GitHub, or open this portal locally for interactive diagrams, filtering, screenshots, and print output.</p>
+    </footer>
+  </div>
+  <button class="back-to-top" type="button" aria-label="Back to top">Top</button>
+  <script src="assets/report.js"></script>
+</body>
+</html>

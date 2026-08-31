@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { dashboardApi } from './api'
 import { DashboardPage } from './DashboardPage'
 import { dashboardWindow } from './dashboardWindow'
+import { formatDashboardDate } from './dashboardFormatting'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -38,9 +39,14 @@ describe('dashboardWindow', () => {
 })
 
 describe('DashboardPage', () => {
-  it('fetches the three dashboard panels for the selected URL range and updates it accessibly', async () => {
+  it('formats reporting bounds as UTC dates instead of the browser local timezone', () => {
+    expect(formatDashboardDate('2026-08-05T23:00:00-05:00')).toBe(formatDashboardDate('2026-08-06T04:00:00Z'))
+  })
+
+  it('fetches the dashboard panels for the selected URL range and updates it accessibly', async () => {
     vi.setSystemTime(new Date('2026-08-12T12:00:00Z'))
     const summary = vi.spyOn(dashboardApi, 'summary').mockResolvedValue({ totalExecutions: 2, passedCases: 1, failedCases: 1, infrastructureErrors: 0, functionalPassRate: .5, infrastructureErrorRate: 0, from: '', to: '' })
+    const trends = vi.spyOn(dashboardApi, 'trends').mockResolvedValue([{ day: '2026-08-12', passed: 1, failed: 1, errors: 0 }])
     const recent = vi.spyOn(dashboardApi, 'recent').mockResolvedValue([])
     const infrastructure = vi.spyOn(dashboardApi, 'infrastructure').mockResolvedValue([])
     renderDashboard()
@@ -48,11 +54,53 @@ describe('DashboardPage', () => {
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Execution dashboard' })).toBeInTheDocument())
     expect(screen.getByRole('combobox', { name: 'Reporting period' })).toHaveValue('7')
     expect(summary).toHaveBeenCalledWith('2026-08-05T12:00:00.000Z', '2026-08-12T12:00:00.000Z')
+    expect(trends).toHaveBeenCalledWith('2026-08-05T12:00:00.000Z', '2026-08-12T12:00:00.000Z')
     expect(recent).toHaveBeenCalledWith('2026-08-05T12:00:00.000Z', '2026-08-12T12:00:00.000Z')
     expect(infrastructure).toHaveBeenCalledWith('2026-08-05T12:00:00.000Z', '2026-08-12T12:00:00.000Z')
 
     fireEvent.change(screen.getByRole('combobox', { name: 'Reporting period' }), { target: { value: '90' } })
     expect(screen.getByTestId('location')).toHaveTextContent('range=90')
     await waitFor(() => expect(summary).toHaveBeenCalledWith('2026-05-14T12:00:00.000Z', '2026-08-12T12:00:00.000Z'))
+  })
+
+  it('keeps panel failures independent and retries only the selected panel', async () => {
+    const summary = vi.spyOn(dashboardApi, 'summary')
+      .mockRejectedValueOnce(new Error('summary unavailable'))
+      .mockResolvedValueOnce({ totalExecutions: 1, passedCases: 1, failedCases: 0, infrastructureErrors: 0, functionalPassRate: 1, infrastructureErrorRate: 0, from: '', to: '' })
+    const trends = vi.spyOn(dashboardApi, 'trends')
+      .mockRejectedValueOnce(new Error('trend unavailable'))
+      .mockResolvedValueOnce([{ day: '2026-08-12', passed: 1, failed: 0, errors: 0 }])
+    const recent = vi.spyOn(dashboardApi, 'recent')
+      .mockRejectedValueOnce(new Error('recent unavailable'))
+      .mockResolvedValueOnce([])
+    const infrastructure = vi.spyOn(dashboardApi, 'infrastructure')
+      .mockRejectedValueOnce(new Error('infrastructure unavailable'))
+      .mockResolvedValueOnce([])
+    renderDashboard()
+
+    expect(await screen.findByRole('button', { name: 'Retry pass-rate reporting' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Retry recent failures' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Retry infrastructure categories' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Retry daily trend' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retry recent failures' }))
+    await waitFor(() => expect(recent).toHaveBeenCalledTimes(2))
+    expect(screen.getByRole('heading', { name: 'Recent failures' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Retry recent failures' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Retry pass-rate reporting' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Retry infrastructure categories' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Retry daily trend' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retry pass-rate reporting' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Retry infrastructure categories' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Retry daily trend' }))
+    await waitFor(() => {
+      expect(summary).toHaveBeenCalledTimes(2)
+      expect(infrastructure).toHaveBeenCalledTimes(2)
+      expect(trends).toHaveBeenCalledTimes(2)
+    })
+    expect(screen.getByText('100%')).toBeInTheDocument()
+    expect(screen.getByText('No infrastructure errors')).toBeInTheDocument()
+    expect(screen.getByText('Daily execution trend')).toBeInTheDocument()
   })
 })

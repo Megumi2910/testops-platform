@@ -36,7 +36,9 @@ erDiagram
     TEST_CASE_RESULTS ||--o{ EXECUTION_ARTIFACTS : may_have
 ```
 
-## 3. Proposed tables
+## 3. Current relational model
+
+The tables below describe the active PostgreSQL model. The migration directory is authoritative; this document is a readable map, not a second schema definition. The current migration chain is `V001` through `V024`.
 
 ### `users`
 
@@ -163,6 +165,20 @@ Constraints:
 - valid HTTP/HTTPS URL;
 - status `ACTIVE` or `ARCHIVED`;
 
+### `target_origins`
+
+```text
+id UUID PK
+origin VARCHAR UNIQUE NOT NULL
+enabled BOOLEAN NOT NULL
+created_by UUID FK NOT NULL
+created_at TIMESTAMPTZ NOT NULL
+updated_at TIMESTAMPTZ NOT NULL
+version BIGINT NOT NULL
+```
+
+`TARGET_ALLOWED_ORIGINS` remains a read-only deployment bootstrap source. The effective allowlist is the canonical union of those environment origins and enabled `target_origins` rows. A disabled row is retained for audit and project history: projects may keep the value while editing unrelated metadata, but fresh target checks and execution navigation are blocked until an enabled origin is selected.
+
 ### `project_members`
 
 ```text
@@ -248,30 +264,28 @@ Secret inputs should reference project variables, not contain resolved secrets.
 ```text
 id UUID PK
 project_id UUID FK
-test_suite_id UUID FK
+suite_id UUID FK NULL
 requested_by UUID FK
-status VARCHAR NOT NULL
-priority VARCHAR NOT NULL
-queued_at TIMESTAMPTZ NOT NULL
-claimed_at TIMESTAMPTZ NULL
-started_at TIMESTAMPTZ NULL
-finished_at TIMESTAMPTZ NULL
-worker_id VARCHAR NULL
-heartbeat_at TIMESTAMPTZ NULL
-attempt_number INTEGER NOT NULL
+status VARCHAR NOT NULL  -- QUEUED, RUNNING, PASSED, FAILED, ERROR, CANCELLED
 total_cases INTEGER NOT NULL
 completed_cases INTEGER NOT NULL
 passed_cases INTEGER NOT NULL
 failed_cases INTEGER NOT NULL
 error_cases INTEGER NOT NULL
-skipped_cases INTEGER NOT NULL
-duration_ms BIGINT NULL
-target_base_url_snapshot TEXT NOT NULL
-browser_snapshot VARCHAR NOT NULL
-definition_snapshot JSONB NOT NULL
-error_category VARCHAR NULL
-error_message TEXT NULL
+cancelled_cases INTEGER NOT NULL
+idempotency_key UUID NOT NULL
 created_at TIMESTAMPTZ NOT NULL
+started_at TIMESTAMPTZ NULL
+finished_at TIMESTAMPTZ NULL
+heartbeat_at TIMESTAMPTZ NULL
+cancel_requested_at TIMESTAMPTZ NULL
+error_message TEXT NULL
+browser VARCHAR NULL
+target_origin_snapshot VARCHAR NULL
+suite_name_snapshot VARCHAR NULL
+infrastructure_error_category VARCHAR NULL
+version BIGINT NOT NULL
+UNIQUE (project_id, idempotency_key)
 ```
 
 ### `test_case_results`
@@ -279,36 +293,78 @@ created_at TIMESTAMPTZ NOT NULL
 ```text
 id UUID PK
 execution_id UUID FK
-test_case_id UUID NULL
-test_case_name_snapshot VARCHAR NOT NULL
-definition_snapshot JSONB NOT NULL
-status VARCHAR NOT NULL
-attempt_number INTEGER NOT NULL
+case_id UUID FK
+status VARCHAR NOT NULL  -- QUEUED, RUNNING, PASSED, FAILED, ERROR, CANCELLED
+attempt_count INTEGER NOT NULL
 started_at TIMESTAMPTZ NULL
 finished_at TIMESTAMPTZ NULL
-duration_ms BIGINT NULL
-error_category VARCHAR NULL
 error_message TEXT NULL
-stack_trace TEXT NULL
+case_name_snapshot VARCHAR NULL
+failed_step_position INTEGER NULL
+error_category VARCHAR NULL
+retry_count_snapshot INTEGER NOT NULL
+evidence_suppressed BOOLEAN NOT NULL
+evidence_suppression_reason VARCHAR NULL
+UNIQUE (execution_id, case_id)
 ```
 
-### `test_step_results`
+`evidence_suppression_reason` is required when `evidence_suppressed` is true
+and must be null otherwise. V023 also conservatively redacts legacy failure
+messages and marks legacy artifacts when an immutable step snapshot referenced a
+secret variable.
 
-Optional for the first milestone, recommended later:
+### `execution_step_snapshots`
 
 ```text
 id UUID PK
-test_case_result_id UUID FK
-test_step_id UUID NULL
-step_order INTEGER NOT NULL
-step_snapshot JSONB NOT NULL
-status VARCHAR NOT NULL
-started_at TIMESTAMPTZ NULL
-finished_at TIMESTAMPTZ NULL
-duration_ms BIGINT NULL
-actual_value TEXT NULL
+case_result_id UUID FK
+position INTEGER NOT NULL
+action VARCHAR NOT NULL
+locator_type VARCHAR NULL
+locator_value TEXT NULL
+locator_role VARCHAR NULL
+locator_index INTEGER NULL
+input_value TEXT NULL
 expected_value TEXT NULL
+timeout_ms INTEGER NULL
+viewport_width INTEGER NULL
+viewport_height INTEGER NULL
+locale VARCHAR NULL
+timezone_id VARCHAR NULL
+UNIQUE (case_result_id, position)
+```
+
+### `execution_variable_snapshots`
+
+```text
+id UUID PK
+execution_id UUID FK
+variable_key VARCHAR NOT NULL
+value TEXT NULL
+secret BOOLEAN NOT NULL
+ciphertext BYTEA NULL
+nonce BYTEA NULL
+key_version INTEGER NULL
+UNIQUE (execution_id, variable_key)
+```
+
+Definition snapshots are normalized across execution, case-result,
+step-snapshot, and variable-snapshot columns. The current schema does not
+persist a single `definition_snapshot` or `step_snapshot` JSONB document.
+
+### `test_step_results`
+
+Step results and artifact relationships are persisted by the current execution model:
+
+```text
+id UUID PK
+case_result_id UUID FK
+position INTEGER NOT NULL
+action VARCHAR NOT NULL
+status VARCHAR NOT NULL
+duration_ms BIGINT NULL
 error_message TEXT NULL
+UNIQUE (case_result_id, position)
 ```
 
 ### `execution_artifacts`
@@ -316,15 +372,17 @@ error_message TEXT NULL
 ```text
 id UUID PK
 execution_id UUID FK
-test_case_result_id UUID NULL
-artifact_type VARCHAR NOT NULL
-storage_key TEXT NOT NULL
-original_filename VARCHAR NULL
+case_result_id UUID FK NULL
+step_position INTEGER NULL
+type VARCHAR NOT NULL  -- SCREENSHOT or TRACE
+relative_path VARCHAR NOT NULL
 content_type VARCHAR NOT NULL
-size_bytes BIGINT NOT NULL
-checksum VARCHAR NULL
+byte_size BIGINT NOT NULL
+sha256 VARCHAR NOT NULL
+secret_suppressed BOOLEAN NOT NULL
 created_at TIMESTAMPTZ NOT NULL
-expires_at TIMESTAMPTZ NULL
+purged_at TIMESTAMPTZ NULL
+purge_reason VARCHAR NULL
 ```
 
 ### `auth_audit_events`
@@ -352,8 +410,8 @@ Metadata is filtered; it must not contain credentials or tokens.
 | Project | Archive after history exists. |
 | Suite/case | Disable or soft-delete when referenced by results. |
 | Execution | Retain according to project policy. |
-| Artifact | Delete bytes and metadata together. |
-| Secret variable | Rotate/remove carefully; existing snapshots never contain resolved secret. |
+| Artifact | Purge bytes while retaining metadata, `purged_at`, and a safe `purge_reason`; suppressed evidence is never downloadable. |
+| Secret variable | Rotate/remove carefully; plain values never expose a secret, while execution snapshots retain only encrypted ciphertext, nonce, and key version. |
 
 ## 5. Important indexes
 
@@ -398,7 +456,7 @@ V004__create_refresh_tokens.sql
 V005__create_auth_audit_events.sql
 V006__harden_authentication_indexes.sql
 
-Milestone 2 applies `V001` through `V006`: `V001`–`V005` create the authentication tables and `V006` adds the source-IP/issued-at index used by the OTP resend safeguards. Milestone 3 applies `V007` through `V010` for projects, variables, suites, cases, and ordered steps. Milestone 4 applies `V011` and `V012` for queue/results/artifact persistence.
+The early migrations establish identity, projects, variables, definitions, and execution persistence. Later migrations add unified roles, reporting, local-target checks, hardened variable snapshots, immutable case-definition snapshots, locator/context settings, Trash lifecycle, password-reset challenge purposes, and persistent evidence-suppression state with legacy redaction. Applied versions are immutable; corrections use a new migration.
 
 V007__create_projects_and_members.sql
 V008__create_project_variables.sql
@@ -406,6 +464,17 @@ V009__create_test_suites.sql
 V010__create_test_cases_and_steps.sql
 V011__create_execution_queue_and_results.sql
 V012__create_execution_artifacts_and_variable_snapshots.sql
+V013__introduce_unified_identity_and_platform_roles.sql
+V014__migrate_project_roles_and_remove_legacy_roles.sql
+V015__milestone_6_execution_reporting.sql
+V016__guided_local_target_testing.sql
+V017__harden_execution_variable_snapshots.sql
+V018__snapshot_execution_case_definitions.sql
+V019__exact_text_and_locator_index.sql
+V020__execution_context_settings.sql
+V021__definition_trash_lifecycle.sql
+V022__password_reset_challenge_purpose.sql
+V023__persist_evidence_suppression.sql
 ```
 
 Rules:
@@ -449,15 +518,20 @@ General response rules:
   "instance": "/api/v1/projects",
   "timestamp": "2026-07-17T12:30:00Z",
   "correlationId": "request-id",
-  "errors": {
-    "name": "Name is required"
-  }
+  "errors": [
+    {
+      "path": "name",
+      "code": "NotBlank",
+      "message": "Name is required",
+      "stepPosition": null
+    }
+  ]
 }
 ```
 
-## 8. Proposed route surface
+## 8. Current route surface
 
-The authentication and Milestone 3 mappings below are implemented. Milestone 4 execution routes are implemented as the first usable execution surface; dashboard and reporting mappings remain planned.
+The controller mappings below are implemented in the current source. Each entry is expanded with required headers, body/query fields, permissions, and safe examples in the [API handbook](../reference/api-reference.html). Routes omitted from that handbook are considered documentation defects.
 
 ### Authentication
 
@@ -466,25 +540,31 @@ The authentication and Milestone 3 mappings below are implemented. Milestone 4 e
 | `GET` | `/auth/providers` | Report enabled identity providers to the frontend. |
 | `POST` | `/auth/register` | Create password account. |
 | `POST` | `/auth/email/verify` | Verify registration OTP and issue session. |
-| `POST` | `/auth/email/resend` | Resend a registration OTP. |
+| `POST` | `/auth/email/resend` | Resend a registration OTP with server cooldown/idempotency. |
+| `POST` | `/auth/me/email/resend` | Resend verification for an authenticated unverified user. |
 | `POST` | `/auth/login` | Authenticate email/password. |
-| `POST` | `/auth/refresh` | Rotate refresh token and issue access JWT. |
+| `POST` | `/auth/refresh` | Rotate a supplied refresh token and issue an access JWT; return `204` when an anonymous bootstrap has no refresh cookie. |
 | `POST` | `/auth/logout` | Revoke and clear session. |
 | `GET` | `/auth/me` | Current local user. |
 | `POST` | `/auth/sessions/revoke-all` | Revoke all current-user sessions. |
-| `GET` | `/oauth2/authorization/google` | Start Google login. |
-| `GET` | `/login/oauth2/code/google` | Google callback. |
-| `GET` | `/users/me/sessions` | Active refresh sessions (planned). |
+| `POST` | `/auth/password/reset/request` | Request a generic password-reset OTP. |
+| `POST` | `/auth/password/reset/confirm` | Consume a reset OTP and set a new password. |
+| `POST` | `/auth/me/password/challenge` | Send a challenge before password setup/change. |
+| `POST` | `/auth/me/password/confirm` | Confirm a password setup challenge. |
+| `PUT` | `/auth/me/password` | Change an existing password; revokes refresh sessions. |
+| `POST` | `/auth/me/login-methods/google/link-intent` | Begin configured Google linking. |
+| `POST` | `/auth/me/login-methods/google/unlink` | Unlink Google after confirmation. |
+| `GET` | `/users/me/sessions` | Active refresh sessions for the current user. |
 | `DELETE` | `/users/me/sessions/{id}` | Revoke a session. |
 
 ### Administration
 
 | Method | Route | Purpose |
 |---|---|---|
-| `GET` | `/users` | Paginated users. |
-| `GET` | `/users/{id}` | User detail. |
-| `PATCH` | `/users/{id}/status` | Lock, disable, or activate. |
-| `PUT` | `/users/{id}/roles` | Replace global roles. |
+| `GET` | `/admin/users` | Paginated platform users. |
+| `PATCH` | `/admin/users/{id}/platform-role` | Change platform role with last-admin protection. |
+| `PATCH` | `/admin/users/{id}/status` | Lock, disable, or activate a user. |
+| `POST` | `/admin/users/{id}/sessions/revoke-all` | Revoke all sessions for a selected user. |
 
 ### Projects and membership
 
@@ -494,7 +574,9 @@ The authentication and Milestone 3 mappings below are implemented. Milestone 4 e
 | `POST` | `/projects` | Create project. |
 | `GET` | `/projects/{id}` | Project detail. |
 | `PUT` | `/projects/{id}` | Update project. |
+| `POST` | `/projects/{id}/target-check` | Check the approved target and persist sanitized target health. |
 | `POST` | `/projects/{id}/archive` | Archive project. |
+| `POST` | `/projects/{id}/restore` | Restore a project with an `If-Match` version. |
 | `GET` | `/projects/{id}/members` | Project membership. |
 | `POST` | `/projects/{id}/members` | Add a member by normalized email. |
 | `PUT` | `/projects/{id}/members/{userId}` | Change member role. |
@@ -511,12 +593,14 @@ The authentication and Milestone 3 mappings below are implemented. Milestone 4 e
 
 ### Suites, cases, and steps
 
-| Resource | Intended routes |
+| Resource | Current routes |
 |---|---|
-| Suites | `/projects/{projectId}/suites`, `/projects/{projectId}/suites/{suiteId}` |
-| Cases | `/projects/{projectId}/suites/{suiteId}/cases`, `/projects/{projectId}/suites/{suiteId}/cases/{caseId}` |
+| Suites | `GET/POST/PUT /projects/{projectId}/suites`, `GET/PUT /projects/{projectId}/suites/{suiteId}`, `DELETE` or archive, and restore routes |
+| Cases | `GET/POST /projects/{projectId}/suites/{suiteId}/cases`, `GET/PUT/DELETE /projects/{projectId}/suites/{suiteId}/cases/{caseId}`, and restore |
 | Steps | aggregate `steps` replacement on case create/update |
 | Reorder | contiguous ordered bulk update in the case aggregate with optimistic version |
+
+Lifecycle reads accept `lifecycle=ACTIVE|ARCHIVED|ALL`. Archive/restore writes require `DEFINITION_MANAGE`, an `If-Match` version where applicable, and reject archived parent projects/suites. Archived definitions remain readable for history; execution queueing is blocked until restore.
 
 ### Executions
 
@@ -538,6 +622,8 @@ GET /dashboard/trends
 GET /dashboard/recent-failures
 GET /dashboard/infrastructure-errors
 ```
+
+Dashboard routes are current aggregate reads. The selected time window is normalized to UTC, filters are scoped to projects visible to the caller, and independent frontend panels expose retryable failures.
 
 ## 9. Workflow: registration
 
@@ -734,7 +820,6 @@ Frontend polls while:
 ```text
 QUEUED
 RUNNING
-CANCEL_REQUESTED
 ```
 
 Stops on:
@@ -746,9 +831,17 @@ ERROR
 CANCELLED
 ```
 
-Use a moderate interval such as 2–5 seconds and back off for long queues. Do not create a new polling loop per component render.
+`cancel_requested_at` is cancellation intent on a `QUEUED` or `RUNNING`
+execution; it is not a third polling status. Use a moderate interval such as
+2–5 seconds and back off for long queues. Do not create a new polling loop per
+component render.
 
-## 18. Definition snapshot example
+## 18. Logical definition snapshot example
+
+This JSON is an explanatory projection of one queued definition. PostgreSQL
+stores the same immutable contract in the execution, case-result,
+`execution_step_snapshots`, and `execution_variable_snapshots` structures
+described above rather than in one JSONB column.
 
 ```json
 {

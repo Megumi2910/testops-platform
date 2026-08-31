@@ -17,7 +17,10 @@ async function setStatus(page: Page, email: string, status: 'ACTIVE' | 'LOCKED' 
   const control = page.getByLabel(`Account status for ${email}`)
   await expect(control).toBeVisible()
   await control.selectOption(status)
-  await expect(page.getByRole('status')).toHaveText('User updated.')
+  if (status === 'LOCKED' || status === 'DISABLED') {
+    await page.getByRole('button', { name: `${status === 'LOCKED' ? 'Lock' : 'Disable'} account`, exact: true }).click()
+  }
+  await expect(page.getByRole('status')).toContainText(`account is now ${status.toLowerCase()}.`)
   await expect(control).toHaveValue(status)
 }
 

@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.ServletRequestBindingException;
@@ -54,6 +55,13 @@ public class ApiExceptionHandler {
         List<ApiProblem.Violation> errors = List.of(new ApiProblem.Violation(exception.getName(), "type_mismatch",
                 "The supplied value has the wrong type", null));
         return response(HttpStatus.BAD_REQUEST, "type_mismatch", "A request value has the wrong type", errors, request);
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    ResponseEntity<ApiProblem> optimisticLock(ObjectOptimisticLockingFailureException exception,
+            HttpServletRequest request) {
+        return response(HttpStatus.CONFLICT, "stale_version",
+                "The resource changed; reload and try again", List.of(), request);
     }
 
     @ExceptionHandler(Exception.class)

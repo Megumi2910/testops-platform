@@ -7,6 +7,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
+. (Join-Path $PSScriptRoot 'quality-gate-common.ps1')
 $backend = Join-Path $root 'backend'
 $secretDir = Join-Path $backend '.secrets'
 New-Item -ItemType Directory -Force -Path $secretDir | Out-Null
@@ -26,15 +27,18 @@ function Copy-Example([string]$directory) {
     if (-not (Test-Path -LiteralPath $target)) { Copy-Item -LiteralPath $example -Destination $target }
 }
 function New-RandomBase64([int]$length = 32) {
-    $bytes = New-Object byte[] $length
-    [Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
+    $bytes = New-CryptographicRandomBytes -Length $length
     return [Convert]::ToBase64String($bytes)
 }
 
 foreach ($directory in @('postgres_db', 'backend', 'frontend', 'pgadmin4')) { Copy-Example $directory }
-$rsa = [Security.Cryptography.RSA]::Create(2048)
-Write-Secret (Join-Path $secretDir 'jwt-private.pem') $rsa.ExportPkcs8PrivateKeyPem()
-Write-Secret (Join-Path $secretDir 'jwt-public.pem') $rsa.ExportSubjectPublicKeyInfoPem()
+$privateKeyPath = Join-Path $secretDir 'jwt-private.pem'
+$publicKeyPath = Join-Path $secretDir 'jwt-public.pem'
+if ($Force -or -not (Test-Path -LiteralPath $privateKeyPath) -or -not (Test-Path -LiteralPath $publicKeyPath)) {
+    # Regenerate both halves together so an interrupted/partial local setup can
+    # never leave a private key paired with an unrelated public key.
+    New-RsaPemKeyPair -PrivateKeyPath $privateKeyPath -PublicKeyPath $publicKeyPath
+}
 Write-Secret (Join-Path $secretDir 'email-otp-pepper') (New-RandomBase64)
 Write-Secret (Join-Path $secretDir 'project-variable-key') (New-RandomBase64)
 
@@ -71,7 +75,7 @@ if ($Force -or -not (Test-Path -LiteralPath $backendEnv)) {
 
 if ($Force) {
     $pgadminEnv = Join-Path $root 'pgadmin4/.env'
-    Set-EnvValue $pgadminEnv 'PGADMIN_DEFAULT_EMAIL' 'admin@localhost.test'
+    Set-EnvValue $pgadminEnv 'PGADMIN_DEFAULT_EMAIL' 'admin@testops.example.com'
     Set-EnvValue $pgadminEnv 'PGADMIN_DEFAULT_PASSWORD' (New-RandomBase64 24)
 }
 if ($Force -and $TargetAllowedOrigins.Count -gt 0) {

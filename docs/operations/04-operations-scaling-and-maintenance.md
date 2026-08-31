@@ -26,6 +26,11 @@ This document defines the intended operating contract. Milestones 1 and 2 plus t
 
 Local Compose uses `docker-compose.yml` with `postgres` (`5432`), `backend` (`8080`), `frontend` (`3000`), and the optional local PgAdmin surface (`5050`). PostgreSQL must be healthy before the backend starts, and the frontend waits for the backend health check. Named `postgres18_data`, `artifacts_data`, and `pgadmin4_data` volumes preserve local state across restarts. PgAdmin has its own health check and does not use a fixed container name, so multiple Compose projects can coexist.
 
+The tracked PgAdmin template uses the non-secret, validator-safe placeholder
+`admin@testops.example.com`. Do not replace it with a special-use `.invalid`,
+`.test`, or `localhost` address: PgAdmin 9.16 rejects those domains before the
+service can become healthy.
+
 ## 3. Environment configuration
 
 ### Database

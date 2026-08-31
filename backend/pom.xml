@@ -21,6 +21,10 @@
         <java.version>21</java.version>
         <playwright.version>1.60.0</playwright.version>
         <testcontainers.version>1.21.3</testcontainers.version>
+        <!-- Docker Desktop 4.79+ requires Docker API 1.40 or newer. Keep this
+             configurable for CI or older Docker engines while avoiding the
+             Docker Java client's legacy 1.32 default. -->
+        <testcontainers.docker.api.version>1.40</testcontainers.docker.api.version>
         <springdoc.version>3.0.3</springdoc.version>
     </properties>
 
@@ -146,6 +150,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <!-- Keep -DskipTests scoped to Surefire; AC5 and release
+                         verification must still execute named integration tests. -->
+                    <skipTests>${skipITs}</skipTests>
+                    <systemPropertyVariables>
+                        <api.version>${testcontainers.docker.api.version}</api.version>
+                    </systemPropertyVariables>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>

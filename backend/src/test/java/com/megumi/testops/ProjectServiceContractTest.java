@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
@@ -159,6 +160,20 @@ class ProjectServiceContractTest {
         ApiException alreadyActive = assertThrows(ApiException.class,
                 () -> service.setArchived(jwt, project.getId(), false, project.getVersion()));
         assertEquals("project_not_archived", alreadyActive.getCode());
+    }
+
+    @Test
+    void retainsADisabledOriginWhenOnlyProjectMetadataChanges() {
+        when(targets.normalize("https://target.example.test/")).thenReturn("https://target.example.test");
+        when(onboarding.findByProjectIds(List.of(project.getId()))).thenReturn(Map.of());
+
+        ProjectDtos.ProjectResponse response = service.update(jwt, project.getId(),
+                new ProjectDtos.ProjectRequest("Renamed project", "Updated description",
+                        "https://target.example.test/", project.getVersion()));
+
+        assertEquals("Renamed project", response.name());
+        assertEquals("https://target.example.test", response.targetOrigin());
+        verify(targets, never()).validate(any());
     }
 
     private static Stream<Arguments> projectRolePermissions() {

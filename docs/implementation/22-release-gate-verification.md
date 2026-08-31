@@ -1,7 +1,21 @@
 # Release-gate verification
 
+> **Current completion-track note:** this guide records the Milestone 9 gate.
+> For current clean-worktree candidate verification use the
+> [quality-gate operator guide](../guides/23-quality-gate-operator-guide.md).
+> The Phase 6 true retained A/B design and its still-open live boundary are in
+> [the retained-deployment foundation](90-phase6-retained-deployment-foundation.md).
+
+> **Historical evidence:** The counts, migration boundary, ecommerce catalog
+> runs, and Windows Docker limitation below describe the candidate captured at
+> the time of this document. They are not the current Milestone 10A release
+> decision. Use the [Milestone 10A completion ledger](../milestones/15-milestone-10a-testops-completion.md)
+> and [quality-gate operator guide](../guides/23-quality-gate-operator-guide.md)
+> for the current isolated aggregate gate. Historical failures and run IDs are
+> retained here rather than rewritten as fresh evidence.
+
 This document records the commands and evidence used to verify the current
-TestOps release candidate after the ecommerce catalog and step-replacement
+TestOps release candidate at that capture point after the ecommerce catalog and step-replacement
 fixes. It is intentionally explicit so a new contributor can reproduce the
 same checks without guessing which Compose profile or port is in use.
 
@@ -212,8 +226,9 @@ to work around a local pipe problem.
 - The catalog synchronizer is idempotent by literal stable markers. A second
   apply updates existing entities and does not create a second project.
 
-The documentation manifest check also passed with 22 registered documents and
-no missing paths after this guide was added.
+At that capture point, the focused documentation check covered 22 registered
+documents. That count is historical and must not be used for the current
+manifest or portal.
 
 The target-recovery UX follow-up then passed the focused workspace suite (5
 tests), the complete frontend unit gate (15 tests), ESLint, TypeScript

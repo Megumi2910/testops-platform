@@ -1,18 +1,20 @@
 # TestOps Platform — Managed Browser Testing for an Existing E-commerce Application
 
-> **Documentation status:** Milestone 9 is the release-candidate closure for the combined identity, reporting, guided local-target testing, and workspace work. It adds aggregate onboarding counts, focused frontend route modules, deterministic enabled/disabled E2E gates, and reconciled release documentation. Scheduling, notifications, and distributed execution remain planned.
+> **Documentation status:** Milestone 10A is the TestOps first-release completion track. The completion branch is closed through the Phase 10 revision-matched local gate, isolated runtime proof, two consecutive CI attempts, draft-PR publication, and PLAN_PASS finalization; it never merges or deploys production.
 >
-> The repository contains the Milestone 1–8 product foundation and the Milestone 9 release-candidate hardening work. See the release-candidate document for verified commands, remaining environment-dependent checks, and publication boundaries.
+> The repository contains the Milestone 1–9 product foundation and the Milestone 10A completion plan. See the [Milestone 10A completion ledger](docs/milestones/15-milestone-10a-testops-completion.md) for the current slice status, evidence, and publication boundary. The former release-candidate document remains historical.
 
 TestOps Platform is an internal web application for defining, executing, and reviewing automated browser tests against an existing e-commerce website. It gives administrators, test managers, developers, and testers one place to manage projects, test suites, reusable test cases, Playwright executions, failure evidence, and quality trends.
+
+For a report-ready explanation of the current system, open the [offline visual documentation portal](docs/index.html). New users should continue with the [TestOps beginner manual](docs/guides/testops-user-manual.html); maintainers should use the [architecture report](docs/architecture/15-codebase-architecture.html), [API handbook](docs/reference/api-reference.html), [UI-to-execution workflow](docs/workflows/ui-to-execution-workflow.html), and [feature/business-logic handbook](docs/implementation/feature-code-and-business-logic.html). The portal can be served without a package install with `node scripts/docs/serve-report.mjs`.
 
 The difficult part is not opening a browser. The platform must preserve a trustworthy test history while definitions change, isolate browser sessions so tests do not contaminate each other, distinguish product failures from infrastructure failures, and keep authentication consistent across local email/password login and Google sign-in.
 
 The existing e-commerce site is an **external system under test**. TestOps owns test definitions, execution state, results, screenshots, traces, users, permissions, and audit data. It does not own the target website’s deployment, database, inventory, accounts, selectors, or availability.
 
 New to the local workflow? Start with the [Ecommerce dogfooding guide](docs/operations/15-ecommerce-dogfooding-guide.md). It explains the two Docker networks, exact ports and environment variables, target checks, the guided case builder, catalog synchronization, evidence, and safe E2E resets.
-For the exact release-candidate verification commands and current gate evidence, see the [release-gate verification guide](docs/implementation/22-release-gate-verification.md).
-Before changing Milestone 10 behavior, use the [quality-gate operator guide](docs/guides/23-quality-gate-operator-guide.md), then record browser coverage in the [full-system baseline](docs/testing/23-quality-gate-baseline.md) and [defect ledger](docs/testing/24-defect-ledger.md).
+For current candidate verification commands, use the [quality-gate operator guide](docs/guides/23-quality-gate-operator-guide.md); the [Phase 9 browser-quality implementation](docs/implementation/94-phase9-browser-quality-performance.md), [Phase 9 evidence note](docs/testing/101-phase9-browser-quality-performance.md), and [Phase 10 release-finalization boundary](docs/testing/102-phase10-release-finalization.md) record the current publication contract. The [release-gate verification guide](docs/implementation/22-release-gate-verification.md) is retained as historical Milestone 9 evidence.
+Record current browser coverage in the [full-system baseline](docs/testing/23-quality-gate-baseline.md) and [defect ledger](docs/testing/24-defect-ledger.md).
 Suite and case deletion is a history-preserving Trash workflow; see the [definition Trash UI guide](docs/implementation/27-definition-trash-ui.md) for archive, read-only, conflict, and restore behavior.
 
 ## Product status
@@ -63,7 +65,7 @@ flowchart LR
     Runner["Playwright execution module"]
     Browser["Chromium browser"]
     Shop["Existing e-commerce website"]
-    Artifacts["Screenshots / traces / logs"]
+    Artifacts["Screenshots / traces"]
     Google["Google Identity"]
 
     User --> Web
@@ -92,7 +94,7 @@ The browser client owns interaction state and displays server state. The Spring 
 | Test cases | Store purpose, priority, preconditions, expected behavior, and ordered allowlisted browser steps. |
 | Executions | Queue a suite, claim it through a bounded worker, run it asynchronously, and expose progress without holding the original request open. |
 | Results | Preserve case and step snapshots, duration, failure classification, error evidence, and terminal execution state. |
-| Artifacts | Store screenshots, traces, and logs outside PostgreSQL while keeping searchable metadata in the database. |
+| Artifacts | Store screenshots and traces outside PostgreSQL while keeping searchable metadata in the database. |
 | Dashboard | Separate functional pass/fail trends from target, browser, network, and worker errors. |
 | Administration | Manage accounts, status, roles, sessions, and project access. |
 
@@ -288,7 +290,7 @@ Never commit `.env`, JWT private keys, Google client secrets, access or refresh 
 
 ## Verification boundary
 
-For the Docker-to-host workflow, guided case authoring, target checks, and troubleshooting, see [Local target testing guide](docs/operations/12-local-target-testing-guide.md) and [Guided local-target follow-ups](docs/milestones/13-guided-local-target-follow-ups.md). For release verification and CI expectations, see [Milestone 9 release candidate](docs/milestones/14-milestone-9-release-candidate.md).
+For the Docker-to-host workflow, guided case authoring, target checks, and troubleshooting, see [Local target testing guide](docs/operations/12-local-target-testing-guide.md) and [Guided local-target follow-ups](docs/milestones/13-guided-local-target-follow-ups.md). For current candidate verification and CI expectations, use the [quality-gate operator guide](docs/guides/23-quality-gate-operator-guide.md) and [Milestone 10A completion ledger](docs/milestones/15-milestone-10a-testops-completion.md); the Milestone 9 release-candidate document is historical.
 
 Before describing future product capabilities as implemented, inspect and reconcile:
 

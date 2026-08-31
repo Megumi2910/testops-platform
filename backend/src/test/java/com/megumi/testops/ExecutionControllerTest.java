@@ -1,5 +1,6 @@
 package com.megumi.testops;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
@@ -10,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Instant;
+import java.nio.file.Path;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -21,6 +23,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.megumi.testops.auth.domain.UserEntity;
 import com.megumi.testops.execution.api.ExecutionController;
+import com.megumi.testops.execution.api.ExecutionDtos;
 import com.megumi.testops.execution.service.ExecutionService;
 import com.megumi.testops.execution.domain.ExecutionEntity;
 import com.megumi.testops.project.domain.ProjectEntity;
@@ -44,15 +47,47 @@ class ExecutionControllerTest {
         UUID key = UUID.randomUUID();
         ExecutionEntity execution = new ExecutionEntity(project, suite, user, 1, key, now);
 
-        when(service.queueSuite(isNull(Jwt.class), eq(project.getId()), eq(suite.getId()), eq(key)))
-                .thenReturn(execution);
+        when(service.queueSuiteResponse(isNull(Jwt.class), eq(project.getId()), eq(suite.getId()), eq(key)))
+                .thenReturn(new ExecutionDtos.ExecutionQueuedResponse(execution.getId(), "QUEUED", true));
 
         mvc.perform(post("/api/v1/projects/{projectId}/suites/{suiteId}/executions", project.getId(), suite.getId())
                         .header("Idempotency-Key", key.toString()))
                 .andExpect(status().isAccepted())
                 .andExpect(header().string("Location", "/api/v1/projects/" + project.getId() + "/executions/" + execution.getId()))
                 .andExpect(jsonPath("$.executionId").value(execution.getId().toString()))
-                .andExpect(jsonPath("$.status").value("QUEUED"));
+                .andExpect(jsonPath("$.status").value("QUEUED"))
+                .andExpect(jsonPath("$.canCancel").value(true));
+    }
+
+    @Test
+    void returnsDistinctWorkerDisabledProblem() throws Exception {
+        UUID projectId = UUID.randomUUID();
+        UUID suiteId = UUID.randomUUID();
+        UUID key = UUID.randomUUID();
+        when(service.queueSuiteResponse(isNull(Jwt.class), eq(projectId), eq(suiteId), eq(key)))
+                .thenThrow(new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "execution_worker_disabled",
+                        "Execution is temporarily unavailable because the worker is disabled"));
+
+        mvc.perform(post("/api/v1/projects/{projectId}/suites/{suiteId}/executions", projectId, suiteId)
+                        .header("Idempotency-Key", key.toString()))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.code").value("execution_worker_disabled"))
+                .andExpect(jsonPath("$.title").value("Service Unavailable"));
+    }
+
+    @Test
+    void usesServerProvidedSafeDownloadFilename() {
+        UUID projectId = UUID.randomUUID();
+        UUID executionId = UUID.randomUUID();
+        UUID artifactId = UUID.randomUUID();
+        when(service.artifactDownload(isNull(Jwt.class), eq(projectId), eq(executionId), eq(artifactId)))
+                .thenReturn(new ExecutionService.ArtifactDownload(Path.of("artifacts", "trace.zip"),
+                        "application/zip", "TRACE", "smoke-checkout-a1b2c3d4-trace.zip"));
+
+        var response = new ExecutionController(service).artifact(null, projectId, executionId, artifactId);
+
+        assertEquals("attachment; filename=\"smoke-checkout-a1b2c3d4-trace.zip\"",
+                response.getHeaders().getFirst(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION));
     }
 
     @Test

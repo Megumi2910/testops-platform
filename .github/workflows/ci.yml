@@ -5,6 +5,15 @@ on:
     branches: [main]
   pull_request:
 
+# CI only checks out source, builds disposable images, and emits test results
+# in job logs. Keep the default token read-only so a future step cannot mutate
+# the repository, releases, or environments without an explicit review.
+permissions:
+  contents: read
+
+env:
+  VCS_REF: ${{ github.sha }}
+
 jobs:
   frontend:
     runs-on: ubuntu-24.04
@@ -49,19 +58,19 @@ jobs:
           cp backend/.env.example backend/.env
           cp frontend/.env.example frontend/.env
           cp pgadmin4/.env.example pgadmin4/.env
-      - run: docker compose -f docker-compose.yml config --quiet
-      - run: docker compose -f docker-compose.yml build
+      - run: docker compose -p testops-ci-containers -f docker-compose.yml config --quiet
+      - run: docker compose -p testops-ci-containers -f docker-compose.yml build
       - name: Compose health smoke
         run: |
-          docker compose -f docker-compose.yml up -d
+          docker compose -p testops-ci-containers -f docker-compose.yml up -d
           for attempt in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:8080/actuator/health >/dev/null && curl --fail --silent http://127.0.0.1:3000/ >/dev/null; then exit 0; fi
             sleep 5
           done
-          docker compose -f docker-compose.yml ps
+          docker compose -p testops-ci-containers -f docker-compose.yml ps
           exit 1
       - if: always()
-        run: docker compose -f docker-compose.yml down -v
+        run: docker compose -p testops-ci-containers -f docker-compose.yml down -v
 
   e2e:
     runs-on: ubuntu-24.04
@@ -90,35 +99,37 @@ jobs:
           echo "::add-mask::$bootstrap_password"
           echo "E2E_ADMIN_EMAIL=qa.bootstrap-admin@testops.local" >> "$GITHUB_ENV"
           echo "E2E_ADMIN_PASSWORD=$bootstrap_password" >> "$GITHUB_ENV"
-      - run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml config --quiet
-      - run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml build
+      - run: docker compose -p testops-ci-e2e -f docker-compose.yml -f docker-compose.e2e.yml config --quiet
+      - run: docker compose -p testops-ci-e2e -f docker-compose.yml -f docker-compose.e2e.yml build
       - name: Start isolated E2E stack
-        run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d
+        run: docker compose -p testops-ci-e2e -f docker-compose.yml -f docker-compose.e2e.yml up -d
       - name: Wait for services
         run: |
           for attempt in $(seq 1 40); do
             if curl --fail --silent http://127.0.0.1:8180/actuator/health >/dev/null && curl --fail --silent http://127.0.0.1:3100/ >/dev/null && curl --fail --silent http://127.0.0.1:8025/api/v1/info >/dev/null; then exit 0; fi
             sleep 5
           done
-          docker compose -f docker-compose.yml -f docker-compose.e2e.yml ps
-          docker compose -f docker-compose.yml -f docker-compose.e2e.yml logs --tail=200 backend frontend mailpit
+          docker compose -p testops-ci-e2e -f docker-compose.yml -f docker-compose.e2e.yml ps
+          docker compose -p testops-ci-e2e -f docker-compose.yml -f docker-compose.e2e.yml logs --tail=200 backend frontend mailpit
           exit 1
       - run: npm ci
         working-directory: frontend
       - run: npx playwright install --with-deps chromium
         working-directory: frontend
-      - run: npm run e2e
+      # The retained A/B tab-swap contract needs two adjacent revisions and a
+      # control directory; its dedicated validator owns that evidence. Keep
+      # the ordinary CI matrix single-revision and fail closed on all other
+      # browser contracts.
+      - run: npm run e2e -- --grep-invert "a retained revision-A tab reloads exactly once onto revision B"
         working-directory: frontend
         env:
           E2E_BASE_URL: http://localhost:3100
           MAILPIT_URL: http://127.0.0.1:8025
+      # Raw Playwright reports can contain cookies, request bodies, OTPs, and
+      # filled secret values. Keep the list reporter in the job log; do not
+      # publish traces, screenshots, or videos from this public repository.
       - if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: frontend/playwright-report
-      - if: always()
-        run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml down -v
+        run: docker compose -p testops-ci-e2e -f docker-compose.yml -f docker-compose.e2e.yml down -v
 
   e2e-local-disabled:
     runs-on: ubuntu-24.04
@@ -137,8 +148,8 @@ jobs:
           cp pgadmin4/.env.example pgadmin4/.env
       - name: Prepare ephemeral E2E secrets
         run: bash .github/scripts/prepare-e2e-secrets.sh
-      - run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-local-disabled.yml config --quiet
-      - run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-local-disabled.yml build
+      - run: docker compose -p testops-e2e-disabled -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-local-disabled.yml config --quiet
+      - run: docker compose -p testops-e2e-disabled -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-local-disabled.yml build
       - name: Start isolated local-disabled stack
         run: docker compose -p testops-e2e-disabled -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-local-disabled.yml up -d
       - name: Wait for services
@@ -159,11 +170,7 @@ jobs:
         env:
           E2E_DISABLED_BASE_URL: http://localhost:3101
           MAILPIT_URL: http://127.0.0.1:8026
-      - if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report-local-disabled
-          path: frontend/playwright-report
+      # Do not publish raw browser artifacts from the public repository.
       - if: always()
         run: docker compose -p testops-e2e-disabled -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.e2e-local-disabled.yml down -v
 
@@ -194,21 +201,21 @@ jobs:
           cp pgadmin4/.env.example pgadmin4/.env
       - name: Prepare ephemeral E2E secrets
         run: bash .github/scripts/prepare-e2e-secrets.sh
-      - run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml config --quiet
-      - run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml build
+      - run: docker compose -p testops-ci-e2e-crash -f docker-compose.yml -f docker-compose.e2e.yml config --quiet
+      - run: docker compose -p testops-ci-e2e-crash -f docker-compose.yml -f docker-compose.e2e.yml build
       - name: Start isolated crash-test stack
-        run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d
+        run: docker compose -p testops-ci-e2e-crash -f docker-compose.yml -f docker-compose.e2e.yml up -d
       - name: Wait for services and capture backend container
         run: |
           for attempt in $(seq 1 40); do
             if curl --fail --silent http://127.0.0.1:8180/actuator/health >/dev/null && curl --fail --silent http://127.0.0.1:3100/ >/dev/null && curl --fail --silent http://127.0.0.1:8025/api/v1/info >/dev/null; then break; fi
             sleep 5
           done
-          docker compose -f docker-compose.yml -f docker-compose.e2e.yml ps
+          docker compose -p testops-ci-e2e-crash -f docker-compose.yml -f docker-compose.e2e.yml ps
           curl --fail --silent http://127.0.0.1:8180/actuator/health >/dev/null
           curl --fail --silent http://127.0.0.1:3100/ >/dev/null
           curl --fail --silent http://127.0.0.1:8025/api/v1/info >/dev/null
-          echo "E2E_BACKEND_CONTAINER=$(docker compose -f docker-compose.yml -f docker-compose.e2e.yml ps -q backend)" >> "$GITHUB_ENV"
+          echo "E2E_BACKEND_CONTAINER=$(docker compose -p testops-ci-e2e-crash -f docker-compose.yml -f docker-compose.e2e.yml ps -q backend)" >> "$GITHUB_ENV"
       - run: npm ci
         working-directory: frontend
       - run: npx playwright install --with-deps chromium
@@ -219,10 +226,6 @@ jobs:
           E2E_BASE_URL: http://localhost:3100
           MAILPIT_URL: http://127.0.0.1:8025
           E2E_BROWSER_CRASH: 'true'
+      # Do not publish raw browser artifacts from the public repository.
       - if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report-browser-crash
-          path: frontend/playwright-report
-      - if: always()
-        run: docker compose -f docker-compose.yml -f docker-compose.e2e.yml down -v
+        run: docker compose -p testops-ci-e2e-crash -f docker-compose.yml -f docker-compose.e2e.yml down -v

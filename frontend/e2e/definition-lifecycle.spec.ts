@@ -31,7 +31,9 @@ test('a draft case can be moved to Trash and restored as DRAFT', async ({ page }
   await page.getByRole('button', { name: 'Save draft' }).click()
   await expect(page).toHaveURL(/\/cases\/[0-9a-f-]+$/)
   await expect(page.locator('.status-badge').filter({ hasText: 'DRAFT' }).first()).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Run case' })).toBeDisabled()
+  // DRAFT definitions do not render an execution action; only READY cases
+  // expose the Run case control.
+  await expect(page.getByRole('button', { name: 'Run case' })).toHaveCount(0)
 
   await page.getByRole('button', { name: 'Move to trash' }).click()
   const archiveResponse = page.waitForResponse(response => response.request().method() === 'DELETE' && response.url().includes('/cases/'))

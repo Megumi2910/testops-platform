@@ -30,6 +30,17 @@ async function createSuite(page: Page, name: string) {
   return page.url().split('/').pop()!
 }
 
+async function createReadyCase(page: Page, name: string) {
+  await page.getByRole('link', { name: 'New case', exact: true }).click()
+  await expect(page.getByRole('heading', { name: /New case/i })).toBeVisible()
+  await page.getByLabel('Name').fill(name)
+  await page.getByRole('button', { name: 'Continue to steps', exact: true }).click()
+  await page.getByRole('button', { name: 'Review case', exact: true }).click()
+  await page.getByRole('button', { name: 'Save as READY', exact: true }).click()
+  await expect(page).toHaveURL(/\/cases\/[0-9a-f-]+$/)
+  return page.url().split('/').pop()!
+}
+
 async function addMember(page: Page, email: string, role: string) {
   await page.getByRole('link', { name: 'Members', exact: true }).click()
   await page.getByLabel('Member email').fill(email)
@@ -75,7 +86,7 @@ test('project roles expose only their permitted definition and execution control
     await expect(account.page.getByRole('heading', { name: new RegExp(`Phase 5 role suite ${runId}`) })).toBeVisible()
     await expect(account.page.getByRole('link', { name: 'New case', exact: true })).toHaveCount(expectations.canCreate ? 1 : 0)
     await expect(account.page.getByRole('button', { name: 'Run ready cases', exact: true })).toHaveCount(expectations.canRun ? 1 : 0)
-    await expect(account.page.getByRole('link', { name: 'Members', exact: true })).toHaveCount(0)
+    await expect(account.page.getByRole('link', { name: 'Members', exact: true })).toHaveCount(1)
     await expect(account.page.getByRole('link', { name: 'Admin', exact: true })).toHaveCount(0)
     await account.page.goto('/admin/users')
     await expect(account.page).toHaveURL(/\/dashboard$/)
@@ -112,5 +123,32 @@ test('a project member cannot substitute a suite identifier from another project
 
   await navigateWithoutReload(page, `/projects/${primaryProjectId}/suites/${primarySuiteId}`)
   await expect(page.getByRole('heading', { name: new RegExp(`Phase 5 primary suite ${runId}`) })).toBeVisible()
+  await foreign.context.close()
+})
+
+test('a project member cannot substitute a case identifier from another suite', async ({ page, browser }) => {
+  const runId = Date.now()
+  const managerEmail = `phase5-case-isolation-manager-${runId}@example.test`
+  const foreignEmail = `phase5-case-isolation-foreign-${runId}@example.test`
+
+  await registerAndVerify(page, managerEmail)
+  const foreign = await registerUser(browser, foreignEmail, 'Phase 5 isolated case owner')
+  const primaryProjectId = await createProject(page, `Phase 5 case primary ${runId}`)
+  const primarySuiteId = await createSuite(page, `Phase 5 case primary suite ${runId}`)
+  const primaryCaseId = await createReadyCase(page, `Phase 5 primary case ${runId}`)
+  await createProject(foreign.page, `Phase 5 case isolated ${runId}`)
+  await createSuite(foreign.page, `Phase 5 case isolated suite ${runId}`)
+  const foreignCaseId = await createReadyCase(foreign.page, `Phase 5 isolated case ${runId}`)
+
+  const responsePromise = page.waitForResponse(response => response.url().includes(
+    `/api/v1/projects/${primaryProjectId}/suites/${primarySuiteId}/cases/${foreignCaseId}`,
+  ))
+  await navigateWithoutReload(page,
+    `/projects/${primaryProjectId}/suites/${primarySuiteId}/cases/${foreignCaseId}`)
+  expect((await responsePromise).status()).toBe(404)
+  await expect(page.getByRole('alert')).toContainText('Unable to load this case')
+
+  await navigateWithoutReload(page, `/projects/${primaryProjectId}/suites/${primarySuiteId}/cases/${primaryCaseId}`)
+  await expect(page.getByRole('heading', { name: new RegExp(`Phase 5 primary case ${runId}`) })).toBeVisible()
   await foreign.context.close()
 })

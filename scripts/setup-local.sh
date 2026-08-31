@@ -48,7 +48,7 @@ else
 fi
 if [[ "$force" == true ]]; then
   pgadmin_env="$root/pgadmin4/.env"
-  set_env "$pgadmin_env" PGADMIN_DEFAULT_EMAIL admin@localhost.test
+  set_env "$pgadmin_env" PGADMIN_DEFAULT_EMAIL admin@testops.example.com
   set_env "$pgadmin_env" PGADMIN_DEFAULT_PASSWORD "$(openssl rand -base64 24 | tr -d '\n')"
   if [[ -n "$target_allowed_origins" ]]; then set_env "$backend_env" TARGET_ALLOWED_ORIGINS "$target_allowed_origins"; fi
 fi

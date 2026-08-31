@@ -9,6 +9,8 @@ import java.util.HexFormat;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.megumi.testops.config.PlatformProperties;
 import com.megumi.testops.execution.domain.ExecutionArtifactEntity;
@@ -20,13 +22,63 @@ import com.megumi.testops.execution.repository.ExecutionArtifactRepository;
 public class ArtifactWriter {
     private final Path root;
     private final ExecutionArtifactRepository artifacts;
-    public ArtifactWriter(PlatformProperties properties, ExecutionArtifactRepository artifacts) { this.root = properties.artifact().directory().toAbsolutePath().normalize(); this.artifacts = artifacts; }
+    private final EvidenceFileCleaner evidenceFiles;
+    public ArtifactWriter(PlatformProperties properties, ExecutionArtifactRepository artifacts,
+            EvidenceFileCleaner evidenceFiles) {
+        this.root = properties.artifact().directory().toAbsolutePath().normalize();
+        this.artifacts = artifacts;
+        this.evidenceFiles = evidenceFiles;
+    }
     public void writeScreenshot(ExecutionEntity execution, TestCaseResultEntity result, byte[] bytes) { writeScreenshot(execution, result, null, bytes); }
     public void writeScreenshot(ExecutionEntity execution, TestCaseResultEntity result, Integer stepPosition, byte[] bytes) { write(execution, result, stepPosition, "SCREENSHOT", "image/png", bytes, false); }
-    public void writeTrace(ExecutionEntity execution, TestCaseResultEntity result, Path trace) { try { write(execution, result, null, "TRACE", "application/zip", Files.readAllBytes(trace), false); Files.deleteIfExists(trace); } catch (IOException ex) { throw new IllegalStateException("Unable to persist Playwright trace", ex); } }
+    public void writeTrace(ExecutionEntity execution, TestCaseResultEntity result, Path trace) {
+        RuntimeException persistenceFailure = null;
+        try {
+            write(execution, result, null, "TRACE", "application/zip", Files.readAllBytes(trace), false);
+        } catch (IOException ex) {
+            persistenceFailure = new IllegalStateException("Unable to persist Playwright trace", ex);
+            throw persistenceFailure;
+        } catch (RuntimeException ex) {
+            persistenceFailure = ex;
+            throw ex;
+        } finally {
+            try {
+                evidenceFiles.delete(trace);
+            } catch (RuntimeException cleanupFailure) {
+                if (persistenceFailure != null) persistenceFailure.addSuppressed(cleanupFailure);
+                else throw cleanupFailure;
+            }
+        }
+    }
     private void write(ExecutionEntity execution, TestCaseResultEntity result, Integer stepPosition, String type, String contentType, byte[] bytes, boolean suppressed) {
-        try { String relative = execution.getId() + "/" + result.getId() + "/" + UUID.randomUUID() + ("SCREENSHOT".equals(type) ? ".png" : ".zip"); Path file = root.resolve(relative).normalize(); if (!file.startsWith(root)) throw new IllegalStateException("Artifact path escaped root"); Files.createDirectories(file.getParent()); Files.write(file, bytes); String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes)); artifacts.save(new ExecutionArtifactEntity(execution, result, stepPosition, type, relative, contentType, bytes.length, hash, suppressed, Instant.now())); }
-        catch (Exception ex) { throw new IllegalStateException("Unable to persist execution artifact", ex); }
+        Path file = null;
+        try {
+            String relative = execution.getId() + "/" + result.getId() + "/" + UUID.randomUUID()
+                    + ("SCREENSHOT".equals(type) ? ".png" : ".zip");
+            file = root.resolve(relative).normalize();
+            if (!file.startsWith(root)) throw new IllegalStateException("Artifact path escaped root");
+            Files.createDirectories(file.getParent());
+            Files.write(file, bytes);
+            registerRollbackCleanup(file);
+            String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
+            artifacts.save(new ExecutionArtifactEntity(execution, result, stepPosition, type, relative, contentType,
+                    bytes.length, hash, suppressed, Instant.now()));
+        } catch (Exception ex) {
+            if (file != null) {
+                try { evidenceFiles.delete(file); }
+                catch (RuntimeException cleanupFailure) { ex.addSuppressed(cleanupFailure); }
+            }
+            throw new IllegalStateException("Unable to persist execution artifact", ex);
+        }
+    }
+    private void registerRollbackCleanup(Path file) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) return;
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (status != TransactionSynchronization.STATUS_COMMITTED) evidenceFiles.delete(file);
+            }
+        });
     }
     public Path resolve(String relative) { Path file = root.resolve(relative).normalize(); if (!file.startsWith(root)) throw new IllegalArgumentException("Artifact path escaped root"); return file; }
 }

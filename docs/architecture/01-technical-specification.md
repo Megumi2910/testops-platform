@@ -16,7 +16,7 @@ The design therefore centers on five boundaries:
 
 ## 2. Status and evidence boundary
 
-This document is an implementation specification reconciled with the current repository. Milestones 1 and 2 are implemented, and Milestone 3 now includes the project/test-definition management foundation:
+This document is the current implementation specification for the Milestone 10A TestOps-first release. It describes the source tree on the completion branch and separates implemented behavior from optional, deferred, and runtime-unverified behavior:
 
 - React management frontend;
 - Spring Boot modular monolith;
@@ -30,18 +30,18 @@ This document is an implementation specification reconciled with the current rep
 - GitHub Actions;
 - an existing e-commerce website as the system under test.
 
-Implemented Milestone 3 boundaries are project CRUD, email-based membership, static target allowlisting, feature-flagged AES-256-GCM variables, suites, cases, and aggregate ordered steps. Milestone 4 adds canonical executable steps, asynchronous queueing, an in-process Chromium worker, result snapshots, screenshots, cancellation, and DNS/IP checks immediately before navigation. Dashboards, scheduled runs, distributed workers, and full artifact retention remain deferred. Exact production deployment settings remain `TODO: verify`.
+The current release includes unified identity and authorization, account recovery and sessions, project/target management, target health checks, variables, suite/case authoring and Trash, immutable execution snapshots, the bounded Playwright worker, per-step outcomes, screenshots/traces, dashboard aggregates, and administration. Scheduled runs, notifications, distributed workers, multi-browser execution, permanent execution purge, and arbitrary private/LAN targets remain deferred. Live container parity and the final browser quality gate are runtime evidence concerns rather than assumptions this document silently marks as complete.
 
 ## 3. Users and responsibilities
 
-| Actor | Main responsibility | Typical permissions |
-|---|---|---|
-| Administrator | Protect the platform and manage global access. | Manage users, roles, status, all projects, and global statistics. |
-| Test manager | Own regression coverage for one or more projects. | Create projects, membership, suites, cases, steps, and executions. |
-| Tester | Maintain and execute permitted tests. | Edit or run tests according to project membership; inspect evidence. |
-| Developer | Run regressions and investigate failures. | View permitted projects, run approved suites, and inspect results. |
+| Actor         | Main responsibility                               | Typical permissions                                                  |
+|---------------|---------------------------------------------------|----------------------------------------------------------------------|
+| Administrator | Protect the platform and manage global access.    | Manage users, roles, status, all projects, and global statistics.    |
+| Test manager  | Own regression coverage for one or more projects. | Create projects, membership, suites, cases, steps, and executions.   |
+| Tester        | Maintain and execute permitted tests.             | Edit or run tests according to project membership; inspect evidence. |
+| Developer     | Run regressions and investigate failures.         | View permitted projects, run approved suites, and inspect results.   |
 
-Global roles do not replace project membership. A `TEST_MANAGER` may manage only assigned projects unless the authorization policy explicitly grants broader access.
+Global roles do not replace project membership. Project roles are `PROJECT_MANAGER`, `TEST_MANAGER`, `TESTER`, and `VIEWER`; effective permissions are calculated from the member role and platform policy. Legacy `OWNER`, `EDITOR`, and global `TEST_MANAGER` values are migration inputs only.
 
 ## 4. System boundary
 
@@ -55,7 +55,7 @@ Global roles do not replace project membership. A `TEST_MANAGER` may manage only
 - projects, suites, cases, steps, and variables;
 - queued and running execution state;
 - result snapshots;
-- screenshots, traces, and logs;
+- screenshots and traces;
 - dashboard aggregates;
 - audit events.
 
@@ -179,7 +179,7 @@ testops-platform/
 ### Backend package-by-feature
 
 ```text
-com.example.testops/
+com.megumi.testops/
 ├── auth/
 │   ├── api/
 │   ├── application/
@@ -269,19 +269,19 @@ The provider subject is the durable identity key. Email is not sufficient becaus
 
 ### Role and project membership
 
-Global roles:
+Platform roles:
 
-- `ADMIN`;
-- `TEST_MANAGER`;
-- `MEMBER`.
+- `ADMIN` — platform-wide user, status, and configuration administration;
+- `MEMBER` — authenticated platform user without administrative authority.
 
 Project roles:
 
-- `OWNER`;
-- `EDITOR`;
-- `VIEWER`.
+- `PROJECT_MANAGER` — manages project settings, members, definitions, variables, targets, and execution controls;
+- `TEST_MANAGER` — manages suites/cases, variables, and execution definitions within an assigned project;
+- `TESTER` — executes permitted READY definitions and inspects evidence;
+- `VIEWER` — read-only access to permitted project definitions and history.
 
-The exact role set is a policy decision. Keep it small until real permission differences appear.
+Effective permissions are derived on the server from the platform role, project membership, email-verification state, and resource lifecycle. Legacy `OWNER`, `EDITOR`, and global `TEST_MANAGER` values are migration inputs only; new UI and API contracts must use the current roles.
 
 ### Project
 
@@ -295,6 +295,8 @@ Represents one testing boundary:
 - default timeout;
 - browser policy;
 - optional environment label such as `STAGING`.
+
+Projects also persist target-health state (`NOT_CHECKED`, `REACHABLE`, `UNREACHABLE`, or `BLOCKED`) and reset that state when the target origin changes. Local development requires both the explicit feature flag and an exact allowlisted `http://localhost:<port>` origin; Docker routes traffic through `host.docker.internal` while preserving the browser-visible origin.
 
 Rules:
 
@@ -386,7 +388,7 @@ ${SHOP_TEST_PASSWORD}
 ${DEFAULT_PRODUCT_NAME}
 ```
 
-Secret variables are encrypted or injected from the environment, resolved only inside the worker, masked from API responses, and excluded from logs and snapshots.
+Secret variables are AES-GCM encrypted, resolved only inside the worker, masked from API responses, and excluded from logs, snapshots, failures, screenshots, and traces when the executed step uses a secret. Non-secret variables remain eligible for evidence.
 
 ### Execution
 
@@ -402,13 +404,15 @@ stateDiagram-v2
     RUNNING --> PASSED
     RUNNING --> FAILED
     RUNNING --> ERROR
-    RUNNING --> CANCEL_REQUESTED
-    CANCEL_REQUESTED --> CANCELLED
-    RUNNING --> INTERRUPTED
-    INTERRUPTED --> ERROR
+    RUNNING --> CANCELLED
 ```
 
-`INTERRUPTED` may be internal or persisted. It represents a worker that lost ownership before a trustworthy terminal outcome.
+Cancellation intent is persisted as the nullable `cancel_requested_at` timestamp,
+not as a public execution status. A queued execution can finish immediately as
+`CANCELLED`; a running execution checks that timestamp at safe boundaries and
+then finishes as `CANCELLED`. A worker or ownership failure finishes as `ERROR`.
+Queue responses are asynchronous (`202 Accepted`) and include the execution
+identifier; polling stops at a terminal state.
 
 ### Result and artifact
 
@@ -428,14 +432,12 @@ A case result preserves:
 
 Artifact types:
 
-- `FAILURE_SCREENSHOT`;
+- `SCREENSHOT`;
 - `TRACE`;
-- `VIDEO`;
-- `CONSOLE_LOG`;
-- `NETWORK_LOG`;
-- `EXECUTION_LOG`.
 
-The first release should create failure screenshots and optional traces. Video and network-body capture remain opt-in because of storage and privacy cost.
+Screenshots can come from an explicit `TAKE_SCREENSHOT` step or failure capture.
+Traces are retained only when evidence policy allows them. Video, console-log,
+network-log, and execution-log artifacts are not part of the current contract.
 
 ## 9. Playwright runner
 
@@ -486,16 +488,16 @@ Before opening a browser:
 
 ### Failure classification
 
-| Event | Classification |
-|---|---|
-| Expected text differs | `FAILED` |
-| Element expected visible is missing | `FAILED` |
-| Browser cannot launch | `ERROR` |
-| Target host cannot be reached | `ERROR` |
-| Project variable cannot be resolved | `ERROR` |
-| Worker loses database ownership | `ERROR` or `INTERRUPTED` |
-| User cancels | `CANCELLED` |
-| Prerequisite case failed and policy skips dependent case | `SKIPPED` |
+| Event                                                    | Classification           |
+|----------------------------------------------------------|--------------------------|
+| Expected text differs                                    | `FAILED`                 |
+| Element expected visible is missing                      | `FAILED`                 |
+| Browser cannot launch                                    | `ERROR`                  |
+| Target host cannot be reached                            | `ERROR`                  |
+| Project variable cannot be resolved                      | `ERROR`                  |
+| Worker loses database ownership                          | `ERROR`                  |
+| User cancels                                             | `CANCELLED`              |
+| Prerequisite case failed and policy skips dependent case | `SKIPPED`                |
 
 ## 10. Authentication architecture
 
@@ -520,7 +522,8 @@ Detailed behavior is defined in [Authentication and security](02-authentication-
 - Google sign-in;
 - OAuth callback/error state;
 - mandatory email verification for password registration (six-digit OTP);
-- optional password reset.
+- password reset with generic OTP responses and cooldown handling.
+- readiness and backend health state.
 
 ### Authenticated
 
@@ -569,7 +572,7 @@ General rules:
 - missing authentication returns `401`;
 - errors use a consistent problem-details shape.
 
-Exact routes are documented in [Data, API, and workflows](03-data-model-api-and-workflows.md).
+Exact routes, headers, bodies, validation, and examples are documented in the [API handbook](../reference/api-reference.html) and summarized in [Data, API, and workflows](03-data-model-api-and-workflows.md).
 
 ## 13. Testing strategy
 

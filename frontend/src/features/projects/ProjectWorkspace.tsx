@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Alert, Button, Card, ConfirmDialog, LoadingState, PageHeader, StatusBadge } from '../../components/ui'
 import { projectKeys, projectsApi } from './api'
 import { buildOnboardingChecklist, targetHealthGuidance, useProjectWorkspace, type ProjectWorkspaceContext } from './ProjectWorkspaceContext'
+import { ProjectErrorAlert } from './ProjectErrorAlert'
 
 export function ProjectLayout() {
   const { projectId = '' } = useParams()
@@ -36,7 +37,7 @@ export function ProjectLayout() {
   if (!projectId) return <Navigate to="/projects" replace />
   if (query.isPending) return <Card><LoadingState label="Loading project…" /></Card>
   if (query.isError || !query.data) {
-    return <Alert tone="danger" title="Unable to load this project.">Return to projects and try again.</Alert>
+    return <ProjectErrorAlert title="Unable to load this project." error={query.error} fallback="Return to projects and try again." retryLabel="Reload project" onRetry={() => void query.refetch()} />
   }
 
   const project = query.data
@@ -67,7 +68,7 @@ export function ProjectLayout() {
       {project.permissions.includes('DEFINITION_VIEW') && <NavLink to={`${root}/suites`}>Suites</NavLink>}
       {project.permissions.includes('DEFINITION_VIEW') && <NavLink to={`${root}/trash`}>Trash</NavLink>}
       {project.permissions.includes('VARIABLE_VIEW') && <NavLink to={`${root}/variables`}>Variables</NavLink>}
-      {project.permissions.includes('MEMBER_MANAGE') && <NavLink to={`${root}/members`}>Members</NavLink>}
+      <NavLink to={`${root}/members`}>Members</NavLink>
       <NavLink to={`${root}/executions`}>Executions</NavLink>
     </nav>
     <Outlet context={{ project, root } satisfies ProjectWorkspaceContext} />
@@ -77,9 +78,11 @@ export function ProjectLayout() {
       description="Archived projects are no longer available for new runs. You can restore this state later from project administration."
       confirmLabel="Archive project"
       busy={archive.isPending}
-      onClose={() => setArchiveOpen(false)}
+      onClose={() => { setArchiveOpen(false); archive.reset() }}
       onConfirm={() => archive.mutate()}
-    />
+    >
+      {archive.isError && <ProjectErrorAlert title="Unable to archive this project." error={archive.error} fallback="The project remains active." retryLabel="Retry archive" busy={archive.isPending} onRetry={() => archive.mutate()} />}
+    </ConfirmDialog>
     <ConfirmDialog
       open={restoreOpen}
       title={`Restore ${project.name}?`}
@@ -87,9 +90,11 @@ export function ProjectLayout() {
       confirmLabel="Restore project"
       confirmVariant="primary"
       busy={restore.isPending}
-      onClose={() => setRestoreOpen(false)}
+      onClose={() => { setRestoreOpen(false); restore.reset() }}
       onConfirm={() => restore.mutate()}
-    />
+    >
+      {restore.isError && <ProjectErrorAlert title="Unable to restore this project." error={restore.error} fallback="The project remains archived." retryLabel="Retry restore" busy={restore.isPending} onRetry={() => restore.mutate()} />}
+    </ConfirmDialog>
   </section>
 }
 
@@ -122,7 +127,7 @@ export function ProjectOverviewPage() {
       {healthGuidance && <Alert tone={healthGuidance.tone} title={healthGuidance.title}>
         <p>{healthGuidance.body}</p>
         {healthGuidance.details && <p><code>{healthGuidance.details}</code></p>}
-        {project.targetOrigin.toLowerCase().startsWith('http://localhost:') && <p><a href="https://github.com/Megumi2910/testops-platform/blob/codex/milestone-9-release-candidate/docs/operations/12-local-target-testing-guide.md" target="_blank" rel="noreferrer">Read the local-target setup guide</a> after updating the backend environment.</p>}
+        {project.targetOrigin.toLowerCase().startsWith('http://localhost:') && <p><a href="https://github.com/Megumi2910/testops-platform/blob/main/docs/operations/12-local-target-testing-guide.md" target="_blank" rel="noreferrer">Read the local-target setup guide</a> after updating the backend environment.</p>}
       </Alert>}
       <ol className="checklist">
         {checklist.map(item => <li key={item.label} className={item.done ? 'done' : ''}>

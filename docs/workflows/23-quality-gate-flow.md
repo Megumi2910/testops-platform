@@ -1,5 +1,32 @@
 # Full-system quality-gate workflow
 
+## Current isolated candidate flow
+
+```mermaid
+flowchart TD
+    Head["Committed candidate revision"] --> Dirty{"Candidate source paths dirty?"}
+    Dirty -->|Yes| Worktree["Validated detached worktree at exact HEAD"]
+    Dirty -->|No| Static["Frontend, backend, Compose, docs, and secret contracts"]
+    Worktree --> Static
+    Static --> Build["Build with full VCS_REF"]
+    Build --> Scoped["Start explicit non-default Compose project"]
+    Scoped --> Health{"OCI revisions and health match?"}
+    Health -->|No| Diagnose["Bounded project ps/log diagnostics"]
+    Health -->|Yes| Browser{"Browser mode enabled?"}
+    Browser -->|No| Teardown["Project-scoped teardown"]
+    Browser -->|Yes| E2E["Playwright matrix and post-browser secret audit"]
+    E2E --> Teardown
+    Diagnose --> Teardown
+```
+
+The aggregate entry point is `scripts/verify.ps1 -ProjectName <isolated>`.
+`-NoBrowser` removes published ports but retains image, startup, health, and
+revision proof. Cleanup always receives the same explicit project name and
+Compose file list; the developer's default project is outside the gate's
+mutation boundary.
+
+## Historical full-system workflow
+
 ```mermaid
 flowchart TD
     Source["Checked-out TestOps and ecommerce commits"] --> Build["Build images with OCI revision labels"]
@@ -50,6 +77,26 @@ flowchart LR
 ```
 
 The comparison intentionally summarizes step actions instead of repeating locator and input values. The user's local editor remains intact until one recovery button is chosen.
+
+## Phase 9 browser-quality flow
+
+```mermaid
+flowchart LR
+    Candidate[Committed candidate revision] --> Matrix[Playwright 18 case-viewports]
+    Matrix --> Views[1440x900 / 768x1024 / 320x800]
+    Views --> A11y[Keyboard, focus, forms, dialogs, overflow, a11y helper]
+    Matrix --> Perf[Chromium route PerformanceObserver records]
+    DevTools[Chrome DevTools Lighthouse + trace] --> Perf
+    Perf --> Thresholds[Accessibility >=95, LCP <=2500ms, CLS <=0.1]
+    A11y --> Manifest[Sanitized P9 browser manifest]
+    Thresholds --> Manifest
+    Manifest --> Ledgers[Defect + milestone ledger validators]
+```
+
+The DevTools capture is a public readiness anchor at desktop and narrow
+mobile; authenticated routes use the sanitized Chromium matrix. This keeps
+the evidence revision-matched without serializing cookies, tokens, or raw
+browser payloads.
 
 ## Verification resend path
 

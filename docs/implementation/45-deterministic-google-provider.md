@@ -18,7 +18,14 @@ The browser follows the authorization redirect, so it must receive a URL that is
 | `GOOGLE_PROVIDER_BASE_URI` | backend | `http://oauth-provider:9090` | Token, user-info, and certificate endpoints |
 | `GOOGLE_SCOPES` | backend/provider | `profile,email` | OAuth2 user-info flow without an OIDC ID token |
 
-Production defaults remain `https://accounts.google.com` and `openid,profile,email`. The E2E provider deliberately does not mint a signed ID token or publish signing keys, so including `openid` would make Spring Security require an ID-token validation path that this deterministic fixture does not claim to implement.
+Production defaults use Google's OIDC discovery endpoints: authorization at
+`https://accounts.google.com/o/oauth2/v2/auth`, token exchange at
+`https://oauth2.googleapis.com/token`, user info at
+`https://openidconnect.googleapis.com/v1/userinfo`, and signing keys at
+`https://www.googleapis.com/oauth2/v3/certs`; production scopes remain
+`openid,profile,email`. The E2E provider deliberately does not mint a signed ID
+token or publish signing keys, so including `openid` would make Spring Security
+require an ID-token validation path that this deterministic fixture does not claim to implement.
 
 ## Provider contract
 
@@ -34,7 +41,11 @@ The fixed profile is `QA Google User` / `qa.google@testops.local`. These values 
 
 ## Application behavior
 
-The frontend displays “Continue with Google” only when the backend platform-options response says Google is enabled. The callback page keeps provider details private: any callback error becomes the generic message `Google sign-in could not be completed.` The browser test also checks that token, client-secret, stack, and exception text never appears.
+The frontend displays “Continue with Google” only when the backend platform-options response says Google is enabled. The callback page keeps provider details private and accepts only four safe reasons: `account_link_required`, `account_unavailable`, `email_unverified`, and `oauth_sign_in_failed`. The first presents password sign-in followed by explicit Account Security linking; the remaining values provide bounded retry/contact guidance. Tokens, client secrets, stacks, and provider exceptions never appear.
+
+The normal, QA, and E2E profiles use distinct refresh and OAuth-session cookie
+names. QA explicitly disables Google even when `backend/.env` contains real
+provider settings; deterministic Google remains E2E-only.
 
 ## Rebuild and run
 

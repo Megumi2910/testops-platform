@@ -1,11 +1,72 @@
 # Milestone 10 quality-gate defect ledger
 
+## Current pre-merge fixes
+
+### CERT-001 — Legacy normal-stack execution evidence contained a target credential
+
+- Severity: P0
+- Status: RESOLVED during the 2026-08-31 certification remediation
+- Previous actual: a legacy ecommerce definition and its historical normal-stack evidence used a literal target credential.
+- Resolution: rotated the target account secret, moved the replacement to ignored runtime/TestOps secret-variable storage, and removed the exact guarded historic execution/evidence scope before recreating the safe catalog definition.
+- Regression layer: catalog synchronization validation, secret-safety audit, and persistent normal-stack reruns.
+
+### CERT-002 — Anonymous session bootstrap logged an expected refresh failure
+
+- Severity: P3
+- Status: RESOLVED
+- Previous actual: a guest page called refresh without a cookie and surfaced an avoidable `401` console error.
+- Resolution: the backend returns `204 No Content` when no refresh cookie is present; the frontend treats it as a signed-out bootstrap state. Invalid supplied cookies continue to receive the documented rejection.
+- Regression layer: API/AuthProvider unit coverage and Chrome DevTools guest-runtime capture.
+
+### CERT-003 — Session-expiry regression did not prove stale bearer invalidation
+
+- Severity: P2
+- Status: RESOLVED
+- Previous actual: the test checked a post-reactivation session state rather than the bearer issued before account lock.
+- Resolution: the E2E test now retains the pre-lock bearer and requires `/auth/me` to return `401` after lock, before verifying that reactivation still requires a fresh session.
+- Regression layer: focused session-expiry spec and complete 103-test Chromium suite.
+
+### PM-UX-001 — Target origins required a deployment environment edit
+
+- Severity: P2
+- Status: RESOLVED in the pre-merge target-origin registry slice
+- Previous actual: adding a safe staging target required changing `TARGET_ALLOWED_ORIGINS` and recreating the backend.
+- Resolution: verified platform administrators now manage canonical, persistent target origins in Administration; environment entries remain visible but immutable. The effective allowlist is rechecked for project changes, target checks, and execution navigation.
+- Regression layer: backend registry/policy tests, project/admin component tests, migration upgrade test, and rebuilt browser role matrix.
+
+### PM-UX-002 — Empty project submission exposed generic validation text
+
+- Severity: P3
+- Status: RESOLVED in the pre-merge target-origin registry slice
+- Previous actual: the project form displayed `Invalid input` for missing required values.
+- Resolution: field-level name, description, and target-origin instructions now use native controls with first-invalid focus.
+- Regression layer: ProjectPages component tests and final 320px browser form check.
+
 ## Severity policy
 
 - **P0:** credential/data exposure, tenant escape, destructive corruption, or system-wide inability to operate.
 - **P1:** core workflow blocked, incorrect authorization, or unhandled server failure in expected use.
 - **P2:** significant accessibility, recovery, reliability, or consistency defect with a workaround.
 - **P3:** low-risk polish or diagnostic improvement.
+
+## Post-merge status interpretation
+
+The defect entries below preserve their original IDs, evidence, and regression
+owners. For the current Milestone 10A release decision, use the [completion
+ledger](../milestones/15-milestone-10a-testops-completion.md): a historical
+resolution is not a substitute for rebuilding the merged revision and rerunning
+the browser gate. QG-005 (form metadata) is resolved in source. QG-010 (stale
+lazy chunks) now has source, isolated Playwright, and rebuilt-runtime smoke
+evidence; the true two-image deployment swap remains open. The public
+repository's GitHub secret-scanning endpoint is unavailable,
+so the Phase 0 local audit is recorded as a compensating control rather than a
+claim that hosted scanning ran.
+
+The Phase 1 documentation follow-up run `31786506438` briefly failed the
+existing Mailpit password-reset E2E test after 33 passing tests. A failed-job
+rerun passed the complete enabled E2E suite and all other CI jobs were green;
+this is recorded as a transient test-infrastructure/fixture timing signal,
+not as evidence against the shell/account-menu implementation.
 
 ## Confirmed defects
 
@@ -69,15 +130,19 @@
 ### QG-005 — TestOps form fields omit autocomplete metadata
 
 - Severity: P2
+- Status: RESOLVED in the Phase 7 definition-form metadata slice
 - Evidence: Chrome DevTools issue on authenticated case editor
 - Expected: identity and reusable form fields provide appropriate names/autocomplete semantics
-- Actual: Chrome reports a form-field metadata issue
-- Regression layer: accessibility/component tests
+- Previous actual: definition fields such as case name/retry count, suite names, target origin, and variable values omitted an explicit autocomplete policy
+- Resolution: non-personal TestOps definition fields now declare `autocomplete="off"`; project identity keeps the standard `organization` token and member identity keeps `email`. This prevents browser autofill heuristics from treating test definitions and secret-variable inputs as personal credentials.
+- Verification: mounted CasePage and VariablesPage tests assert the metadata on case and variable controls; the full frontend lint, typecheck, unit, and build gates remain required before publication
+- Regression layer: accessibility/component tests plus Chrome DevTools form metadata matrix
 
 ### QG-006 — Ecommerce header and remaining controls are not fully semantic
 
 - Severity: P1
-- Status: PARTIALLY RESOLVED; catalog, shared-header, unavailable-feature, and product-gallery sub-slices verified locally
+- Status: OUT OF SCOPE for the TestOps release gate; the opt-in ecommerce reference suite retains a partial follow-up
+- Disposition: Ecommerce is excluded from Milestone 10A TestOps acceptance; its remaining route-level work stays in the separate dogfooding track.
 - Environment: ecommerce `3f06fde`, mobile `320×800`
 - Evidence: catalog cards use named React Router links, homepage category cards use native buttons, the shared header exposes named search/cart/message/account/menu controls, and the product-gallery browser contract proves named zoom/navigation buttons plus dialog Escape/focus restoration. The remaining baseline still contains route-level form, contrast, and mobile findings
 - Expected: every control has a programmatic name and card navigation is a semantic link
@@ -87,6 +152,8 @@
 ### QG-007 — Ecommerce accessibility is below the release gate
 
 - Severity: P1
+- Status: OUT OF SCOPE for the TestOps release gate; the ecommerce reference baseline remains a separate follow-up
+- Disposition: Do not use the opt-in ecommerce Lighthouse baseline as TestOps release evidence; the TestOps browser matrix owns the current threshold.
 - Evidence: Chrome Lighthouse mobile accessibility `80`, target `>=95`
 - Expected: no serious route-level accessibility failures and score at least 95
 - Actual: score 80, with form/control semantics among observed failures
@@ -96,6 +163,7 @@
 
 - Severity: P2
 - Status: RESOLVED for storefront and permanent mock fixtures; fresh Lighthouse timing remains a separate performance check
+- Disposition: Ecommerce fixture work is recorded for reference only and is not a TestOps release blocker.
 - Evidence: the previous baseline loaded Google Fonts and multiple Unsplash resources; the new Playwright network allowlist observed zero external image, stylesheet, or font requests after a clean container rebuild
 - Expected: deterministic local assets for QA and no external availability dependency
 - Resolution: local SVG banners/team art, checked-in public mock product art, system fonts, local category fallback, and seeder synchronization for existing `MOCK-*` rows. Seeder values are copied into mutable lists before Hibernate replacement.
@@ -106,6 +174,7 @@
 
 - Severity: P2
 - Status: PARTIAL — wishlist and Flash Sale now have explicit unavailable status regions and disabled empty-state controls; wallet/voucher cards and header integrations already say coming soon
+- Disposition: Remaining ecommerce destination polish is out of scope for TestOps Milestone 10A and remains an opt-in reference-suite follow-up.
 - Evidence: `ecommerce-smoke.spec.ts` proves the wishlist notice plus disabled filter/view controls and the Flash Sale unavailable notice
 - Expected: implemented destinations, or clearly disabled/labelled placeholders
 - Actual: the covered routes no longer imply working features; simulated settings and any unreviewed destination remain to audit
@@ -114,12 +183,32 @@
 ### QG-010 — Stale lazy chunks crash TestOps after a container rebuild
 
 - Severity: P2
+- Disposition: Mitigated in source and isolated rebuilt-runtime evidence; the true adjacent two-image swap remains operational follow-up for the retained deployment harness.
 - Preconditions: keep a browser tab open while replacing the frontend image
 - Reproduction: navigate from the stale tab after the new image starts
 - Expected: one controlled reload or branded recovery boundary
-- Actual: the browser requests a removed hashed chunk, receives `404`, and React Router renders its default unexpected-error page
+- Actual (before Phase 1): the browser requests a removed hashed chunk, receives `404`, and React Router renders its default unexpected-error page
+- Phase 1 slice update: the root router now renders a branded recovery page with safe reload/readiness actions and no stack details. Phase 2 now adds revision-aware lazy imports, one automatic reload per route/revision, recognition of the Vite `error loading dynamically imported module` variant, and a manual retry that clears the current marker. Local gates and CI run [`31865017062`](https://github.com/Megumi2910/testops-platform/actions/runs/31865017062) pass all six jobs. The rebuilt `testops-live-gate` runtime then passed the retained-tab simulation and account-shell browser smoke; only the true two-image A/B deployment swap remains operational follow-up.
+- Phase 6 foundation update: the frontend now serves its exact full image revision on the SPA shell, static assets, and static `404` responses without stamping API/OAuth/Actuator responses. The new harness requires adjacent clean A/B worktrees, an A-absent/B-present `AuthPages` marker, exact OCI/header identity on one stable browser origin, client-side **Sign in** navigation, one stale-chunk `404`, one reload, the A recovery marker, the B marker, and no loop. Focused contracts pass 31 revision/header and 82 orchestration assertions, including post-build provisioning of every mounted backend secret. Status remains open until the real adjacent A/B run succeeds; dry-run output is not evidence.
 - Likely subsystem: lazy-import recovery and root route error boundary
-- Regression layer: deployment smoke with retained browser session
+- Regression layer: lazy-import unit test + retained-tab Playwright smoke + deployment smoke with a rebuilt browser session
+
+### QG-020 — Signed-in Account control appeared inert
+
+- Severity: P1
+- Status: RESOLVED in the Phase 1 shell slice
+- Preconditions: a verified or unverified user is signed in and viewing any shell route
+- Previous actual: the desktop header rendered a text link to `/account`; users had no discoverable path to security, sessions, verification recovery, administration, or sign-out actions from the top-right control.
+- Resolution: `AppShell` now composes an account menu from the current user and effective platform permissions. Unverified users receive a verification link, administrators receive `/admin/users`, and sign-out clears auth state before navigating to `/login`. The same actions are available in the mobile drawer.
+- Verification: `frontend/src/components/AppShell.test.tsx` covers verified, unverified, administrator, Escape/focus, sign-out, and mobile drawer behavior; `RouteErrorPage.test.tsx` covers chunk recovery. CI run `31785998751` passed all six jobs for the implementation commit. The rebuilt `testops-live-gate` Chrome DevTools smoke confirmed the account menu, mobile drawer, account security route, no console errors, and mobile Lighthouse accessibility `100`.
+- Keyboard follow-up: the trigger now opens with ArrowDown/ArrowUp and the
+  menu wraps Tab and Shift+Tab at its first and last actions. The focused
+  mounted regression is documented in
+  [`account-menu keyboard evidence`](89-phase1-account-menu-keyboard.md); the
+  implementation commit `dfc5d36` passed all six CI jobs in run
+  [`31865910829`](https://github.com/Megumi2910/testops-platform/actions/runs/31865910829).
+  The rebuilt-runtime Chrome DevTools matrix remains open.
+- Regression layer: mounted React tests + Chrome DevTools responsive/keyboard matrix
 
 ### QG-011 — Invalid Details stage does not focus the failing control
 
@@ -146,6 +235,19 @@
 - Resolution: a focused comparison panel shows differing visible fields and action sequence; Reload replaces local state, while Retry submits local state with the latest fetched version
 - Verification: Chrome DevTools observed `PUT 409 → GET 200`, focused comparison, `PUT 200` retry, and an independent Reload flow; the QA fixture was restored
 - Regression layer: pure comparison tests + mounted component + two-tab Chrome DevTools journey
+
+### QG-027 — Direct case links ignored archived parent-suite lifecycle
+
+- Severity: P1
+- Status: RESOLVED in the Phase 4 project/definition guard slice
+- Role: project manager or test manager with a bookmarked case URL
+- Preconditions: an active child case remains under an archived suite
+- Reproduction: open `/projects/{projectId}/suites/{suiteId}/cases/{caseId}` directly after archiving the suite
+- Expected: the case is inspectable but read-only; save, run, archive, and child restore controls are unavailable until the suite is restored
+- Previous actual: the case page fetched only the case and derived edit/run permission without loading the parent suite, so it could present enabled controls even though backend writes were rejected with `suite_archived`
+- Resolution: `CasePage` loads the suite lifecycle alongside the case and applies the same active-suite boundary before rendering controls. The archived-suite warning explains the recovery path and static steps remain available.
+- Verification: `frontend/src/features/projects/CasePage.test.tsx` passes the direct-link regression; backend `DefinitionService.activeSuite(...)` remains the authorization authority.
+- Regression layer: mounted frontend test + nested backend service/HTTP coverage + Playwright lifecycle matrix
 
 ### QG-013 — OTP resend leaks account state and is not consistently idempotent
 
@@ -225,10 +327,10 @@
 - Reproduction: verify an account, request a password reset, and persist a `PASSWORD_RESET` challenge
 - Previous actual: the service returned a database check-constraint error because `email_verification_challenges_purpose_check` still allowed only `REGISTRATION` and `ADD_PASSWORD`
 - Resolution: `V022__password_reset_challenge_purpose.sql` replaces the named PostgreSQL constraint with the three supported purposes; the public reset endpoints are permit-all and return the documented generic/204 contracts
-- Verification: `AuthServiceRecoveryTest` passed 3 tests; the rebuilt E2E stack ran all 4 `auth-recovery.spec.ts` scenarios successfully, including Mailpit reset delivery and sign-in using the new password
+- Verification: `AuthServiceRecoveryTest` passed 3 tests; the rebuilt E2E stack ran all 4 `auth-recovery.spec.ts` scenarios successfully, including Mailpit reset delivery, the new `/login?reason=password-reset&email=...` handoff, and sign-in using the new password. Frontend regression evidence is recorded in `docs/testing/97-phase3-password-reset-handoff.md`.
 - Regression layer: migration, service, frontend, and Playwright/Mailpit browser tests
 
-### QG-020 — CI password-recovery run used a non-canonical browser origin
+### QG-040 — CI password-recovery run used a non-canonical browser origin
 
 - Severity: P1
 - Status: RESOLVED in the E2E environment contract slice
@@ -308,6 +410,192 @@
 - Verification: first local browser run exposed the missing controller mapping. After changing the condition, rebuilding the disposable stack, and recreating the E2E backend/frontend, `phase5-administrator-crud.spec.ts` passed in 4.2 seconds with role/status persistence and final-admin protection. CI run `31609560806` passed backend, frontend, containers, local-disabled E2E, and the full E2E suite for commit `53258e1`
 - Regression layer: Playwright browser journey plus existing `AdminUserServiceTest` and `AdminUsersPage` route guard tests
 
+### QG-028 — Administration user list had no pagination or retry recovery
+
+- Severity: P2
+- Status: RESOLVED in the Phase 5 administration-list slice
+- Preconditions: a platform administrator opens `/admin/users` with more than 50 users or the list request fails
+- Expected: the UI consumes server pagination, keeps search and page state coherent, and offers a retry action after a transient list failure
+- Previous actual: `AdminUsersPage` always requested `size=50`, ignored `totalPages`, and rendered a dead-end error paragraph without recovery
+- Resolution: the query now sends `page`, `size=25`, and deferred `query`; search resets the page, previous data remains visible during fetches, and **Try again** refetches the list
+- Verification: `frontend/src/features/auth/AdminUsersPage.test.tsx` covers page navigation and failed-then-successful retry; backend controller/service already expose bounded page metadata
+- Regression layer: mounted frontend test + administrator Playwright matrix + backend controller contract
+
+### QG-029 — Variable API and direct route did not share the permission contract
+
+- Severity: P2
+- Status: RESOLVED in the Phase 5 variable-permission slice
+- Preconditions: a project member opens `/variables` directly or a role matrix changes without updating the variable service
+- Expected: the API enforces the advertised `VARIABLE_VIEW` and `VARIABLE_MANAGE` capabilities; unauthorized direct links explain the denial without issuing a doomed request; secrets remain masked
+- Previous actual: `ProjectVariableService` repeated a `PROJECT_MANAGER` role check while the project response exposed named variable permissions, and the direct frontend route fetched variables for users who had no visibility navigation
+- Resolution: `ProjectAccessService.requireProjectPermission` now reuses `ProjectService.permissionSet`; variable list/mutations require the corresponding permission, and `VariablesPage` gates the query and renders a back-to-project recovery state
+- Verification: focused backend permission/masking tests passed 20 tests; focused frontend permission/masking/member/route tests passed 3 files / 8 tests
+- Regression layer: backend service tests + mounted frontend route test + Phase 5 role browser matrix
+
+### QG-030 — Members list failure had no in-place recovery
+
+- Severity: P2
+- Status: RESOLVED in the Phase 5 member-list recovery slice
+- Preconditions: an authenticated project member opens `/projects/{id}/members` and the list request fails
+- Expected: the page explains the failure and offers a keyboard-operable retry without losing the project context or changing role controls
+- Previous actual: the page rendered a generic error sentence with no retry action, requiring a route reload
+- Resolution: `MembersPage` now renders an alert beside **Try again** and refetches the same React Query key in place; manager mutation controls and viewer read-only rows are unchanged
+- Verification: focused frontend member/variable/route group passed 3 files / 9 tests
+- Regression layer: mounted frontend test + project-role browser matrix + backend membership tests
+
+### QG-031 — Stale membership conflicts did not refresh current data
+
+- Severity: P2
+- Status: RESOLVED in the Phase 5 membership stale-recovery slice
+- Preconditions: two project managers submit membership changes using different project versions
+- Expected: the stale `409` remains understandable, current project/member data is refreshed, and recovery does not issue duplicate list requests
+- Previous actual: the UI displayed “Reloaded data is required” but did not refresh the project or member queries; invalidating the member key and its parent project key also caused repeated member requests
+- Resolution: all membership mutation errors with `stale_version` now refresh the exact project/member keys; parent-key invalidation no longer cascades into a second member refetch
+- Verification: `MembersPage.test.tsx` passed 5/5, including one post-conflict member refetch
+- Regression layer: mounted frontend test + two-tab optimistic-version browser matrix + backend membership tests
+
+### QG-032 — Final administrator conflicts lacked stable UI guidance
+
+- Severity: P2
+- Status: RESOLVED in the Phase 5 administrator-conflict slice
+- Preconditions: a platform administrator attempts to demote or disable the only active administrator
+- Expected: the server rejects the unsafe mutation and the UI explains that another active administrator must remain
+- Previous actual: the page displayed the raw server message without a stable, actionable mapping for the structured error code
+- Resolution: `AdminUsersPage` maps `final_active_admin`, missing-user, and known validation codes to concise sanitized guidance while keeping the server invariant authoritative
+- Verification: `AdminUsersPage.test.tsx` passed 3/3, including the structured `409 final_active_admin` response
+- Regression layer: mounted frontend test + administrator browser matrix + backend final-admin service tests
+
+### QG-033 — CI exposed administrator wording drift and password-reset handoff flake
+
+- Severity: P2
+- Status: RESOLVED in the CI auth-recovery remediation slice
+- Preconditions: administrator conflict browser assertion or password-reset completion followed by return to Sign in
+- Expected: stable final-admin wording remains discoverable; reset email survives the route transition without persisting credentials
+- Actual: the first message omitted the browser contract phrase; reset email state could be lost across navigation in one CI attempt
+- Resolution: retain the invariant phrase in the actionable message; carry only the email through `/login?email=...`, initialize the login field from it, and update the browser assertion to accept the documented query
+- Verification: AuthPages/AdminUsersPage focused suite passed 8/8; CI run `31858093963` passed all six jobs and the enabled E2E suite without failure or flake
+- Regression layer: mounted frontend + enabled Playwright E2E + Mailpit recovery flow
+
+### QG-034 — Nested project/suite/case substitution lacked complete regression coverage
+
+- Severity: P1
+- Status: RESOLVED
+- Preconditions: an authenticated project member substitutes a suite or case UUID from another project or suite
+- Expected: the request returns a non-disclosing `404`, performs no definition mutation or queue write, and a later
+  legitimate case remains usable
+- Previous actual: source lookups were parent-scoped, but the release matrix only proved a foreign suite substitution;
+  foreign-case read, mutation, and queue paths were not independently guarded by regression tests
+- Resolution: `DefinitionSecurityTest` covers foreign-case reads and updates, `ExecutionServiceTest` covers foreign-case
+  queueing before the queue guard, and `phase5-role-matrix.spec.ts` exercises two real projects and READY cases through
+  the UI
+- Verification: frontend lint, typecheck, 20-file/62-test unit suite, production build, documentation links, and
+  Playwright test discovery passed. CI run `31859393419` passed all six required jobs, including backend Maven
+  verification and the full enabled Playwright suite; the Windows wrapper limitation is recorded as local environment
+  evidence only
+- Regression layer: backend service tests plus Playwright role/tenant matrix
+
+### QG-035 — Active-session context omitted the optional client IP
+
+- Severity: P2
+- Status: RESOLVED for the account-center presentation slice
+- Preconditions: an authenticated user has multiple active sessions and the
+  session API returns `createdIp` for some rows but not others
+- Expected: each row shows the available browser, issue/expiry, and IP
+  context; missing optional values use a clear fallback without failing the
+  page
+- Previous actual: `AccountPage` discarded `createdIp`, making sessions harder
+  to distinguish during account-security review
+- Resolution: render `IP <value>` or `IP Unavailable`, while retaining the
+  existing browser fallback and revoke controls
+- Verification: `AccountPages.test.tsx` covers both populated and omitted IP
+  values using documentation-only test addresses
+- Regression layer: mounted frontend account-center test; edge forwarding and
+  session ownership remain in the backend/browser authentication gates
+
+### QG-036 — Execution evidence failures had no in-place recovery
+
+- Severity: P2
+- Status: RESOLVED in the Phase 6 execution retry-recovery slice
+- Preconditions: an authenticated member opens Runs or an execution detail
+  page while the backend or artifact storage is temporarily unavailable
+- Previous actual: list/detail errors offered only explanatory text, and a
+  failed screenshot/trace request had no user-facing state or retry path
+- Resolution: list and detail queries expose a pending-aware **Try again**
+  action; artifact requests show a sanitized error and retry the same artifact
+  identifier without leaving the page
+- Verification: `ExecutionPages.test.tsx` passes list, detail, and screenshot
+  retry scenarios; CI run `31861395936` passes all six required jobs
+- Regression layer: mounted React tests plus the Phase 7 browser matrix
+
+### QG-037 — Screenshot previews were not keyboard-accessible
+
+- Severity: P2
+- Status: RESOLVED in the Phase 7 artifact-preview dialog slice
+- Preconditions: an authenticated member opens a successful screenshot artifact
+  from an execution detail page
+- Previous actual: the image rendered in an inline block with a close button,
+  but no dialog semantics, initial focus, Escape handling, or focus restoration
+- Resolution: `ArtifactPreview` exposes a named modal region, focuses its close
+  control, traps Tab, closes on Escape, and restores focus to the invoking
+  artifact button
+- Verification: `ExecutionPages.test.tsx` passes the named-dialog, initial
+  focus, Escape, and focus-restoration scenarios; CI run
+  [`31862272093`](https://github.com/Megumi2910/testops-platform/actions/runs/31862272093)
+  passes all six required jobs
+- Regression layer: mounted React test plus Chrome DevTools accessibility and
+  responsive matrix
+
+### QG-038 — Authentication field errors were not associated with controls
+
+- Severity: P2
+- Status: RESOLVED in the Phase 7 auth-field accessibility slice
+- Preconditions: a login, verification, or password-reset request returns a
+  structured field violation
+- Previous actual: the page showed a generic alert, but the affected input had
+  no stable id, invalid state, or description relationship
+- Resolution: `AuthField` supplies stable labels, standard autocomplete tokens,
+  `aria-invalid`, and `aria-describedby`; `AuthPages` maps normalized
+  `ApiError.fieldErrors` to the matching control while retaining a sanitized
+  page-level alert
+- Verification: `AuthPages.test.tsx` proves an invalid reset code is announced
+  beside the input and that the input points to its error description. Local
+  frontend gates passed, and CI run
+  [`31863227868`](https://github.com/Megumi2910/testops-platform/actions/runs/31863227868)
+  passed all six required jobs; the live Chrome DevTools form and viewport
+  matrix remains open
+- Regression layer: mounted authentication tests plus Chrome DevTools form and
+  keyboard matrix
+
+### QG-039 — Readiness shell text failed contrast checks
+
+- Severity: P2
+- Status: RESOLVED in the Phase 7 readiness contrast slice
+- Preconditions: rebuilt TestOps frontend, guest readiness route
+- Previous actual: Lighthouse measured `.eyebrow` at `4.02:1` and the footer at
+  `3.55:1` against the readiness background
+- Resolution: the eyebrow uses the stronger brand token and the footer uses a
+  readable neutral that both meet WCAG AA normal-text contrast
+- Verification: frontend lint, typecheck, 21 files / 77 tests, and production
+  build pass; rebuilt Chrome DevTools Lighthouse desktop accessibility is `100`
+- Regression layer: frontend gates plus Chrome DevTools/Lighthouse readiness
+  snapshot
+
+### QG-040 — OAuth collision recovery and local QA sessions were opaque
+
+- Severity: P1
+- Status: RESOLVED in the pre-merge OAuth stabilization slice
+- Previous actual: a Google attempt against an existing password account ended
+  at a generic callback error, while the QA stack inherited port `3000` and
+  could lose a port-`3300` session after reload
+- Resolution: the backend allowlists safe callback reasons, the callback page
+  supplies bounded recovery actions, QA explicitly trusts `3300`, and normal,
+  QA, and E2E use separate refresh/OAuth-session cookie pairs
+- Verification: handler and callback component regressions cover collision,
+  unavailable, unverified, and generic-provider paths; Compose rendering and
+  the QA reload check are part of the pre-merge candidate gate
+- Regression layer: backend OAuth mapping tests, AuthPages tests, Compose
+  contract, and browser QA
+
 ## Coverage blockers
 
 | ID | Blocked coverage | Required resolution |
@@ -317,15 +605,15 @@
 | QG-B03 | Project restore/conflict/stale version | RESOLVED by versioned archive/restore API, frontend cache wiring, project-manager edit/name-conflict browser coverage in `projects.spec.ts`, and lifecycle E2E; stale-version UI remains covered by the existing focused conflict contract |
 | QG-B04 | target blocked/unreachable variants | isolated local-disabled/unreachable profiles |
 | QG-B05 | evidence redaction in browser artifacts | variable listing now enforces `VARIABLE_VIEW` and always masks secrets; `phase5-evidence-safety.spec.ts` proves passing and failing secret cases suppress all artifacts, ordinary cases retain screenshot/trace, and secret plaintext is absent from the detail response; member/non-member download authorization is covered separately |
-| QG-B06 | ecommerce cross-customer/cross-seller/admin isolation | PARTIAL: fixtures and read isolation are covered by `phase5-ecommerce-role-isolation.spec.ts`; `phase5-ecommerce-permission-matrix.spec.ts` now proves guest/unverified restrictions, customer/seller/admin boundary denial, non-disclosing foreign-product mutation rejection, and administrator read surfaces. Seller/admin writes, seller order ownership transitions, review ownership, and the complete endpoint/UI matrix remain |
+| QG-B06 | ecommerce cross-customer/cross-seller/admin isolation | OUT OF SCOPE for TestOps release acceptance; the opt-in reference suite remains PARTIAL: fixtures and read isolation are covered by `phase5-ecommerce-role-isolation.spec.ts`; seller/admin writes, seller order ownership transitions, review ownership, and the complete endpoint/UI matrix remain |
 | QG-B07 | remaining membership HTTP/browser matrix | RESOLVED: service/MockMvc/PostgreSQL covers ancestry, cancellation, versions, archive, final manager, positive add/change/remove, duplicate, archived-project, and role denial paths; HTTP add/change/remove/duplicate responses are explicit; Chrome DevTools confirms PM, test-manager, tester, viewer, non-member, and administrator boundaries |
 | QG-B08 | queue/cancel/retry/artifact matrix | cancellation and infrastructure retry browser evidence are covered by `phase5-execution-matrix.spec.ts`; retry asserts concise sanitized connection errors with no Playwright stack/call-log leakage. `ExecutionWorkerTest` proves disabled polling never claims work, and `ExecutionServiceTest` proves a full queue returns `429 execution_queue_full` before persistence and denies non-member artifacts before lookup. `phase5-evidence-safety.spec.ts` proves click/form target escape and secret-bearing failure suppression; `phase5-artifact-download.spec.ts` proves member PNG/ZIP downloads and outsider denial. `zz-phase5-browser-crash.spec.ts` now terminates real managed Chromium in a fresh container and verifies `ERROR`/`BROWSER_CRASH`, failed-step preservation, and sanitized error text; deployment-mode DevTools evidence remains |
 | QG-B09 | dashboard populated browser matrix and query-count proof | RESOLVED: `phase5-dashboard-admin-matrix.spec.ts` renders the dashboard after a real passed run; `DashboardPage.test.tsx` covers bounded URL windows and selector refetch; rebuilt Chrome DevTools evidence confirms the selected UTC range, exactly three `200` panel requests, no console messages, Lighthouse accessibility 96, LCP 501 ms, and CLS 0.03. See [dashboard range and DevTools evidence](51-phase5-dashboard-range-devtools.md) |
 | QG-B10 | browser proof of administration boundaries | Focused administrator CRUD/final-admin, locked/disabled, project-role `/admin/users` denial, and unverified recovery journeys are covered by `phase5-administrator-crud.spec.ts`, `phase5-account-status.spec.ts`, `phase5-role-matrix.spec.ts`, and `phase5-unverified-boundary.spec.ts`; Google/session and broader release variants remain |
-| QG-B11 | ecommerce search/filter/sort URL matrix | RESOLVED for the catalog sub-gate: `ecommerce-smoke.spec.ts` covers category navigation, product detail, keyword/no-result search, filter/sort URL state, retry, and pagination against the permanent mock catalog; checkout, messaging, permissions, and accessibility remain separate gates |
-| QG-B12 | ecommerce email verification/reset | RESOLVED for the deterministic delivery sub-gate: `ecommerce-auth-mailpit.spec.ts` passes registration → same-origin verification, unverified resend/cooldown, and password reset (3/3) against the isolated ecommerce PostgreSQL/Mailpit profile. Real SMTP-provider behavior remains outside this local gate; see `testing/60-phase5-ecommerce-mailpit-auth-evidence.md` |
-| QG-B13 | checkout concurrency and destructive order states | PARTIAL: `OrderServiceImplCheckoutTest` and `phase5-ecommerce-checkout.spec.ts` prove server-side pricing, selected-item cleanup, UUID idempotency replay, and exact-once cancellation restoration; `phase5-ecommerce-checkout-concurrency.spec.ts` proves two-user final-unit locking, one successful order, one normal `4xx` rejection, and exact restoration; `phase5-ecommerce-payment-stale-stock.spec.ts` proves backend-owned QR configuration and stale-cart recovery; `phase5-ecommerce-reviews.spec.ts` and `ReviewServiceEligibilityTest` prove completed-purchaser creation, duplicate rejection, and non-purchaser rejection. Payment capture/webhooks and the broader checkout accessibility matrix remain; see `testing/66-phase5-ecommerce-checkout-concurrency-evidence.md`, `testing/67-phase5-payment-stale-stock-evidence.md`, and `testing/69-phase5-ecommerce-review-evidence.md` |
-| QG-B14 | two-user messaging | PARTIAL: separate customer-A/seller-B and customer-B/seller-B threads are seeded, foreign REST reads return `404`, and the two-context browser contract proves WebSocket send/receive, disconnected REST fallback, unread filtering, and read-state removal; backend-restart reconnect timing, native stress, and the complete role/thread matrix remain; see `testing/68-phase5-ecommerce-messaging-resilience-evidence.md` |
+| QG-B11 | ecommerce search/filter/sort URL matrix | OUT OF SCOPE for TestOps release acceptance; the opt-in catalog sub-gate is separately recorded in `ecommerce-smoke.spec.ts` and does not define the TestOps browser gate |
+| QG-B12 | ecommerce email verification/reset | OUT OF SCOPE for TestOps release acceptance; the deterministic Mailpit sub-gate remains reference evidence only (see `testing/60-phase5-ecommerce-mailpit-auth-evidence.md`) |
+| QG-B13 | checkout concurrency and destructive order states | OUT OF SCOPE for TestOps release acceptance; the checkout/payment/review evidence remains in the opt-in ecommerce reference suite |
+| QG-B14 | two-user messaging | OUT OF SCOPE for TestOps release acceptance; the messaging resilience evidence remains in the opt-in ecommerce reference suite |
 
 ## Triage result
 

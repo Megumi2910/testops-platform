@@ -1,36 +1,90 @@
-param([string]$EcommerceRepository = 'D:\Projects\ecommerce-web\webcky')
+param(
+    [string]$ProjectName = 'testops-quality-gate',
+    [string[]]$ComposeFiles = @('docker-compose.yml', 'docker-compose.qa.yml'),
+    [string]$ExpectedRevision,
+    [string[]]$Services = @('backend', 'frontend'),
+    [ValidateRange(1, 3600)][int]$TimeoutSeconds = 120,
+    [ValidateRange(1, 60)][int]$PollIntervalSeconds = 2,
+    [switch]$IncludeEcommerce,
+    [string]$EcommerceRepository = 'D:\Projects\ecommerce-web\webcky',
+    [string]$EcommerceProjectName = 'testops-quality-gate-ecommerce'
+)
 
 $ErrorActionPreference = 'Stop'
 $testopsRepository = Split-Path -Parent $PSScriptRoot
+. (Join-Path $PSScriptRoot 'quality-gate-common.ps1')
 
-function Assert-ServiceRevision([string]$repository, [string[]]$composeFiles,
-        [string]$service, [string]$expectedRevision) {
-    Push-Location $repository
+function Assert-ServiceRevision {
+    param(
+        [string]$Repository,
+        [string]$ComposeProject,
+        [string[]]$Files,
+        [string]$Service,
+        [string]$Revision
+    )
+
+    $psArguments = New-ComposeArguments -ProjectName $ComposeProject -RepositoryRoot $Repository `
+        -ComposeFiles $Files -Command 'ps' -CommandArguments @('-q', $Service)
+    Push-Location $Repository
     try {
-        $arguments = @('compose')
-        foreach ($file in $composeFiles) { $arguments += @('-f', $file) }
-        $containerId = (& docker @arguments ps -q $service).Trim()
-        if (-not $containerId) { throw "$service is not running in $repository" }
-        $actualRevision = (& docker inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' $containerId).Trim()
-        if ($actualRevision -ne $expectedRevision) {
-            throw "$service revision mismatch: expected $expectedRevision, running $actualRevision"
+        $containerOutput = Invoke-CheckedNative -FilePath 'docker' -Arguments $psArguments `
+            -Activity "Resolve $Service container for $ComposeProject" -CaptureOutput
+        $containerIds = @($containerOutput -split '\s+' | Where-Object { $_ })
+        if ($containerIds.Count -ne 1) {
+            throw "$Service must resolve to exactly one running container in $ComposeProject; found $($containerIds.Count)."
         }
-        $deadline = [DateTimeOffset]::UtcNow.AddMinutes(2)
+        $containerId = $containerIds[0]
+        $inspectionJson = Invoke-CheckedNative -FilePath 'docker' `
+            -Arguments @('inspect', $containerId) -Activity "Read $Service container metadata" -CaptureOutput
+        $contractState = Get-DockerContainerContractState -InspectJson $inspectionJson
+        $actualRevision = $contractState.Revision
+
+        # Validate immutable provenance before waiting on health so a stale or
+        # unlabeled container fails immediately instead of consuming timeout.
+        Assert-RevisionHealthContract -Service $Service -ExpectedRevision $Revision `
+            -ActualRevision $actualRevision -Health 'healthy'
+
+        $deadline = [DateTimeOffset]::UtcNow.AddSeconds($TimeoutSeconds)
+        $health = ''
         do {
-            $health = (& docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' $containerId).Trim()
-            if ($health -in @('healthy', 'running')) { break }
-            if ($health -in @('unhealthy', 'exited', 'dead')) { throw "$service is $health" }
-            Start-Sleep -Seconds 2
+            $inspectionJson = Invoke-CheckedNative -FilePath 'docker' `
+                -Arguments @('inspect', $containerId) -Activity "Read $Service container metadata" -CaptureOutput
+            $health = (Get-DockerContainerContractState -InspectJson $inspectionJson).Health
+            if ($health -eq 'healthy') { break }
+            if ($health -in @('unhealthy', 'missing')) {
+                Assert-RevisionHealthContract -Service $Service -ExpectedRevision $Revision `
+                    -ActualRevision $actualRevision -Health $health
+            }
+            if ([DateTimeOffset]::UtcNow -lt $deadline) {
+                Start-Sleep -Seconds $PollIntervalSeconds
+            }
         } while ([DateTimeOffset]::UtcNow -lt $deadline)
-        if ($health -notin @('healthy', 'running')) { throw "$service did not become healthy; last state=$health" }
-        Write-Host "$service PASS revision=$actualRevision health=$health"
-    } finally { Pop-Location }
+
+        Assert-RevisionHealthContract -Service $Service -ExpectedRevision $Revision `
+            -ActualRevision $actualRevision -Health $health
+        Write-Host "$Service PASS project=$ComposeProject revision=$actualRevision health=$health"
+    } finally {
+        Pop-Location
+    }
 }
 
-$testopsRevision = (& git -C $testopsRepository rev-parse HEAD).Trim()
-$ecommerceRevision = (& git -C $EcommerceRepository rev-parse HEAD).Trim()
+Assert-IsolatedComposeProjectName -ProjectName $ProjectName -RepositoryRoot $testopsRepository | Out-Null
+if ([string]::IsNullOrWhiteSpace($ExpectedRevision)) {
+    $ExpectedRevision = Get-GitRevision -RepositoryRoot $testopsRepository
+}
+foreach ($service in $Services) {
+    Assert-ServiceRevision -Repository $testopsRepository -ComposeProject $ProjectName `
+        -Files $ComposeFiles -Service $service -Revision $ExpectedRevision
+}
 
-Assert-ServiceRevision $testopsRepository @('docker-compose.yml', 'docker-compose.qa.yml') 'backend' $testopsRevision
-Assert-ServiceRevision $testopsRepository @('docker-compose.yml', 'docker-compose.qa.yml') 'frontend' $testopsRevision
-Assert-ServiceRevision $EcommerceRepository @('docker-compose.yml') 'backend' $ecommerceRevision
-Assert-ServiceRevision $EcommerceRepository @('docker-compose.yml') 'frontend' $ecommerceRevision
+if ($IncludeEcommerce) {
+    if (-not (Test-Path -LiteralPath $EcommerceRepository)) {
+        throw "Ecommerce repository was not found at $EcommerceRepository."
+    }
+    Assert-IsolatedComposeProjectName -ProjectName $EcommerceProjectName -RepositoryRoot $EcommerceRepository | Out-Null
+    $ecommerceRevision = Get-GitRevision -RepositoryRoot $EcommerceRepository
+    foreach ($service in @('backend', 'frontend')) {
+        Assert-ServiceRevision -Repository $EcommerceRepository -ComposeProject $EcommerceProjectName `
+            -Files @('docker-compose.yml') -Service $service -Revision $ecommerceRevision
+    }
+}

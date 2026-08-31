@@ -22,17 +22,44 @@ import com.microsoft.playwright.options.WaitForSelectorState;
 public class PlaywrightCaseRunner {
     private final ExecutionTargetGuard targetGuard;
     private final PlatformProperties properties;
-    private final ArtifactWriter artifacts;
+    private final EvidenceFileCleaner evidenceFiles;
     private final ManagedChromium chromium;
 
-    public PlaywrightCaseRunner(ExecutionTargetGuard targetGuard, PlatformProperties properties, ArtifactWriter artifacts, ManagedChromium chromium) { this.targetGuard = targetGuard; this.properties = properties; this.artifacts = artifacts; this.chromium = chromium; }
+    public PlaywrightCaseRunner(ExecutionTargetGuard targetGuard, PlatformProperties properties,
+            EvidenceFileCleaner evidenceFiles, ManagedChromium chromium) {
+        this.targetGuard = targetGuard;
+        this.properties = properties;
+        this.evidenceFiles = evidenceFiles;
+        this.chromium = chromium;
+    }
 
     public Result run(List<StepDefinition> definitions, String targetOrigin, String executionId, String caseResultId, Map<String, String> variables, Set<String> secretKeys) {
         List<StepOutcome> outcomes = new ArrayList<>(); List<CapturedScreenshot> screenshots = new ArrayList<>();
         boolean[] secretUsed = { false };
+        Path trace = null;
+        boolean traceHandedOff = false;
         try (BrowserContext context = chromium.newContext(contextOptions(definitions)); Page page = context.newPage()) {
             context.setDefaultTimeout(properties.execution().defaultStepTimeout().toMillis());
             AtomicReference<NavigationViolation> navigationViolation = new AtomicReference<>();
+            // Intercept at the context routing boundary as well as observing
+            // page events. A target=_blank popup can dispatch its first
+            // navigation request before the Page callback is delivered.
+            context.route("**/*", route -> {
+                Request request = route.request();
+                if (request.isNavigationRequest()) {
+                    try {
+                        targetGuard.resolve(targetOrigin, request.url());
+                    } catch (RuntimeException ex) {
+                        navigationViolation.compareAndSet(null, new NavigationViolation());
+                        route.abort();
+                        return;
+                    }
+                }
+                route.resume();
+            });
+            // Register at the browser-context boundary so target checks attach
+            // before a popup's first navigation request is dispatched.
+            context.onPage(popup -> monitorNavigation(popup, targetOrigin, navigationViolation));
             monitorNavigation(page, targetOrigin, navigationViolation);
             page.onPopup(popup -> {
                 monitorNavigation(popup, targetOrigin, navigationViolation);
@@ -41,13 +68,55 @@ public class PlaywrightCaseRunner {
                     catch (RuntimeException ex) { navigationViolation.compareAndSet(null, new NavigationViolation()); try { popup.close(); } catch (Exception ignored) { } }
                 }
             });
-            Path trace = Files.createTempFile("testops-trace-", ".zip"); context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true));
+            trace = Files.createTempFile("testops-trace-", ".zip");
+            context.tracing().start(new Tracing.StartOptions().setScreenshots(true).setSnapshots(true));
             long deadline = System.nanoTime() + properties.execution().maxDuration().toNanos();
             int failedStepPosition = -1;
-            try { for (StepDefinition step : definitions) { failedStepPosition = step.position(); if (System.nanoTime() > deadline) throw new TimeoutError("Execution duration exceeded"); long started = System.nanoTime(); boolean stepUsesSecret = referencesSecret(step, secretKeys); secretUsed[0] |= stepUsesSecret; try { execute(page, step, targetOrigin, variables, screenshots, secretUsed[0]); assertNavigationAllowed(navigationViolation); outcomes.add(new StepOutcome(step.position(), step.action(), "PASSED", (System.nanoTime() - started) / 1_000_000, null)); } catch (Throwable stepError) { Throwable recordedError = navigationViolation.get() == null ? stepError : navigationViolation.get(); outcomes.add(new StepOutcome(step.position(), step.action(), "FAILED", (System.nanoTime() - started) / 1_000_000, sanitizeMessage(recordedError))); if (recordedError instanceof RuntimeException runtime) throw runtime; if (recordedError instanceof Error error) throw error; throw new RuntimeException(recordedError); } } return new Result(true, null, null, secretUsed[0], false, null, null, trace, outcomes, screenshots); }
-            catch (Throwable ex) { byte[] screenshot = secretUsed[0] ? null : failureScreenshot(page); String failureCategory = category(ex); boolean infrastructure = infrastructureFailure(ex, failureCategory); return new Result(false, sanitizeMessage(ex), screenshot, secretUsed[0], infrastructure, failureCategory, failedStepPosition < 0 ? null : failedStepPosition, trace, outcomes, screenshots); }
-            finally { try { context.tracing().stop(new Tracing.StopOptions().setPath(trace)); } catch (Exception ignored) { } if (secretUsed[0]) { try { Files.deleteIfExists(trace); } catch (Exception ignored) { } } }
-        } catch (Exception ex) { String failureCategory = category(ex); return new Result(false, sanitizeMessage(ex), null, secretUsed[0], true, "UNKNOWN".equals(failureCategory) ? "WORKER_INFRASTRUCTURE" : failureCategory, null, null); }
+            Result result;
+            try {
+                for (StepDefinition step : definitions) {
+                    failedStepPosition = step.position();
+                    if (System.nanoTime() > deadline) throw new TimeoutError("Execution duration exceeded");
+                    long started = System.nanoTime();
+                    boolean stepUsesSecret = referencesSecret(step, secretKeys);
+                    secretUsed[0] |= stepUsesSecret;
+                    try {
+                        execute(page, step, targetOrigin, variables, screenshots, secretUsed[0]);
+                        assertNavigationAllowed(navigationViolation);
+                        outcomes.add(new StepOutcome(step.position(), step.action(), "PASSED",
+                                (System.nanoTime() - started) / 1_000_000, null));
+                    } catch (Throwable stepError) {
+                        Throwable recordedError = navigationViolation.get() == null ? stepError : navigationViolation.get();
+                        outcomes.add(new StepOutcome(step.position(), step.action(), "FAILED",
+                                (System.nanoTime() - started) / 1_000_000, sanitizeMessage(recordedError)));
+                        if (recordedError instanceof RuntimeException runtime) throw runtime;
+                        if (recordedError instanceof Error error) throw error;
+                        throw new RuntimeException(recordedError);
+                    }
+                }
+                result = new Result(true, null, null, secretUsed[0], false, null, null, trace,
+                        outcomes, screenshots);
+            } catch (Throwable ex) {
+                byte[] screenshot = secretUsed[0] ? null : failureScreenshot(page);
+                String failureCategory = category(ex);
+                boolean infrastructure = infrastructureFailure(ex, failureCategory);
+                result = new Result(false, sanitizeMessage(ex), screenshot, secretUsed[0], infrastructure,
+                        failureCategory, failedStepPosition < 0 ? null : failedStepPosition, trace,
+                        outcomes, screenshots);
+            } finally {
+                // A trace that cannot be finalized must never be handed to the
+                // persistence layer as apparently valid evidence.
+                context.tracing().stop(new Tracing.StopOptions().setPath(trace));
+            }
+            traceHandedOff = true;
+            return result;
+        } catch (Exception ex) {
+            String failureCategory = category(ex);
+            return new Result(false, sanitizeMessage(ex), null, secretUsed[0], true,
+                    "UNKNOWN".equals(failureCategory) ? "WORKER_INFRASTRUCTURE" : failureCategory, null, null);
+        } finally {
+            if (!traceHandedOff) evidenceFiles.delete(trace);
+        }
     }
 
     private void execute(Page page, StepDefinition step, String origin, Map<String, String> variables, List<CapturedScreenshot> screenshots, boolean suppressEvidence) {

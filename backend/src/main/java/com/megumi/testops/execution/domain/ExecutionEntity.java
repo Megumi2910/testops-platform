@@ -60,7 +60,7 @@ public class ExecutionEntity {
     public UUID getId() { return id; } public ProjectEntity getProject() { return project; } public TestSuiteEntity getSuite() { return suite; } public UserEntity getRequestedBy() { return requestedBy; }
     public ExecutionStatus getStatus() { return status; } public int getTotalCases() { return totalCases; } public int getCompletedCases() { return completedCases; }
     public int getPassedCases() { return passedCases; } public int getFailedCases() { return failedCases; } public int getErrorCases() { return errorCases; } public int getCancelledCases() { return cancelledCases; }
-    public UUID getIdempotencyKey() { return idempotencyKey; } public Instant getCreatedAt() { return createdAt; } public Instant getStartedAt() { return startedAt; } public Instant getFinishedAt() { return finishedAt; } public Instant getHeartbeatAt() { return heartbeatAt; } public String getErrorMessage() { return errorMessage; }
+    public UUID getIdempotencyKey() { return idempotencyKey; } public Instant getCreatedAt() { return createdAt; } public Instant getStartedAt() { return startedAt; } public Instant getFinishedAt() { return finishedAt; } public Instant getHeartbeatAt() { return heartbeatAt; } public Instant getCancelRequestedAt() { return cancelRequestedAt; } public String getErrorMessage() { return errorMessage; }
     public String getBrowser() { return browser; } public String getTargetOriginSnapshot() { return targetOriginSnapshot; } public String getSuiteNameSnapshot() { return suiteNameSnapshot; } public String getInfrastructureErrorCategory() { return infrastructureErrorCategory; }
     public void setInfrastructureErrorCategory(String category) { this.infrastructureErrorCategory = category; }
 }

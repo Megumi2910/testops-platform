@@ -335,7 +335,7 @@ The family ID lets the service revoke every token in the chain if a used token i
 
 ### 7.5 Google OpenID Connect
 
-[`GoogleClientConfiguration`](../backend/src/main/java/com/megumi/testops/auth/config/GoogleClientConfiguration.java) creates the authorization-code client with `openid`, `profile`, and `email` scopes. [`OAuthLoginConfiguration`](../backend/src/main/java/com/megumi/testops/auth/config/OAuthLoginConfiguration.java) handles success and failure.
+[`GoogleClientConfiguration`](../backend/src/main/java/com/megumi/testops/auth/config/GoogleClientConfiguration.java) creates the authorization-code client with `openid`, `profile`, and `email` scopes. Real Google uses its OIDC discovery endpoints for authorization, token exchange, user info, and signing keys; the deterministic E2E provider keeps its own host-scoped endpoints. [`OAuthLoginConfiguration`](../backend/src/main/java/com/megumi/testops/auth/config/OAuthLoginConfiguration.java) handles success and failure, logging only allowlisted provider failure codes on the server while preserving the small safe browser callback contract.
 
 The success handler checks:
 

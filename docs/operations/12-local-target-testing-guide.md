@@ -20,6 +20,8 @@ docker compose up -d --force-recreate backend
 
 The feature is fail-closed: localhost is rejected unless both the feature flag is enabled and the exact origin (including port) is allowlisted. `127.0.0.1`, private/LAN addresses, and cross-origin navigation remain blocked. Compose adds `host.docker.internal:host-gateway` for Linux and CI.
 
+`TARGET_ALLOWED_ORIGINS` is a read-only bootstrap list, not the only way to register a target. After an administrator signs in, **Administration → Target origins** can add, enable, or disable safe origins without recreating the backend. The project create/edit selector refreshes after an administrator adds one. Project members can choose an enabled origin but must ask an administrator to register a new one.
+
 Check the transport from the container when troubleshooting:
 
 ```bash
@@ -90,7 +92,7 @@ real connection check rather than only in a unit-level helper.
 | Symptom | Check | Recovery |
 |---|---|---|
 | Target is `UNREACHABLE` | Host process, port, and the container `wget` command | Start the site, use the host port, and recreate `backend` |
-| Target is `BLOCKED` | Exact allowlist entry and `TARGET_LOCAL_DEV_ENABLED` | Add `http://localhost:<port>` exactly and enable only for local development |
+| Target is `BLOCKED` | Origin is enabled, exact bootstrap entry, and `TARGET_LOCAL_DEV_ENABLED` | Re-enable the administrator-managed origin or add `http://localhost:<port>` only for local development |
 | No READY cases | Case status or missing first navigation | Open the case, add steps, start with `NAVIGATE`, then save READY |
 | Locator failure | Role/name, text, placeholder, and page language | Prefer a stable semantic locator; run again after checking the target manually |
 | Worker disabled | `EXECUTION_WORKER_ENABLED` and backend health | Enable the worker and restart the backend |

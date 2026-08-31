@@ -81,6 +81,30 @@ class ProjectAccessServiceTest {
         assertDoesNotThrow(() -> access.requireProjectRole(project, user, administrator, PROJECT_MANAGE));
     }
 
+    @ParameterizedTest(name = "{0} variable permission {1}: allowed={2}")
+    @MethodSource("variablePermissions")
+    void variablePermissionsMatchThePublishedProjectContract(String role, ProjectPermission permission, boolean allowed) {
+        when(members.findByProjectIdAndUserId(project.getId(), userId))
+                .thenReturn(Optional.of(new ProjectMemberEntity(project, user, role, Instant.now())));
+
+        if (allowed) {
+            assertDoesNotThrow(() -> access.requireProjectPermission(project, user, jwt, permission));
+        } else {
+            ApiException failure = assertThrows(ApiException.class,
+                    () -> access.requireProjectPermission(project, user, jwt, permission));
+            assertEquals("project_permission_required", failure.getCode());
+        }
+    }
+
+    private static Stream<Arguments> variablePermissions() {
+        return Stream.of(
+                Arguments.of("PROJECT_MANAGER", ProjectPermission.VARIABLE_VIEW, true),
+                Arguments.of("PROJECT_MANAGER", ProjectPermission.VARIABLE_MANAGE, true),
+                Arguments.of("TEST_MANAGER", ProjectPermission.VARIABLE_VIEW, false),
+                Arguments.of("TESTER", ProjectPermission.VARIABLE_MANAGE, false),
+                Arguments.of("VIEWER", ProjectPermission.VARIABLE_VIEW, false));
+    }
+
     private static Stream<Arguments> roleOperations() {
         return Stream.of(
                 operation("PROJECT_MANAGER", PROJECT_MANAGE, true),

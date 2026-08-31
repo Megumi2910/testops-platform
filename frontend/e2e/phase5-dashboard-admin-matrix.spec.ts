@@ -31,17 +31,21 @@ test('a verified member sees populated dashboard reporting after a completed run
   await expect(page).toHaveURL(/\/executions\/[0-9a-f-]+$/)
   await expect(page.getByRole('heading', { name: 'PASSED', exact: true })).toBeVisible({ timeout: 30_000 })
 
-  const dashboardResponses: number[] = []
+  const dashboardResponses: Array<{ endpoint: string; status: number }> = []
   page.on('response', response => {
-    if (response.url().includes('/api/v1/dashboard/')) dashboardResponses.push(response.status())
+    const match = new URL(response.url()).pathname.match(/\/api\/v1\/dashboard\/([^/]+)$/)
+    if (match) dashboardResponses.push({ endpoint: match[1], status: response.status() })
   })
   await page.getByRole('link', { name: 'Dashboard', exact: true }).click()
   await expect(page).toHaveURL(/\/dashboard$/)
   await expect(page.getByRole('heading', { name: 'Execution dashboard', exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Recent failures', exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Infrastructure categories', exact: true })).toBeVisible()
-  await expect.poll(() => dashboardResponses.length).toBeGreaterThanOrEqual(3)
-  expect(dashboardResponses.every(status => status === 200)).toBeTruthy()
+  await expect.poll(() => dashboardResponses.length).toBe(4)
+  expect(new Set(dashboardResponses.map(response => response.endpoint))).toEqual(new Set([
+    'summary', 'trends', 'recent-failures', 'infrastructure-errors',
+  ]))
+  expect(dashboardResponses.every(response => response.status === 200)).toBeTruthy()
   await expect(page.getByText('Executions', { exact: true })).toBeVisible()
 })
 

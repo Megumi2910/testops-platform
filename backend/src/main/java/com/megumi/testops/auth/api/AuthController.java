@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.megumi.testops.auth.config.AuthProperties;
 import com.megumi.testops.auth.service.AuthException;
 import com.megumi.testops.auth.service.AuthService;
+import com.megumi.testops.auth.service.GoogleLinkIntentSession;
 import com.megumi.testops.auth.service.OriginGuard;
 import com.megumi.testops.auth.service.RefreshCookieFactory;
 
@@ -99,6 +100,12 @@ public class AuthController {
     public ResponseEntity<AuthResponse> refresh(HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
         originGuard.requireSameOrigin(servletRequest);
         String raw = readRefreshCookie(servletRequest);
+        // A first anonymous page load has no refresh cookie to rotate. Treat
+        // that as an explicit no-session result rather than an authentication
+        // failure so browser consoles stay meaningful for real failures.
+        if (raw == null || raw.isBlank()) {
+            return ResponseEntity.noContent().header(HttpHeaders.CACHE_CONTROL, "no-store").build();
+        }
         try {
             AuthService.SessionResult session = service().refresh(raw, servletRequest.getHeader("User-Agent"), clientIp(servletRequest));
             return withRefreshCookie(session);
@@ -134,9 +141,11 @@ public class AuthController {
     }
 
     @PostMapping("/me/password/challenge")
-    public ResponseEntity<MessageResponse> passwordChallenge(@AuthenticationPrincipal Jwt jwt, HttpServletRequest request) {
-        service().beginPasswordSetup(subject(jwt), clientIp(request));
-        return ResponseEntity.accepted().body(new MessageResponse("Check your email for a verification code"));
+    public ResponseEntity<ResendVerificationResponse> passwordChallenge(@AuthenticationPrincipal Jwt jwt,
+            HttpServletRequest request) {
+        AuthService.ResendVerificationResult result = service().beginPasswordSetup(subject(jwt), clientIp(request));
+        return ResponseEntity.accepted().body(new ResendVerificationResponse(
+                "Check your email for a verification code", result.nextResendAt(), result.retryAfterSeconds()));
     }
 
     @PostMapping("/me/password/confirm")
@@ -161,7 +170,7 @@ public class AuthController {
     public ResponseEntity<java.util.Map<String, String>> googleLinkIntent(@AuthenticationPrincipal Jwt jwt, HttpServletRequest request) {
         if (jwt == null) throw new AuthException(org.springframework.http.HttpStatus.UNAUTHORIZED, "authentication_required", "Authentication is required");
         if (!properties.google().enabled()) throw new AuthException(org.springframework.http.HttpStatus.NOT_FOUND, "google_disabled", "Google sign-in is not enabled");
-        request.getSession(true).setAttribute("TESTOPS_GOOGLE_LINK_USER", jwt.getSubject());
+        GoogleLinkIntentSession.setUser(request, jwt.getSubject());
         return ResponseEntity.ok(java.util.Map.of("authorizationUrl", "/oauth2/authorization/google"));
     }
 
