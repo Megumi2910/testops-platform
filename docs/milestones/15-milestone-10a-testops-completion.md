@@ -925,11 +925,11 @@ and [`105-premerge-navigation-accessibility.md`](../testing/105-premerge-navigat
 
 ## 2026-08-31 full-platform certification continuation
 
-**Status: PARTIAL.** The repeatable certification gate is complete and is
+**Status: PASS for the agreed non-OAuth certification scope.** The repeatable certification gate is complete and is
 documented in [`106-full-platform-certification.md`](../testing/106-full-platform-certification.md): normal persistent ecommerce catalog, QA role isolation, 103-test E2E suite, isolated local-target-disabled check, live retained revision A/B swap, and guest Chrome DevTools evidence all passed. The catalog contains exactly 9 managed suites and 38 cases (34 READY, 4 intentionally shared-state DRAFT cases); its runnable-suite final executions are green.
 
-The sole external-provider completion boundary is owner-assisted real Google
-OAuth. The system must not simulate a real Google account or store its
-credentials. After the owner completes account selection and consent, reload,
-logout/retry, password-account recovery, Account Security linking, final CI,
-and PR readiness must be reconfirmed before this ledger can return to PASS.
+Real Google OAuth is explicitly user-owned: the system must not simulate a
+real Google account or store its credentials. Deterministic provider coverage
+is green; the owner may separately validate account selection/consent, reload,
+logout/retry, password-account recovery, and Account Security linking. The
+PR CI is green and the PR remains unmerged.

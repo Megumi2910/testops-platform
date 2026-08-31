@@ -21,8 +21,8 @@ local-target-disabled profile, the live retained revision A/B swap, QA API
 role isolation, and the persistent normal ecommerce catalog all passed. The
 normal guest runtime returned the intentional anonymous-refresh `204` with no
 console errors; mobile Lighthouse reported accessibility 100 and best
-practices 100. Real Google remains **PENDING OWNER**, because no automation or
-documentation may impersonate an external Google account.
+practices 100. The account owner retained real Google OAuth as a manual
+provider check; deterministic OAuth remains covered by the passing E2E gate.
 
 ## Phase 9 reconciliation boundary
 
